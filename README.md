@@ -1,28 +1,28 @@
 # 🏛️ Clean Architecture & Pragmatic DDD Starter Template (.NET 10)
 
-قالب معماري حديث، نظيف، وفائق الخفة (Zero-Bloat Starter Template) مبني بأحدث معايير **.NET 10** و **C# 14**، مصمم خصيصاً ليكون نقطة انطلاق سريعة وقابلة لإعادة الاستخدام في بناء الـ Web APIs القوية والجاهزة للإنتاج.
+A modern, lightweight, **zero-bloat starter template** built with the latest **.NET 10** and **C# 14** standards. Specifically engineered as a fast, maintainable, and production-ready foundation for building high-performance Web APIs.
 
 ---
 
-## 🎯 1. فلسفة المعمارية: ليش انعملت بهذا الشكل؟
+## 🎯 1. Architectural Philosophy: Why this design?
 
-أغلب قوالب الـ Clean Architecture المنتشرة تعاني من مشكلتين أساسيتين:
+Most Clean Architecture templates suffer from two major problems:
 
-1. **التعقيد الزائد والحشو المسبق (Over-Engineering & Bloat):** يتم فرض حزم، وأنماط معقدة (مثل Generic Repositories، أو Auditing إجباري، أو Domain Events، أو Time Abstractions) تستهلك وقتاً في الصيانة وتعيق المشاريع البسيطة والمتوسطة.
-2. **خلط المسؤوليات وضعف التنظيم:** وضع كود الوصول للبيانات داخل الـ Controllers، أو رمي استثناءات (Exceptions) لأخطاء منطق العمل العادية، مما يبطئ الأداء ويصعب تتبع الكود.
+1. **Over-Engineering & Pre-Mature Bloat:** Enforcing unnecessary abstractions, heavy generic repositories, mandatory auditing, complex domain events, or excessive time abstractions that add friction and maintenance burden to small and medium projects.
+2. **Scattered Responsibilities & Weak Organization:** Leaking data access code into controllers, or throwing expensive exceptions for normal business logic failures, hurting performance and making code hard to trace.
 
-### المبادئ التي بُني عليها هذا القالب:
+### Core Principles of this Template:
 
-- **YAGNI (You Aren't Gonna Need It):** لا يوجد أي سطر كود أو تجريد (Abstraction) زائد. القالب يحتوي فقط على الأساسيات المشتركة 100% بين كل المشاريع، وأي ميزة إضافية (كالتدقيق الزمني أو المصادقة) تضاف عند الحاجة فقط.
-- **Zero Third-Party Bloat في النواة:** طبقة الـ `Domain` تمثل C# نقي تماماً بدون أي مكتبات خارجية.
-- **Result Pattern بدلاً من رمي الاستثناءات:** إدارة تدفق البيانات والأخطاء بشكل صريح وسريع دون استهلاك موارد المعالج في رمي الـ Exceptions.
-- **Minimal APIs مع بنية منظمة ومكتشفة ذاتياً:** تجنب تضخم ملف `Program.cs` عبر تنظيم الـ Endpoints في ملفات مستقلة تسجل نفسها تلقائياً.
+- **YAGNI (You Aren't Gonna Need It):** Zero redundant code or abstractions. The template contains only the essential 100% common building blocks across projects. Any extra features (auditing, auth, caching) are added incrementally when needed.
+- **Zero Third-Party Bloat in Core:** The `Domain` layer is 100% pure C# with no third-party package dependencies.
+- **Result Pattern instead of Throwing Exceptions:** Explicit and fast control flow for business errors without the CPU overhead of stack-trace unwinding.
+- **Self-Discovering Minimal APIs:** Keeps `Program.cs` clean and maintainable by structuring endpoints into dedicated, auto-registered classes.
 
 ---
 
-## 🛡️ 2. قواعد الاعتماديات الصارمة (Strict Dependency Matrix)
+## 🛡️ 2. Strict Dependency Matrix
 
-تتبع المعمارية مساراً إجبارياً أحادي الاتجاه (Inward Dependencies):
+The architecture strictly enforces inward-only dependencies:
 
 ```text
 ┌─────────────────────────────────────────────────────────────┐
@@ -37,155 +37,163 @@
                 ▼                             ▼
 ┌─────────────────────────────────────────────────────────────┐
 │                     Architecture.Domain                     │
-│               (نواة مستقلة تماماً - Pure C#)                │
+│                 (Pure C# - Zero Dependencies)               │
 └─────────────────────────────────────────────────────────────┘
 ```
 
-- **`Domain`:** المركز؛ لا يعرف أي طبقة ولا يملك أي مراجع خارجية.
-- **`Application`:** يعرف فقط الـ `Domain`. ممنوع استيراد أي كود من الـ Infrastructure أو الـ Api.
-- **`Infrastructure`:** يطبق واجهات `Application` ويعرف `Domain`.
-- **`Api`:** يجمع الطبقات لتسجيل الـ DI وتشغيل التطبيق.
+- **`Domain`:** Core business entities and logic; has zero external references or dependencies.
+- **`Application`:** Depends only on `Domain`. Never imports Infrastructure or Api code.
+- **`Infrastructure`:** Implements `Application` interfaces and accesses `Domain`.
+- **`Api`:** Composition root; wires up Dependency Injection and configures the HTTP request pipeline.
 
-> ⚠️ **قاعدة معمارية:** أي كود يخالف هذا الاتجاه (مثل ربط Application بـ Infrastructure مباشرة) يعتبر مرفوضاً.
+> ⚠️ **Architectural Rule:** Any code violating this directional flow (e.g., Application depending directly on Infrastructure) is strictly rejected.
 
 ---
 
-## 📂 3. هيكل المشروع (Project Structure)
+## 📂 3. Project Structure
 
 ```text
 Architecture/
 │
-├── Architecture.Domain/                               // النواة الصافية للبزنس
+├── Directory.Build.props                              // Centralized .NET 10 build configuration
+├── Rename-Project.ps1                                 // Automated solution & project rename script
+├── Architecture.slnx                                  // Modern solution file format
+│
+├── Architecture.Domain/                               // Pure business core
 │   ├── Common/
 │   │   ├── BaseEntity/
-│   │   │   └── BaseEntity.cs                          // الكيان الأساسي (معرّف Guid موحد)
+│   │   │   └── BaseEntity.cs                          // Base entity with Guid identifier
 │   │   └── Results/
-│   │       ├── Error.cs                               // تمثيل الخطأ (Code & Description)
-│   │       └── Result.cs                              // كلاس النتيجة (Result & Result<TValue>)
-│   ├── Entities/                                      // كيانات البزنس
-│   └── Enums/                                         // الـ Enums الخاصة بالنطاق
+│   │       ├── ErrorType.cs                           // Enum of error categories (NotFound, Validation, etc.)
+│   │       ├── Error.cs                               // Immutable Error record with factory methods
+│   │       └── Result.cs                              // Result and Result<TValue> with implicit operators
+│   ├── Entities/                                      // Business domain entities
+│   └── Enums/                                         // Domain-specific enumerations
 │
-├── Architecture.Application/                          // حالات الاستخدام ومنطق التطبيق
+├── Architecture.Application/                          // Use cases & application logic
 │   ├── Common/
 │   │   ├── Behaviors/
-│   │   │   ├── ValidationBehavior.cs                  // فحص تلقائي بـ FluentValidation عبر MediatR
-│   │   │   └── LoggingBehavior.cs                     // تسجيل أداء وزمن تنفيذ الطلبات
+│   │   │   ├── ValidationBehavior.cs                  // Automatic FluentValidation pipeline via MediatR
+│   │   │   └── LoggingBehavior.cs                     // Request performance & execution time logger
 │   │   ├── Interfaces/
-│   │   │   └── IApplicationDbContext.cs               // واجهة الوصول لقاعدة البيانات وحفظ التغييرات
+│   │   │   └── IApplicationDbContext.cs               // EF Core abstraction (DbSet access & SaveChanges)
 │   │   ├── Models/
-│   │   │   └── PaginatedList.cs                       // نموذج تقسيم الصفحات (Pagination)
+│   │   │   └── PaginatedList.cs                       // Reusable pagination model
 │   │   └── DependencyInjection/
-│   │       └── DependencyInjection.cs                 // تسجيل MediatR و FluentValidation تلقائياً
-│   └── Features/                                      // ميزات التطبيق (Vertical Slices)
+│   │       └── DependencyInjection.cs                 // MediatR & FluentValidation auto-registration
+│   └── Features/                                      // Feature modules (Vertical Slices)
 │
-├── Architecture.Infrastructure/                       // قاعدة البيانات والخدمات التقنية
+├── Architecture.Infrastructure/                       // Database, persistence & technical services
 │   ├── Data/
-│   │   ├── ApplicationDbContext.cs                    // سياق قاعدة البيانات (EF Core)
-│   │   └── Configurations/                            // إعدادات الجداول والـ Fluent API
+│   │   ├── ApplicationDbContext.cs                    // EF Core DbContext
+│   │   └── Configurations/                            // EntityTypeConfigurations & Fluent API mappings
 │   └── DependencyInjection/
-│       └── DependencyInjection.cs                     // تسجيل الـ DbContext وسلسلة الاتصال
+│       └── DependencyInjection.cs                     // DbContext & Connection String configuration
 │
-└── Architecture.Api/                                  // واجهة الـ HTTP والمدخل الرئيسي
+└── Architecture.Api/                                  // HTTP entry point & Minimal APIs
     ├── Common/
     │   ├── Errors/
-    │   │   └── GlobalExceptionHandler.cs              // معالجة الأخطاء غير المتوقعة (RFC 7807)
+    │   │   └── GlobalExceptionHandler.cs              // Unhandled exception handler (RFC 7807 ProblemDetails)
     │   └── Results/
-    │       └── ResultExtensions.cs                    // تحويل Result إلى ردود HTTP قياسية
+    │       └── ResultExtensions.cs                    // Type-safe Result to HTTP response mapping
     ├── Endpoints/
-    │   ├── IEndpoint.cs                               // واجهة الـ Minimal APIs المعيارية
-    │   └── EndpointExtensions.cs                      // تسجيل الـ Endpoints تلقائياً عبر app.MapEndpoints()
+    │   ├── IEndpoint.cs                               // Standard Minimal API endpoint contract
+    │   └── EndpointExtensions.cs                      // Auto-registration via app.MapEndpoints()
     ├── DependencyInjection/
-    │   └── DependencyInjection.cs                     // تسجيل Swagger، CORS، والـ Endpoints
-    ├── appsettings.json                               // سلاسل الاتصال والإعدادات
-    └── Program.cs                                     // خط أنابيب الـ HTTP
+    │   └── DependencyInjection.cs                     // Swagger, CORS, and Endpoint services
+    ├── appsettings.json                               // Configuration settings & connection strings
+    └── Program.cs                                     // HTTP request pipeline setup
 ```
 
 ---
 
-## ⚙️ 4. كيف يعمل كل جزء بالتفصيل؟
+## ⚙️ 4. How Each Layer Works
 
-### 1. طبقة النطاق (`Architecture.Domain`)
+### 1. Domain Layer (`Architecture.Domain`)
 
 - **`BaseEntity.cs`:**
-  - يفرض وجود معرّف فريد من نوع `Guid` لكل جدول في النظام، مع توليده تلقائياً `Guid.NewGuid()`.
-- **`Error.cs`:**
-  - يحتوي فقط على `Code` (كود فريد للخطأ مثل `"Product.NotFound"`) و `Description` (شرح واضح). لا يوجد تصنيفات مسبقة معقدة داخل الدومين.
-- **`Result.cs` و `Result<TValue>`:**
-  - يتيح للدوال إرجاع كائن نجاح يحمل البيانات أو كائن فشل يحمل الخطأ.
-  - بفضل الـ `implicit operators`، يمكنك إرجاع النتيجة مباشرة:
+  - Enforces a uniform `Guid Id` for all entities in the system, automatically generated via `Guid.NewGuid()`.
+- **`ErrorType.cs` & `Error.cs`:**
+  - `ErrorType` enum defines distinct categories: `Failure`, `Validation`, `NotFound`, `Conflict`, `Unauthorized`, `Forbidden`.
+  - `Error` record contains `Code`, `Description`, and `Type`. Factory methods like `Error.NotFound()` make instantiating errors simple and type-safe.
+- **`Result.cs` & `Result<TValue>`:**
+  - Encapsulates success or failure without throwing exceptions.
+  - Implicit operators allow direct and expressive returns:
     ```csharp
-    return product;          // نجاح مباشر
-    return ProductErrors.NotFound; // فشل مباشر
+    return product;                // Implicit conversion to Result.Success(product)
+    return ProductErrors.NotFound; // Implicit conversion to Result.Failure(error)
     ```
 
-### 2. طبقة التطبيق (`Architecture.Application`)
+### 2. Application Layer (`Architecture.Application`)
 
-- **`ValidationBehavior.cs` (أهم ميزة إنتاجية):**
-  - خط وسيط (MediatR Pipeline Behavior) يمر عليه كل Request تلقائياً.
-  - إذا وُجد كلاس `AbstractValidator` للطلب: يتم فحصه تلقائياً؛ وإذا وُجدت أخطاء يتم إيقاف الطلب وإرجاع `Result.Failure(ValidationError)` مباشرة دون أن يصل للـ Handler ودون رمي Exception.
+- **`ValidationBehavior.cs`:**
+  - A MediatR pipeline behavior that automatically intercepts requests before they reach the handler.
+  - If an `AbstractValidator<TRequest>` exists and validation fails, the pipeline halts immediately and returns `Result.Failure(ValidationError)` directly—no handler execution and no exception overhead.
+- **`LoggingBehavior.cs`:**
+  - Uses `Stopwatch` to track and log execution duration in milliseconds for every command and query.
 - **`IApplicationDbContext.cs`:**
-  - يعزل طبقة الـ Application عن تفاصيل الـ EF Core؛ التطبيق يعرف فقط أنه يملك دالة `SaveChangesAsync(CancellationToken)`.
-- **`Features/` (نظام Vertical Slices):**
-  - كل ميزة يتم وضع ملفاتها معاً (الـ Command، الـ Handler، والـ Validator) في نفس المجلد لسهولة الوصول والتعديل.
+  - Exposes `DbSet<TEntity> Set<TEntity>()` and `SaveChangesAsync(CancellationToken)` for decoupled data access.
+- **`Features/` (Vertical Slice Structure):**
+  - Keeps command, handler, and validator together inside a feature folder for high cohesion and rapid maintainability.
 
-### 3. طبقة البنية التحتية (`Architecture.Infrastructure`)
+### 3. Infrastructure Layer (`Architecture.Infrastructure`)
 
 - **`ApplicationDbContext.cs`:**
-  - يطبق واجهة `IApplicationDbContext`، ويحتوي على السطر الذكي:
+  - Implements `IApplicationDbContext`.
+  - Automatically loads all entity configurations from the assembly:
     ```csharp
     modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
     ```
-    الذي يقرأ أي ملف إعدادات موجود في مجلد `Configurations/` تلقائياً دون الحاجة لتسجيله يدوياً.
 
-### 4. طبقة العرض (`Architecture.Api`)
+### 4. API Layer (`Architecture.Api`)
 
 - **`IEndpoint` & `EndpointExtensions.cs`:**
-  - بدلاً من كتابة كل الـ Minimal APIs داخل `Program.cs`، كل Endpoint يُكتب في ملف مستقل يطبق `IEndpoint`.
-  - عند تشغيل التطبيق، تستكشف دالة `app.MapEndpoints()` كل الـ Endpoints وتسجلها تلقائياً.
+  - Each endpoint is encapsulated in its own class implementing `IEndpoint`.
+  - During application startup, `app.MapEndpoints()` scans the assembly and registers all endpoints automatically.
 - **`ResultExtensions.cs`:**
-  - يربط بين الـ Result Pattern والـ HTTP. يفحص الخطأ ويرجع تلقائياً `404 NotFound` أو `400 BadRequest` مع كائن `ProblemDetails` القياسي (RFC 7807).
+  - Converts domain `Result` objects into standard RFC 7807 `ProblemDetails` responses. Automatically maps `ErrorType.NotFound` to `404`, `ErrorType.Conflict` to `409`, `ErrorType.Validation` to `400`, etc.
 - **`GlobalExceptionHandler.cs`:**
-  - يطبق ميزة `IExceptionHandler` لصيد أي كسر أو عطل مفاجئ في السيرفر وإرجاع رد آمن (500 Internal Server Error) دون تسريب تفاصيل حساسة عن السيرفر للعميل.
+  - Implements ASP.NET Core's `IExceptionHandler` to capture unhandled server crashes and return safe `500 Internal Server Error` responses without leaking stack traces.
 
 ---
 
-## 🔄 5. دورة حياة الطلب (Request Lifecycle Flow)
+## 🔄 5. Request Lifecycle Flow
 
 ```mermaid
 sequenceDiagram
     autonumber
-    actor Client as العميل (Frontend / Mobile)
+    actor Client as Client (Frontend / Mobile)
     participant API as Minimal API (IEndpoint)
     participant Pipeline as MediatR Pipeline
     participant Validator as FluentValidation
     participant Handler as Feature Handler
     participant DB as ApplicationDbContext (EF Core)
 
-    Client->>API: HTTP Request (e.g. POST /api/items)
-    API->>Pipeline: Send(CreateItemCommand)
+    Client->>API: HTTP Request (e.g. POST /api/products)
+    API->>Pipeline: Send(CreateProductCommand)
     Pipeline->>Validator: ValidationBehavior
-    alt البيانات غير صالحة
-        Validator-->>Pipeline: فحص فاشل
+    alt Validation Failed
+        Validator-->>Pipeline: Validation errors detected
         Pipeline-->>API: Result.Failure(ValidationError)
         API-->>Client: 400 Bad Request (ProblemDetails)
-    else البيانات سليمة
-        Validator-->>Pipeline: فحص ناجح
-        Pipeline->>Handler: تنفيذ الـ Command
-        Handler->>DB: Add(newItem) & SaveChangesAsync()
-        DB-->>Handler: تم الحفظ بنجاح
-        Handler-->>Pipeline: Result.Success(item.Id)
+    else Validation Succeeded
+        Validator-->>Pipeline: Validation passed
+        Pipeline->>Handler: Execute Handler
+        Handler->>DB: Set<Product>().Add(newItem) & SaveChangesAsync()
+        DB-->>Handler: Saved successfully
+        Handler-->>Pipeline: Result.Success(product.Id)
         Pipeline-->>API: Result<Guid>
-        API-->>Client: 200 OK (Item ID)
+        API-->>Client: 200 OK (Product ID)
     end
 ```
 
 ---
 
-## 🚀 6. دليل البدء السريع: كيف تبني ميزة جديدة في 5 دقائق؟
+## 🚀 6. Quick Start: Build a Feature in 4 Steps
 
-لإضافة ميزة جديدة (مثلاً: `CreateProduct`)، كل ما عليك فعله هو 4 خطوات سريعة:
+To implement a new feature (e.g., `CreateProduct`), follow these 4 steps:
 
-### 1. في الـ Domain (`Architecture.Domain/Entities/Product.cs`):
+### 1. In Domain (`Architecture.Domain/Entities/Product.cs`):
 
 ```csharp
 public class Product : BaseEntity
@@ -201,19 +209,30 @@ public class Product : BaseEntity
 }
 ```
 
-### 2. في الـ Infrastructure (`Architecture.Infrastructure/Data/ApplicationDbContext.cs`):
+### 2. In Infrastructure (`Architecture.Infrastructure/Data/Configurations/ProductConfiguration.cs`):
 
 ```csharp
-public DbSet<Product> Products => Set<Product>();
+public class ProductConfiguration : IEntityTypeConfiguration<Product>
+{
+    public void Configure(EntityTypeBuilder<Product> builder)
+    {
+        builder.HasKey(p => p.Id);
+        builder.Property(p => p.Name).HasMaxLength(100).IsRequired();
+        builder.Property(p => p.Price).HasPrecision(18, 2);
+    }
+}
 ```
 
-### 3. في الـ Application (`Architecture.Application/Features/Products/CreateProduct/`):
+### 3. In Application (`Architecture.Application/Features/Products/CreateProduct/`):
 
-- **الـ Command:**
+- **The Command:**
+
   ```csharp
   public record CreateProductCommand(string Name, decimal Price) : IRequest<Result<Guid>>;
   ```
-- **الـ Validator:**
+
+- **The Validator:**
+
   ```csharp
   public class CreateProductValidator : AbstractValidator<CreateProductCommand>
   {
@@ -224,25 +243,23 @@ public DbSet<Product> Products => Set<Product>();
       }
   }
   ```
-- **الـ Handler:**
 
+- **The Handler:**
   ```csharp
-  public class CreateProductHandler : IRequestHandler<CreateProductCommand, Result<Guid>>
+  public class CreateProductHandler(IApplicationDbContext context)
+      : IRequestHandler<CreateProductCommand, Result<Guid>>
   {
-      private readonly IApplicationDbContext _context;
-      public CreateProductHandler(IApplicationDbContext context) => _context = context;
-
       public async Task<Result<Guid>> Handle(CreateProductCommand request, CancellationToken ct)
       {
           var product = new Product(request.Name, request.Price);
-          // أضف للكولكشن واحفظ
-          await _context.SaveChangesAsync(ct);
-          return product.Id; // تحويل ضمني لـ Result.Success
+          context.Set<Product>().Add(product);
+          await context.SaveChangesAsync(ct);
+          return product.Id; // Implicit conversion to Result.Success
       }
   }
   ```
 
-### 4. في الـ Api (`Architecture.Api/Endpoints/Products/CreateProductEndpoint.cs`):
+### 4. In API (`Architecture.Api/Endpoints/Products/CreateProductEndpoint.cs`):
 
 ```csharp
 public class CreateProductEndpoint : IEndpoint
@@ -252,19 +269,39 @@ public class CreateProductEndpoint : IEndpoint
         app.MapPost("/api/products", async (CreateProductCommand command, ISender sender) =>
         {
             var result = await sender.Send(command);
-            return result.ToResponse(); // يرجع 200 مع الـ ID أو 400 مع تفاصيل الخطأ
-        });
+            return result.ToResponse(); // Returns 200 with ID, or 400 ProblemDetails
+        }).WithTags("Products");
     }
 }
 ```
 
-**انتهيت! لا حاجة لتعديل `Program.cs` ولا أي ملف إعدادات.**
+**That's it! No changes to `Program.cs` or service registration required.**
 
 ---
 
-## 🛠️ 7. حزم العمل والأدوات المستخدمة
+## 🏷️ 7. Renaming the Template
 
-- **MediatR (v14.2.0):** لنمط الوسيط والـ CQRS.
-- **FluentValidation (v12.1.1):** للتحقق القوي والمنفصل من البيانات.
-- **Entity Framework Core (v10.0.12):** للتعامل مع قاعدة البيانات SQL Server.
-- **Swashbuckle / OpenAPI:** لتوثيق وتجربة واجهات الـ API عبر Swagger UI.
+To rename this template for a new project, run the included PowerShell script from the solution root:
+
+```powershell
+.\Rename-Project.ps1 -NewName "YourProjectName"
+```
+
+### What this script does automatically:
+
+1. Cleans temporary `bin` and `obj` build directories.
+2. Updates namespaces, usings, and project references across all files (`.cs`, `.csproj`, `.slnx`, `.json`, `.http`, `.md`).
+3. Renames all project and solution files.
+4. Renames all project directories.
+5. Verifies the solution with `dotnet build`.
+6. Self-deletes upon successful completion to leave your project clean.
+
+---
+
+## 🛠️ 8. Tech Stack & Packages
+
+- **Target Framework:** [.NET 10](https://dotnet.microsoft.com/) / C# 14
+- **Mediator & CQRS:** [MediatR](https://github.com/jbogard/MediatR) (v14.2.0)
+- **Validation:** [FluentValidation](https://fluentvalidation.net/) (v12.1.1)
+- **ORM & Database:** [Entity Framework Core](https://learn.microsoft.com/en-us/ef/core/) (v10.0.12) with SQL Server
+- **API Documentation:** [OpenAPI & Swagger UI](https://learn.microsoft.com/en-us/aspnet/core/fundamentals/openapi/aspnetcore-openapi)
