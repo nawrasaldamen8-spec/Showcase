@@ -1,21 +1,21 @@
----
+﻿---
 name: application-layer
 description: >-
-  Use this skill when creating features (commands, queries, handlers, validators), working with DTOs/response records, pagination, or any code in the Architecture.Application project. Guides CQRS structure, record conventions, and IApplicationDbContext usage.
+  Use this skill when creating features (commands, queries, handlers, validators), working with DTOs/response records, pagination, or any code in the Showcase.Application project. Guides CQRS structure, record conventions, and IApplicationDbContext usage.
 ---
 
 # Application Layer
 
 ## 1. Layer Role
 - **Application** = use cases / features, orchestrates domain logic
-- **Project**: `Architecture.Application`
-- **Depends on**: `Architecture.Domain`
+- **Project**: `Showcase.Application`
+- **Depends on**: `Showcase.Domain`
 - **Uses**: MediatR (14.2.0), FluentValidation (12.1.1), Microsoft.EntityFrameworkCore (abstractions only)
 
 ## 2. File Structure
 
 ```text
-Architecture.Application/
+Showcase.Application/
 ├── Common/
 │   ├── Behaviors/
 │   │   ├── LoggingBehavior.cs          → Logs request name + execution time (ms)
@@ -47,10 +47,10 @@ Architecture.Application/
 ## 4. Command Pattern
 
 ```csharp
-using Architecture.Domain.Common.Results;
+using Showcase.Domain.Common.Results;
 using MediatR;
 
-namespace Architecture.Application.Features.Products.Commands.CreateProduct;
+namespace Showcase.Application.Features.Products.Commands.CreateProduct;
 
 public record CreateProductCommand(
     string Name,
@@ -67,12 +67,12 @@ public record CreateProductCommand(
 ## 5. Command Handler Pattern
 
 ```csharp
-using Architecture.Application.Common.Interfaces;
-using Architecture.Domain.Common.Results;
-using Architecture.Domain.Entities;
+using Showcase.Application.Common.Interfaces;
+using Showcase.Domain.Common.Results;
+using Showcase.Domain.Entities;
 using MediatR;
 
-namespace Architecture.Application.Features.Products.Commands.CreateProduct;
+namespace Showcase.Application.Features.Products.Commands.CreateProduct;
 
 public class CreateProductCommandHandler : IRequestHandler<CreateProductCommand, Result<Guid>>
 {
@@ -106,7 +106,7 @@ public class CreateProductCommandHandler : IRequestHandler<CreateProductCommand,
 ```csharp
 using FluentValidation;
 
-namespace Architecture.Application.Features.Products.Commands.CreateProduct;
+namespace Showcase.Application.Features.Products.Commands.CreateProduct;
 
 public class CreateProductCommandValidator : AbstractValidator<CreateProductCommand>
 {

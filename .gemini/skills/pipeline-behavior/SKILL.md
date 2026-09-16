@@ -1,4 +1,4 @@
----
+﻿---
 name: pipeline-behavior
 description: >-
   Use this skill when creating a new MediatR pipeline behavior (IPipelineBehavior). Guides the implementation pattern, registration, and ordering based on existing LoggingBehavior and ValidationBehavior examples.
@@ -14,13 +14,13 @@ description: >-
 
 ## 2. Existing Behaviors in This Project
 
-**LoggingBehavior** (at `Architecture.Application/Common/Behaviors/LoggingBehavior.cs`):
+**LoggingBehavior** (at `Showcase.Application/Common/Behaviors/LoggingBehavior.cs`):
 - Logs request name when processing starts
 - Uses Stopwatch to measure execution time
 - Logs completion with elapsed milliseconds
 - Registered first → wraps everything
 
-**ValidationBehavior** (at `Architecture.Application/Common/Behaviors/ValidationBehavior.cs`):
+**ValidationBehavior** (at `Showcase.Application/Common/Behaviors/ValidationBehavior.cs`):
 - Collects all `IValidator<TRequest>` validators via DI
 - Runs all validators in parallel (`Task.WhenAll`)
 - If failures: returns `Result.Failure(Error.Validation(...))` for the first failure
@@ -36,7 +36,7 @@ cfg.AddOpenBehavior(typeof(ValidationBehavior<,>)); // 2nd: validates before han
 
 ## 3. Creating a New Behavior — Step by Step
 
-**Step 1:** Create the class at `Architecture.Application/Common/Behaviors/{Name}Behavior.cs`
+**Step 1:** Create the class at `Showcase.Application/Common/Behaviors/{Name}Behavior.cs`
 
 **Step 2:** Implement `IPipelineBehavior<TRequest, TResponse>`
 
@@ -49,7 +49,7 @@ cfg.AddOpenBehavior(typeof(ValidationBehavior<,>)); // 2nd: validates before han
 ```csharp
 using MediatR;
 
-namespace Architecture.Application.Common.Behaviors;
+namespace Showcase.Application.Common.Behaviors;
 
 public class {Name}Behavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
     where TRequest : notnull
@@ -83,10 +83,10 @@ public class {Name}Behavior<TRequest, TResponse> : IPipelineBehavior<TRequest, T
 
 ### Transaction Behavior (wraps handler in a DB transaction)
 ```csharp
-using Architecture.Application.Common.Interfaces;
+using Showcase.Application.Common.Interfaces;
 using MediatR;
 
-namespace Architecture.Application.Common.Behaviors;
+namespace Showcase.Application.Common.Behaviors;
 
 public class TransactionBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
     where TRequest : notnull
@@ -132,7 +132,7 @@ using System.Diagnostics;
 using MediatR;
 using Microsoft.Extensions.Logging;
 
-namespace Architecture.Application.Common.Behaviors;
+namespace Showcase.Application.Common.Behaviors;
 
 public class PerformanceBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
     where TRequest : notnull
@@ -167,11 +167,11 @@ public class PerformanceBehavior<TRequest, TResponse> : IPipelineBehavior<TReque
 ### Authorization Behavior (checks user permissions before handler)
 Note: Only create this if endpoint-level `.RequireAuthorization()` isn't sufficient.
 ```csharp
-using Architecture.Application.Common.Interfaces;
-using Architecture.Domain.Common.Results;
+using Showcase.Application.Common.Interfaces;
+using Showcase.Domain.Common.Results;
 using MediatR;
 
-namespace Architecture.Application.Common.Behaviors;
+namespace Showcase.Application.Common.Behaviors;
 
 // Define a marker interface for requests that need authorization
 public interface IAuthorizedRequest
@@ -211,7 +211,7 @@ public class AuthorizationBehavior<TRequest, TResponse> : IPipelineBehavior<TReq
 
 ## 6. Registration and Ordering
 
-In `Architecture.Application/Common/DependencyInjection/DependencyInjection.cs`:
+In `Showcase.Application/Common/DependencyInjection/DependencyInjection.cs`:
 ```csharp
 services.AddMediatR(cfg =>
 {
@@ -257,5 +257,5 @@ if (typeof(TResponse).IsGenericType && typeof(TResponse).GetGenericTypeDefinitio
 - ✅ ALWAYS use the `where TRequest : notnull` constraint (matching existing behaviors)
 - ✅ ALWAYS call `await next()` to continue the pipeline (unless short-circuiting)
 - ✅ ALWAYS follow the naming convention: `{Name}Behavior<TRequest, TResponse>`
-- ✅ ALWAYS place in `Architecture.Application/Common/Behaviors/`
+- ✅ ALWAYS place in `Showcase.Application/Common/Behaviors/`
 - ✅ ALWAYS consider if endpoint-level middleware is sufficient before creating a pipeline behavior

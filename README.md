@@ -1,4 +1,4 @@
-# 🏛️ Clean Architecture & Pragmatic DDD Starter Template (.NET 10)
+﻿# 🏛️ Clean Showcase & Pragmatic DDD Starter Template (.NET 10)
 
 A modern, lightweight, **zero-bloat starter template** built with the latest **.NET 10** and **C# 14** standards. Specifically engineered as a fast, maintainable, and production-ready foundation for building high-performance Web APIs.
 
@@ -6,7 +6,7 @@ A modern, lightweight, **zero-bloat starter template** built with the latest **.
 
 ## 🎯 1. Architectural Philosophy: Why this design?
 
-Most Clean Architecture templates suffer from two major problems:
+Most Clean Showcase templates suffer from two major problems:
 
 1. **Over-Engineering & Pre-Mature Bloat:** Enforcing unnecessary abstractions, heavy generic repositories, mandatory auditing, complex domain events, or excessive time abstractions that add friction and maintenance burden to small and medium projects.
 2. **Scattered Responsibilities & Weak Organization:** Leaking data access code into controllers, or throwing expensive exceptions for normal business logic failures, hurting performance and making code hard to trace.
@@ -26,17 +26,17 @@ The architecture strictly enforces inward-only dependencies:
 
 ```text
 ┌─────────────────────────────────────────────────────────────┐
-│                      Architecture.Api                       │
+│                      Showcase.Api                       │
 └───────────────┬─────────────────────────────┬───────────────┘
                 │                             │
                 ▼                             ▼
 ┌──────────────────────────────┐ ┌────────────────────────────┐
-│   Architecture.Application   │ │ Architecture.Infrastructure│
+│   Showcase.Application   │ │ Showcase.Infrastructure│
 └───────────────┬──────────────┘ └────────────┬───────────────┘
                 │                             │
                 ▼                             ▼
 ┌─────────────────────────────────────────────────────────────┐
-│                     Architecture.Domain                     │
+│                     Showcase.Domain                     │
 │                 (Pure C# - Zero Dependencies)               │
 └─────────────────────────────────────────────────────────────┘
 ```
@@ -53,13 +53,13 @@ The architecture strictly enforces inward-only dependencies:
 ## 📂 3. Project Structure
 
 ```text
-Architecture/
+Showcase/
 │
 ├── Directory.Build.props                              // Centralized .NET 10 build configuration
 ├── Rename-Project.ps1                                 // Automated solution & project rename script
-├── Architecture.slnx                                  // Modern solution file format
+├── Showcase.slnx                                  // Modern solution file format
 │
-├── Architecture.Domain/                               // Pure business core
+├── Showcase.Domain/                               // Pure business core
 │   ├── Common/
 │   │   ├── BaseEntity/
 │   │   │   └── BaseEntity.cs                          // Base entity with Guid identifier
@@ -70,7 +70,7 @@ Architecture/
 │   ├── Entities/                                      // Business domain entities
 │   └── Enums/                                         // Domain-specific enumerations
 │
-├── Architecture.Application/                          // Use cases & application logic
+├── Showcase.Application/                          // Use cases & application logic
 │   ├── Common/
 │   │   ├── Behaviors/
 │   │   │   ├── ValidationBehavior.cs                  // Automatic FluentValidation pipeline via MediatR
@@ -83,14 +83,14 @@ Architecture/
 │   │       └── DependencyInjection.cs                 // MediatR & FluentValidation auto-registration
 │   └── Features/                                      // Feature modules (Vertical Slices)
 │
-├── Architecture.Infrastructure/                       // Database, persistence & technical services
+├── Showcase.Infrastructure/                       // Database, persistence & technical services
 │   ├── Data/
 │   │   ├── ApplicationDbContext.cs                    // EF Core DbContext
 │   │   └── Configurations/                            // EntityTypeConfigurations & Fluent API mappings
 │   └── DependencyInjection/
 │       └── DependencyInjection.cs                     // DbContext & Connection String configuration
 │
-└── Architecture.Api/                                  // HTTP entry point & Minimal APIs
+└── Showcase.Api/                                  // HTTP entry point & Minimal APIs
     ├── Common/
     │   ├── Errors/
     │   │   └── GlobalExceptionHandler.cs              // Unhandled exception handler (RFC 7807 ProblemDetails)
@@ -109,7 +109,7 @@ Architecture/
 
 ## ⚙️ 4. How Each Layer Works
 
-### 1. Domain Layer (`Architecture.Domain`)
+### 1. Domain Layer (`Showcase.Domain`)
 
 - **`BaseEntity.cs`:**
   - Enforces a uniform `Guid Id` for all entities in the system, automatically generated via `Guid.NewGuid()`.
@@ -124,7 +124,7 @@ Architecture/
     return ProductErrors.NotFound; // Implicit conversion to Result.Failure(error)
     ```
 
-### 2. Application Layer (`Architecture.Application`)
+### 2. Application Layer (`Showcase.Application`)
 
 - **`ValidationBehavior.cs`:**
   - A MediatR pipeline behavior that automatically intercepts requests before they reach the handler.
@@ -136,7 +136,7 @@ Architecture/
 - **`Features/` (Vertical Slice Structure):**
   - Keeps command, handler, and validator together inside a feature folder for high cohesion and rapid maintainability.
 
-### 3. Infrastructure Layer (`Architecture.Infrastructure`)
+### 3. Infrastructure Layer (`Showcase.Infrastructure`)
 
 - **`ApplicationDbContext.cs`:**
   - Implements `IApplicationDbContext`.
@@ -145,7 +145,7 @@ Architecture/
     modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
     ```
 
-### 4. API Layer (`Architecture.Api`)
+### 4. API Layer (`Showcase.Api`)
 
 - **`IEndpoint` & `EndpointExtensions.cs`:**
   - Each endpoint is encapsulated in its own class implementing `IEndpoint`.
@@ -193,7 +193,7 @@ sequenceDiagram
 
 To implement a new feature (e.g., `CreateProduct`), follow these 4 steps:
 
-### 1. In Domain (`Architecture.Domain/Entities/Product.cs`):
+### 1. In Domain (`Showcase.Domain/Entities/Product.cs`):
 
 ```csharp
 public class Product : BaseEntity
@@ -209,7 +209,7 @@ public class Product : BaseEntity
 }
 ```
 
-### 2. In Infrastructure (`Architecture.Infrastructure/Data/Configurations/ProductConfiguration.cs`):
+### 2. In Infrastructure (`Showcase.Infrastructure/Data/Configurations/ProductConfiguration.cs`):
 
 ```csharp
 public class ProductConfiguration : IEntityTypeConfiguration<Product>
@@ -223,7 +223,7 @@ public class ProductConfiguration : IEntityTypeConfiguration<Product>
 }
 ```
 
-### 3. In Application (`Architecture.Application/Features/Products/CreateProduct/`):
+### 3. In Application (`Showcase.Application/Features/Products/CreateProduct/`):
 
 - **The Command:**
 
@@ -259,7 +259,7 @@ public class ProductConfiguration : IEntityTypeConfiguration<Product>
   }
   ```
 
-### 4. In API (`Architecture.Api/Endpoints/Products/CreateProductEndpoint.cs`):
+### 4. In API (`Showcase.Api/Endpoints/Products/CreateProductEndpoint.cs`):
 
 ```csharp
 public class CreateProductEndpoint : IEndpoint

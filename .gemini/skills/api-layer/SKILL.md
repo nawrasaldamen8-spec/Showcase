@@ -1,7 +1,7 @@
----
+﻿---
 name: api-layer
 description: >-
-  Use this skill when creating API endpoints, designing routes, handling HTTP responses, or working with the Architecture.Api project. Guides IEndpoint implementation, ResultExtensions usage, and RESTful API design.
+  Use this skill when creating API endpoints, designing routes, handling HTTP responses, or working with the Showcase.Api project. Guides IEndpoint implementation, ResultExtensions usage, and RESTful API design.
 ---
 
 # API Layer Guide
@@ -10,14 +10,14 @@ This guide teaches how to work with the API layer in this project. The API layer
 
 ## 1. Layer Role
 - **API**: HTTP entry point, maps requests to MediatR commands/queries
-- **Project**: `Architecture.Api`
-- **Depends on**: `Architecture.Application`, `Architecture.Infrastructure`
+- **Project**: `Showcase.Api`
+- **Depends on**: `Showcase.Application`, `Showcase.Infrastructure`
 - **Uses**: Minimal APIs (NOT controllers), auto-discovery endpoint pattern
 
 ## 2. File Structure
 
 ```text
-Architecture.Api/
+Showcase.Api/
 ├── Common/
 │   ├── Errors/
 │   │   └── GlobalExceptionHandler.cs    → Catches unhandled exceptions → 500 ProblemDetails
@@ -54,11 +54,11 @@ public interface IEndpoint
 
 ### POST (Create)
 ```csharp
-using Architecture.Api.Common.Results;
-using Architecture.Application.Features.Products.Commands.CreateProduct;
+using Showcase.Api.Common.Results;
+using Showcase.Application.Features.Products.Commands.CreateProduct;
 using MediatR;
 
-namespace Architecture.Api.Endpoints.Products;
+namespace Showcase.Api.Endpoints.Products;
 
 public class CreateProduct : IEndpoint
 {
@@ -82,7 +82,7 @@ public class CreateProduct : IEndpoint
 
 ### GET by ID
 ```csharp
-namespace Architecture.Api.Endpoints.Products;
+namespace Showcase.Api.Endpoints.Products;
 
 public class GetProduct : IEndpoint
 {
@@ -106,7 +106,7 @@ public class GetProduct : IEndpoint
 
 ### GET List (Paginated)
 ```csharp
-namespace Architecture.Api.Endpoints.Products;
+namespace Showcase.Api.Endpoints.Products;
 
 public class GetProducts : IEndpoint
 {

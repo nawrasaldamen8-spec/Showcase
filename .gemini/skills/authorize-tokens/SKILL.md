@@ -1,4 +1,4 @@
----
+﻿---
 name: authorize-tokens
 description: >-
   Use this skill when adding authorization to endpoints, configuring JWT Bearer authentication, implementing refresh token rotation, or setting up role/policy-based authorization. Guides middleware wiring and token management without over-engineering.
@@ -6,12 +6,12 @@ description: >-
 
 # Adding Authorization & JWT Tokens
 
-This skill teaches how to add authorization, JWT Bearer, and refresh tokens to the Clean Architecture project proportionally to its size, avoiding over-engineering.
+This skill teaches how to add authorization, JWT Bearer, and refresh tokens to the Clean Showcase project proportionally to its size, avoiding over-engineering.
 
 ## File Placement
 
 ```text
-Architecture.Application/
+Showcase.Application/
 ├── Common/
 │   └── Interfaces/
 │       └── ITokenService.cs                 → Token generation abstraction
@@ -22,7 +22,7 @@ Architecture.Application/
                 ├── RefreshTokenCommand.cs
                 └── RefreshTokenCommandHandler.cs
 
-Architecture.Infrastructure/
+Showcase.Infrastructure/
 ├── Identity/
 │   ├── JwtSettings.cs                       → Options class
 │   └── TokenService.cs                      → JWT + refresh token implementation
@@ -32,7 +32,7 @@ Architecture.Infrastructure/
 └── DependencyInjection/
     └── DependencyInjection.cs               → JWT Bearer + auth setup
 
-Architecture.Api/
+Showcase.Api/
 ├── Endpoints/
 │   └── Auth/
 │       └── RefreshToken.cs                  → Refresh endpoint
@@ -41,7 +41,7 @@ Architecture.Api/
 
 ## JWT Bearer Setup in Infrastructure DI
 
-Add the following to `Architecture.Infrastructure/DependencyInjection/DependencyInjection.cs` inside the `AddInfrastructure()` method:
+Add the following to `Showcase.Infrastructure/DependencyInjection/DependencyInjection.cs` inside the `AddInfrastructure()` method:
 
 ```csharp
 services.Configure<JwtSettings>(configuration.GetSection(JwtSettings.SectionName));
@@ -73,7 +73,7 @@ services.AddAuthorization();
 
 ## Program.cs Middleware Order
 
-Order is critical in `Architecture.Api/Program.cs`! **Authentication MUST come BEFORE Authorization**.
+Order is critical in `Showcase.Api/Program.cs`! **Authentication MUST come BEFORE Authorization**.
 
 ```csharp
 app.UseExceptionHandler();
@@ -205,8 +205,8 @@ public ClaimsPrincipal? GetPrincipalFromExpiredToken(string token)
 {
   "JwtSettings": {
     "Secret": "your-very-long-secret-key-at-least-32-characters",
-    "Issuer": "Architecture.Api",
-    "Audience": "Architecture.Api",
+    "Issuer": "Showcase.Api",
+    "Audience": "Showcase.Api",
     "ExpiryMinutes": 30
   }
 }

@@ -1,21 +1,21 @@
----
+﻿---
 name: domain-layer
 description: >-
-  Use this skill when creating or modifying entities, value objects, enums, domain errors, or any code in the Architecture.Domain project. Guides file placement, BaseEntity usage, Result pattern, and error definition conventions.
+  Use this skill when creating or modifying entities, value objects, enums, domain errors, or any code in the Showcase.Domain project. Guides file placement, BaseEntity usage, Result pattern, and error definition conventions.
 ---
 
 # Domain Layer Skill
 
-This skill teaches the AI agent how to work with the Domain layer of a Clean Architecture .NET 10 project.
+This skill teaches the AI agent how to work with the Domain layer of a Clean Showcase .NET 10 project.
 
 ## 1. Layer Role
 - **Domain** = pure business logic, zero NuGet dependencies, zero project references.
-- **Project**: Architecture.Domain (target: net10.0)
+- **Project**: Showcase.Domain (target: net10.0)
 - **Depends on**: NOTHING
 
 ## 2. File Structure Reference
 ```text
-Architecture.Domain/
+Showcase.Domain/
 ├── Common/
 │   ├── BaseEntity/
 │   │   └── BaseEntity.cs          → Abstract base for all entities
@@ -31,19 +31,19 @@ Architecture.Domain/
 
 ## 3. Creating a New Entity
 When creating a new entity, follow this pattern:
-- Inherit from `BaseEntity` (namespace: `Architecture.Domain.Common.BaseEntity`)
+- Inherit from `BaseEntity` (namespace: `Showcase.Domain.Common.BaseEntity`)
 - `BaseEntity` provides `Guid Id` with a protected setter, parameterless constructor (auto `Guid.NewGuid()`), and explicit `Guid` constructor.
 - Use **private setters** for all properties.
 - Add a constructor with validation/invariants.
 - Add behavior methods (avoid anemic domain models).
 - Place the file in the `Entities/` folder.
-- Use namespace: `Architecture.Domain.Entities`
+- Use namespace: `Showcase.Domain.Entities`
 
 **Example:**
 ```csharp
-using Architecture.Domain.Common.BaseEntity;
+using Showcase.Domain.Common.BaseEntity;
 
-namespace Architecture.Domain.Entities;
+namespace Showcase.Domain.Entities;
 
 public class Product : BaseEntity
 {
@@ -79,9 +79,9 @@ public class Product : BaseEntity
 
 **Example:**
 ```csharp
-using Architecture.Domain.Common.Results;
+using Showcase.Domain.Common.Results;
 
-namespace Architecture.Domain.Entities;
+namespace Showcase.Domain.Entities;
 
 public static class ProductErrors
 {
@@ -115,7 +115,7 @@ Here are the actual `Result.cs` patterns to use:
 
 ## 6. Enums
 - Place in the `Enums/` folder.
-- Use namespace: `Architecture.Domain.Enums`
+- Use namespace: `Showcase.Domain.Enums`
 - Use only for domain-meaningful constants.
 
 ## 7. Error Handling — Step 1: Creating Errors

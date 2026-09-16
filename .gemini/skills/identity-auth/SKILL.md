@@ -1,21 +1,21 @@
----
+﻿---
 name: identity-auth
 description: >-
-  Use this skill when setting up ASP.NET Identity, creating login/register features, configuring ApplicationUser, or retrieving user information. Guides Identity integration across all layers of the Clean Architecture project.
+  Use this skill when setting up ASP.NET Identity, creating login/register features, configuring ApplicationUser, or retrieving user information. Guides Identity integration across all layers of the Clean Showcase project.
 ---
 
 # Setting up ASP.NET Identity
 
 ## 1. Overview
-Setting up ASP.NET Identity in this Clean Architecture project touches all 4 layers while respecting dependency rules.
+Setting up ASP.NET Identity in this Clean Showcase project touches all 4 layers while respecting dependency rules.
 
 ## 2. File Placement Guide
 ```text
-Architecture.Domain/
+Showcase.Domain/
 └── Entities/
     └── ApplicationUser.cs              → Only if user has domain behavior
 
-Architecture.Application/
+Showcase.Application/
 ├── Common/
 │   └── Interfaces/
 │       ├── IApplicationDbContext.cs     → Already exists
@@ -38,7 +38,7 @@ Architecture.Application/
                 ├── GetCurrentUserQueryHandler.cs
                 └── UserResponse.cs
 
-Architecture.Infrastructure/
+Showcase.Infrastructure/
 ├── Identity/
 │   ├── ApplicationUser.cs              → If no domain behavior (simpler approach)
 │   ├── TokenService.cs                 → JWT generation implementation
@@ -50,7 +50,7 @@ Architecture.Infrastructure/
 └── DependencyInjection/
     └── DependencyInjection.cs           → Register Identity + JWT services
 
-Architecture.Api/
+Showcase.Api/
 └── Endpoints/
     └── Auth/
         ├── Register.cs
@@ -61,11 +61,11 @@ Architecture.Api/
 ## 3. ApplicationUser Setup
 
 **Option A: User in Infrastructure (simpler, recommended for most cases)**
-Create `ApplicationUser.cs` in `Architecture.Infrastructure/Identity/`:
+Create `ApplicationUser.cs` in `Showcase.Infrastructure/Identity/`:
 ```csharp
 using Microsoft.AspNetCore.Identity;
 
-namespace Architecture.Infrastructure.Identity;
+namespace Showcase.Infrastructure.Identity;
 
 public class ApplicationUser : IdentityUser
 {
@@ -78,7 +78,7 @@ public class ApplicationUser : IdentityUser
 Only do this if the user entity has domain logic beyond just auth fields.
 
 ## 4. ApplicationDbContext Changes
-Change from `DbContext` to `IdentityDbContext<ApplicationUser>` in `Architecture.Infrastructure/Data/ApplicationDbContext.cs`:
+Change from `DbContext` to `IdentityDbContext<ApplicationUser>` in `Showcase.Infrastructure/Data/ApplicationDbContext.cs`:
 ```csharp
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 
@@ -94,9 +94,9 @@ Microsoft.AspNetCore.Identity.EntityFrameworkCore
 ```
 
 ## 5. ITokenService Interface
-Create `ITokenService.cs` in `Architecture.Application/Common/Interfaces/`:
+Create `ITokenService.cs` in `Showcase.Application/Common/Interfaces/`:
 ```csharp
-namespace Architecture.Application.Common.Interfaces;
+namespace Showcase.Application.Common.Interfaces;
 
 public interface ITokenService
 {
@@ -106,17 +106,17 @@ public interface ITokenService
 ```
 
 ## 6. TokenService Implementation
-Create `TokenService.cs` in `Architecture.Infrastructure/Identity/`:
+Create `TokenService.cs` in `Showcase.Infrastructure/Identity/`:
 ```csharp
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
-using Architecture.Application.Common.Interfaces;
+using Showcase.Application.Common.Interfaces;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
-namespace Architecture.Infrastructure.Identity;
+namespace Showcase.Infrastructure.Identity;
 
 public class TokenService : ITokenService
 {
@@ -157,7 +157,7 @@ public class TokenService : ITokenService
 ```
 
 ## 7. Register Feature
-Create files in `Architecture.Application/Features/Auth/Commands/Register/`:
+Create files in `Showcase.Application/Features/Auth/Commands/Register/`:
 
 ```csharp
 // RegisterCommand.cs
@@ -219,7 +219,7 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, Result<Au
 ```
 
 ## 8. Login Feature
-Create files in `Architecture.Application/Features/Auth/Commands/Login/`:
+Create files in `Showcase.Application/Features/Auth/Commands/Login/`:
 
 ```csharp
 // LoginCommand.cs
@@ -253,13 +253,13 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, Result<AuthResp
 ## 9. GetCurrentUser Feature
 
 ```csharp
-// ICurrentUserService.cs (in Architecture.Application/Common/Interfaces/)
+// ICurrentUserService.cs (in Showcase.Application/Common/Interfaces/)
 public interface ICurrentUserService
 {
     string? UserId { get; }
 }
 
-// CurrentUserService.cs (in Architecture.Infrastructure/Identity/)
+// CurrentUserService.cs (in Showcase.Infrastructure/Identity/)
 public class CurrentUserService : ICurrentUserService
 {
     private readonly IHttpContextAccessor _httpContextAccessor;
@@ -269,7 +269,7 @@ public class CurrentUserService : ICurrentUserService
     public string? UserId => _httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 }
 
-// GetCurrentUserQuery.cs (in Architecture.Application/Features/Auth/Queries/GetCurrentUser/)
+// GetCurrentUserQuery.cs (in Showcase.Application/Features/Auth/Queries/GetCurrentUser/)
 public record GetCurrentUserQuery : IRequest<Result<UserResponse>>;
 public record UserResponse(string Id, string Email, string FirstName, string LastName);
 
@@ -277,7 +277,7 @@ public record UserResponse(string Id, string Email, string FirstName, string Las
 ```
 
 ## 10. DI Registration in Infrastructure
-Update `DependencyInjection.cs` in `Architecture.Infrastructure/DependencyInjection/`:
+Update `DependencyInjection.cs` in `Showcase.Infrastructure/DependencyInjection/`:
 ```csharp
 // Add to AddInfrastructure():
 services.AddIdentity<ApplicationUser, IdentityRole>(options =>
@@ -297,7 +297,7 @@ services.AddHttpContextAccessor();
 ```
 
 ## 11. API Endpoints
-Create endpoints in `Architecture.Api/Endpoints/Auth/`:
+Create endpoints in `Showcase.Api/Endpoints/Auth/`:
 
 ```csharp
 // Register.cs

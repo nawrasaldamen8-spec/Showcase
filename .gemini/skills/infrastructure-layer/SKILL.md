@@ -1,20 +1,20 @@
----
+﻿---
 name: infrastructure-layer
 description: >-
-  Use this skill when adding entities to the database, creating EF Core configurations, running migrations, registering services, or working with the Options pattern in the Architecture.Infrastructure project.
+  Use this skill when adding entities to the database, creating EF Core configurations, running migrations, registering services, or working with the Options pattern in the Showcase.Infrastructure project.
 ---
 
 # Infrastructure Layer
 
 ## 1. Layer Role
 - Infrastructure = data access, external services, framework implementations
-- Project: `Architecture.Infrastructure`
-- Depends on: `Architecture.Application`, `Architecture.Domain`
+- Project: `Showcase.Infrastructure`
+- Depends on: `Showcase.Application`, `Showcase.Domain`
 - Uses: EF Core (10.0.12) with SQL Server
 
 ## 2. File Structure
 ```
-Architecture.Infrastructure/
+Showcase.Infrastructure/
 ├── Data/
 │   ├── ApplicationDbContext.cs              → Main DbContext, implements IApplicationDbContext
 │   ├── Configurations/
@@ -29,10 +29,10 @@ Architecture.Infrastructure/
 ## 3. ApplicationDbContext
 Current implementation:
 ```csharp
-using Architecture.Application.Common.Interfaces;
+using Showcase.Application.Common.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
-namespace Architecture.Infrastructure.Data;
+namespace Showcase.Infrastructure.Data;
 
 public class ApplicationDbContext : DbContext, IApplicationDbContext
 {
@@ -59,11 +59,11 @@ public DbSet<Product> Products => Set<Product>();
 
 2. Create Configuration file at `Data/Configurations/ProductConfiguration.cs`:
 ```csharp
-using Architecture.Domain.Entities;
+using Showcase.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace Architecture.Infrastructure.Data.Configurations;
+namespace Showcase.Infrastructure.Data.Configurations;
 
 public class ProductConfiguration : IEntityTypeConfiguration<Product>
 {
@@ -91,12 +91,12 @@ Key points:
 - Configuration classes are auto-discovered via `ApplyConfigurationsFromAssembly` — no manual registration
 - Use Fluent API (NOT data annotations) for all constraints
 - Always set `HasKey`, `IsRequired`, `HasMaxLength`, `HasPrecision` as needed
-- Namespace: `Architecture.Infrastructure.Data.Configurations`
+- Namespace: `Showcase.Infrastructure.Data.Configurations`
 
 3. Run migration:
 ```bash
-dotnet ef migrations add AddProduct --project Architecture.Infrastructure --startup-project Architecture.Api
-dotnet ef database update --project Architecture.Infrastructure --startup-project Architecture.Api
+dotnet ef migrations add AddProduct --project Showcase.Infrastructure --startup-project Showcase.Api
+dotnet ef database update --project Showcase.Infrastructure --startup-project Showcase.Api
 ```
 
 ## 5. DI Registration
@@ -105,7 +105,7 @@ Current `AddInfrastructure()` method:
 public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
 {
     var connectionString = configuration.GetConnectionString("DefaultConnection")
-        ?? "Server=(localdb)\\mssqllocaldb;Database=ArchitectureDb;Trusted_Connection=True;MultipleActiveResultSets=true";
+        ?? "Server=(localdb)\\mssqllocaldb;Database=ShowcaseDb;Trusted_Connection=True;MultipleActiveResultSets=true";
 
     services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(connectionString));
     services.AddScoped<IApplicationDbContext>(sp => sp.GetRequiredService<ApplicationDbContext>());
@@ -127,8 +127,8 @@ How to add a new configuration section:
 {
   "JwtSettings": {
     "Secret": "your-secret-key-here",
-    "Issuer": "Architecture.Api",
-    "Audience": "Architecture.Api",
+    "Issuer": "Showcase.Api",
+    "Audience": "Showcase.Api",
     "ExpiryMinutes": 60
   }
 }
@@ -136,7 +136,7 @@ How to add a new configuration section:
 
 2. Create options class (place in the layer that owns it):
 ```csharp
-namespace Architecture.Infrastructure.Identity;
+namespace Showcase.Infrastructure.Identity;
 
 public class JwtSettings
 {

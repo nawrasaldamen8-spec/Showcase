@@ -1,7 +1,7 @@
----
+﻿---
 name: ddd-guide
 description: >-
-  Use this skill when deciding whether to create an Entity, Value Object, Aggregate Root, Domain Event, or Enum. Provides a pragmatic DDD decision matrix following YAGNI principles for this Clean Architecture project.
+  Use this skill when deciding whether to create an Entity, Value Object, Aggregate Root, Domain Event, or Enum. Provides a pragmatic DDD decision matrix following YAGNI principles for this Clean Showcase project.
 ---
 
 # Domain-Driven Design (DDD) Guide
