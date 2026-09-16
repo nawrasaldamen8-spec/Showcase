@@ -18,22 +18,13 @@ public class UpdateShowcaseItemCommandHandler : IRequestHandler<UpdateShowcaseIt
         var item = await _context.Set<ShowcaseItem>().FindAsync(new object[] { request.Id }, ct);
         if (item is null) return ShowcaseItemErrors.NotFound(request.Id);
 
-        Url? imageUrl = null, linkUrl = null;
-        if (!string.IsNullOrWhiteSpace(request.ImageUrl))
-        {
-            var res = Url.Create(request.ImageUrl);
-            if (res.IsFailure) return res.Error;
-            imageUrl = res.Value;
-        }
+        var imageRes = Url.CreateOptional(request.ImageUrl);
+        if (imageRes.IsFailure) return imageRes.Error;
 
-        if (!string.IsNullOrWhiteSpace(request.LinkUrl))
-        {
-            var res = Url.Create(request.LinkUrl);
-            if (res.IsFailure) return res.Error;
-            linkUrl = res.Value;
-        }
+        var linkRes = Url.CreateOptional(request.LinkUrl);
+        if (linkRes.IsFailure) return linkRes.Error;
 
-        item.UpdateDetails(request.Title, request.Description, imageUrl, linkUrl);
+        item.UpdateDetails(request.Title, request.Description, imageRes.Value, linkRes.Value);
         item.ChangeOrder(request.DisplayOrder);
         if (request.IsFeatured) item.SetFeatured(); else item.RemoveFeatured();
 

@@ -19,15 +19,10 @@ public class UpdateProfileCommandHandler : IRequestHandler<UpdateProfileCommand,
         var profile = await _context.Set<Showcase.Domain.Entities.Profile.Profile>().FirstOrDefaultAsync(ct);
         if (profile is null) return ProfileErrors.NotFound;
 
-        Url? url = null;
-        if (!string.IsNullOrWhiteSpace(request.ProfileImageUrl))
-        {
-            var urlResult = Url.Create(request.ProfileImageUrl);
-            if (urlResult.IsFailure) return urlResult.Error;
-            url = urlResult.Value;
-        }
+        var urlResult = Url.CreateOptional(request.ProfileImageUrl);
+        if (urlResult.IsFailure) return urlResult.Error;
 
-        profile.UpdateProfile(request.Name, request.Title, request.Bio, url, request.Location);
+        profile.UpdateProfile(request.Name, request.Title, request.Bio, urlResult.Value, request.Location);
         await _context.SaveChangesAsync(ct);
         return Result.Success();
     }

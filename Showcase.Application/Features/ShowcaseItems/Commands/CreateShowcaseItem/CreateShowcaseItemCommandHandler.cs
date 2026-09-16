@@ -16,26 +16,23 @@ public class CreateShowcaseItemCommandHandler : IRequestHandler<CreateShowcaseIt
 
     public async Task<Result<Guid>> Handle(CreateShowcaseItemCommand request, CancellationToken ct)
     {
-        Url? imageUrl = null, linkUrl = null;
-        
-        if (!string.IsNullOrWhiteSpace(request.ImageUrl))
-        {
-            var res = Url.Create(request.ImageUrl);
-            if (res.IsFailure) return res.Error;
-            imageUrl = res.Value;
-        }
+        var imageRes = Url.CreateOptional(request.ImageUrl);
+        if (imageRes.IsFailure) return imageRes.Error;
 
-        if (!string.IsNullOrWhiteSpace(request.LinkUrl))
-        {
-            var res = Url.Create(request.LinkUrl);
-            if (res.IsFailure) return res.Error;
-            linkUrl = res.Value;
-        }
+        var linkRes = Url.CreateOptional(request.LinkUrl);
+        if (linkRes.IsFailure) return linkRes.Error;
 
-        var item = new ShowcaseItem(request.Title, request.Description, imageUrl, linkUrl, request.DisplayOrder, request.IsFeatured);
+        var item = new ShowcaseItem(
+            request.Title,
+            request.Description,
+            imageRes.Value,
+            linkRes.Value,
+            request.DisplayOrder,
+            request.IsFeatured);
+
         _context.Set<ShowcaseItem>().Add(item);
         await _context.SaveChangesAsync(ct);
-        
+
         return item.Id;
     }
 }
