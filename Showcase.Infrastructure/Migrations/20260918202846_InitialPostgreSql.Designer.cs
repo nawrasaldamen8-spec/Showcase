@@ -12,7 +12,7 @@ using Showcase.Infrastructure.Data;
 namespace Showcase.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260918195406_InitialPostgreSql")]
+    [Migration("20260918202846_InitialPostgreSql")]
     partial class InitialPostgreSql
     {
         /// <inheritdoc />
@@ -303,16 +303,6 @@ namespace Showcase.Infrastructure.Migrations
                     b.Property<bool>("EmailConfirmed")
                         .HasColumnType("boolean");
 
-                    b.Property<string>("FirstName")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
-                    b.Property<string>("LastName")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
                     b.Property<bool>("LockoutEnabled")
                         .HasColumnType("boolean");
 
@@ -335,9 +325,6 @@ namespace Showcase.Infrastructure.Migrations
 
                     b.Property<bool>("PhoneNumberConfirmed")
                         .HasColumnType("boolean");
-
-                    b.Property<Guid>("ProfileId")
-                        .HasColumnType("uuid");
 
                     b.Property<string>("RefreshToken")
                         .HasMaxLength(500)
@@ -364,9 +351,6 @@ namespace Showcase.Infrastructure.Migrations
                     b.HasIndex("NormalizedUserName")
                         .IsUnique()
                         .HasDatabaseName("UserNameIndex");
-
-                    b.HasIndex("ProfileId")
-                        .IsUnique();
 
                     b.ToTable("AspNetUsers", (string)null);
                 });
@@ -485,6 +469,12 @@ namespace Showcase.Infrastructure.Migrations
 
             modelBuilder.Entity("Showcase.Domain.Entities.Profile", b =>
                 {
+                    b.HasOne("Showcase.Infrastructure.Identity.ApplicationUser", null)
+                        .WithOne("Profile")
+                        .HasForeignKey("Showcase.Domain.Entities.Profile", "UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.OwnsOne("Showcase.Domain.ValueObjects.StorageKey", "AvatarKey", b1 =>
                         {
                             b1.Property<Guid>("ProfileId")
@@ -559,17 +549,6 @@ namespace Showcase.Infrastructure.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Showcase.Infrastructure.Identity.ApplicationUser", b =>
-                {
-                    b.HasOne("Showcase.Domain.Entities.Profile", "Profile")
-                        .WithOne()
-                        .HasForeignKey("Showcase.Infrastructure.Identity.ApplicationUser", "ProfileId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Profile");
-                });
-
             modelBuilder.Entity("Showcase.Domain.Entities.Post", b =>
                 {
                     b.Navigation("Images");
@@ -578,6 +557,12 @@ namespace Showcase.Infrastructure.Migrations
             modelBuilder.Entity("Showcase.Domain.Entities.Profile", b =>
                 {
                     b.Navigation("SocialLinks");
+                });
+
+            modelBuilder.Entity("Showcase.Infrastructure.Identity.ApplicationUser", b =>
+                {
+                    b.Navigation("Profile")
+                        .IsRequired();
                 });
 #pragma warning restore 612, 618
         }
