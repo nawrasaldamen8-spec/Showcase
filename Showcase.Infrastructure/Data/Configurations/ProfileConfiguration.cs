@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Showcase.Domain.Entities.Profile;
+using Showcase.Domain.Entities;
+using Showcase.Domain.ValueObjects;
 
 namespace Showcase.Infrastructure.Data.Configurations;
 
@@ -10,34 +11,46 @@ public class ProfileConfiguration : IEntityTypeConfiguration<Profile>
     {
         builder.HasKey(p => p.Id);
 
-        builder.Property(p => p.Name)
+        builder.Property(p => p.UserId)
             .IsRequired()
-            .HasMaxLength(200);
+            .HasMaxLength(450);
 
-        builder.Property(p => p.Title)
-            .HasMaxLength(200);
+        builder.HasIndex(p => p.UserId)
+            .IsUnique();
 
-        builder.Property(p => p.Bio)
-            .HasMaxLength(2000);
+        builder.Property(p => p.FirstName)
+            .IsRequired()
+            .HasMaxLength(100);
 
-        builder.Property(p => p.Location)
-            .HasMaxLength(200);
+        builder.Property(p => p.LastName)
+            .IsRequired()
+            .HasMaxLength(100);
 
-        builder.OwnsOne(p => p.ProfileImageUrl, urlBuilder =>
+        builder.OwnsOne(p => p.Bio, bioBuilder =>
         {
-            urlBuilder.Property(u => u.Value)
-                .HasColumnName("ProfileImageUrl")
-                .HasMaxLength(1000);
+            bioBuilder.Property(b => b.Value)
+                .HasColumnName("Bio")
+                .HasMaxLength(Bio.MaxLength);
         });
 
-        // Seeding a default profile
-        builder.HasData(new
+        builder.OwnsOne(p => p.AvatarKey, avatarBuilder =>
         {
-            Id = System.Guid.Parse("11111111-1111-1111-1111-111111111111"),
-            Name = "John Doe",
-            Title = "Software Developer",
-            Bio = "Welcome to my portfolio",
-            Location = "Amman, Jordan"
+            avatarBuilder.Property(a => a.Value)
+                .HasColumnName("AvatarKey")
+                .HasMaxLength(StorageKey.MaxLength);
         });
+
+        builder.Property(p => p.CreatedAt)
+            .IsRequired();
+
+        builder.Property(p => p.UpdatedAt);
+
+        builder.HasMany(p => p.SocialLinks)
+            .WithOne()
+            .HasForeignKey(s => s.ProfileId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Navigation(p => p.SocialLinks)
+            .UsePropertyAccessMode(PropertyAccessMode.Field);
     }
 }

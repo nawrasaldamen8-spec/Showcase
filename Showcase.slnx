@@ -1,6 +1,7 @@
-﻿<Solution>
+<Solution>
   <Project Path="Showcase.Api/Showcase.Api.csproj" />
   <Project Path="Showcase.Application/Showcase.Application.csproj" />
+  <Project Path="Showcase.Domain.Tests/Showcase.Domain.Tests.csproj" />
   <Project Path="Showcase.Domain/Showcase.Domain.csproj" />
   <Project Path="Showcase.Infrastructure/Showcase.Infrastructure.csproj" />
 </Solution>

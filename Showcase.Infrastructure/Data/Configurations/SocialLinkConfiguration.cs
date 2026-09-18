@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Showcase.Domain.Entities.SocialLink;
+using Showcase.Domain.Entities;
+using Showcase.Domain.ValueObjects;
 
 namespace Showcase.Infrastructure.Data.Configurations;
 
@@ -10,16 +11,25 @@ public class SocialLinkConfiguration : IEntityTypeConfiguration<SocialLink>
     {
         builder.HasKey(s => s.Id);
 
-        builder.Property(s => s.Platform)
-            .HasConversion<string>()
-            .HasMaxLength(50);
+        builder.Property(s => s.ProfileId)
+            .IsRequired();
 
-        builder.OwnsOne(s => s.LinkUrl, urlBuilder =>
+        builder.Property(s => s.Platform)
+            .IsRequired()
+            .HasMaxLength(100);
+
+        builder.OwnsOne(s => s.Url, urlBuilder =>
         {
             urlBuilder.Property(u => u.Value)
-                .HasColumnName("LinkUrl")
+                .HasColumnName("Url")
                 .IsRequired()
-                .HasMaxLength(1000);
+                .HasMaxLength(Url.MaxLength);
         });
+
+        builder.Property(s => s.DisplayOrder)
+            .IsRequired()
+            .HasDefaultValue(0);
+
+        builder.HasIndex(s => s.ProfileId);
     }
 }
