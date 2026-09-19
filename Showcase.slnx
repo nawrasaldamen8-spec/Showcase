@@ -3,4 +3,5 @@
   <Project Path="Showcase.Application/Showcase.Application.csproj" />
   <Project Path="Showcase.Domain/Showcase.Domain.csproj" />
   <Project Path="Showcase.Infrastructure/Showcase.Infrastructure.csproj" />
+  <Project Path="tests/Showcase.Infrastructure.Tests/Showcase.Infrastructure.Tests.csproj" />
 </Solution>
