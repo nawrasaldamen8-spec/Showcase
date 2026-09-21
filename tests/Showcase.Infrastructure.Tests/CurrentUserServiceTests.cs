@@ -75,4 +75,52 @@ public class CurrentUserServiceTests
         Assert.Equal("sub@showcase.com", service.Email);
         Assert.True(service.IsAuthenticated);
     }
+
+    [Fact]
+    public void Constructor_WhenHttpContextAccessorIsNull_ShouldThrowArgumentNullException()
+    {
+        Assert.Throws<ArgumentNullException>(() => new CurrentUserService(null!));
+    }
+
+    [Fact]
+    public void WhenUserIdClaimIsEmptyString_ShouldFallbackToSubClaim()
+    {
+        var context = new DefaultHttpContext();
+        var claims = new List<Claim>
+        {
+            new(ClaimTypes.NameIdentifier, ""),
+            new("sub", "sub-from-fallback"),
+            new(ClaimTypes.Email, "   "),
+            new("email", "fallback@showcase.com")
+        };
+        var identity = new ClaimsIdentity(claims, "TestAuthType");
+        context.User = new ClaimsPrincipal(identity);
+
+        var accessor = new FakeHttpContextAccessor { HttpContext = context };
+        var service = new CurrentUserService(accessor);
+
+        Assert.Equal("sub-from-fallback", service.UserId);
+        Assert.Equal("fallback@showcase.com", service.Email);
+    }
+
+    [Fact]
+    public void WhenBothUserIdAndSubClaimsAreWhitespace_ShouldReturnNull()
+    {
+        var context = new DefaultHttpContext();
+        var claims = new List<Claim>
+        {
+            new(ClaimTypes.NameIdentifier, "   "),
+            new("sub", ""),
+            new(ClaimTypes.Email, ""),
+            new("email", "   ")
+        };
+        var identity = new ClaimsIdentity(claims, "TestAuthType");
+        context.User = new ClaimsPrincipal(identity);
+
+        var accessor = new FakeHttpContextAccessor { HttpContext = context };
+        var service = new CurrentUserService(accessor);
+
+        Assert.Null(service.UserId);
+        Assert.Null(service.Email);
+    }
 }

@@ -1,34 +1,44 @@
 # Implementer Progress Tracking
 
-Last updated: 2026-09-19T23:09:30+03:00
+Last updated: 2026-09-19T23:50:00+03:00
 
 ## Status
-In Progress - Implementing R1, R2, R3, R4
 
-## Plan & Progress
-- [x] Analyze codebase, packages, and architecture requirements
-- [x] Add AWSSDK.S3 package to Showcase.Infrastructure
-- [x] Add Microsoft.AspNetCore.Authentication.JwtBearer and FrameworkReference to Showcase.Infrastructure
-- [ ] Implement Application Service Contracts (R1):
-  - [ ] ITokenService.cs
-  - [ ] ICurrentUserService.cs
-  - [ ] IStorageService.cs
-- [ ] Implement Identity & JWT Authentication Services (R2):
-  - [ ] JwtSettings.cs
-  - [ ] TokenService.cs
-  - [ ] CurrentUserService.cs
-- [ ] Implement Cloudflare R2 Object Storage Integration (R3):
-  - [ ] R2Settings.cs
-  - [ ] CloudflareR2StorageService.cs
-- [ ] Register in Dependency Injection (R4):
-  - [ ] Configure JwtSettings and R2Settings options pattern
-  - [ ] Register ITokenService, ICurrentUserService, IStorageService, IHttpContextAccessor
-  - [ ] Configure JWT Bearer authentication with ClockSkew = TimeSpan.Zero
-  - [ ] Configure Authorization
-  - [ ] Update appsettings.json
-  - [ ] Ensure app.UseAuthentication() and app.UseAuthorization() in Showcase.Api/Program.cs
-- [ ] Verification & Testing:
-  - [ ] dotnet build Showcase.slnx completes with 0 Warnings and 0 Errors
-  - [ ] Automated verification of TokenService (token generation, claims, expired token principal extraction)
-  - [ ] Automated verification of CloudflareR2StorageService (presigned URL generation, public URL resolution)
-  - [ ] Automated verification of Dependency Injection container resolution
+Complete — Implementation and verification finished.
+
+## Work Completed
+
+- [x] Analyzed requirements R1-R4 and architecture specification.
+- [x] Added `AWSSDK.S3` (version 4.0.103.3) and `Microsoft.AspNetCore.Authentication.JwtBearer` (version 10.0.12) to `Showcase.Infrastructure.csproj`.
+- [x] Added `<FrameworkReference Include="Microsoft.AspNetCore.App" />` to `Showcase.Infrastructure.csproj`.
+- [x] Removed redundant PackageReferences (`Microsoft.Extensions.Configuration`, `Microsoft.Extensions.DependencyInjection`) to ensure 0 build warnings.
+- [x] Implemented R1 Application Service Contracts:
+  - `Showcase.Application/Common/Interfaces/ITokenService.cs`
+  - `Showcase.Application/Common/Interfaces/ICurrentUserService.cs`
+  - `Showcase.Application/Common/Interfaces/IStorageService.cs`
+- [x] Implemented R2 Identity & JWT Authentication Services:
+  - `Showcase.Infrastructure/Identity/JwtSettings.cs`
+  - `Showcase.Infrastructure/Identity/TokenService.cs`
+  - `Showcase.Infrastructure/Identity/CurrentUserService.cs`
+- [x] Implemented R3 Cloudflare R2 Object Storage Integration:
+  - `Showcase.Infrastructure/Storage/R2Settings.cs`
+  - `Showcase.Infrastructure/Storage/CloudflareR2StorageService.cs`
+- [x] Implemented R4 Dependency Injection Registration:
+  - `Showcase.Infrastructure/DependencyInjection/DependencyInjection.cs`:
+    - Bound `JwtSettings` and `R2Settings` via Options pattern.
+    - Registered `ITokenService`, `ICurrentUserService`, `IStorageService`, and `IHttpContextAccessor`.
+    - Configured JWT Bearer authentication with strict validation parameters and `ClockSkew = TimeSpan.Zero`.
+    - Configured Authorization (`AddAuthorization`).
+  - `Showcase.Api/appsettings.json` and `Showcase.Api/appsettings.Development.json` updated with `JwtSettings` and `CloudflareR2` configuration sections.
+  - `Showcase.Api/Program.cs` updated to invoke `UseAuthentication()` and `UseAuthorization()` in HTTP request pipeline.
+- [x] Verification & Automated Tests:
+  - Created `tests/Showcase.Infrastructure.Tests` with 34 tests covering:
+    - Token generation, claims, expiration, roles
+    - Secure refresh token generation
+    - Expired token principal extraction without lifetime validation
+    - Tampered/invalid/empty token rejection
+    - CurrentUserService claims resolution and unauthenticated scenarios
+    - CloudflareR2StorageService public URL formatting, presigned PUT URL creation with verb/expiration, deletion
+    - Dependency Injection options binding and service resolution
+  - Verified `dotnet build Showcase.slnx`: 0 Warnings, 0 Errors.
+  - Verified `dotnet test Showcase.slnx`: 34 passed, 0 failed, 0 skipped.

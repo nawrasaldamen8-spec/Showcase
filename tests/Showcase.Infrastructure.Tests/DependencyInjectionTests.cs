@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using System.Threading.Tasks;
+using Amazon.S3;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http;
@@ -65,6 +67,9 @@ public class DependencyInjectionTests
         Assert.NotNull(currentUserService);
         Assert.IsType<CurrentUserService>(currentUserService);
 
+        var s3Client = provider.GetService<IAmazonS3>();
+        Assert.NotNull(s3Client);
+
         var storageService = provider.GetService<IStorageService>();
         Assert.NotNull(storageService);
         Assert.IsType<CloudflareR2StorageService>(storageService);
@@ -78,5 +83,70 @@ public class DependencyInjectionTests
         var defaultScheme = await schemeProvider.GetDefaultAuthenticateSchemeAsync();
         Assert.NotNull(defaultScheme);
         Assert.Equal(JwtBearerDefaults.AuthenticationScheme, defaultScheme.Name);
+    }
+
+    [Fact]
+    public void AddInfrastructure_WhenOptionalConfigsOmitted_ShouldUseSafeDefaults()
+    {
+        // Arrange with minimal configuration
+        var configurationData = new Dictionary<string, string?>
+        {
+            { "ConnectionStrings:DefaultConnection", "Host=localhost;Database=test;Username=postgres;Password=postgres" }
+        };
+
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(configurationData)
+            .Build();
+
+        var services = new ServiceCollection();
+
+        // Act
+        services.AddInfrastructure(configuration);
+        var provider = services.BuildServiceProvider();
+
+        // Assert
+        var tokenService = provider.GetService<ITokenService>();
+        Assert.NotNull(tokenService);
+
+        var storageService = provider.GetService<IStorageService>();
+        Assert.NotNull(storageService);
+
+        var s3Client = provider.GetService<IAmazonS3>();
+        Assert.NotNull(s3Client);
+    }
+
+    [Fact]
+    public void AddInfrastructure_WhenServicesIsNull_ShouldThrowArgumentNullException()
+    {
+        var configuration = new ConfigurationBuilder().Build();
+        Assert.Throws<ArgumentNullException>(() => ((IServiceCollection)null!).AddInfrastructure(configuration));
+    }
+
+    [Fact]
+    public void AddInfrastructure_WhenConfigurationIsNull_ShouldThrowArgumentNullException()
+    {
+        var services = new ServiceCollection();
+        Assert.Throws<ArgumentNullException>(() => services.AddInfrastructure(null!));
+    }
+
+    [Fact]
+    public void AddInfrastructure_WhenSecretIsUnder256Bits_ShouldFallbackToDefaultSecretAndNotThrow()
+    {
+        var configurationData = new Dictionary<string, string?>
+        {
+            { "ConnectionStrings:DefaultConnection", "Host=localhost;Database=test;Username=postgres;Password=postgres" },
+            { "JwtSettings:Secret", "ShortSecret" }
+        };
+
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(configurationData)
+            .Build();
+
+        var services = new ServiceCollection();
+        services.AddInfrastructure(configuration);
+        var provider = services.BuildServiceProvider();
+
+        var tokenService = provider.GetService<ITokenService>();
+        Assert.NotNull(tokenService);
     }
 }

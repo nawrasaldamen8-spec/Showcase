@@ -1,14 +1,26 @@
-# BRIEFING — Implementer R1
+# BRIEFING — Implementer R1 Handoff
 
-## Task
-Implement the Infrastructure layer (Showcase.Infrastructure) and required Application service contracts for the Showcase Portfolio Platform:
-- R1: Application Service Contracts (ITokenService, ICurrentUserService, IStorageService)
-- R2: Identity & JWT Authentication Services (JwtSettings, TokenService, CurrentUserService, JWT Bearer config with ClockSkew = TimeSpan.Zero)
-- R3: Cloudflare R2 Object Storage Integration (AWSSDK.S3, R2Settings, CloudflareR2StorageService)
-- R4: Dependency Injection Registration & appsettings.json updates
+## Mission
 
-## Boundaries & Constraints
-- Application depends ONLY on Domain.
-- Domain remains pure C#.
-- Infrastructure implements Application contracts and configures external dependencies.
-- Build must succeed with 0 Warnings and 0 Errors.
+Implement the Infrastructure layer (Showcase.Infrastructure) and required Application service contracts for the Showcase Portfolio Platform according to ORIGINAL_REQUEST.md.
+
+## Execution Summary
+
+1. Contracts (R1):
+   - `Showcase.Application/Common/Interfaces/ITokenService.cs`
+   - `Showcase.Application/Common/Interfaces/ICurrentUserService.cs`
+   - `Showcase.Application/Common/Interfaces/IStorageService.cs`
+2. Services & Settings (R2, R3):
+   - `Showcase.Infrastructure/Identity/JwtSettings.cs`
+   - `Showcase.Infrastructure/Identity/TokenService.cs`
+   - `Showcase.Infrastructure/Identity/CurrentUserService.cs`
+   - `Showcase.Infrastructure/Storage/R2Settings.cs`
+   - `Showcase.Infrastructure/Storage/CloudflareR2StorageService.cs`
+3. Wiring & Configuration (R4):
+   - `Showcase.Infrastructure/DependencyInjection/DependencyInjection.cs`
+   - `Showcase.Api/Program.cs`
+   - `Showcase.Api/appsettings.json`
+   - `Showcase.Api/appsettings.Development.json`
+4. Verification:
+   - Built with 0 Warnings and 0 Errors.
+   - 34 automated unit and integration tests passing.

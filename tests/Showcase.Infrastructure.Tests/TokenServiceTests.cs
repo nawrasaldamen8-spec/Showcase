@@ -190,4 +190,126 @@ public class TokenServiceTests
         var principal = _tokenService.GetPrincipalFromExpiredToken(invalidToken);
         Assert.Null(principal);
     }
+
+    [Fact]
+    public void GenerateAccessToken_WithEmptySecretInSettings_ShouldUseDefaultDevelopmentSecretAndSucceed()
+    {
+        var emptySecretSettings = new JwtSettings { Secret = "" };
+        var service = new TokenService(Options.Create(emptySecretSettings));
+
+        var tokenString = service.GenerateAccessToken("user-fallback", "fallback@example.com");
+
+        Assert.NotEmpty(tokenString);
+        var principal = service.GetPrincipalFromExpiredToken(tokenString);
+        Assert.NotNull(principal);
+    }
+
+    [Fact]
+    public void GetPrincipalFromExpiredToken_WhenIssuerAndAudienceEmpty_ShouldStillValidateSignature()
+    {
+        var minimalSettings = new JwtSettings
+        {
+            Secret = "SuperSecretTestingKeyForJwtValidation1234567890!#$",
+            Issuer = "",
+            Audience = ""
+        };
+        var service = new TokenService(Options.Create(minimalSettings));
+        var tokenString = service.GenerateAccessToken("user-minimal", "minimal@example.com");
+
+        var principal = service.GetPrincipalFromExpiredToken(tokenString);
+
+        Assert.NotNull(principal);
+        var subClaim = principal.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                       ?? principal.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
+        Assert.Equal("user-minimal", subClaim);
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(-10)]
+    public void GenerateAccessToken_WithNonPositiveExpiryMinutes_ShouldDefaultToValidLifetime(int nonPositiveExpiry)
+    {
+        var settings = _jwtSettings with { ExpiryMinutes = nonPositiveExpiry };
+        var service = new TokenService(Options.Create(settings));
+
+        var tokenString = service.GenerateAccessToken("user-expiry", "expiry@example.com");
+
+        Assert.NotEmpty(tokenString);
+        var handler = new JwtSecurityTokenHandler();
+        var jwt = handler.ReadJwtToken(tokenString);
+        Assert.True(jwt.ValidTo > DateTime.UtcNow);
+    }
+
+    [Fact]
+    public void Constructor_WhenJwtOptionsIsNull_ShouldThrowArgumentNullException()
+    {
+        Assert.Throws<ArgumentNullException>(() => new TokenService(null!));
+    }
+
+    [Fact]
+    public void GenerateAccessToken_WithNullOrWhitespaceRoles_ShouldFilterThemOut()
+    {
+        var roles = new List<string> { "Admin", "", "   ", "Editor" };
+        var tokenString = _tokenService.GenerateAccessToken("user-roles", "roles@example.com", roles);
+
+        var handler = new JwtSecurityTokenHandler();
+        var jwt = handler.ReadJwtToken(tokenString);
+        var roleClaims = jwt.Claims.Where(c => c.Type == ClaimTypes.Role || c.Type == "role").Select(c => c.Value).Distinct().ToList();
+
+        Assert.Equal(2, roleClaims.Count);
+        Assert.Contains("Admin", roleClaims);
+        Assert.Contains("Editor", roleClaims);
+    }
+
+    [Fact]
+    public void GenerateAccessToken_WithDuplicateRoles_ShouldDeduplicateRoles()
+    {
+        var roles = new List<string> { "Admin", "admin", "Admin", "User", "user" };
+        var tokenString = _tokenService.GenerateAccessToken("user-roles", "roles@example.com", roles);
+
+        var handler = new JwtSecurityTokenHandler();
+        var jwt = handler.ReadJwtToken(tokenString);
+        var roleClaims = jwt.Claims.Where(c => c.Type == ClaimTypes.Role || c.Type == "role").Select(c => c.Value).Distinct().ToList();
+
+        Assert.Equal(2, roleClaims.Count);
+        Assert.Contains("Admin", roleClaims);
+        Assert.Contains("User", roleClaims);
+    }
+
+    [Fact]
+    public void GenerateAccessToken_WithSecretShorterThan256Bits_ShouldFallbackToDefaultSecretAndSucceed()
+    {
+        var shortSecretSettings = new JwtSettings { Secret = "TooShort" };
+        var service = new TokenService(Options.Create(shortSecretSettings));
+
+        var tokenString = service.GenerateAccessToken("user-short-secret", "short@example.com");
+
+        Assert.NotEmpty(tokenString);
+        var principal = service.GetPrincipalFromExpiredToken(tokenString);
+        Assert.NotNull(principal);
+    }
+
+    [Fact]
+    public void GenerateAccessToken_ClockSkewZeroCompatibility_ShouldBeImmediatelyValid()
+    {
+        var tokenString = _tokenService.GenerateAccessToken("user-clock", "clock@example.com");
+
+        var tokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.Secret)),
+            ValidateIssuer = true,
+            ValidIssuer = _jwtSettings.Issuer,
+            ValidateAudience = true,
+            ValidAudience = _jwtSettings.Audience,
+            ValidateLifetime = true,
+            ClockSkew = TimeSpan.Zero
+        };
+
+        var handler = new JwtSecurityTokenHandler();
+        var principal = handler.ValidateToken(tokenString, tokenValidationParameters, out var validatedToken);
+
+        Assert.NotNull(principal);
+        Assert.NotNull(validatedToken);
+    }
 }

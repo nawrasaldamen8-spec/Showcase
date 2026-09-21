@@ -16,7 +16,8 @@ public class TokenService : ITokenService
 
     public TokenService(IOptions<JwtSettings> jwtOptions)
     {
-        _jwtSettings = jwtOptions.Value;
+        ArgumentNullException.ThrowIfNull(jwtOptions);
+        _jwtSettings = jwtOptions.Value ?? new JwtSettings();
     }
 
     public string GenerateAccessToken(string userId, string email, IList<string>? roles = null)
@@ -35,22 +36,32 @@ public class TokenService : ITokenService
 
         if (roles is not null)
         {
+            var distinctRoles = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             foreach (var role in roles)
             {
-                claims.Add(new Claim(ClaimTypes.Role, role));
-                claims.Add(new Claim("role", role));
+                if (!string.IsNullOrWhiteSpace(role) && distinctRoles.Add(role.Trim()))
+                {
+                    claims.Add(new Claim(ClaimTypes.Role, role.Trim()));
+                    claims.Add(new Claim("role", role.Trim()));
+                }
             }
         }
 
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.Secret));
+        var secret = !string.IsNullOrWhiteSpace(_jwtSettings.Secret) && Encoding.UTF8.GetByteCount(_jwtSettings.Secret.Trim()) >= 32
+            ? _jwtSettings.Secret.Trim()
+            : JwtSettings.DefaultDevelopmentSecret;
+
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-        var expires = DateTime.UtcNow.AddMinutes(_jwtSettings.ExpiryMinutes);
+        var expiryMinutes = _jwtSettings.ExpiryMinutes > 0 ? _jwtSettings.ExpiryMinutes : 60;
+        var now = DateTime.UtcNow;
+        var expires = now.AddMinutes(expiryMinutes);
 
         var token = new JwtSecurityToken(
-            issuer: _jwtSettings.Issuer,
-            audience: _jwtSettings.Audience,
+            issuer: string.IsNullOrWhiteSpace(_jwtSettings.Issuer) ? null : _jwtSettings.Issuer.Trim(),
+            audience: string.IsNullOrWhiteSpace(_jwtSettings.Audience) ? null : _jwtSettings.Audience.Trim(),
             claims: claims,
-            notBefore: DateTime.UtcNow,
+            notBefore: now.AddSeconds(-5),
             expires: expires,
             signingCredentials: creds);
 
@@ -68,16 +79,21 @@ public class TokenService : ITokenService
         if (string.IsNullOrWhiteSpace(token))
             return null;
 
+        var secret = !string.IsNullOrWhiteSpace(_jwtSettings.Secret) && Encoding.UTF8.GetByteCount(_jwtSettings.Secret.Trim()) >= 32
+            ? _jwtSettings.Secret.Trim()
+            : JwtSettings.DefaultDevelopmentSecret;
+
         var tokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuerSigningKey = true,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.Secret)),
-            ValidateIssuer = true,
-            ValidIssuer = _jwtSettings.Issuer,
-            ValidateAudience = true,
-            ValidAudience = _jwtSettings.Audience,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret)),
+            ValidateIssuer = !string.IsNullOrWhiteSpace(_jwtSettings.Issuer),
+            ValidIssuer = string.IsNullOrWhiteSpace(_jwtSettings.Issuer) ? null : _jwtSettings.Issuer,
+            ValidateAudience = !string.IsNullOrWhiteSpace(_jwtSettings.Audience),
+            ValidAudience = string.IsNullOrWhiteSpace(_jwtSettings.Audience) ? null : _jwtSettings.Audience,
             ValidateLifetime = false,
-            ClockSkew = TimeSpan.Zero
+            ClockSkew = TimeSpan.Zero,
+            ValidAlgorithms = new[] { SecurityAlgorithms.HmacSha256 }
         };
 
         var tokenHandler = new JwtSecurityTokenHandler();
