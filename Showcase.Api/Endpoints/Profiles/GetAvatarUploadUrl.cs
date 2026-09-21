@@ -26,6 +26,8 @@ public class GetAvatarUploadUrl : IEndpoint
         .Produces<AvatarUploadUrlResponse>(StatusCodes.Status200OK)
         .ProducesProblem(StatusCodes.Status400BadRequest)
         .ProducesProblem(StatusCodes.Status401Unauthorized)
-        .RequireAuthorization();
+        .ProducesProblem(StatusCodes.Status429TooManyRequests)
+        .RequireAuthorization()
+        .RequireRateLimiting("upload-policy");
     }
 }

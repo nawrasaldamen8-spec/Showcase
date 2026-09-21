@@ -33,6 +33,8 @@ public class GetPostImageUploadUrl : IEndpoint
         .ProducesProblem(StatusCodes.Status401Unauthorized)
         .ProducesProblem(StatusCodes.Status403Forbidden)
         .ProducesProblem(StatusCodes.Status404NotFound)
-        .RequireAuthorization();
+        .ProducesProblem(StatusCodes.Status429TooManyRequests)
+        .RequireAuthorization()
+        .RequireRateLimiting("upload-policy");
     }
 }

@@ -25,6 +25,8 @@ public class ChangePassword : IEndpoint
         .Produces(StatusCodes.Status200OK)
         .ProducesProblem(StatusCodes.Status400BadRequest)
         .ProducesProblem(StatusCodes.Status401Unauthorized)
-        .RequireAuthorization();
+        .ProducesProblem(StatusCodes.Status429TooManyRequests)
+        .RequireAuthorization()
+        .RequireRateLimiting("auth-policy");
     }
 }

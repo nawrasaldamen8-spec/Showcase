@@ -26,6 +26,8 @@ public class Register : IEndpoint
         .Produces<AuthResponse>(StatusCodes.Status200OK)
         .ProducesProblem(StatusCodes.Status400BadRequest)
         .ProducesProblem(StatusCodes.Status409Conflict)
-        .AllowAnonymous();
+        .ProducesProblem(StatusCodes.Status429TooManyRequests)
+        .AllowAnonymous()
+        .RequireRateLimiting("auth-policy");
     }
 }

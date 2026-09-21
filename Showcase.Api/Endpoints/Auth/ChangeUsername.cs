@@ -26,6 +26,8 @@ public class ChangeUsername : IEndpoint
         .ProducesProblem(StatusCodes.Status400BadRequest)
         .ProducesProblem(StatusCodes.Status401Unauthorized)
         .ProducesProblem(StatusCodes.Status409Conflict)
-        .RequireAuthorization();
+        .ProducesProblem(StatusCodes.Status429TooManyRequests)
+        .RequireAuthorization()
+        .RequireRateLimiting("auth-policy");
     }
 }
