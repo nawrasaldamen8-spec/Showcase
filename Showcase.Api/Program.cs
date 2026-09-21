@@ -27,6 +27,34 @@ app.UseCors("AllowAll");
 app.UseAuthentication();
 app.UseAuthorization();
 
+// Health Checks
+app.MapHealthChecks("/health/live", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
+{
+    Predicate = _ => false
+});
+
+app.MapHealthChecks("/health", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
+{
+    ResponseWriter = async (context, report) =>
+    {
+        context.Response.ContentType = "application/json";
+        var response = new
+        {
+            status = report.Status.ToString(),
+            totalDurationMs = report.TotalDuration.TotalMilliseconds,
+            entries = report.Entries.Select(e => new
+            {
+                component = e.Key,
+                status = e.Value.Status.ToString(),
+                description = e.Value.Description,
+                durationMs = e.Value.Duration.TotalMilliseconds,
+                exception = e.Value.Exception?.Message
+            })
+        };
+        await context.Response.WriteAsJsonAsync(response);
+    }
+});
+
 app.MapEndpoints();
 
 app.Run();

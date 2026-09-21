@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using Moq;
 using Showcase.Application.Common.Interfaces;
 using Showcase.Application.Features.Auth.Commands.Login;
+using Showcase.Application.Features.Auth.Commands.Logout;
 using Showcase.Application.Features.Auth.Commands.RefreshToken;
 using Showcase.Application.Features.Auth.Commands.Register;
 using Showcase.Application.Features.Auth.Queries.GetCurrentUser;
@@ -359,6 +360,48 @@ public class AuthFeatureTests
         // Assert
         Assert.True(result.IsFailure);
         Assert.Equal("Auth.Unauthenticated", result.Error.Code);
+    }
+
+    [Fact]
+    public async Task LogoutCommandHandler_Should_Revoke_Token_When_User_Is_Authenticated()
+    {
+        // Arrange
+        var mockCurrentUser = new Mock<ICurrentUserService>();
+        var mockIdentity = new Mock<IIdentityService>();
+
+        const string userId = "user-to-logout-123";
+        mockCurrentUser.Setup(c => c.UserId).Returns(userId);
+        mockIdentity.Setup(i => i.RevokeRefreshTokenAsync(userId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Result.Success());
+
+        var handler = new LogoutCommandHandler(mockIdentity.Object, mockCurrentUser.Object);
+
+        // Act
+        var result = await handler.Handle(new LogoutCommand(), CancellationToken.None);
+
+        // Assert
+        Assert.True(result.IsSuccess);
+        mockIdentity.Verify(i => i.RevokeRefreshTokenAsync(userId, It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task LogoutCommandHandler_Should_Return_Unauthorized_When_User_Not_Authenticated()
+    {
+        // Arrange
+        var mockCurrentUser = new Mock<ICurrentUserService>();
+        var mockIdentity = new Mock<IIdentityService>();
+
+        mockCurrentUser.Setup(c => c.UserId).Returns((string?)null);
+
+        var handler = new LogoutCommandHandler(mockIdentity.Object, mockCurrentUser.Object);
+
+        // Act
+        var result = await handler.Handle(new LogoutCommand(), CancellationToken.None);
+
+        // Assert
+        Assert.True(result.IsFailure);
+        Assert.Equal("Auth.Unauthorized", result.Error.Code);
+        mockIdentity.Verify(i => i.RevokeRefreshTokenAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
     #endregion

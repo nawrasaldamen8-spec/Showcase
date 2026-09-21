@@ -35,7 +35,33 @@ public interface IIdentityService
         System.DateTime expiryTime,
         CancellationToken ct = default);
 
+    Task<Result> RevokeRefreshTokenAsync(
+        string userId,
+        CancellationToken ct = default);
+
     Task<Result<UserIdentityDetails>> GetUserByIdAsync(
         string userId,
+        CancellationToken ct = default);
+
+    Task<Result<UserIdentityDetails>> GetUserByUsernameAsync(
+        string username,
+        CancellationToken ct = default);
+
+    Task<Result> ChangePasswordAsync(
+        string userId,
+        string currentPassword,
+        string newPassword,
+        CancellationToken ct = default);
+
+    Task<Result> ChangeEmailAsync(
+        string userId,
+        string newEmail,
+        string currentPassword,
+        CancellationToken ct = default);
+
+    Task<Result> ChangeUsernameAsync(
+        string userId,
+        string newUsername,
+        string currentPassword,
         CancellationToken ct = default);
 }

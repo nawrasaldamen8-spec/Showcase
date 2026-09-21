@@ -128,6 +128,29 @@ public class IdentityService : IIdentityService
         return Result.Success();
     }
 
+    public async Task<Result> RevokeRefreshTokenAsync(
+        string userId,
+        CancellationToken ct = default)
+    {
+        var user = await _userManager.FindByIdAsync(userId);
+        if (user is null)
+        {
+            return Error.NotFound("Auth.UserNotFound", $"User with ID '{userId}' was not found.");
+        }
+
+        user.RefreshToken = null;
+        user.RefreshTokenExpiryTime = null;
+
+        var result = await _userManager.UpdateAsync(user);
+        if (!result.Succeeded)
+        {
+            var firstError = result.Errors.FirstOrDefault()?.Description ?? "Failed to revoke refresh token.";
+            return Error.Failure("Auth.RevokeTokenFailed", firstError);
+        }
+
+        return Result.Success();
+    }
+
     public async Task<Result<UserIdentityDetails>> GetUserByIdAsync(
         string userId,
         CancellationToken ct = default)
@@ -140,5 +163,123 @@ public class IdentityService : IIdentityService
 
         var roles = await _userManager.GetRolesAsync(user);
         return new UserIdentityDetails(user.Id, user.Email ?? string.Empty, user.UserName ?? string.Empty, roles);
+    }
+
+    public async Task<Result<UserIdentityDetails>> GetUserByUsernameAsync(
+        string username,
+        CancellationToken ct = default)
+    {
+        var normalizedUsername = username.Trim().ToLowerInvariant();
+        var user = await _userManager.FindByNameAsync(normalizedUsername);
+        if (user is null)
+        {
+            return Error.NotFound("Auth.UserNotFound", $"User with username '{username}' was not found.");
+        }
+
+        var roles = await _userManager.GetRolesAsync(user);
+        return new UserIdentityDetails(user.Id, user.Email ?? string.Empty, user.UserName ?? string.Empty, roles);
+    }
+
+    public async Task<Result> ChangePasswordAsync(
+        string userId,
+        string currentPassword,
+        string newPassword,
+        CancellationToken ct = default)
+    {
+        var user = await _userManager.FindByIdAsync(userId);
+        if (user is null)
+        {
+            return Error.NotFound("Auth.UserNotFound", $"User with ID '{userId}' was not found.");
+        }
+
+        var result = await _userManager.ChangePasswordAsync(user, currentPassword, newPassword);
+        if (!result.Succeeded)
+        {
+            var firstError = result.Errors.FirstOrDefault()?.Description ?? "Failed to change password.";
+            return Error.Validation("Auth.ChangePasswordFailed", firstError);
+        }
+
+        return Result.Success();
+    }
+
+    public async Task<Result> ChangeEmailAsync(
+        string userId,
+        string newEmail,
+        string currentPassword,
+        CancellationToken ct = default)
+    {
+        var user = await _userManager.FindByIdAsync(userId);
+        if (user is null)
+        {
+            return Error.NotFound("Auth.UserNotFound", $"User with ID '{userId}' was not found.");
+        }
+
+        var isPasswordValid = await _userManager.CheckPasswordAsync(user, currentPassword);
+        if (!isPasswordValid)
+        {
+            return Error.Unauthorized("Auth.InvalidPassword", "Current password is incorrect.");
+        }
+
+        var normalizedEmail = newEmail.Trim();
+        if (string.Equals(user.Email, normalizedEmail, StringComparison.OrdinalIgnoreCase))
+        {
+            return Result.Success();
+        }
+
+        var existingUser = await _userManager.FindByEmailAsync(normalizedEmail);
+        if (existingUser is not null && existingUser.Id != userId)
+        {
+            return Error.Conflict("Auth.EmailTaken", "Email is already registered.");
+        }
+
+        var token = await _userManager.GenerateChangeEmailTokenAsync(user, normalizedEmail);
+        var result = await _userManager.ChangeEmailAsync(user, normalizedEmail, token);
+        if (!result.Succeeded)
+        {
+            var firstError = result.Errors.FirstOrDefault()?.Description ?? "Failed to change email.";
+            return Error.Validation("Auth.ChangeEmailFailed", firstError);
+        }
+
+        return Result.Success();
+    }
+
+    public async Task<Result> ChangeUsernameAsync(
+        string userId,
+        string newUsername,
+        string currentPassword,
+        CancellationToken ct = default)
+    {
+        var user = await _userManager.FindByIdAsync(userId);
+        if (user is null)
+        {
+            return Error.NotFound("Auth.UserNotFound", $"User with ID '{userId}' was not found.");
+        }
+
+        var isPasswordValid = await _userManager.CheckPasswordAsync(user, currentPassword);
+        if (!isPasswordValid)
+        {
+            return Error.Unauthorized("Auth.InvalidPassword", "Current password is incorrect.");
+        }
+
+        var normalizedUsername = newUsername.Trim().ToLowerInvariant();
+        if (string.Equals(user.UserName, normalizedUsername, StringComparison.OrdinalIgnoreCase))
+        {
+            return Result.Success();
+        }
+
+        var existingUser = await _userManager.FindByNameAsync(normalizedUsername);
+        if (existingUser is not null && existingUser.Id != userId)
+        {
+            return Error.Conflict("Auth.UsernameTaken", "Username is already in use.");
+        }
+
+        var result = await _userManager.SetUserNameAsync(user, normalizedUsername);
+        if (!result.Succeeded)
+        {
+            var firstError = result.Errors.FirstOrDefault()?.Description ?? "Failed to change username.";
+            return Error.Validation("Auth.ChangeUsernameFailed", firstError);
+        }
+
+        return Result.Success();
     }
 }

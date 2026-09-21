@@ -10,6 +10,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Showcase.Application.Common.Interfaces;
 using Showcase.Infrastructure.Data;
+using Showcase.Infrastructure.HealthChecks;
 using Showcase.Infrastructure.Identity;
 using Showcase.Infrastructure.Storage;
 
@@ -114,6 +115,10 @@ public static class DependencyInjection
         });
 
         services.AddScoped<IStorageService, CloudflareR2StorageService>();
+
+        // Health Checks
+        services.AddHealthChecks()
+            .AddCheck<PostgreSqlHealthCheck>("postgresql", tags: ["db", "ready"]);
 
         return services;
     }

@@ -39,3 +39,189 @@ Content-Type: application/json
   "accessToken": "{{accessToken}}",
   "refreshToken": "{{refreshToken}}"
 }
+
+### 5. Change Password
+POST {{Showcase.Api_HostAddress}}/api/auth/change-password
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "currentPassword": "Password123!",
+  "newPassword": "NewSecurePassword456!"
+}
+
+### 6. Change Email
+PUT {{Showcase.Api_HostAddress}}/api/auth/change-email
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "newEmail": "newcreator@showcase.com",
+  "currentPassword": "NewSecurePassword456!"
+}
+
+### 7. Change Username
+PUT {{Showcase.Api_HostAddress}}/api/auth/change-username
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "newUsername": "creative_legend",
+  "currentPassword": "NewSecurePassword456!"
+}
+
+### 8. Logout (Revoke Refresh Token)
+POST {{Showcase.Api_HostAddress}}/api/auth/logout
+Authorization: Bearer {{accessToken}}
+Accept: application/json
+
+### 9. Get My Creator Profile
+GET {{Showcase.Api_HostAddress}}/api/profiles/me
+Authorization: Bearer {{accessToken}}
+Accept: application/json
+
+### 9. Update Profile Details
+PUT {{Showcase.Api_HostAddress}}/api/profiles/me
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "firstName": "Jonathan",
+  "lastName": "Doe",
+  "bio": "Full-stack engineer and open source contributor."
+}
+
+### 10. Get Avatar Presigned Upload URL
+POST {{Showcase.Api_HostAddress}}/api/profiles/me/avatar/upload-url
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "contentType": "image/png",
+  "fileSizeBytes": 1048576
+}
+
+### 11. Update Avatar with Uploaded Storage Key
+PUT {{Showcase.Api_HostAddress}}/api/profiles/me/avatar
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "storageKey": "avatars/creator/profile-pic.png"
+}
+
+### 12. Delete Avatar
+DELETE {{Showcase.Api_HostAddress}}/api/profiles/me/avatar
+Authorization: Bearer {{accessToken}}
+
+### 13. Add Social Link
+POST {{Showcase.Api_HostAddress}}/api/profiles/me/social-links
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "platform": "GitHub",
+  "url": "https://github.com/creatordoe",
+  "displayOrder": 0
+}
+
+### 14. Reorder Social Links
+PUT {{Showcase.Api_HostAddress}}/api/profiles/me/social-links/reorder
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "items": [
+    {
+      "id": "00000000-0000-0000-0000-000000000000",
+      "displayOrder": 1
+    }
+  ]
+}
+
+### 15. Get Public Profile by Username
+GET {{Showcase.Api_HostAddress}}/api/profiles/creative_legend
+Accept: application/json
+
+### 16. Create a New Post (Draft)
+# @name createPost
+POST {{Showcase.Api_HostAddress}}/api/posts
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "title": "Minimalist Architecture Visuals",
+  "description": "Exploration of brutalist architecture and light interplay.",
+  "externalUrl": "https://behance.net/gallery/12345/architecture"
+}
+
+### Store postId from createPost
+@postId = {{createPost.response.body}}
+
+### 17. Update Post Details
+PUT {{Showcase.Api_HostAddress}}/api/posts/{{postId}}
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "title": "Brutalist Architecture & Light Interplay",
+  "description": "Comprehensive design study with photographs and 3D renders.",
+  "externalUrl": "https://behance.net/gallery/12345/architecture"
+}
+
+### 18. Get Post Image Presigned Upload URL
+POST {{Showcase.Api_HostAddress}}/api/posts/{{postId}}/images/upload-url
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "contentType": "image/jpeg",
+  "fileSizeBytes": 2048576
+}
+
+### 19. Add Image to Post
+POST {{Showcase.Api_HostAddress}}/api/posts/{{postId}}/images
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "storageKey": "posts/sample-image-key.jpg",
+  "displayOrder": 0
+}
+
+### 20. Publish Post (Requires at least 1 image)
+PUT {{Showcase.Api_HostAddress}}/api/posts/{{postId}}/publish
+Authorization: Bearer {{accessToken}}
+
+### 21. Get Post By ID (Public)
+GET {{Showcase.Api_HostAddress}}/api/posts/{{postId}}
+Accept: application/json
+
+### 22. Get My Posts (Creator Dashboard)
+GET {{Showcase.Api_HostAddress}}/api/posts/mine?pageNumber=1&pageSize=10
+Authorization: Bearer {{accessToken}}
+Accept: application/json
+
+### 23. Explore Feed (Public)
+GET {{Showcase.Api_HostAddress}}/api/posts/explore?pageNumber=1&pageSize=12
+Accept: application/json
+
+### 24. Creator's Public Posts
+GET {{Showcase.Api_HostAddress}}/api/profiles/creative_legend/posts?pageNumber=1&pageSize=12
+Accept: application/json
+
+### 25. Unpublish Post
+PUT {{Showcase.Api_HostAddress}}/api/posts/{{postId}}/unpublish
+Authorization: Bearer {{accessToken}}
+
+### 26. Delete Post
+DELETE {{Showcase.Api_HostAddress}}/api/posts/{{postId}}
+Authorization: Bearer {{accessToken}}
+
+### 27. Health Check (Full Component Diagnostics)
+GET {{Showcase.Api_HostAddress}}/health
+Accept: application/json
+
+### 28. Health Check Live (Liveness Probe)
+GET {{Showcase.Api_HostAddress}}/health/live
+Accept: application/json
