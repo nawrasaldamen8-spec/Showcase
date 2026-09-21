@@ -1,6 +1,41 @@
-﻿@Showcase.Api_HostAddress = http://localhost:5118
+@Showcase.Api_HostAddress = http://localhost:5118
 
-GET {{Showcase.Api_HostAddress}}/weatherforecast/
+### 1. Register a new user
+POST {{Showcase.Api_HostAddress}}/api/auth/register
+Content-Type: application/json
+
+{
+  "email": "creator@showcase.com",
+  "username": "creator_pro",
+  "password": "Password123!",
+  "firstName": "John",
+  "lastName": "Doe"
+}
+
+### 2. Login with credentials
+# @name login
+POST {{Showcase.Api_HostAddress}}/api/auth/login
+Content-Type: application/json
+
+{
+  "emailOrUsername": "creator@showcase.com",
+  "password": "Password123!"
+}
+
+### Store token from login
+@accessToken = {{login.response.body.accessToken}}
+@refreshToken = {{login.response.body.refreshToken}}
+
+### 3. Get Current Authenticated User (requires Bearer token)
+GET {{Showcase.Api_HostAddress}}/api/auth/me
+Authorization: Bearer {{accessToken}}
 Accept: application/json
 
-###
+### 4. Refresh Token (rotate access & refresh token)
+POST {{Showcase.Api_HostAddress}}/api/auth/refresh
+Content-Type: application/json
+
+{
+  "accessToken": "{{accessToken}}",
+  "refreshToken": "{{refreshToken}}"
+}

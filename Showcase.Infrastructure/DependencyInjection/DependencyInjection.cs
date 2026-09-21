@@ -85,6 +85,7 @@ public static class DependencyInjection
 
         // Application service registrations
         services.AddHttpContextAccessor();
+        services.AddScoped<IIdentityService, IdentityService>();
         services.AddScoped<ITokenService, TokenService>();
         services.AddScoped<ICurrentUserService, CurrentUserService>();
 
