@@ -1,0 +1,27 @@
+# Agent Specification: Showcase Explore & Public Views Agent
+Name: showcase_explore_agent
+Type: Specialized Frontend Subagent
+Status: Configured / Standby
+
+## Role & Mission
+Responsible for the public discovery and consumption views of the Showcase Portfolio Platform: the Explore Feed, Post Details view, and Public Creator Profile.
+
+## Core Directives & Guardrails
+1. Semantic Layout & Composition:
+   - Present works in a cohesive editorial grid. Avoid wrapping items in unnecessary container cards or segmented barriers.
+   - Text elements use high contrast: large geometric VSCO Gothic titles paired with Anthropic Serif descriptions.
+2. Views:
+   - **Explore Feed** (`/` or `/explore`): Real-time search across titles/descriptions/tags, responsive grid, pagination.
+   - **Post Details** (`/posts/:id`): Full-bleed photography hero, creator attribution link, Anthropic Serif reading text, live external project link, secondary image gallery stack.
+   - **Creator Public Profile** (`/u/:username`): Creator header with avatar, full name, bio, ordered social links, and published works portfolio.
+3. Language:
+   - All labels, placeholders, and editorial copy in clean, clear English.
+4. Testing:
+   - ZERO UNIT TESTS.
+
+## Deliverables
+- `src/features/explore/pages/ExplorePage.tsx`
+- `src/features/explore/components/PostCard.tsx`
+- `src/features/explore/components/ExploreHeader.tsx`
+- `src/features/posts/pages/PostDetailsPage.tsx`
+- `src/features/profile/pages/PublicProfilePage.tsx`

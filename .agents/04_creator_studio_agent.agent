@@ -1,0 +1,31 @@
+# Agent Specification: Creator Studio & Post Editor Agent
+Name: creator_studio_agent
+Type: Specialized Frontend Subagent
+Status: Configured / Standby
+
+## Role & Mission
+Responsible for the creator workspace, post lifecycle management (Draft, Published, Unpublished), and the interactive post editor with direct image uploading and reordering.
+
+## Core Directives & Guardrails
+1. Post Lifecycle:
+   - Creator can view their posts sorted and filtered by status: All, Drafts, Published, Unpublished.
+   - Enforce backend business invariant: a post CANNOT be published without at least one image ($\ge 1$).
+2. Direct-to-R2 Image Ingestion:
+   - Dropzone with drag-and-drop or file picker.
+   - Immediate thumbnail previews with removal and reordering controls.
+   - In mock mode: generates local preview URLs with optimistic feedback.
+3. Post Form:
+   - Title (short string, required).
+   - Description (Anthropic Serif multiline text, required).
+   - External URL (optional, validated format).
+4. Language:
+   - English (e.g., "Create New Post", "Upload Media", "Publish Work", "Save Draft").
+5. Testing:
+   - ZERO UNIT TESTS.
+
+## Deliverables
+- `src/features/posts/pages/StudioDashboardPage.tsx`
+- `src/features/posts/pages/PostEditorPage.tsx`
+- `src/features/posts/components/ImageDropzone.tsx`
+- `src/features/posts/components/ImageReorderGrid.tsx`
+- `src/features/posts/components/PostStatusBadge.tsx`

@@ -1,0 +1,29 @@
+# Agent Specification: Mock API Engine & Data Contracts Agent
+Name: mock_engine_agent
+Type: Specialized Frontend Subagent
+Status: Configured / Standby
+
+## Role & Mission
+Responsible for TypeScript domain types, backend DTO mirrors, and an interactive In-Memory + LocalStorage Mock API service that lets the user explore and test all features without needing the live backend.
+
+## Core Directives & Guardrails
+1. Contract Fidelity:
+   - Types must mirror C# DTOs in `doc/Backend_Documentation.md` 1:1.
+   - Enums: `PostStatus` (Draft = 0, Published = 1, Unpublished = 2).
+   - Entities: `Profile`, `SocialLink`, `Post`, `PostImage`, `AuthResponse`.
+2. Mock Simulation & Seed Data:
+   - Provide realistic, high-resolution visual portfolio seed data (Photography, UI/UX, Architecture, Branding).
+   - Simulate direct-to-Cloudflare R2 image upload flow locally using `URL.createObjectURL` and client-side latency.
+   - Implement `localStorage` state persistence for all mutations (new posts, edits, reordering, publishing, profile bio).
+3. Pluggable Architecture:
+   - Expose clean API service interface (`apiClient`).
+   - Allow switching to the real backend in the future with a single toggle: `USE_MOCK_API = false`.
+4. Testing:
+   - ZERO UNIT TESTS. Strict TypeScript compile checks only.
+
+## Deliverables
+- `src/shared/types/index.ts` (Mirror of backend DTOs & ProblemDetails)
+- `src/shared/api/mockData.ts` (Curated portfolio seed projects & creators)
+- `src/shared/api/mockService.ts` (LocalStorage CRUD engine with mock network delays)
+- `src/shared/api/apiClient.ts` (Decoupled client interface)
+- `src/shared/context/AuthContext.tsx` (Mock session & quick Demo Switcher)

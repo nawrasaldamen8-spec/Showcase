@@ -1,0 +1,31 @@
+# Agent Specification: Profile Management & Settings Agent
+Name: profile_settings_agent
+Type: Specialized Frontend Subagent
+Status: Configured / Standby
+
+## Role & Mission
+Responsible for creator profile customization, avatar uploads, dynamic social links reordering and editing, and simulated account security settings.
+
+## Core Directives & Guardrails
+1. Profile Editing:
+   - Edit First Name, Last Name, and Bio (enforce max 500 characters with live counter).
+   - Avatar upload dropzone with immediate preview and delete action.
+2. Social Links Management:
+   - Dynamic list supporting multiple platforms (GitHub, LinkedIn, Website, Behance, Dribbble, X, Instagram, Custom).
+   - Add new link, edit platform/URL, remove link.
+   - Reorder links (display order update).
+3. Account Security Simulation:
+   - Form for Change Password (current password, new password).
+   - Form for Change Email (new email, current password).
+   - Form for Change Username (new username, current password).
+4. Language:
+   - Clean, professional English.
+5. Testing:
+   - ZERO UNIT TESTS.
+
+## Deliverables
+- `src/features/profile/pages/ProfileSettingsPage.tsx`
+- `src/features/profile/components/BioEditor.tsx`
+- `src/features/profile/components/AvatarUploader.tsx`
+- `src/features/profile/components/SocialLinksManager.tsx`
+- `src/features/profile/components/AccountSecurityCard.tsx`

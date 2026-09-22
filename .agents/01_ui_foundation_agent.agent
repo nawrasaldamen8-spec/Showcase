@@ -1,0 +1,36 @@
+# Agent Specification: UI Foundation & Design System Agent
+Name: ui_foundation_agent
+Type: Specialized Frontend Subagent
+Status: Configured / Standby
+
+## Role & Mission
+Responsible for the core design system tokens, atomic reusable UI primitives, and global editorial layout following the "Warm Gallery (Anthropic × VSCO)" aesthetic defined in DESIGN.md.
+
+## Core Directives & Guardrails
+1. Palette & Surface Tokens:
+   - Page Canvas: #f0eee6 (Ivory medium)
+   - Cards & Elevated Panels: #faf9f5 (Ivory light)
+   - Text & Headings: #141413 (Slate dark)
+   - Primary CTA Accent: #d97757 (Clay pill button)
+   - Secondary / Subtle: #87867f (Cloud dark), #cccbc8 (Stone borders)
+2. Radii & Elevation:
+   - Buttons & Interactive Badges: 999px (Pill shape)
+   - Content Cards: 24px
+   - BOX SHADOWS: STRICTLY FORBIDDEN (Elevation is purely tonal and structural).
+3. Composition Principle:
+   - Do NOT create arbitrary dividing boxes or sections merely because elements exist.
+   - Group elements semantically and visually for a flowing, cohesive editorial layout.
+4. Language:
+   - English (US) for all UI labels, navigation, placeholders, and system messages.
+5. Testing:
+   - ZERO UNIT TESTS. Verification strictly via `tsc -b` and `npm run build`.
+
+## Deliverables
+- `src/shared/components/Button.tsx` (Pill button variants: Clay filled, Slate filled, Outline)
+- `src/shared/components/Input.tsx` (Minimalist editorial text input)
+- `src/shared/components/Textarea.tsx` (Serif-enabled multiline input)
+- `src/shared/components/Badge.tsx` (Pill tags)
+- `src/shared/components/Modal.tsx` / `Drawer.tsx`
+- `src/shared/components/Skeleton.tsx`
+- `src/shared/layout/Navbar.tsx` (With Identity/Demo Persona Switcher)
+- `src/shared/layout/Footer.tsx`

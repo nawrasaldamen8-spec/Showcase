@@ -1,58 +1,65 @@
 # Original User Request
 
-## Initial Request — 2026-09-19T19:55:34Z
+## 2026-09-22T18:53:58Z
 
-This is a single self-contained fix; keep it small and focused. Implement the Infrastructure layer (`Showcase.Infrastructure`) and required Application service contracts for the Showcase Portfolio Platform, covering ASP.NET Core Identity & JWT authentication with refresh tokens, Cloudflare R2 object storage integration, and Dependency Injection wiring.
+Build a complete, production-grade, editorial portfolio web frontend for the Showcase Portfolio Platform in English using React 19, TypeScript, Vite, Tailwind CSS v4, and React Router v7. The app runs completely standalone with an in-memory & LocalStorage Mock API Layer so the user can interactively test, preview, and review every feature before connecting to the live ASP.NET Core backend.
 
-Working directory: d:\Projects\AspFiles\Showcase
+Working directory: d:/Projects/AspFiles/Showcase/Showcase.ClientApp
 Integrity mode: development
 
 ## Requirements
 
-### R1. Application Service Contracts
+### R1. Language & Editorial Design System
+The entire application interface must be in **English (US)**. Implement the "Warm Gallery (Anthropic × VSCO)" aesthetic from `DESIGN.md`. Canvas uses ivory `#f0eee6`, cards `#faf9f5`, pill buttons (999px) with Clay accent `#d97757` or Slate `#141413`. ZERO box shadows across all components. Strictly adhere to the semantic composition rule: group elements organically and avoid arbitrary dividing boxes or card segmentations.
 
-Define the necessary service interfaces in `Showcase.Application/Common/Interfaces/`:
+### R2. Core API Client & Mock State Engine
+Implement a pluggable API abstraction in `src/shared/api` matching the exact C# DTOs from `doc/Backend_Documentation.md`.
+- Provide curated English seed data (photography, architecture, design projects, creator bios, social links).
+- Persist state mutations in browser `localStorage` across page reloads.
+- Include a Demo Switcher in the navigation to toggle between Visitor (Guest) and Creator personas.
+- Simulate Cloudflare R2 direct image uploads with client-side delays and object URL previews.
+- Ensure the API client can be switched to the live backend with a single flag (`USE_MOCK_API = false`).
 
-- `ITokenService`: JWT access token generation, cryptographically secure refresh token generation, and principal extraction from expired tokens.
-- `ICurrentUserService`: Authenticated user ID and email resolution from `HttpContext`.
-- `IStorageService`: Cloudflare R2 object storage operations (presigned PUT upload URLs, public URL resolution, and image deletion).
+### R3. Explore Feed & Public Showcase Features
+Implement public discovery pages according to the UI extractor and page blueprint specifications:
+- Public Explore page (`/` or `/explore`) with live search across titles/descriptions/tags, responsive grid, and pagination.
+- Public Creator Profile (`/u/:username`) displaying artist avatar, full name, bio, ordered social links, and published works portfolio.
+- Public Post Details (`/posts/:id`) featuring high-impact visual presentation, creator attribution, image gallery, and external links.
 
-### R2. Identity & JWT Authentication Services
+### R4. Creator Studio & Interactive Post Editor
+Implement authenticated creator workspace using feature-based architecture (`src/features/posts`):
+- My Posts dashboard (`/studio` or `/posts/mine`) with status filtering (All, Published, Drafts).
+- Post creation and editor with metadata (title, description, external URL).
+- Interactive multi-image upload dropzone with thumbnail previews, drag/click reordering, and removal.
+- Publishing workflow enforcing the backend business invariant ($\ge 1$ image required).
 
-In `Showcase.Infrastructure/Identity/`:
+### R5. Profile Management & Social Links Editor
+Implement profile settings (`src/features/profile`):
+- Edit profile details (first name, last name, bio up to 500 characters with counter).
+- Interactive avatar upload and removal.
+- Dynamic Social Links manager (add, edit, delete, reorder platforms and URLs).
+- Account security simulation (change password, change email, change username) with realistic validation feedback.
 
-- Create `JwtSettings` options record (`Secret`, `Issuer`, `Audience`, `ExpiryMinutes`).
-- Implement `TokenService` conforming to `ITokenService` using HMAC-SHA256 and secure random byte generation.
-- Implement `CurrentUserService` conforming to `ICurrentUserService` using `IHttpContextAccessor`.
-- Configure JWT Bearer token authentication in `DependencyInjection.cs` with strict validation parameters and `ClockSkew = TimeSpan.Zero`.
-
-### R3. Cloudflare R2 Object Storage Integration
-
-In `Showcase.Infrastructure/Storage/`:
-
-- Add package `AWSSDK.S3` to `Showcase.Infrastructure.csproj`.
-- Create `R2Settings` options record (`AccountId`, `AccessKeyId`, `SecretAccessKey`, `BucketName`, `PublicUrlPrefix`).
-- Implement `CloudflareR2StorageService` conforming to `IStorageService` using `AmazonS3Client` pointing to `https://{AccountId}.r2.cloudflarestorage.com`.
-- Provide presigned PUT URLs for client direct uploads, public URL generator, and object deletion.
-
-### R4. Dependency Injection Registration
-
-In `Showcase.Infrastructure/DependencyInjection/DependencyInjection.cs`:
-
-- Bind `JwtSettings` and `R2Settings` via the Options pattern.
-- Register `ITokenService`, `ICurrentUserService`, `IStorageService`, and `IHttpContextAccessor`.
-- Configure `AddAuthentication` (JWT Bearer) and `AddAuthorization`.
-- Update `appsettings.json` with configuration sections for `JwtSettings` and `CloudflareR2`.
+### R6. Verification & Build Integrity (No Unit Tests)
+As strictly requested, DO NOT write unit test suites. Verification must be performed by compiling TypeScript (`tsc -b`), ensuring lint checks pass without errors (`npm run lint`), and verifying Vite production build (`npm run build`).
 
 ## Acceptance Criteria
 
-### Compilation & Type Safety
+### Language & Tone
+- [ ] 100% English user interface (labels, navigation, placeholders, error alerts, and demo copy).
+- [ ] Editorial typography hierarchy: VSCO Gothic display headings paired with Anthropic Serif reading text.
 
-- [ ] `dotnet build Showcase.slnx` completes with 0 Warnings and 0 Errors.
-- [ ] No circular dependencies or leaky abstractions (Domain remains pure C#; Application depends only on Domain).
+### Standalone Interactive Experience
+- [ ] Application runs fully offline/standalone on `npm run dev` without requiring PostgreSQL, ASP.NET Core, or Cloudflare R2.
+- [ ] Rich English mock data provided with high-resolution photography and creative portfolio works.
+- [ ] Mock Auth switcher allows toggling between visitor and creator effortlessly.
+- [ ] Mutations persist in browser session / `localStorage`.
 
-### Contract Fulfillment
+### Agent Team Documentation & Tracking
+- [ ] Agent definition files created in `.agents/` directory with explicit roles and guardrails.
+- [ ] Granular `TODO.md` tracker created in the client app directory.
 
-- [ ] `TokenService` correctly generates valid JWTs with expected claims and extracts principal from expired tokens without lifetime validation.
-- [ ] `CloudflareR2StorageService` creates valid presigned PUT URLs with configured expiration.
-- [ ] All services and options are registered in the DI container.
+### Verification & Delivery
+- [ ] Zero unit test files created.
+- [ ] `npm run build` succeeds with zero TypeScript and bundling errors.
+- [ ] All pages (Explore, Post Detail, Creator Profile, Login, Register, Studio, Post Editor, Profile Settings) fully wired and functional.

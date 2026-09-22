@@ -1,4 +1,4 @@
-﻿---
+---
 name: authorize-tokens
 description: >-
   Use this skill when adding authorization to endpoints, configuring JWT Bearer authentication, implementing refresh token rotation, or setting up role/policy-based authorization. Guides middleware wiring and token management without over-engineering.
@@ -71,28 +71,77 @@ services.AddAuthentication(options =>
 services.AddAuthorization();
 ```
 
+## Swagger UI JWT Authorize Button in .NET 10 (Microsoft.OpenApi 2.x)
+
+In .NET 10 and Swashbuckle 10, OpenAPI models reside directly in `Microsoft.OpenApi`. When configuring security requirements, passing `document` to `new OpenApiSecuritySchemeReference("Bearer", document)` is **mandatory**. Omitting `document` leaves `HostDocument` null, which causes the serializer to emit `{ }` (empty), preventing Swagger UI from attaching the `Authorization: Bearer <token>` header (resulting in 401 Unauthorized errors).
+
+In `Showcase.Api/DependencyInjection/DependencyInjection.cs`:
+
+```csharp
+using Microsoft.OpenApi;
+
+services.AddSwaggerGen(options =>
+{
+    options.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "Showcase Portfolio API",
+        Version = "v1",
+        Description = "Showcase Portfolio Platform Backend API (.NET 10)"
+    });
+
+    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Description = "Enter JWT Bearer token like: Bearer {your token}",
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.Http,
+        Scheme = "bearer",
+        BearerFormat = "JWT"
+    });
+
+    options.AddSecurityRequirement(document => new OpenApiSecurityRequirement
+    {
+        [new OpenApiSecuritySchemeReference("Bearer", document)] = []
+    });
+});
+```
+
 ## Program.cs Middleware Order
 
-Order is critical in `Showcase.Api/Program.cs`! **Authentication MUST come BEFORE Authorization**.
+Order is critical in `Showcase.Api/Program.cs`!
+
+1. `UseExceptionHandler()`
+2. `UseHttpsRedirection()`
+3. `UseCors("AllowAll")`
+4. `UseRateLimiter()` (blocks abusive traffic before authentication)
+5. `UseAuthentication()` (validates JWT)
+6. `UseAuthorization()` (enforces permissions)
+7. Health checks & `MapEndpoints()`
 
 ```csharp
 app.UseExceptionHandler();
-app.UseAuthentication();    // ← MUST come before Authorization
-app.UseAuthorization();     // ← MUST come after Authentication
 app.UseHttpsRedirection();
 app.UseCors("AllowAll");
+app.UseRateLimiter();       // ← Rate limiting runs before authentication
+app.UseAuthentication();    // ← MUST come before Authorization
+app.UseAuthorization();     // ← MUST come after Authentication
+
+app.MapHealthChecks("/health/live", ...);
+app.MapHealthChecks("/health", ...);
 app.MapEndpoints();
 ```
 
 ## Adding Authorization to Endpoints
 
 **Basic (require any authenticated user):**
+
 ```csharp
 app.MapGet("api/products", async (...) => { ... })
     .RequireAuthorization();
 ```
 
 **Role-based:**
+
 ```csharp
 app.MapDelete("api/products/{id:guid}", async (...) => { ... })
     .RequireAuthorization(policy => policy.RequireRole("Admin"));
@@ -100,21 +149,25 @@ app.MapDelete("api/products/{id:guid}", async (...) => { ... })
 
 **Named policy:**
 Register the policy in DI (in `AddApi` or `AddInfrastructure`):
+
 ```csharp
 services.AddAuthorization(options =>
 {
     options.AddPolicy("AdminOnly", policy => policy.RequireRole("Admin"));
-    options.AddPolicy("CanManageProducts", policy => 
+    options.AddPolicy("CanManageProducts", policy =>
         policy.RequireClaim("Permission", "products:manage"));
 });
 ```
+
 Use it in the endpoint:
+
 ```csharp
 app.MapDelete("api/products/{id:guid}", async (...) => { ... })
     .RequireAuthorization("AdminOnly");
 ```
 
 **Allow anonymous (override global auth):**
+
 ```csharp
 app.MapPost("api/auth/login", async (...) => { ... })
     .AllowAnonymous();
@@ -125,6 +178,7 @@ app.MapPost("api/auth/login", async (...) => { ... })
 Keep it simple and proportional to project size. A simple approach is to store the refresh token in the `ApplicationUser` table instead of a separate entity.
 
 **1. Update ApplicationUser Entity:**
+
 ```csharp
 // Add to ApplicationUser:
 public string? RefreshToken { get; set; }
@@ -132,8 +186,9 @@ public DateTime? RefreshTokenExpiryTime { get; set; }
 ```
 
 **2. RefreshTokenCommandHandler:**
+
 ```csharp
-public record RefreshTokenCommand(string AccessToken, string RefreshToken) 
+public record RefreshTokenCommand(string AccessToken, string RefreshToken)
     : IRequest<Result<AuthResponse>>;
 
 public class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCommand, Result<AuthResponse>>
@@ -170,11 +225,13 @@ public class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCommand, R
 ```
 
 **3. Update ITokenService (Application layer):**
+
 ```csharp
 ClaimsPrincipal? GetPrincipalFromExpiredToken(string token);
 ```
 
 **4. Update TokenService Implementation (Infrastructure layer):**
+
 ```csharp
 public ClaimsPrincipal? GetPrincipalFromExpiredToken(string token)
 {
@@ -190,13 +247,46 @@ public ClaimsPrincipal? GetPrincipalFromExpiredToken(string token)
     };
 
     var principal = new JwtSecurityTokenHandler().ValidateToken(token, tokenValidationParameters, out var securityToken);
-    
-    if (securityToken is not JwtSecurityToken jwtToken || 
+
+    if (securityToken is not JwtSecurityToken jwtToken ||
         !jwtToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.InvariantCultureIgnoreCase))
         return null;
 
     return principal;
 }
+```
+
+## Logout & Refresh Token Revocation
+
+When users log out, invalidate and clear their stored refresh token in the database to prevent replay:
+
+**1. Identity Service Method:**
+
+```csharp
+public async Task<Result> RevokeRefreshTokenAsync(string userId, CancellationToken ct = default)
+{
+    var user = await _userManager.FindByIdAsync(userId);
+    if (user is null)
+        return Error.NotFound("Auth.UserNotFound", "User not found.");
+
+    user.RefreshToken = null;
+    user.RefreshTokenExpiryTime = null;
+    await _userManager.UpdateAsync(user);
+
+    return Result.Success();
+}
+```
+
+**2. Logout Endpoint (`POST /api/auth/logout`):**
+
+```csharp
+app.MapPost("api/auth/logout", async (ISender sender, CancellationToken ct) =>
+{
+    var result = await sender.Send(new LogoutCommand(), ct);
+    return result.ToResponse();
+})
+.RequireAuthorization()
+.WithTags("Auth");
 ```
 
 ## appsettings.json Configuration
@@ -215,6 +305,7 @@ public ClaimsPrincipal? GetPrincipalFromExpiredToken(string token)
 ## Rules & Anti-Patterns
 
 ### ✅ DO
+
 - **Use endpoint-level auth:** Prefer `.RequireAuthorization()` for most cases over an AuthorizationBehavior pipeline.
 - **Use policies:** Employ policies for complex authorization rules.
 - **Simple refresh logic:** Keep refresh token logic simple by storing it on the user entity and rotating it upon use.
@@ -223,6 +314,7 @@ public ClaimsPrincipal? GetPrincipalFromExpiredToken(string token)
 - **Allow Anonymous:** Auth endpoints (`login`, `register`, `refresh`) must use `.AllowAnonymous()`.
 
 ### ❌ DO NOT
+
 - Don't create custom auth middleware — use built-in `AddAuthentication().AddJwtBearer()`.
 - Don't create a separate token microservice for a monolith project.
 - Don't store access tokens in the database — they are meant to be stateless.
