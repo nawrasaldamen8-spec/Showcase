@@ -1,1 +1,116 @@
 @import "tailwindcss";
+
+@theme {
+  --color-slate-dark: #141413;
+  --color-ivory-medium: #f0eee6;
+  --color-ivory-light: #faf9f5;
+  --color-fog-gray: #f2f2f2;
+  --color-cloud-dark: #87867f;
+  --color-stone: #cccbc8;
+  --color-clay: #d97757;
+  --color-amber: #f1a900;
+
+  --font-gothic: "Plus Jakarta Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-serif: "Newsreader", Georgia, Cambria, "Times New Roman", Times, serif;
+
+  --radius-card: 24px;
+  --radius-pill: 999px;
+}
+
+:root {
+  --color-slate-dark: #141413;
+  --color-ivory-medium: #f0eee6;
+  --color-ivory-light: #faf9f5;
+  --color-fog-gray: #f2f2f2;
+  --color-cloud-dark: #87867f;
+  --color-stone: #cccbc8;
+  --color-clay: #d97757;
+  --color-amber: #f1a900;
+
+  --font-gothic: "Plus Jakarta Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-serif: "Newsreader", Georgia, Cambria, "Times New Roman", Times, serif;
+
+  --surface-canvas: #f0eee6;
+  --surface-card: #faf9f5;
+  --surface-inverted: #141413;
+}
+
+/* ZERO Box Shadows Guarantee: Elevation is strictly tonal and structural */
+*, *::before, *::after {
+  box-shadow: none !important;
+}
+
+html {
+  scroll-behavior: smooth;
+  background-color: var(--color-ivory-medium);
+  color: var(--color-slate-dark);
+}
+
+::selection {
+  background-color: var(--color-clay);
+  color: var(--color-ivory-light);
+}
+
+body {
+  background-color: var(--color-ivory-medium);
+  color: var(--color-slate-dark);
+  font-family: var(--font-serif);
+  min-height: 100vh;
+  margin: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Typography Utility Classes */
+.font-gothic {
+  font-family: var(--font-gothic);
+}
+
+.font-serif {
+  font-family: var(--font-serif);
+}
+
+.text-label {
+  font-family: var(--font-gothic);
+  font-size: 13px;
+  line-height: 1;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.text-body-sm {
+  font-family: var(--font-serif);
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.text-body-lg {
+  font-family: var(--font-serif);
+  font-size: 20px;
+  line-height: 1.4;
+}
+
+.text-subheading {
+  font-family: var(--font-gothic);
+  font-size: 24px;
+  line-height: 1.29;
+  letter-spacing: -0.02em;
+  font-weight: 600;
+}
+
+.text-heading {
+  font-family: var(--font-gothic);
+  font-size: 54px;
+  line-height: 1.08;
+  letter-spacing: -0.05em;
+  font-weight: 700;
+}
+
+.text-display {
+  font-family: var(--font-gothic);
+  font-size: 89px;
+  line-height: 0.95;
+  letter-spacing: -0.05em;
+  font-weight: 800;
+}
