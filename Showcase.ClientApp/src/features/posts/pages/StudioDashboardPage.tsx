@@ -1,13 +1,15 @@
 import {
   Archive,
+  ArrowUpDown,
   ExternalLink,
   Globe,
   Image as ImageIcon,
   Layers,
   Pencil,
-  Plus,
+  Search,
   Trash2,
   UserCheck,
+  X,
 } from "lucide-react";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
@@ -20,6 +22,7 @@ import { PostStatus, type PostSummaryResponse } from "../../../shared/types/inde
 import { PostStatusBadge } from "../components/PostStatusBadge.tsx";
 
 type TabFilter = "all" | "published" | "drafts";
+type SortOption = "newest" | "oldest" | "title";
 
 function formatDate(isoString?: string | null): string {
   if (!isoString) return "Undated";
@@ -36,11 +39,13 @@ function formatDate(isoString?: string | null): string {
 }
 
 export const StudioDashboardPage: React.FC = () => {
-  const { currentUser, activePersona, switchPersona } = useAuth();
+  const { activePersona, switchPersona } = useAuth();
   const { showToast } = useToast();
 
   const [posts, setPosts] = useState<PostSummaryResponse[]>([]);
   const [activeTab, setActiveTab] = useState<TabFilter>("all");
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [sortBy, setSortBy] = useState<SortOption>("newest");
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -86,9 +91,10 @@ export const StudioDashboardPage: React.FC = () => {
     };
   }, [loadPosts]);
 
-  // Derived filtered post lists
-  const filteredPosts = useMemo(() => {
-    return posts.filter((post) => {
+  // Derived filtered & sorted post list
+  const filteredAndSortedPosts = useMemo(() => {
+    // 1. Filter by Tab Status
+    let result = posts.filter((post) => {
       const statusNum = Number(post.status);
       if (activeTab === "published") {
         return statusNum === PostStatus.Published;
@@ -98,7 +104,33 @@ export const StudioDashboardPage: React.FC = () => {
       }
       return true;
     });
-  }, [posts, activeTab]);
+
+    // 2. Filter by Search Query
+    if (searchQuery.trim()) {
+      const q = searchQuery.trim().toLowerCase();
+      result = result.filter((post) => {
+        const titleMatch = post.title.toLowerCase().includes(q);
+        const descMatch = post.description?.toLowerCase().includes(q) ?? false;
+        return titleMatch || descMatch;
+      });
+    }
+
+    // 3. Apply Sorting
+    return [...result].sort((a, b) => {
+      if (sortBy === "oldest") {
+        const dateA = new Date(a.publishedAt || a.createdAt).getTime();
+        const dateB = new Date(b.publishedAt || b.createdAt).getTime();
+        return dateA - dateB;
+      }
+      if (sortBy === "title") {
+        return a.title.localeCompare(b.title);
+      }
+      // Default: 'newest'
+      const dateA = new Date(a.publishedAt || a.createdAt).getTime();
+      const dateB = new Date(b.publishedAt || b.createdAt).getTime();
+      return dateB - dateA;
+    });
+  }, [posts, activeTab, searchQuery, sortBy]);
 
   // Tab count metrics
   const counts = useMemo(() => {
@@ -189,7 +221,7 @@ export const StudioDashboardPage: React.FC = () => {
         </h1>
         <p className="font-serif text-[18px] text-[#141413]/80 mt-4 leading-relaxed max-w-lg mx-auto">
           The Creator Studio is reserved for cataloging, uploading, and publishing exhibition works. Switch to the
-          Creator persona in the navigation bar to access your workshop.
+          Creator persona in the sidebar to access your workshop.
         </p>
         <div className="mt-8 flex items-center justify-center gap-4">
           <Button variant="clay" size="md" onClick={() => switchPersona("creator")}>
@@ -205,82 +237,101 @@ export const StudioDashboardPage: React.FC = () => {
     );
   }
 
-  const creatorDisplayName = currentUser
-    ? `${currentUser.firstName} ${currentUser.lastName}`.trim() || currentUser.username
-    : "Elena Rostova";
-
   return (
     <div className="min-h-screen bg-[#f0eee6] pb-24">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 sm:pt-16">
-        {/* Studio Editorial Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-10 border-b border-[#cccbc8]">
-          <div className="space-y-3">
-            <span className="font-gothic text-xs font-bold uppercase tracking-[0.16em] text-[#87867f]">
-              Exhibition Atelier &bull; Management
-            </span>
-            <h1 className="font-gothic text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight uppercase text-[#141413]">
-              Creator Studio
-            </h1>
-            <p className="font-serif text-lg sm:text-xl text-[#141413]/75 max-w-2xl leading-relaxed">
-              Welcome back, <strong className="font-semibold text-[#141413]">{creatorDisplayName}</strong>. Review your
-              published works, stage new visual series, and curate exhibition plates.
-            </p>
-          </div>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6">
+        {/* Compact Unified Action Toolbar (Replaces Hero Banner) */}
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-[#cccbc8]">
+          {/* Left: Filter Tabs + Search Input */}
+          <div className="flex flex-wrap items-center gap-4 sm:gap-6">
+            {/* Status Filter Tabs */}
+            <nav className="flex items-center gap-5 sm:gap-7" aria-label="Status filter tabs">
+              <button
+                type="button"
+                onClick={() => setActiveTab("all")}
+                className={`font-gothic text-[13px] font-semibold uppercase tracking-[0.10em] pb-1 transition-colors relative cursor-pointer ${
+                  activeTab === "all" ? "text-[#141413]" : "text-[#87867f] hover:text-[#141413]"
+                }`}
+              >
+                All
+                <span className="ml-1.5 text-xs font-normal opacity-75 font-serif">({counts.total})</span>
+                {activeTab === "all" && (
+                  <span className="absolute -bottom-[17px] left-0 right-0 h-[2px] bg-[#141413]" />
+                )}
+              </button>
 
-          <div className="flex items-center gap-3">
-            <Link to="/posts/new">
-              <Button variant="clay" size="lg" leftIcon={<Plus className="h-5 w-5 stroke-[2.2]" />}>
-                New Post
-              </Button>
-            </Link>
-          </div>
-        </div>
+              <button
+                type="button"
+                onClick={() => setActiveTab("published")}
+                className={`font-gothic text-[13px] font-semibold uppercase tracking-[0.10em] pb-1 transition-colors relative cursor-pointer ${
+                  activeTab === "published" ? "text-[#141413]" : "text-[#87867f] hover:text-[#141413]"
+                }`}
+              >
+                Published
+                <span className="ml-1.5 text-xs font-normal opacity-75 font-serif">({counts.published})</span>
+                {activeTab === "published" && (
+                  <span className="absolute -bottom-[17px] left-0 right-0 h-[2px] bg-[#141413]" />
+                )}
+              </button>
 
-        {/* Typographic Status Filter Tabs */}
-        <div className="mt-8 flex items-center justify-between border-b border-[#cccbc8] overflow-x-auto no-scrollbar">
-          <nav className="flex items-center gap-8" aria-label="Post status tabs">
-            <button
-              type="button"
-              onClick={() => setActiveTab("all")}
-              className={`font-gothic text-[13px] font-semibold uppercase tracking-[0.10em] pb-3 transition-colors relative cursor-pointer ${
-                activeTab === "all" ? "text-[#141413]" : "text-[#87867f] hover:text-[#141413]"
-              }`}
-            >
-              All
-              <span className="ml-2 text-xs font-normal opacity-75 font-serif">({counts.total})</span>
-              {activeTab === "all" && <span className="absolute bottom-0 left-0 right-0 h-[1.5px] bg-[#141413]" />}
-            </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab("drafts")}
+                className={`font-gothic text-[13px] font-semibold uppercase tracking-[0.10em] pb-1 transition-colors relative cursor-pointer ${
+                  activeTab === "drafts" ? "text-[#141413]" : "text-[#87867f] hover:text-[#141413]"
+                }`}
+              >
+                Drafts
+                <span className="ml-1.5 text-xs font-normal opacity-75 font-serif">({counts.drafts})</span>
+                {activeTab === "drafts" && (
+                  <span className="absolute -bottom-[17px] left-0 right-0 h-[2px] bg-[#141413]" />
+                )}
+              </button>
+            </nav>
 
-            <button
-              type="button"
-              onClick={() => setActiveTab("published")}
-              className={`font-gothic text-[13px] font-semibold uppercase tracking-[0.10em] pb-3 transition-colors relative cursor-pointer ${
-                activeTab === "published" ? "text-[#141413]" : "text-[#87867f] hover:text-[#141413]"
-              }`}
-            >
-              Published
-              <span className="ml-2 text-xs font-normal opacity-75 font-serif">({counts.published})</span>
-              {activeTab === "published" && (
-                <span className="absolute bottom-0 left-0 right-0 h-[1.5px] bg-[#141413]" />
+            {/* Subtle Divider */}
+            <div className="hidden sm:block h-4 w-px bg-[#cccbc8]" />
+
+            {/* Compact Search Bar */}
+            <div className="relative flex-1 sm:w-60 min-w-[180px]">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[#87867f]" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search plates..."
+                className="w-full pl-8 pr-7 py-1.5 bg-[#faf9f5] border border-[#cccbc8] rounded-xl text-xs font-serif text-[#141413] placeholder-[#87867f] focus:outline-none focus:border-[#141413] shadow-none transition-colors"
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery("")}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#87867f] hover:text-[#141413] cursor-pointer"
+                  aria-label="Clear search"
+                >
+                  <X className="h-3 w-3" />
+                </button>
               )}
-            </button>
+            </div>
+          </div>
 
-            <button
-              type="button"
-              onClick={() => setActiveTab("drafts")}
-              className={`font-gothic text-[13px] font-semibold uppercase tracking-[0.10em] pb-3 transition-colors relative cursor-pointer ${
-                activeTab === "drafts" ? "text-[#141413]" : "text-[#87867f] hover:text-[#141413]"
-              }`}
-            >
-              Drafts
-              <span className="ml-2 text-xs font-normal opacity-75 font-serif">({counts.drafts})</span>
-              {activeTab === "drafts" && <span className="absolute bottom-0 left-0 right-0 h-[1.5px] bg-[#141413]" />}
-            </button>
-          </nav>
-
-          <span className="font-gothic text-xs uppercase tracking-wider text-[#87867f] hidden sm:block pb-3">
-            Showing {filteredPosts.length} {filteredPosts.length === 1 ? "Work" : "Works"}
-          </span>
+          {/* Right: Sort Options + "+ New Post" Primary Action */}
+          <div className="flex items-center justify-between sm:justify-end gap-3 pt-2 sm:pt-0">
+            {/* Sort Selector */}
+            <div className="flex items-center gap-1.5 bg-[#faf9f5] border border-[#cccbc8] rounded-xl px-2.5 py-1.5 shadow-none">
+              <ArrowUpDown className="h-3.5 w-3.5 text-[#87867f] shrink-0" />
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as SortOption)}
+                className="bg-transparent text-xs font-gothic uppercase tracking-wider text-[#141413] cursor-pointer focus:outline-none pr-1"
+                aria-label="Sort plates"
+              >
+                <option value="newest">Newest First</option>
+                <option value="oldest">Oldest First</option>
+                <option value="title">Title (A-Z)</option>
+              </select>
+            </div>
+          </div>
         </div>
 
         {/* Error Alert */}
@@ -298,11 +349,11 @@ export const StudioDashboardPage: React.FC = () => {
 
         {/* Loading Skeletons */}
         {isLoading && (
-          <div className="mt-8 space-y-4">
+          <div className="mt-6 space-y-4">
             {[1, 2, 3].map((n) => (
               <div
                 key={n}
-                className="bg-[#faf9f5] border border-[#cccbc8] rounded-[24px] p-6 flex flex-col md:flex-row items-center gap-6"
+                className="bg-[#faf9f5] border border-[#cccbc8] rounded-[24px] p-6 flex flex-col md:flex-row items-center gap-6 shadow-none"
               >
                 <Skeleton className="w-full md:w-44 h-32 rounded-xl shrink-0" />
                 <div className="flex-1 w-full space-y-3">
@@ -320,33 +371,37 @@ export const StudioDashboardPage: React.FC = () => {
         )}
 
         {/* Empty State */}
-        {!isLoading && filteredPosts.length === 0 && (
-          <div className="mt-12 bg-[#faf9f5] border border-[#cccbc8] rounded-[24px] p-12 sm:p-16 text-center max-w-2xl mx-auto">
+        {!isLoading && filteredAndSortedPosts.length === 0 && (
+          <div className="mt-10 bg-[#faf9f5] border border-[#cccbc8] rounded-[24px] p-12 sm:p-16 text-center max-w-2xl mx-auto shadow-none">
             <div className="inline-flex items-center justify-center p-4 rounded-full bg-[#f0eee6] border border-[#cccbc8]/60 text-[#87867f] mb-4">
               <Layers className="h-8 w-8 stroke-[1.5]" />
             </div>
             <h3 className="font-gothic text-2xl font-bold uppercase tracking-tight text-[#141413]">
-              No Exhibition Works Cataloged
+              {searchQuery ? "No Matching Works Found" : "No Exhibition Works"}
             </h3>
-            <p className="font-serif text-sm sm:text-base text-[#87867f] mt-2 mb-6 leading-relaxed">
-              {activeTab === "published"
-                ? "You do not have any published works yet. Publish a draft to exhibit it to the global community."
-                : activeTab === "drafts"
-                  ? "Your draft archive is currently empty. Start drafting a new portfolio plate."
-                  : "No works found in your creator portfolio. Begin creating your first exhibition plate now."}
+            <p
+              className={`font-serif text-sm sm:text-base text-[#87867f] mt-2 leading-relaxed ${searchQuery ? "mb-6" : ""}`}
+            >
+              {searchQuery
+                ? `No exhibition plates matched your search query "${searchQuery}".`
+                : activeTab === "published"
+                  ? "You do not have any published works yet. Publish a draft to exhibit it in the gallery."
+                  : activeTab === "drafts"
+                    ? "Your draft archive is currently empty. Start drafting a new portfolio plate."
+                    : "No works found in your creator portfolio. Begin creating your first exhibition plate now."}
             </p>
-            <Link to="/posts/new">
-              <Button variant="clay" size="md" leftIcon={<Plus className="h-4 w-4" />}>
-                Create New Post
+            {searchQuery && (
+              <Button variant="outline" size="sm" onClick={() => setSearchQuery("")}>
+                Clear Search
               </Button>
-            </Link>
+            )}
           </div>
         )}
 
-        {/* Post List / Cards */}
-        {!isLoading && filteredPosts.length > 0 && (
-          <div className="mt-8 space-y-4">
-            {filteredPosts.map((post) => {
+        {/* Content List / Curation Cards */}
+        {!isLoading && filteredAndSortedPosts.length > 0 && (
+          <div className="mt-6 space-y-4">
+            {filteredAndSortedPosts.map((post) => {
               const isPublished = Number(post.status) === PostStatus.Published;
               const hasImages = (post.imageCount || 0) > 0;
               const isActionRunning = actionInProgressId === post.id;
@@ -354,7 +409,7 @@ export const StudioDashboardPage: React.FC = () => {
               return (
                 <div
                   key={post.id}
-                  className="bg-[#faf9f5] border border-[#cccbc8] rounded-[24px] p-5 sm:p-6 transition-all duration-200 hover:border-[#141413]/70 flex flex-col md:flex-row items-start md:items-center justify-between gap-6"
+                  className="bg-[#faf9f5] border border-[#cccbc8] rounded-[24px] p-5 sm:p-6 transition-all duration-200 hover:border-[#141413]/70 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 shadow-none"
                 >
                   {/* Left: Thumbnail & Details */}
                   <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5 w-full md:w-auto flex-1">
@@ -418,9 +473,9 @@ export const StudioDashboardPage: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* Right: Actions */}
+                  {/* Right: Quick Actions */}
                   <div className="flex flex-wrap items-center gap-2.5 w-full md:w-auto justify-end pt-4 md:pt-0 border-t md:border-t-0 border-[#cccbc8]/50">
-                    {/* View Details Link (for published or preview) */}
+                    {/* View Details Link */}
                     <Link to={`/posts/${post.id}`}>
                       <Button
                         variant="ghost"
