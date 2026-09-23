@@ -5,42 +5,42 @@
 
 import {
   PostStatus,
-  type Profile,
-  type Post,
-  type UserAccount,
+  type AddSocialLinkRequest,
+  type AuthResponse,
+  type ChangeEmailRequest,
+  type ChangePasswordRequest,
+  type ChangeUsernameRequest,
+  type CreatePostRequest,
   type CurrentUserResponse,
+  type ExplorePostResponse,
+  type LoginRequest,
+  type PaginatedList,
+  type Post,
+  type PostCreatedResponse,
+  type PostDetailsResponse,
+  type PostImageAddedResponse,
+  type PostSummaryResponse,
+  type ProblemDetails,
+  type Profile,
   type ProfileDetailsResponse,
   type PublicProfileResponse,
-  type PostDetailsResponse,
-  type PostSummaryResponse,
-  type ExplorePostResponse,
-  type PaginatedList,
-  type ProblemDetails,
-  type AuthResponse,
   type RegisterRequest,
-  type LoginRequest,
-  type ChangePasswordRequest,
-  type ChangeEmailRequest,
-  type ChangeUsernameRequest,
-  type UpdateProfileRequest,
-  type AddSocialLinkRequest,
-  type UpdateSocialLinkRequest,
-  type ReorderSocialLinksRequest,
-  type CreatePostRequest,
-  type UpdatePostRequest,
   type ReorderPostImagesRequest,
+  type ReorderSocialLinksRequest,
+  type SocialLinkIdResponse,
+  type UpdatePostRequest,
+  type UpdateProfileRequest,
+  type UpdateSocialLinkRequest,
   type UploadUrlRequest,
   type UploadUrlResponse,
-  type PostImageAddedResponse,
-  type SocialLinkIdResponse,
-  type PostCreatedResponse,
-} from '../types/index.ts';
+  type UserAccount,
+} from "../types/index.ts";
 
-import { INITIAL_USERS, INITIAL_PROFILES, INITIAL_POSTS } from './mockData.ts';
+import { INITIAL_POSTS, INITIAL_PROFILES, INITIAL_USERS } from "./mockData.ts";
 
-const DB_STORAGE_KEY = 'showcase_portfolio_db';
-const AUTH_STORAGE_KEY = 'showcase_auth_state';
-const PERSONA_STORAGE_KEY = 'showcase_active_persona';
+const DB_STORAGE_KEY = "showcase_portfolio_db";
+const AUTH_STORAGE_KEY = "showcase_auth_state";
+const PERSONA_STORAGE_KEY = "showcase_active_persona";
 
 interface MockDatabase {
   users: UserAccount[];
@@ -59,12 +59,12 @@ interface StoredAuthState {
 // ---------------------------------------------------------------------------
 
 function generateUuid(): string {
-  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
     return crypto.randomUUID();
   }
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
     const r = (Math.random() * 16) | 0;
-    const v = c === 'x' ? r : (r & 0x3) | 0x8;
+    const v = c === "x" ? r : (r & 0x3) | 0x8;
     return v.toString(16);
   });
 }
@@ -79,7 +79,7 @@ export class MockApiError extends Error {
 
   constructor(status: number, title: string, detail?: string, errors?: Record<string, string[]>) {
     super(detail || title);
-    this.name = 'MockApiError';
+    this.name = "MockApiError";
     this.problem = {
       title,
       status,
@@ -95,7 +95,7 @@ export class MockApiError extends Error {
 
 class MockDbService {
   private loadDb(): MockDatabase {
-    if (typeof window === 'undefined') {
+    if (typeof window === "undefined") {
       return {
         users: INITIAL_USERS,
         profiles: INITIAL_PROFILES,
@@ -108,11 +108,18 @@ class MockDbService {
       if (raw) {
         const parsed = JSON.parse(raw) as MockDatabase;
         if (parsed.users && parsed.profiles && parsed.posts) {
+          // Merge in any newly added seed posts that are not yet in cached db
+          const existingIds = new Set(parsed.posts.map((p) => p.id));
+          const newSeedPosts = INITIAL_POSTS.filter((p) => !existingIds.has(p.id));
+          if (newSeedPosts.length > 0) {
+            parsed.posts.push(...JSON.parse(JSON.stringify(newSeedPosts)));
+            this.saveDb(parsed);
+          }
           return parsed;
         }
       }
     } catch (err) {
-      console.warn('Failed to parse mock database from localStorage; reinitializing.', err);
+      console.warn("Failed to parse mock database from localStorage; reinitializing.", err);
     }
 
     const initialDb: MockDatabase = {
@@ -125,16 +132,16 @@ class MockDbService {
   }
 
   private saveDb(db: MockDatabase): void {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       localStorage.setItem(DB_STORAGE_KEY, JSON.stringify(db));
     }
   }
 
   public resetDatabase(): void {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       localStorage.removeItem(DB_STORAGE_KEY);
       localStorage.removeItem(AUTH_STORAGE_KEY);
-      localStorage.setItem(PERSONA_STORAGE_KEY, 'creator');
+      localStorage.setItem(PERSONA_STORAGE_KEY, "creator");
     }
   }
 
@@ -142,27 +149,27 @@ class MockDbService {
   // Auth & Persona State
   // -------------------------------------------------------------------------
 
-  public getActivePersona(): 'visitor' | 'creator' {
-    if (typeof window !== 'undefined') {
+  public getActivePersona(): "visitor" | "creator" {
+    if (typeof window !== "undefined") {
       const stored = localStorage.getItem(PERSONA_STORAGE_KEY);
-      if (stored === 'visitor' || stored === 'creator') {
+      if (stored === "visitor" || stored === "creator") {
         return stored;
       }
     }
-    return 'creator';
+    return "creator";
   }
 
-  public setActivePersona(persona: 'visitor' | 'creator'): void {
-    if (typeof window !== 'undefined') {
+  public setActivePersona(persona: "visitor" | "creator"): void {
+    if (typeof window !== "undefined") {
       localStorage.setItem(PERSONA_STORAGE_KEY, persona);
-      window.dispatchEvent(new CustomEvent('showcase:persona-change', { detail: persona }));
+      window.dispatchEvent(new CustomEvent("showcase:persona-change", { detail: persona }));
     }
   }
 
   public getStoredAuth(): StoredAuthState | null {
-    if (typeof window === 'undefined') return null;
+    if (typeof window === "undefined") return null;
     const persona = this.getActivePersona();
-    if (persona === 'visitor') return null;
+    if (persona === "visitor") return null;
 
     try {
       const raw = localStorage.getItem(AUTH_STORAGE_KEY);
@@ -175,16 +182,16 @@ class MockDbService {
 
     // Default creator session: Elena Vance
     const defaultAuth: StoredAuthState = {
-      userId: 'usr_elena_vance',
-      accessToken: 'mock_jwt_token_elena_vance',
-      refreshToken: 'mock_refresh_token_elena_vance',
+      userId: "usr_elena_vance",
+      accessToken: "mock_jwt_token_elena_vance",
+      refreshToken: "mock_refresh_token_elena_vance",
     };
     localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(defaultAuth));
     return defaultAuth;
   }
 
   public setStoredAuth(auth: StoredAuthState | null): void {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       if (auth) {
         localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(auth));
       } else {
@@ -196,17 +203,17 @@ class MockDbService {
   private getAuthenticatedUser(db: MockDatabase): { user: UserAccount; profile: Profile } {
     const auth = this.getStoredAuth();
     if (!auth) {
-      throw new MockApiError(401, 'Unauthorized', 'You must be signed in to perform this action.');
+      throw new MockApiError(401, "Unauthorized", "You must be signed in to perform this action.");
     }
 
     const user = db.users.find((u) => u.id === auth.userId);
     if (!user) {
-      throw new MockApiError(401, 'Unauthorized', 'Authenticated session user not found.');
+      throw new MockApiError(401, "Unauthorized", "Authenticated session user not found.");
     }
 
     const profile = db.profiles.find((p) => p.userId === user.id);
     if (!profile) {
-      throw new MockApiError(404, 'Profile.NotFoundForUser', 'Creator profile not found for user.');
+      throw new MockApiError(404, "Profile.NotFoundForUser", "Creator profile not found for user.");
     }
 
     return { user, profile };
@@ -222,17 +229,17 @@ class MockDbService {
 
     // Validation
     if (!request.email || !request.username || !request.password || !request.firstName || !request.lastName) {
-      throw new MockApiError(400, 'Bad Request', 'All fields are required.');
+      throw new MockApiError(400, "Bad Request", "All fields are required.");
     }
 
     const emailTaken = db.users.some((u) => u.email.toLowerCase() === request.email.trim().toLowerCase());
     if (emailTaken) {
-      throw new MockApiError(409, 'Conflict', 'An account with this email address already exists.');
+      throw new MockApiError(409, "Conflict", "An account with this email address already exists.");
     }
 
     const usernameTaken = db.users.some((u) => u.username.toLowerCase() === request.username.trim().toLowerCase());
     if (usernameTaken) {
-      throw new MockApiError(409, 'Conflict', 'This username is already taken.');
+      throw new MockApiError(409, "Conflict", "This username is already taken.");
     }
 
     const userId = `usr_${generateUuid().slice(0, 8)}`;
@@ -245,7 +252,7 @@ class MockDbService {
       username: request.username.trim(),
       passwordHash: request.password,
       profileId,
-      roles: ['Creator'],
+      roles: ["Creator"],
     };
 
     const newProfile: Profile = {
@@ -278,7 +285,7 @@ class MockDbService {
       accessToken: authResponse.accessToken,
       refreshToken: authResponse.refreshToken,
     });
-    this.setActivePersona('creator');
+    this.setActivePersona("creator");
 
     return authResponse;
   }
@@ -288,12 +295,10 @@ class MockDbService {
     const db = this.loadDb();
 
     const query = request.emailOrUsername.trim().toLowerCase();
-    const user = db.users.find(
-      (u) => u.email.toLowerCase() === query || u.username.toLowerCase() === query
-    );
+    const user = db.users.find((u) => u.email.toLowerCase() === query || u.username.toLowerCase() === query);
 
     if (!user || user.passwordHash !== request.password) {
-      throw new MockApiError(400, 'Bad Request', 'Invalid credentials provided.');
+      throw new MockApiError(400, "Bad Request", "Invalid credentials provided.");
     }
 
     const authResponse: AuthResponse = {
@@ -307,7 +312,7 @@ class MockDbService {
       accessToken: authResponse.accessToken,
       refreshToken: authResponse.refreshToken,
     });
-    this.setActivePersona('creator');
+    this.setActivePersona("creator");
 
     return authResponse;
   }
@@ -315,12 +320,12 @@ class MockDbService {
   public async logout(): Promise<void> {
     await simulateNetworkLatency(50, 100);
     this.setStoredAuth(null);
-    this.setActivePersona('visitor');
+    this.setActivePersona("visitor");
   }
 
   public async getCurrentUser(): Promise<CurrentUserResponse | null> {
     await simulateNetworkLatency(80, 150);
-    if (this.getActivePersona() === 'visitor') {
+    if (this.getActivePersona() === "visitor") {
       return null;
     }
 
@@ -349,11 +354,11 @@ class MockDbService {
     const { user } = this.getAuthenticatedUser(db);
 
     if (user.passwordHash !== request.currentPassword) {
-      throw new MockApiError(400, 'Bad Request', 'Current password does not match.');
+      throw new MockApiError(400, "Bad Request", "Current password does not match.");
     }
 
     if (!request.newPassword || request.newPassword.length < 6) {
-      throw new MockApiError(400, 'Bad Request', 'New password must be at least 6 characters long.');
+      throw new MockApiError(400, "Bad Request", "New password must be at least 6 characters long.");
     }
 
     user.passwordHash = request.newPassword;
@@ -366,18 +371,18 @@ class MockDbService {
     const { user, profile } = this.getAuthenticatedUser(db);
 
     if (user.passwordHash !== request.currentPassword) {
-      throw new MockApiError(400, 'Bad Request', 'Current password does not match.');
+      throw new MockApiError(400, "Bad Request", "Current password does not match.");
     }
 
     const newEmail = request.newEmail.trim().toLowerCase();
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(newEmail)) {
-      throw new MockApiError(400, 'Bad Request', 'Please enter a valid email address.');
+      throw new MockApiError(400, "Bad Request", "Please enter a valid email address.");
     }
 
     const conflict = db.users.some((u) => u.id !== user.id && u.email.toLowerCase() === newEmail);
     if (conflict) {
-      throw new MockApiError(409, 'Conflict', 'This email address is already associated with another account.');
+      throw new MockApiError(409, "Conflict", "This email address is already associated with another account.");
     }
 
     user.email = newEmail;
@@ -392,7 +397,7 @@ class MockDbService {
     const { user, profile } = this.getAuthenticatedUser(db);
 
     if (user.passwordHash !== request.currentPassword) {
-      throw new MockApiError(400, 'Bad Request', 'Current password does not match.');
+      throw new MockApiError(400, "Bad Request", "Current password does not match.");
     }
 
     const newUsername = request.newUsername.trim();
@@ -400,14 +405,14 @@ class MockDbService {
     if (!usernameRegex.test(newUsername)) {
       throw new MockApiError(
         400,
-        'Bad Request',
-        'Username must be between 3 and 30 characters and contain only letters, numbers, underscores, or hyphens.'
+        "Bad Request",
+        "Username must be between 3 and 30 characters and contain only letters, numbers, underscores, or hyphens.",
       );
     }
 
     const conflict = db.users.some((u) => u.id !== user.id && u.username.toLowerCase() === newUsername.toLowerCase());
     if (conflict) {
-      throw new MockApiError(409, 'Conflict', 'This username is already taken.');
+      throw new MockApiError(409, "Conflict", "This username is already taken.");
     }
 
     user.username = newUsername;
@@ -455,7 +460,7 @@ class MockDbService {
 
     const profile = db.profiles.find((p) => p.username.toLowerCase() === username.trim().toLowerCase());
     if (!profile) {
-      throw new MockApiError(404, 'Profile.NotFound', `Profile not found for username "${username}".`);
+      throw new MockApiError(404, "Profile.NotFound", `Profile not found for username "${username}".`);
     }
 
     const sortedSocialLinks = [...profile.socialLinks].sort((a, b) => a.displayOrder - b.displayOrder);
@@ -483,11 +488,11 @@ class MockDbService {
     const { profile } = this.getAuthenticatedUser(db);
 
     if (!request.firstName?.trim() || !request.lastName?.trim()) {
-      throw new MockApiError(400, 'Bad Request', 'First and last names cannot be empty.');
+      throw new MockApiError(400, "Bad Request", "First and last names cannot be empty.");
     }
 
     if (request.bio && request.bio.length > 500) {
-      throw new MockApiError(400, 'Profile.InvalidBio', 'Biography cannot exceed 500 characters.');
+      throw new MockApiError(400, "Profile.InvalidBio", "Biography cannot exceed 500 characters.");
     }
 
     profile.firstName = request.firstName.trim();
@@ -503,7 +508,7 @@ class MockDbService {
     const db = this.loadDb();
     const { profile } = this.getAuthenticatedUser(db);
 
-    const ext = request.contentType.split('/')[1] || 'jpg';
+    const ext = request.contentType.split("/")[1] || "jpg";
     const storageKey = `avatars/${profile.id}/${generateUuid()}.${ext}`;
     const uploadUrl = `https://mock-r2-upload.showcase.internal/${storageKey}`;
 
@@ -517,7 +522,8 @@ class MockDbService {
 
     profile.avatarKey = storageKey;
     // If client provides simulated data/object URL, use it; otherwise generate standard preview
-    profile.avatarUrl = avatarUrl || `https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=600&q=80`;
+    profile.avatarUrl =
+      avatarUrl || `https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=600&q=80`;
     profile.updatedAt = new Date().toISOString();
 
     this.saveDb(db);
@@ -545,17 +551,15 @@ class MockDbService {
     const { profile } = this.getAuthenticatedUser(db);
 
     if (!request.platform?.trim()) {
-      throw new MockApiError(400, 'Bad Request', 'Platform name is required.');
+      throw new MockApiError(400, "Bad Request", "Platform name is required.");
     }
 
-    const url = request.url?.trim() || '';
-    if (!url.startsWith('http://') && !url.startsWith('https://')) {
-      throw new MockApiError(400, 'SocialLink.InvalidUrl', 'URL must be a valid absolute HTTP or HTTPS address.');
+    const url = request.url?.trim() || "";
+    if (!url.startsWith("http://") && !url.startsWith("https://")) {
+      throw new MockApiError(400, "SocialLink.InvalidUrl", "URL must be a valid absolute HTTP or HTTPS address.");
     }
 
-    const maxOrder = profile.socialLinks.length > 0
-      ? Math.max(...profile.socialLinks.map((s) => s.displayOrder))
-      : -1;
+    const maxOrder = profile.socialLinks.length > 0 ? Math.max(...profile.socialLinks.map((s) => s.displayOrder)) : -1;
 
     const newLink = {
       id: `soc_${generateUuid().slice(0, 8)}`,
@@ -579,16 +583,16 @@ class MockDbService {
 
     const link = profile.socialLinks.find((s) => s.id === id);
     if (!link) {
-      throw new MockApiError(404, 'SocialLink.NotFound', `Social link with ID "${id}" was not found.`);
+      throw new MockApiError(404, "SocialLink.NotFound", `Social link with ID "${id}" was not found.`);
     }
 
     if (!request.platform?.trim()) {
-      throw new MockApiError(400, 'Bad Request', 'Platform name is required.');
+      throw new MockApiError(400, "Bad Request", "Platform name is required.");
     }
 
-    const url = request.url?.trim() || '';
-    if (!url.startsWith('http://') && !url.startsWith('https://')) {
-      throw new MockApiError(400, 'SocialLink.InvalidUrl', 'URL must be a valid absolute HTTP or HTTPS address.');
+    const url = request.url?.trim() || "";
+    if (!url.startsWith("http://") && !url.startsWith("https://")) {
+      throw new MockApiError(400, "SocialLink.InvalidUrl", "URL must be a valid absolute HTTP or HTTPS address.");
     }
 
     link.platform = request.platform.trim();
@@ -605,7 +609,7 @@ class MockDbService {
 
     const index = profile.socialLinks.findIndex((s) => s.id === id);
     if (index === -1) {
-      throw new MockApiError(404, 'SocialLink.NotFound', `Social link with ID "${id}" was not found.`);
+      throw new MockApiError(404, "SocialLink.NotFound", `Social link with ID "${id}" was not found.`);
     }
 
     profile.socialLinks.splice(index, 1);
@@ -647,7 +651,7 @@ class MockDbService {
     search?: string,
     pageNumber = 1,
     pageSize = 12,
-    category?: string
+    category?: string,
   ): Promise<PaginatedList<ExplorePostResponse>> {
     await simulateNetworkLatency();
     const db = this.loadDb();
@@ -655,7 +659,7 @@ class MockDbService {
     // Only Published posts are visible in the explore feed
     let items = db.posts.filter((p) => p.status === PostStatus.Published);
 
-    if (category && category.trim() && category.trim().toLowerCase() !== 'all') {
+    if (category && category.trim() && category.trim().toLowerCase() !== "all") {
       const cat = category.trim().toLowerCase();
       items = items.filter((post) => {
         const tagMatch = post.tags?.some((t) => t.toLowerCase().includes(cat));
@@ -740,7 +744,7 @@ class MockDbService {
 
     const post = db.posts.find((p) => p.id === id);
     if (!post) {
-      throw new MockApiError(404, 'Post.NotFound', `Post with ID "${id}" was not found.`);
+      throw new MockApiError(404, "Post.NotFound", `Post with ID "${id}" was not found.`);
     }
 
     const creator = db.profiles.find((p) => p.id === post.profileId);
@@ -758,7 +762,7 @@ class MockDbService {
       }
 
       if (!isOwner) {
-        throw new MockApiError(404, 'Post.NotFound', `Post with ID "${id}" was not found.`);
+        throw new MockApiError(404, "Post.NotFound", `Post with ID "${id}" was not found.`);
       }
     }
 
@@ -797,14 +801,14 @@ class MockDbService {
   public async getProfilePosts(
     username: string,
     pageNumber = 1,
-    pageSize = 12
+    pageSize = 12,
   ): Promise<PaginatedList<PostSummaryResponse>> {
     await simulateNetworkLatency();
     const db = this.loadDb();
 
     const profile = db.profiles.find((p) => p.username.toLowerCase() === username.trim().toLowerCase());
     if (!profile) {
-      throw new MockApiError(404, 'Profile.NotFound', `Profile not found for username "${username}".`);
+      throw new MockApiError(404, "Profile.NotFound", `Profile not found for username "${username}".`);
     }
 
     // Public view: only Published posts
@@ -862,15 +866,15 @@ class MockDbService {
   public async getCreatorPosts(
     username: string,
     pageNumber = 1,
-    pageSize = 12
+    pageSize = 12,
   ): Promise<PaginatedList<PostSummaryResponse>> {
     return this.getProfilePosts(username, pageNumber, pageSize);
   }
 
   public async getMyPosts(
-    status?: PostStatus | 'all',
+    status?: PostStatus | "all",
     pageNumber = 1,
-    pageSize = 10
+    pageSize = 10,
   ): Promise<PaginatedList<PostSummaryResponse>> {
     await simulateNetworkLatency();
     const db = this.loadDb();
@@ -878,7 +882,7 @@ class MockDbService {
 
     let items = db.posts.filter((p) => p.profileId === profile.id);
 
-    if (status !== undefined && status !== 'all') {
+    if (status !== undefined && status !== "all") {
       items = items.filter((p) => p.status === status);
     }
 
@@ -938,7 +942,7 @@ class MockDbService {
     const { profile } = this.getAuthenticatedUser(db);
 
     if (!request.title?.trim()) {
-      throw new MockApiError(400, 'Bad Request', 'Title is required.');
+      throw new MockApiError(400, "Bad Request", "Title is required.");
     }
 
     const postId = generateUuid();
@@ -948,7 +952,7 @@ class MockDbService {
       id: postId,
       profileId: profile.id,
       title: request.title.trim(),
-      description: request.description?.trim() || '',
+      description: request.description?.trim() || "",
       externalUrl: request.externalUrl?.trim() || null,
       tags: request.tags || [],
       status: PostStatus.Draft,
@@ -971,19 +975,19 @@ class MockDbService {
 
     const post = db.posts.find((p) => p.id === id);
     if (!post) {
-      throw new MockApiError(404, 'Post.NotFound', `Post with ID "${id}" was not found.`);
+      throw new MockApiError(404, "Post.NotFound", `Post with ID "${id}" was not found.`);
     }
 
     if (post.profileId !== profile.id) {
-      throw new MockApiError(403, 'Post.UnauthorizedAccess', 'You do not own this post.');
+      throw new MockApiError(403, "Post.UnauthorizedAccess", "You do not own this post.");
     }
 
     if (!request.title?.trim()) {
-      throw new MockApiError(400, 'Bad Request', 'Title is required.');
+      throw new MockApiError(400, "Bad Request", "Title is required.");
     }
 
     post.title = request.title.trim();
-    post.description = request.description?.trim() || '';
+    post.description = request.description?.trim() || "";
     post.externalUrl = request.externalUrl?.trim() || null;
     if (request.tags) {
       post.tags = request.tags;
@@ -1000,12 +1004,12 @@ class MockDbService {
 
     const index = db.posts.findIndex((p) => p.id === id);
     if (index === -1) {
-      throw new MockApiError(404, 'Post.NotFound', `Post with ID "${id}" was not found.`);
+      throw new MockApiError(404, "Post.NotFound", `Post with ID "${id}" was not found.`);
     }
 
     const post = db.posts[index];
     if (post.profileId !== profile.id) {
-      throw new MockApiError(403, 'Post.UnauthorizedAccess', 'You do not own this post.');
+      throw new MockApiError(403, "Post.UnauthorizedAccess", "You do not own this post.");
     }
 
     db.posts.splice(index, 1);
@@ -1019,19 +1023,19 @@ class MockDbService {
 
     const post = db.posts.find((p) => p.id === id);
     if (!post) {
-      throw new MockApiError(404, 'Post.NotFound', `Post with ID "${id}" was not found.`);
+      throw new MockApiError(404, "Post.NotFound", `Post with ID "${id}" was not found.`);
     }
 
     if (post.profileId !== profile.id) {
-      throw new MockApiError(403, 'Post.UnauthorizedAccess', 'You do not own this post.');
+      throw new MockApiError(403, "Post.UnauthorizedAccess", "You do not own this post.");
     }
 
     // MANDATORY BACKEND INVARIANT: Post cannot be published without at least 1 image
     if (!post.images || post.images.length === 0) {
       throw new MockApiError(
         400,
-        'Post.CannotPublishEmptyPost',
-        'A post cannot be published without at least one uploaded image.'
+        "Post.CannotPublishEmptyPost",
+        "A post cannot be published without at least one uploaded image.",
       );
     }
 
@@ -1050,11 +1054,11 @@ class MockDbService {
 
     const post = db.posts.find((p) => p.id === id);
     if (!post) {
-      throw new MockApiError(404, 'Post.NotFound', `Post with ID "${id}" was not found.`);
+      throw new MockApiError(404, "Post.NotFound", `Post with ID "${id}" was not found.`);
     }
 
     if (post.profileId !== profile.id) {
-      throw new MockApiError(403, 'Post.UnauthorizedAccess', 'You do not own this post.');
+      throw new MockApiError(403, "Post.UnauthorizedAccess", "You do not own this post.");
     }
 
     post.status = PostStatus.Unpublished;
@@ -1074,14 +1078,14 @@ class MockDbService {
 
     const post = db.posts.find((p) => p.id === postId);
     if (!post) {
-      throw new MockApiError(404, 'Post.NotFound', `Post with ID "${postId}" was not found.`);
+      throw new MockApiError(404, "Post.NotFound", `Post with ID "${postId}" was not found.`);
     }
 
     if (post.profileId !== profile.id) {
-      throw new MockApiError(403, 'Post.UnauthorizedAccess', 'You do not own this post.');
+      throw new MockApiError(403, "Post.UnauthorizedAccess", "You do not own this post.");
     }
 
-    const ext = request.contentType.split('/')[1] || 'jpg';
+    const ext = request.contentType.split("/")[1] || "jpg";
     const storageKey = `posts/${profile.id}/${generateUuid()}.${ext}`;
     const uploadUrl = `https://mock-r2-upload.showcase.internal/${storageKey}`;
 
@@ -1095,7 +1099,7 @@ class MockDbService {
    */
   public async uploadImageDirect(uploadUrl: string, file: File | Blob): Promise<string> {
     await simulateNetworkLatency(150, 350);
-    if (typeof URL !== 'undefined' && typeof URL.createObjectURL === 'function') {
+    if (typeof URL !== "undefined" && typeof URL.createObjectURL === "function") {
       return URL.createObjectURL(file);
     }
     return uploadUrl;
@@ -1105,7 +1109,7 @@ class MockDbService {
     postId: string,
     storageKey: string,
     url?: string,
-    displayOrder?: number
+    displayOrder?: number,
   ): Promise<PostImageAddedResponse> {
     await simulateNetworkLatency();
     const db = this.loadDb();
@@ -1113,11 +1117,11 @@ class MockDbService {
 
     const post = db.posts.find((p) => p.id === postId);
     if (!post) {
-      throw new MockApiError(404, 'Post.NotFound', `Post with ID "${postId}" was not found.`);
+      throw new MockApiError(404, "Post.NotFound", `Post with ID "${postId}" was not found.`);
     }
 
     if (post.profileId !== profile.id) {
-      throw new MockApiError(403, 'Post.UnauthorizedAccess', 'You do not own this post.');
+      throw new MockApiError(403, "Post.UnauthorizedAccess", "You do not own this post.");
     }
 
     const maxOrder = post.images.length > 0 ? Math.max(...post.images.map((i) => i.displayOrder)) : -1;
@@ -1147,24 +1151,24 @@ class MockDbService {
 
     const post = db.posts.find((p) => p.id === postId);
     if (!post) {
-      throw new MockApiError(404, 'Post.NotFound', `Post with ID "${postId}" was not found.`);
+      throw new MockApiError(404, "Post.NotFound", `Post with ID "${postId}" was not found.`);
     }
 
     if (post.profileId !== profile.id) {
-      throw new MockApiError(403, 'Post.UnauthorizedAccess', 'You do not own this post.');
+      throw new MockApiError(403, "Post.UnauthorizedAccess", "You do not own this post.");
     }
 
     const imgIndex = post.images.findIndex((i) => i.id === imageId);
     if (imgIndex === -1) {
-      throw new MockApiError(404, 'PostImage.NotFound', `Post image with ID "${imageId}" was not found.`);
+      throw new MockApiError(404, "PostImage.NotFound", `Post image with ID "${imageId}" was not found.`);
     }
 
     // MANDATORY BACKEND INVARIANT: A published post cannot delete its final remaining image
     if (post.status === PostStatus.Published && post.images.length <= 1) {
       throw new MockApiError(
         409,
-        'Post.CannotRemoveLastImageFromPublishedPost',
-        'Cannot remove the final remaining image from a published post. Unpublish the post first or upload a replacement.'
+        "Post.CannotRemoveLastImageFromPublishedPost",
+        "Cannot remove the final remaining image from a published post. Unpublish the post first or upload a replacement.",
       );
     }
 
@@ -1181,11 +1185,11 @@ class MockDbService {
 
     const post = db.posts.find((p) => p.id === postId);
     if (!post) {
-      throw new MockApiError(404, 'Post.NotFound', `Post with ID "${postId}" was not found.`);
+      throw new MockApiError(404, "Post.NotFound", `Post with ID "${postId}" was not found.`);
     }
 
     if (post.profileId !== profile.id) {
-      throw new MockApiError(403, 'Post.UnauthorizedAccess', 'You do not own this post.');
+      throw new MockApiError(403, "Post.UnauthorizedAccess", "You do not own this post.");
     }
 
     if (request.items && request.items.length > 0) {

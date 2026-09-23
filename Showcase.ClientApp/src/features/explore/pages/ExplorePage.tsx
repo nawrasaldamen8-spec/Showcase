@@ -1,13 +1,51 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { SearchX, ArrowDown, RefreshCw } from 'lucide-react';
-import type { ExplorePostResponse } from '../../../shared/types/index.ts';
-import { apiClient } from '../../../shared/api/apiClient.ts';
-import { Button } from '../../../shared/components/Button.tsx';
-import { Skeleton } from '../../../shared/components/Skeleton.tsx';
-import { ExploreHeader } from '../components/ExploreHeader.tsx';
-import { PostCard } from '../components/PostCard.tsx';
+import { ArrowDown, RefreshCw, SearchX } from "lucide-react";
+import React, { useCallback, useEffect, useState } from "react";
+import { apiClient } from "../../../shared/api/apiClient.ts";
+import { Button } from "../../../shared/components/Button.tsx";
+import { Skeleton } from "../../../shared/components/Skeleton.tsx";
+import type { ExplorePostResponse } from "../../../shared/types/index.ts";
+import { PostCard, type TileSpanType } from "../components/PostCard.tsx";
 
-const PAGE_SIZE = 6;
+const PAGE_SIZE = 10;
+
+/**
+ * Editorial Bento Pattern Interleaving:
+ * Combines Hero (2x2), Tall portrait (1x2), Wide landscape (2x1), and Classic square (1x1).
+ * Coupled with CSS Grid `grid-flow-dense`, smaller items seamlessly pack into any open slots.
+ */
+const BENTO_PATTERN: TileSpanType[] = [
+  "hero", // 0: 2x2 Feature hero
+  "square", // 1: 1x1
+  "square", // 2: 1x1
+  "tall", // 3: 1x2 Vertical portrait
+  "square", // 4: 1x1
+  "wide", // 5: 2x1 Panoramic landscape
+  "square", // 6: 1x1
+  "square", // 7: 1x1
+  "tall", // 8: 1x2 Vertical portrait
+  "square", // 9: 1x1
+  "hero", // 10: 2x2 Feature hero
+  "square", // 11: 1x1
+  "wide", // 12: 2x1 Panoramic landscape
+  "square", // 13: 1x1
+  "square", // 14: 1x1
+  "tall", // 15: 1x2 Vertical portrait
+  "square", // 16: 1x1
+  "square", // 17: 1x1
+  "wide", // 18: 2x1 Panoramic landscape
+  "square", // 19: 1x1
+];
+
+const getSpanType = (index: number): TileSpanType => {
+  return BENTO_PATTERN[index % BENTO_PATTERN.length] ?? "square";
+};
+
+const SKELETON_SPAN_CLASSES: Record<TileSpanType, string> = {
+  square: "col-span-1 row-span-1",
+  tall: "col-span-1 row-span-2",
+  wide: "col-span-2 row-span-1",
+  hero: "col-span-2 row-span-2",
+};
 
 export const ExplorePage: React.FC = () => {
   const [posts, setPosts] = useState<ExplorePostResponse[]>([]);
@@ -18,56 +56,24 @@ export const ExplorePage: React.FC = () => {
   const [isLoadingMore, setIsLoadingMore] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
-  const [searchQuery, setSearchQuery] = useState<string>('');
-  const [debouncedSearch, setDebouncedSearch] = useState<string>('');
-  const [selectedCategory, setSelectedCategory] = useState<string>('All');
-
-  // Debounce search input by 250ms
-  const searchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  const handleSearchChange = (query: string) => {
-    setSearchQuery(query);
-    if (searchTimeoutRef.current) {
-      clearTimeout(searchTimeoutRef.current);
-    }
-    searchTimeoutRef.current = setTimeout(() => {
-      setDebouncedSearch(query);
-    }, 250);
-  };
-
-  const handleCategoryChange = (category: string) => {
-    setSelectedCategory(category);
-  };
-
-  const handleResetFilters = () => {
-    setSearchQuery('');
-    setDebouncedSearch('');
-    setSelectedCategory('All');
-  };
-
-  // Fetch initial or refreshed posts when search or category changes
+  // Fetch initial posts feed
   const fetchPosts = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await apiClient.getExplorePosts(
-        debouncedSearch.trim() || undefined,
-        1,
-        PAGE_SIZE,
-        selectedCategory !== 'All' ? selectedCategory : undefined
-      );
+      const response = await apiClient.getExplorePosts(undefined, 1, PAGE_SIZE);
 
       setPosts(response.items);
       setTotalCount(response.totalCount);
       setPageNumber(1);
       setHasNextPage(response.hasNextPage);
     } catch (err) {
-      console.error('Failed to load explore feed:', err);
-      setError('Unable to load exhibition plates. Please try again.');
+      console.error("Failed to load explore feed:", err);
+      setError("Unable to load exhibition plates. Please try again.");
     } finally {
       setIsLoading(false);
     }
-  }, [debouncedSearch, selectedCategory]);
+  }, []);
 
   useEffect(() => {
     let isCancelled = false;
@@ -87,39 +93,25 @@ export const ExplorePage: React.FC = () => {
     setIsLoadingMore(true);
     const nextPage = pageNumber + 1;
     try {
-      const response = await apiClient.getExplorePosts(
-        debouncedSearch.trim() || undefined,
-        nextPage,
-        PAGE_SIZE,
-        selectedCategory !== 'All' ? selectedCategory : undefined
-      );
+      const response = await apiClient.getExplorePosts(undefined, nextPage, PAGE_SIZE);
 
       setPosts((prev) => [...prev, ...response.items]);
       setPageNumber(nextPage);
       setHasNextPage(response.hasNextPage);
     } catch (err) {
-      console.error('Failed to load more posts:', err);
+      console.error("Failed to load more posts:", err);
     } finally {
       setIsLoadingMore(false);
     }
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
-      {/* Editorial Header with Search & Category Filters */}
-      <ExploreHeader
-        searchQuery={searchQuery}
-        onSearchChange={handleSearchChange}
-        selectedCategory={selectedCategory}
-        onCategoryChange={handleCategoryChange}
-        totalCount={totalCount}
-      />
-
-      {/* Main Content Area */}
-      <section className="mt-10 sm:mt-12" aria-label="Curated Exhibition Works">
+    <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-6 py-4 sm:py-6">
+      {/* Main Content Area - Dynamic Asymmetric Bento Grid */}
+      <section aria-label="Curated Exhibition Works">
         {/* Error State */}
         {error && (
-          <div className="bg-[#faf9f5] border border-[#d97757]/40 rounded-[24px] p-8 text-center max-w-lg mx-auto">
+          <div className="bg-[#faf9f5] border border-[#d97757]/40 rounded-[24px] p-8 text-center max-w-lg mx-auto my-12">
             <p className="font-serif text-lg text-[#141413]">{error}</p>
             <Button
               variant="outline"
@@ -133,35 +125,26 @@ export const ExplorePage: React.FC = () => {
           </div>
         )}
 
-        {/* Loading Skeletons on Initial Mount or Filter Change */}
+        {/* Loading Skeletons on Initial Mount */}
         {isLoading && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {Array.from({ length: 6 }).map((_, idx) => (
-              <div
-                key={idx}
-                className="bg-[#faf9f5] rounded-[24px] border border-[#cccbc8]/50 overflow-hidden flex flex-col"
-              >
-                <Skeleton variant="rectangular" className="aspect-[4/3] w-full" />
-                <div className="p-6 space-y-4">
-                  <Skeleton variant="text" width="75%" height={24} />
-                  <Skeleton variant="text" width="90%" height={16} />
-                  <Skeleton variant="text" width="60%" height={16} />
-                  <div className="pt-4 border-t border-[#cccbc8]/40 flex items-center gap-3">
-                    <Skeleton variant="circular" width={32} height={32} />
-                    <div className="space-y-1.5 flex-1">
-                      <Skeleton variant="text" width="50%" height={12} />
-                      <Skeleton variant="text" width="30%" height={10} />
-                    </div>
-                  </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 auto-rows-[170px] sm:auto-rows-[230px] lg:auto-rows-[280px] gap-1.5 sm:gap-2.5 lg:gap-3.5 grid-flow-dense">
+            {Array.from({ length: 10 }).map((_, idx) => {
+              const spanType = getSpanType(idx);
+              return (
+                <div
+                  key={idx}
+                  className={`bg-[#e6e3da] w-full h-full overflow-hidden ${SKELETON_SPAN_CLASSES[spanType]}`}
+                >
+                  <Skeleton variant="rectangular" className="w-full h-full" />
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
 
         {/* Empty State when no results found */}
         {!isLoading && !error && posts.length === 0 && (
-          <div className="bg-[#faf9f5] rounded-[24px] border border-[#cccbc8]/60 p-12 sm:p-16 text-center max-w-xl mx-auto my-8">
+          <div className="bg-[#faf9f5] rounded-[24px] border border-[#cccbc8]/60 p-12 sm:p-16 text-center max-w-xl mx-auto my-12">
             <div className="inline-flex items-center justify-center p-4 rounded-full bg-[#f0eee6] text-[#87867f] mb-4">
               <SearchX className="h-8 w-8 stroke-[1.5]" />
             </div>
@@ -169,33 +152,22 @@ export const ExplorePage: React.FC = () => {
               No Exhibition Plates Found
             </h3>
             <p className="font-serif text-[17px] text-[#141413]/75 mt-3 leading-relaxed">
-              {debouncedSearch
-                ? `No published works matched your search for "${debouncedSearch}". Try exploring different terms or clearing your search.`
-                : `There are currently no published works cataloged under category "${selectedCategory}".`}
+              There are currently no published works cataloged in the exhibition.
             </p>
-            <div className="mt-6">
-              <Button
-                variant="slate"
-                size="md"
-                onClick={handleResetFilters}
-              >
-                Reset All Filters
-              </Button>
-            </div>
           </div>
         )}
 
-        {/* Responsive Editorial Grid: 1 col mobile, 2 col tablet, 3 col desktop */}
+        {/* Dynamic Asymmetric Bento Feed */}
         {!isLoading && !error && posts.length > 0 && (
           <>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {posts.map((post) => (
-                <PostCard key={post.id} post={post} />
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 auto-rows-[170px] sm:auto-rows-[230px] lg:auto-rows-[280px] gap-1.5 sm:gap-2.5 lg:gap-3.5 grid-flow-dense">
+              {posts.map((post, index) => (
+                <PostCard key={post.id} post={post} spanType={getSpanType(index)} />
               ))}
             </div>
 
-            {/* Pagination / Load More Pill Button */}
-            <div className="mt-14 sm:mt-16 text-center">
+            {/* Pagination / Load More */}
+            <div className="mt-10 sm:mt-12 text-center">
               {hasNextPage ? (
                 <div className="flex flex-col items-center gap-3">
                   <Button

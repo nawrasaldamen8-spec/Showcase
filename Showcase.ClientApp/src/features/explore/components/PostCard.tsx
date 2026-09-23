@@ -1,28 +1,33 @@
-import React from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { Layers, Image as ImageIcon } from 'lucide-react';
-import type { ExplorePostResponse } from '../../../shared/types/index.ts';
-import { Badge } from '../../../shared/components/Badge.tsx';
+import { Image as ImageIcon, Layers } from "lucide-react";
+import React from "react";
+import { useNavigate } from "react-router-dom";
+import type { ExplorePostResponse } from "../../../shared/types/index.ts";
+
+export type TileSpanType = "square" | "tall" | "wide" | "hero";
 
 export interface PostCardProps {
   post: ExplorePostResponse;
+  spanType?: TileSpanType;
+  className?: string;
+  aspectRatio?: "square" | "4/3" | "4/5" | "16/9" | "auto";
 }
 
-function formatDate(isoString?: string | null): string {
-  if (!isoString) return '';
-  try {
-    const date = new Date(isoString);
-    return new Intl.DateTimeFormat('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-    }).format(date);
-  } catch {
-    return '';
-  }
-}
+const SPAN_CLASSES: Record<TileSpanType, string> = {
+  square: "col-span-1 row-span-1",
+  tall: "col-span-1 row-span-2",
+  wide: "col-span-2 row-span-1",
+  hero: "col-span-2 row-span-2",
+};
 
-export const PostCard: React.FC<PostCardProps> = ({ post }) => {
+const ASPECT_CLASSES: Record<string, string> = {
+  square: "aspect-square",
+  "4/3": "aspect-[4/3]",
+  "4/5": "aspect-[4/5]",
+  "16/9": "aspect-[16/9]",
+  auto: "",
+};
+
+export const PostCard: React.FC<PostCardProps> = ({ post, spanType = "square", className = "", aspectRatio }) => {
   const navigate = useNavigate();
 
   const handleCardClick = () => {
@@ -30,17 +35,17 @@ export const PostCard: React.FC<PostCardProps> = ({ post }) => {
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLElement>) => {
-    if (e.key === 'Enter' || e.key === ' ') {
+    if (e.key === "Enter" || e.key === " ") {
       e.preventDefault();
       handleCardClick();
     }
   };
 
-  const creatorName = post.creator
-    ? `${post.creator.firstName} ${post.creator.lastName}`
-    : 'Unknown Artist';
-
-  const creatorUsername = post.creator?.username || 'artist';
+  const creatorUsername = post.creator?.username || "artist";
+  const isAutoAspect = aspectRatio === "auto";
+  const spanClass = isAutoAspect ? "" : SPAN_CLASSES[spanType] || SPAN_CLASSES.square;
+  const aspectClass = aspectRatio && !isAutoAspect ? ASPECT_CLASSES[aspectRatio] || "" : isAutoAspect ? "" : "h-full";
+  const imgHeightClass = isAutoAspect ? "h-auto block" : "h-full";
 
   return (
     <article
@@ -48,108 +53,47 @@ export const PostCard: React.FC<PostCardProps> = ({ post }) => {
       onKeyDown={handleKeyDown}
       tabIndex={0}
       role="button"
-      aria-label={`View exhibition plate: ${post.title}`}
-      className="group bg-[#faf9f5] rounded-[24px] overflow-hidden border border-[#cccbc8]/50 flex flex-col transition-all duration-300 hover:border-[#141413]/50 cursor-pointer focus-visible:outline-2 focus-visible:outline-[#141413]"
+      aria-label={`View exhibition plate: ${post.title} by @${creatorUsername}`}
+      className={`group relative w-full overflow-hidden bg-[#e6e3da] cursor-pointer focus-visible:outline-2 focus-visible:outline-[#141413] shadow-none ${aspectClass} ${spanClass} ${className}`}
     >
-      {/* Visual Photography Preview */}
-      <div className="relative aspect-[4/3] w-full overflow-hidden bg-[#e6e3da]">
-        {post.thumbnailUrl ? (
-          <img
-            src={post.thumbnailUrl}
-            alt={post.title}
-            loading="lazy"
-            className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.03]"
-          />
-        ) : (
-          <div className="w-full h-full flex flex-col items-center justify-center text-[#87867f] gap-2">
-            <ImageIcon className="h-8 w-8 stroke-[1.5]" />
-            <span className="font-gothic text-xs uppercase tracking-widest">Plate Preview</span>
-          </div>
-        )}
-
-        {/* Image Count Badge */}
-        {post.imageCount > 0 && (
-          <div className="absolute bottom-3 right-3">
-            <Badge
-              variant="slate"
-              size="sm"
-              icon={<Layers className="h-3 w-3 mr-1" />}
-              className="bg-[#141413]/90 backdrop-blur-xs text-[#faf9f5]"
-            >
-              {post.imageCount} {post.imageCount === 1 ? 'Plate' : 'Plates'}
-            </Badge>
-          </div>
-        )}
-      </div>
-
-      {/* Editorial Content Block (24px padding) */}
-      <div className="p-6 flex flex-col flex-1 justify-between gap-4">
-        <div className="space-y-2">
-          {/* Post Title in VSCO Gothic 24px */}
-          <h2 className="font-gothic text-[24px] font-semibold text-[#141413] leading-snug tracking-[-0.02em] line-clamp-1 group-hover:text-[#d97757] transition-colors">
-            {post.title}
-          </h2>
-
-          {/* Description Snippet in Anthropic Serif */}
-          {post.description && (
-            <p className="font-serif text-[#141413]/80 text-[15px] sm:text-[16px] leading-relaxed line-clamp-2">
-              {post.description}
-            </p>
-          )}
-
-          {/* Metadata Tags */}
-          {post.tags && post.tags.length > 0 && (
-            <div className="flex flex-wrap gap-1.5 pt-1">
-              {post.tags.slice(0, 3).map((tag) => (
-                <span
-                  key={tag}
-                  className="font-gothic text-[10px] font-semibold uppercase tracking-wider text-[#87867f] bg-[#cccbc8]/30 px-2 py-0.5 rounded-[999px]"
-                >
-                  {tag}
-                </span>
-              ))}
-              {post.tags.length > 3 && (
-                <span className="font-gothic text-[10px] uppercase tracking-wider text-[#87867f] py-0.5">
-                  +{post.tags.length - 3}
-                </span>
-              )}
-            </div>
-          )}
+      {/* Photography Preview */}
+      {post.thumbnailUrl ? (
+        <img
+          src={post.thumbnailUrl}
+          alt={post.title}
+          loading="lazy"
+          className={`w-full ${imgHeightClass} object-cover transition-transform duration-500 ease-out group-hover:scale-105`}
+        />
+      ) : (
+        <div className="w-full aspect-[4/3] flex flex-col items-center justify-center text-[#87867f] gap-2">
+          <ImageIcon className="h-6 w-6 stroke-[1.5]" />
+          <span className="font-gothic text-[10px] uppercase tracking-widest">Plate</span>
         </div>
+      )}
 
-        {/* Creator Attribution Row */}
-        <div className="pt-4 border-t border-[#cccbc8]/40 flex items-center justify-between gap-3">
-          <div className="flex items-center gap-2.5 min-w-0">
-            {post.creator?.avatarUrl ? (
-              <img
-                src={post.creator.avatarUrl}
-                alt={creatorName}
-                className="h-8 w-8 rounded-full object-cover shrink-0 border border-[#cccbc8]/60"
-              />
-            ) : (
-              <div className="h-8 w-8 rounded-full bg-[#141413] text-[#faf9f5] flex items-center justify-center font-gothic text-xs font-bold uppercase shrink-0">
-                {post.creator?.firstName?.[0] || 'A'}
-              </div>
-            )}
+      {/* Multi-plate indicator (Instagram carousel style - no video indicator) */}
+      {post.imageCount > 1 && (
+        <div
+          className="absolute top-2.5 right-2.5 z-10 pointer-events-none drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)]"
+          aria-label={`${post.imageCount} plates`}
+        >
+          <Layers className="h-4 w-4 sm:h-5 sm:w-5 text-white stroke-[2]" />
+        </div>
+      )}
 
-            <div className="min-w-0">
-              <p className="font-gothic text-xs font-bold uppercase tracking-wider text-[#141413] truncate leading-tight">
-                {creatorName}
-              </p>
-              <Link
-                to={`/u/${creatorUsername}`}
-                onClick={(e) => e.stopPropagation()}
-                className="font-serif text-xs text-[#87867f] hover:text-[#d97757] hover:underline truncate block leading-tight mt-0.5"
-              >
-                @{creatorUsername}
-              </Link>
-            </div>
-          </div>
-
-          {/* Publication Date */}
-          <time className="font-gothic text-[11px] uppercase tracking-wider text-[#87867f] shrink-0">
-            {formatDate(post.publishedAt || post.createdAt)}
-          </time>
+      {/* Hover / Focus Overlay (Warm dark overlay displaying plate title & artist) */}
+      <div className="absolute inset-0 bg-[#141413]/55 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100 transition-opacity duration-200 flex flex-col justify-end p-3 sm:p-4 text-[#faf9f5]">
+        <h3 className="font-gothic text-xs sm:text-sm font-bold uppercase tracking-tight line-clamp-2 text-[#faf9f5] leading-snug">
+          {post.title}
+        </h3>
+        <div className="flex items-center gap-1.5 mt-1 sm:mt-1.5 text-[11px] sm:text-xs text-[#faf9f5]/80 font-serif">
+          <span className="truncate">@{creatorUsername}</span>
+          {post.imageCount > 1 && (
+            <>
+              <span className="text-[#faf9f5]/50">•</span>
+              <span>{post.imageCount} plates</span>
+            </>
+          )}
         </div>
       </div>
     </article>

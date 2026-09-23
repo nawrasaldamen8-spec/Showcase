@@ -1,3 +1,2 @@
-export * from './components/ExploreHeader.tsx';
-export * from './components/PostCard.tsx';
-export * from './pages/ExplorePage.tsx';
+export * from "./components/PostCard.tsx";
+export * from "./pages/ExplorePage.tsx";
