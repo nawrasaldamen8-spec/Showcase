@@ -1,4 +1,16 @@
-import { AlertCircle, ArrowLeft, Compass, ExternalLink, Sparkles, UserCheck } from "lucide-react";
+import {
+  AlertCircle,
+  AlertTriangle,
+  ArrowLeft,
+  Compass,
+  ExternalLink,
+  KeyRound,
+  Laptop,
+  Mail,
+  ShieldCheck,
+  Sparkles,
+  UserCheck,
+} from "lucide-react";
 import React, { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { apiClient } from "../../../shared/api/apiClient.ts";
@@ -6,7 +18,7 @@ import { Button } from "../../../shared/components/Button.tsx";
 import { Skeleton } from "../../../shared/components/Skeleton.tsx";
 import { useAuth, useToast } from "../../../shared/context/index.ts";
 import type { ProfileDetailsResponse, SocialLinkDto } from "../../../shared/types/index.ts";
-import { AccountSecurityCard } from "../components/AccountSecurityCard.tsx";
+import { SecurityNavRow } from "../../security/index.ts";
 import { AvatarUploader } from "../components/AvatarUploader.tsx";
 import { BioEditor } from "../components/BioEditor.tsx";
 import { SocialLinksManager } from "../components/SocialLinksManager.tsx";
@@ -84,23 +96,11 @@ export const ProfileSettingsPage: React.FC = () => {
       </nav>
 
       {/* Header Banner */}
-      <header className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-[#cccbc8] pb-8 mb-8">
+      <header className="flex flex-col md:flex-row md:items-center justify-between gap-6 border-b border-[#cccbc8] pb-8 mb-8">
         <div>
-          <div className="flex items-center gap-2.5 mb-2">
-            <span className="font-gothic text-xs font-bold uppercase tracking-[0.16em] text-[#d97757]">Workspace</span>
-            <span className="text-[#cccbc8]">&bull;</span>
-            <span className="font-gothic text-xs font-semibold uppercase tracking-[0.10em] text-[#87867f]">
-              Preferences
-            </span>
-          </div>
-
           <h1 className="font-gothic font-extrabold text-3xl sm:text-5xl text-[#141413] tracking-[-0.03em] uppercase">
             Settings &amp; Profile
           </h1>
-
-          <p className="font-serif text-base sm:text-lg text-[#141413]/80 mt-2 max-w-2xl leading-relaxed">
-            Curate your public artist representation, ordered external links, and account security credentials.
-          </p>
         </div>
 
         {/* Action: View Public Profile Link */}
@@ -267,18 +267,72 @@ export const ProfileSettingsPage: React.FC = () => {
             )}
 
             {activeTab === "security" && (
-              /* 4. Account Security Card */
-              <AccountSecurityCard
-                currentEmail={profile.email}
-                currentUsername={profile.username}
-                onEmailChanged={(newEmail) => {
-                  setProfile((prev) => (prev ? { ...prev, email: newEmail } : null));
-                }}
-                onUsernameChanged={(newUsername) => {
-                  setProfile((prev) => (prev ? { ...prev, username: newUsername } : null));
-                }}
-                onNotify={triggerToast}
-              />
+              <div className="space-y-6">
+                <div className="space-y-3">
+                  <SecurityNavRow
+                    to="/settings/security/change-password"
+                    icon={KeyRound}
+                    title="Change Password"
+                    description="Last modified recently • Passphrase authentication"
+                    badge={
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-gothic font-bold uppercase tracking-wider bg-[#2e7d32]/10 text-[#2e7d32] border border-[#2e7d32]/30">
+                        Secured
+                      </span>
+                    }
+                  />
+
+                  <SecurityNavRow
+                    to="/settings/security/email"
+                    icon={Mail}
+                    title="Email Address"
+                    description={profile.email}
+                    badge={
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-gothic font-bold uppercase tracking-wider bg-[#2e7d32]/10 text-[#2e7d32] border border-[#2e7d32]/30">
+                        Verified
+                      </span>
+                    }
+                  />
+
+                  <SecurityNavRow
+                    to="/settings/security/two-factor"
+                    icon={ShieldCheck}
+                    title="Two-Factor Authentication (2FA)"
+                    description="Require an authenticator code when logging into your creator atelier"
+                    badge={
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-gothic font-bold uppercase tracking-wider bg-[#cccbc8]/30 text-[#87867f] border border-[#cccbc8]">
+                        Configured
+                      </span>
+                    }
+                  />
+
+                  <SecurityNavRow
+                    to="/settings/security/sessions"
+                    icon={Laptop}
+                    title="Active Sessions"
+                    description="2 authorized client devices currently authenticated"
+                    badge={
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-gothic font-bold uppercase tracking-wider bg-[#faf9f5] border border-[#cccbc8] text-[#141413]">
+                        2 Devices
+                      </span>
+                    }
+                  />
+                </div>
+
+                <div className="pt-4 border-t border-[#cccbc8]/60">
+                  <SecurityNavRow
+                    to="/settings/security/delete-account"
+                    variant="danger"
+                    icon={AlertTriangle}
+                    title="Delete or Deactivate Account"
+                    description="Permanently withdraw your creator membership and portfolio records"
+                    badge={
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-gothic font-bold uppercase tracking-wider bg-[#d97757]/15 text-[#d97757] border border-[#d97757]/40">
+                        Permanent
+                      </span>
+                    }
+                  />
+                </div>
+              </div>
             )}
           </div>
 

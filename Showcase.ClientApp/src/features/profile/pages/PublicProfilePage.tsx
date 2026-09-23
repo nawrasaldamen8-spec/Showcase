@@ -1,38 +1,48 @@
-import React, { useEffect, useState, useCallback } from 'react';
-import { useParams, Link } from 'react-router-dom';
 import {
+  ArrowDown,
   ArrowLeft,
   ArrowUpRight,
-  Globe,
-  User as UserIcon,
-  SearchX,
+  Check,
+  Edit3,
   Layers,
-  ArrowDown,
-} from 'lucide-react';
-import type {
-  PublicProfileResponse,
-  PostSummaryResponse,
-  ExplorePostResponse,
-} from '../../../shared/types/index.ts';
-import { apiClient } from '../../../shared/api/apiClient.ts';
-import { Button } from '../../../shared/components/Button.tsx';
-import { Skeleton } from '../../../shared/components/Skeleton.tsx';
-import { PostCard } from '../../explore/components/PostCard.tsx';
+  SearchX,
+  Share2,
+  User as UserIcon,
+  UserPlus,
+} from "lucide-react";
+import React, { useCallback, useEffect, useState } from "react";
+import { Link, useParams } from "react-router-dom";
+import { apiClient } from "../../../shared/api/apiClient.ts";
+import { Button } from "../../../shared/components/Button.tsx";
+import { Skeleton } from "../../../shared/components/Skeleton.tsx";
+import { useAuth, useToast } from "../../../shared/context/index.ts";
+import type { ExplorePostResponse, PostSummaryResponse, PublicProfileResponse } from "../../../shared/types/index.ts";
+import { PostCard } from "../../explore/components/PostCard.tsx";
+import { PlatformIcon } from "../components/PlatformIcon.tsx";
 
-const PAGE_SIZE = 6;
+const PAGE_SIZE = 12;
+
+type ProfileTab = "works" | "about";
 
 export const PublicProfilePage: React.FC = () => {
   const { username } = useParams<{ username: string }>();
+  const { currentUser } = useAuth();
+  const { showToast } = useToast();
 
   const [profile, setProfile] = useState<PublicProfileResponse | null>(null);
   const [posts, setPosts] = useState<PostSummaryResponse[]>([]);
-  const [totalCount, setTotalCount] = useState<number>(0);
   const [pageNumber, setPageNumber] = useState<number>(1);
   const [hasNextPage, setHasNextPage] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isLoadingMore, setIsLoadingMore] = useState<boolean>(false);
   const [notFound, setNotFound] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Tabs state: 'works' is active and default
+  const [activeTab, setActiveTab] = useState<ProfileTab>("works");
+
+  // Local follow state for visitor interaction
+  const [isFollowing, setIsFollowing] = useState<boolean>(false);
 
   const loadProfileData = useCallback(async () => {
     if (!username) {
@@ -53,16 +63,15 @@ export const PublicProfilePage: React.FC = () => {
       // 2. Fetch creator's published works
       const postsData = await apiClient.getCreatorPosts(username, 1, PAGE_SIZE);
       setPosts(postsData.items);
-      setTotalCount(postsData.totalCount);
       setPageNumber(1);
       setHasNextPage(postsData.hasNextPage);
     } catch (err: unknown) {
-      console.error('Failed to load creator profile:', err);
+      console.error("Failed to load creator profile:", err);
       const status = (err as { status?: number })?.status;
       if (status === 404) {
         setNotFound(true);
       } else {
-        setError('Unable to load artist profile. Please try again.');
+        setError("Unable to load artist profile. Please try again.");
       }
     } finally {
       setIsLoading(false);
@@ -91,46 +100,93 @@ export const PublicProfilePage: React.FC = () => {
       setPageNumber(nextPage);
       setHasNextPage(postsData.hasNextPage);
     } catch (err) {
-      console.error('Failed to load more works for profile:', err);
+      console.error("Failed to load more works for profile:", err);
     } finally {
       setIsLoadingMore(false);
+    }
+  };
+
+  const handleToggleFollow = () => {
+    setIsFollowing((prev) => {
+      const next = !prev;
+      showToast(
+        "success",
+        next
+          ? `You are now following @${profile?.username || username}`
+          : `Unfollowed @${profile?.username || username}`,
+      );
+      return next;
+    });
+  };
+
+  const handleShare = async () => {
+    const url = window.location.href;
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: profile
+            ? `${profile.firstName} ${profile.lastName} (@${profile.username}) - Showcase`
+            : "Showcase Profile",
+          url,
+        });
+        return;
+      } catch {
+        // Fallback to clipboard if share modal was dismissed or unsupported
+      }
+    }
+    if (navigator.clipboard) {
+      await navigator.clipboard.writeText(url);
+      showToast("success", "Profile link copied to clipboard.");
+    } else {
+      showToast("error", "Unable to copy profile link.");
     }
   };
 
   // Loading Skeleton State
   if (isLoading) {
     return (
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 animate-pulse">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10 animate-pulse">
         {/* Back Link Skeleton */}
-        <Skeleton variant="text" width={140} height={18} className="mb-8" />
+        <Skeleton variant="text" width={140} height={18} className="mb-6" />
 
-        {/* Profile Header Skeleton */}
-        <div className="bg-[#faf9f5] rounded-[24px] border border-[#cccbc8]/50 p-8 sm:p-12 mb-12">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6 sm:gap-8">
-            <Skeleton variant="circular" width={112} height={112} />
-            <div className="space-y-3 flex-1">
-              <Skeleton variant="text" width={120} height={14} />
-              <Skeleton variant="text" width="60%" height={36} />
-              <Skeleton variant="text" width="85%" height={20} />
+        {/* Compact Header Skeleton */}
+        <div className="bg-[#faf9f5] rounded-[24px] border border-[#cccbc8]/50 p-6 sm:p-8 mb-8">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-4 sm:gap-6">
+              <Skeleton variant="circular" width={72} height={72} />
+              <div className="space-y-2">
+                <Skeleton variant="text" width={90} height={14} />
+                <Skeleton variant="text" width={160} height={28} />
+              </div>
             </div>
-          </div>
-          <div className="mt-8 pt-6 border-t border-[#cccbc8]/40 flex gap-3">
-            <Skeleton variant="text" width={100} height={32} />
-            <Skeleton variant="text" width={100} height={32} />
+            <div className="flex gap-2.5">
+              <Skeleton variant="rectangular" width={90} height={36} className="rounded-full" />
+              <Skeleton variant="rectangular" width={80} height={36} className="rounded-full" />
+            </div>
           </div>
         </div>
 
-        {/* Portfolio Grid Skeletons */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {Array.from({ length: 3 }).map((_, idx) => (
-            <div
-              key={idx}
-              className="bg-[#faf9f5] rounded-[24px] border border-[#cccbc8]/50 overflow-hidden"
-            >
-              <Skeleton variant="rectangular" className="aspect-[4/3] w-full" />
-              <div className="p-6 space-y-3">
-                <Skeleton variant="text" width="70%" height={24} />
-                <Skeleton variant="text" width="90%" height={16} />
+        {/* Tabs Skeleton */}
+        <div className="flex gap-6 border-b border-[#cccbc8] pb-3 mb-8">
+          <Skeleton variant="text" width={60} height={18} />
+          <Skeleton variant="text" width={60} height={18} />
+        </div>
+
+        {/* Masonry Columns Skeleton */}
+        <div className="columns-2 sm:columns-3 lg:columns-4 gap-3.5 sm:gap-4 lg:gap-5 [column-fill:_balance]">
+          {[
+            "aspect-[3/4]",
+            "aspect-square",
+            "aspect-[4/3]",
+            "aspect-[3/4]",
+            "aspect-square",
+            "aspect-[4/5]",
+            "aspect-[4/3]",
+            "aspect-[3/4]",
+          ].map((aspect, idx) => (
+            <div key={idx} className="break-inside-avoid mb-3.5 sm:mb-4 lg:mb-5">
+              <div className={`${aspect} bg-[#e6e3da] w-full overflow-hidden`}>
+                <Skeleton variant="rectangular" className="w-full h-full" />
               </div>
             </div>
           ))}
@@ -153,7 +209,8 @@ export const PublicProfilePage: React.FC = () => {
           Creator Profile Unavailable
         </h1>
         <p className="font-serif text-[18px] text-[#141413]/80 mt-4 leading-relaxed max-w-lg mx-auto">
-          No artist or designer profile exists for username &ldquo;@{username}&rdquo; in the Showcase exhibition registry.
+          No artist or designer profile exists for username &ldquo;@{username}&rdquo; in the Showcase exhibition
+          registry.
         </p>
         <div className="mt-8">
           <Link to="/explore">
@@ -188,14 +245,13 @@ export const PublicProfilePage: React.FC = () => {
   }
 
   const fullName = `${profile.firstName} ${profile.lastName}`.trim();
-  const sortedSocialLinks = [...(profile.socialLinks || [])].sort(
-    (a, b) => a.displayOrder - b.displayOrder
-  );
+  const sortedSocialLinks = [...(profile.socialLinks || [])].sort((a, b) => a.displayOrder - b.displayOrder);
+  const isOwnProfile = currentUser?.username?.toLowerCase() === profile.username.toLowerCase();
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+    <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-10">
       {/* Editorial Breadcrumb / Back Link */}
-      <nav className="mb-8" aria-label="Breadcrumb navigation">
+      <nav className="mb-6" aria-label="Breadcrumb navigation">
         <Link
           to="/explore"
           className="inline-flex items-center gap-2 font-gothic text-xs font-semibold uppercase tracking-[0.12em] text-[#87867f] hover:text-[#141413] transition-colors group"
@@ -205,154 +261,202 @@ export const PublicProfilePage: React.FC = () => {
         </Link>
       </nav>
 
-      {/* Creator Profile Header Card */}
-      <header className="bg-[#faf9f5] rounded-[24px] border border-[#cccbc8]/60 p-8 sm:p-12 mb-14">
-        <div className="flex flex-col md:flex-row items-start md:items-center gap-6 sm:gap-10">
-          {/* Large Circular Avatar */}
-          {profile.avatarUrl ? (
-            <img
-              src={profile.avatarUrl}
-              alt={fullName}
-              className="h-24 w-24 sm:h-32 sm:w-32 rounded-full object-cover border-2 border-[#cccbc8]/70 shrink-0"
-            />
+      {/* 1. Compact Minimalist Profile Header */}
+      <header className="bg-[#faf9f5] rounded-[24px] border border-[#cccbc8]/60 p-6 sm:p-8 mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-5 sm:gap-6">
+          {/* Creator Identity */}
+          <div className="flex items-center gap-4 sm:gap-6">
+            {profile.avatarUrl ? (
+              <img
+                src={profile.avatarUrl}
+                alt={fullName}
+                className="h-16 w-16 sm:h-20 sm:w-20 rounded-full object-cover border-2 border-[#cccbc8]/70 shrink-0"
+              />
+            ) : (
+              <div className="h-16 w-16 sm:h-20 sm:w-20 rounded-full bg-[#141413] text-[#faf9f5] flex items-center justify-center font-gothic text-xl sm:text-2xl font-extrabold uppercase shrink-0">
+                {profile.firstName?.[0] || <UserIcon className="h-8 w-8" />}
+              </div>
+            )}
+
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <span className="font-gothic text-xs font-semibold uppercase tracking-[0.10em] text-[#87867f]">
+                  @{profile.username}
+                </span>
+              </div>
+              <h1 className="font-gothic font-extrabold text-2xl sm:text-3xl text-[#141413] tracking-[-0.02em]">
+                {fullName}
+              </h1>
+            </div>
+          </div>
+
+          {/* Action Buttons: Follow / Edit Profile + Share */}
+          <div className="flex items-center gap-2.5 sm:gap-3 self-start sm:self-center">
+            {isOwnProfile ? (
+              <Link to="/settings/profile" className="text-decoration-none">
+                <Button variant="outline" size="sm" leftIcon={<Edit3 className="h-3.5 w-3.5" />}>
+                  Edit Profile
+                </Button>
+              </Link>
+            ) : (
+              <Button
+                variant={isFollowing ? "outline" : "slate"}
+                size="sm"
+                onClick={handleToggleFollow}
+                leftIcon={isFollowing ? <Check className="h-3.5 w-3.5" /> : <UserPlus className="h-3.5 w-3.5" />}
+              >
+                {isFollowing ? "Following" : "Follow"}
+              </Button>
+            )}
+
+            <Button variant="outline" size="sm" onClick={handleShare} leftIcon={<Share2 className="h-3.5 w-3.5" />}>
+              Share
+            </Button>
+          </div>
+        </div>
+      </header>
+
+      {/* 2. Typographic Tabs Navigation (Works & About) */}
+      <nav
+        className="flex items-center gap-6 sm:gap-8 border-b border-[#cccbc8] mb-8 overflow-x-auto no-scrollbar"
+        aria-label="Profile tabs"
+      >
+        <button
+          type="button"
+          onClick={() => setActiveTab("works")}
+          aria-selected={activeTab === "works"}
+          role="tab"
+          className={`font-gothic text-[13px] font-semibold uppercase tracking-[0.10em] pb-3 whitespace-nowrap transition-colors relative cursor-pointer border-b-2 ${
+            activeTab === "works"
+              ? "text-[#141413] border-[#141413]"
+              : "text-[#87867f] border-transparent hover:text-[#141413] hover:border-[#cccbc8]"
+          }`}
+        >
+          Works
+        </button>
+        <button
+          type="button"
+          onClick={() => setActiveTab("about")}
+          aria-selected={activeTab === "about"}
+          role="tab"
+          className={`font-gothic text-[13px] font-semibold uppercase tracking-[0.10em] pb-3 whitespace-nowrap transition-colors relative cursor-pointer border-b-2 ${
+            activeTab === "about"
+              ? "text-[#141413] border-[#141413]"
+              : "text-[#87867f] border-transparent hover:text-[#141413] hover:border-[#cccbc8]"
+          }`}
+        >
+          About
+        </button>
+      </nav>
+
+      {/* 3. Works Tab: Dynamic Asymmetric Bento Grid */}
+      {activeTab === "works" && (
+        <section aria-label="Published Works">
+          {posts.length === 0 ? (
+            /* Empty State */
+            <div className="bg-[#faf9f5] rounded-[24px] border border-[#cccbc8]/50 p-12 sm:p-16 text-center max-w-lg mx-auto my-8">
+              <div className="inline-flex items-center justify-center p-3 rounded-full bg-[#f0eee6] text-[#87867f] mb-4">
+                <Layers className="h-7 w-7 stroke-[1.5]" />
+              </div>
+              <h3 className="font-gothic text-xl font-bold uppercase tracking-tight text-[#141413]">
+                No Published Works Yet
+              </h3>
+              <p className="font-serif text-[16px] text-[#141413]/75 mt-2 leading-relaxed">
+                This creator hasn&rsquo;t published any exhibition plates yet. Check back soon for upcoming collections.
+              </p>
+              <div className="mt-6">
+                <Link to="/explore">
+                  <Button variant="slate" size="sm">
+                    Explore Other Artists
+                  </Button>
+                </Link>
+              </div>
+            </div>
           ) : (
-            <div className="h-24 w-24 sm:h-32 sm:w-32 rounded-full bg-[#141413] text-[#faf9f5] flex items-center justify-center font-gothic text-3xl sm:text-4xl font-extrabold uppercase shrink-0">
-              {profile.firstName?.[0] || <UserIcon className="h-12 w-12" />}
-            </div>
+            <>
+              {/* Natural Masonry Exhibition Layout - Varied Dimensions Flowing Across 4 Columns */}
+              <div className="columns-2 sm:columns-3 lg:columns-4 gap-3.5 sm:gap-4 lg:gap-5 [column-fill:_balance]">
+                {posts.map((post) => (
+                  <div key={post.id} className="break-inside-avoid mb-3.5 sm:mb-4 lg:mb-5">
+                    <PostCard
+                      post={
+                        {
+                          ...post,
+                          creator: {
+                            profileId: profile.id,
+                            username: profile.username,
+                            firstName: profile.firstName,
+                            lastName: profile.lastName,
+                            avatarUrl: profile.avatarUrl,
+                          },
+                        } as ExplorePostResponse
+                      }
+                      aspectRatio="auto"
+                    />
+                  </div>
+                ))}
+              </div>
+
+              {/* Pagination / Load More */}
+              {hasNextPage && (
+                <div className="mt-10 sm:mt-12 text-center">
+                  <Button
+                    variant="slate"
+                    size="md"
+                    onClick={handleLoadMore}
+                    isLoading={isLoadingMore}
+                    rightIcon={!isLoadingMore ? <ArrowDown className="h-4 w-4" /> : undefined}
+                    className="px-8"
+                  >
+                    Load More Works
+                  </Button>
+                </div>
+              )}
+            </>
           )}
+        </section>
+      )}
 
-          {/* Artist Typography & Bio */}
-          <div className="flex-1 space-y-3">
-            <div className="flex flex-wrap items-center gap-3">
-              <span className="font-gothic text-xs font-bold uppercase tracking-[0.16em] text-[#87867f]">
-                Contributing Artist
-              </span>
-              <span className="text-[#cccbc8]">&bull;</span>
-              <span className="font-gothic text-xs font-semibold uppercase tracking-[0.10em] text-[#141413] bg-[#cccbc8]/30 px-2.5 py-0.5 rounded-full">
-                @{profile.username}
-              </span>
-            </div>
-
-            <h1 className="font-gothic font-extrabold text-3xl sm:text-5xl text-[#141413] tracking-[-0.03em] leading-tight">
-              {fullName}
-            </h1>
-
-            {/* Bio in Anthropic Serif */}
+      {/* 4. About Tab: Bio & Social Archives */}
+      {activeTab === "about" && (
+        <section aria-label="About Creator" className="space-y-6 max-w-3xl">
+          {/* Biography Card */}
+          <div className="bg-[#faf9f5] rounded-[24px] border border-[#cccbc8]/60 p-6 sm:p-8">
+            <h2 className="font-gothic text-xs font-bold uppercase tracking-[0.16em] text-[#87867f] mb-3">Biography</h2>
             {profile.bio ? (
-              <p className="font-serif text-[17px] sm:text-[19px] leading-relaxed text-[#141413]/85 max-w-3xl pt-1">
+              <p className="font-serif text-[17px] sm:text-[19px] leading-relaxed text-[#141413]/85 whitespace-pre-line">
                 {profile.bio}
               </p>
             ) : (
-              <p className="font-serif text-[16px] italic text-[#87867f] pt-1">
-                Visual artist and designer contributing independent works to the Showcase exhibition.
-              </p>
+              <p className="font-serif text-[16px] italic text-[#87867f]">No biography provided yet.</p>
             )}
           </div>
-        </div>
 
-        {/* Ordered Social Links with External Arrow Indicators */}
-        {sortedSocialLinks.length > 0 && (
-          <div className="mt-8 pt-6 border-t border-[#cccbc8]/40">
-            <span className="font-gothic text-[11px] font-bold uppercase tracking-[0.14em] text-[#87867f] block mb-3">
-              Connect &amp; External Archives
-            </span>
-            <div className="flex flex-wrap gap-3">
-              {sortedSocialLinks.map((link) => (
-                <a
-                  key={link.id}
-                  href={link.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-[#cccbc8] hover:border-[#141413] bg-transparent text-[#141413] hover:bg-[#141413]/5 transition-colors font-gothic text-xs font-semibold uppercase tracking-[0.10em] group"
-                >
-                  <Globe className="h-3.5 w-3.5 text-[#87867f] group-hover:text-[#141413] transition-colors" />
-                  <span>{link.platform}</span>
-                  <ArrowUpRight className="h-3 w-3 text-[#87867f] group-hover:text-[#141413] transition-colors" />
-                </a>
-              ))}
-            </div>
-          </div>
-        )}
-      </header>
-
-      {/* Published Works Portfolio Section */}
-      <section aria-labelledby="portfolio-heading">
-        <div className="flex items-baseline justify-between border-b border-[#cccbc8]/60 pb-4 mb-8">
-          <div>
-            <h2
-              id="portfolio-heading"
-              className="font-gothic text-2xl sm:text-3xl font-bold uppercase tracking-tight text-[#141413]"
-            >
-              Published Works
-            </h2>
-            <p className="font-serif text-sm sm:text-base text-[#87867f] mt-1">
-              Curated photographic series, prototypes, and visual plates by {fullName}.
-            </p>
-          </div>
-          <div className="font-gothic text-xs uppercase tracking-wider text-[#87867f] hidden sm:block">
-            {totalCount} {totalCount === 1 ? 'Plate' : 'Plates'}
-          </div>
-        </div>
-
-        {/* Empty State when creator has no published works */}
-        {posts.length === 0 ? (
-          <div className="bg-[#faf9f5] rounded-[24px] border border-[#cccbc8]/50 p-12 sm:p-16 text-center max-w-lg mx-auto my-8">
-            <div className="inline-flex items-center justify-center p-3 rounded-full bg-[#f0eee6] text-[#87867f] mb-4">
-              <Layers className="h-7 w-7 stroke-[1.5]" />
-            </div>
-            <h3 className="font-gothic text-xl font-bold uppercase tracking-tight text-[#141413]">
-              No Published Works Yet
-            </h3>
-            <p className="font-serif text-[16px] text-[#141413]/75 mt-2 leading-relaxed">
-              This creator hasn&rsquo;t published any public exhibition plates yet. Check back soon for upcoming collections.
-            </p>
-            <div className="mt-6">
-              <Link to="/explore">
-                <Button variant="slate" size="sm">
-                  Explore Other Artists
-                </Button>
-              </Link>
-            </div>
-          </div>
-        ) : (
-          <>
-            {/* Portfolio Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {posts.map((post) => (
-                <PostCard
-                  key={post.id}
-                  post={{
-                    ...post,
-                    creator: {
-                      profileId: profile.id,
-                      username: profile.username,
-                      firstName: profile.firstName,
-                      lastName: profile.lastName,
-                      avatarUrl: profile.avatarUrl,
-                    },
-                  } as ExplorePostResponse}
-                />
-              ))}
-            </div>
-
-            {/* Pagination / Load More Button */}
-            {hasNextPage && (
-              <div className="mt-14 text-center">
-                <Button
-                  variant="slate"
-                  size="md"
-                  onClick={handleLoadMore}
-                  isLoading={isLoadingMore}
-                  rightIcon={!isLoadingMore ? <ArrowDown className="h-4 w-4" /> : undefined}
-                  className="px-8"
-                >
-                  Load More Works
-                </Button>
+          {/* Social Links Card with Platform Icons */}
+          {sortedSocialLinks.length > 0 && (
+            <div className="bg-[#faf9f5] rounded-[24px] border border-[#cccbc8]/60 p-6 sm:p-8">
+              <h2 className="font-gothic text-xs font-bold uppercase tracking-[0.16em] text-[#87867f] mb-4">
+                Connect &amp; External Archives
+              </h2>
+              <div className="flex flex-wrap gap-3">
+                {sortedSocialLinks.map((link) => (
+                  <a
+                    key={link.id}
+                    href={link.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2.5 px-4 py-2.5 rounded-full border border-[#cccbc8] hover:border-[#141413] bg-[#faf9f5] hover:bg-[#141413] text-[#141413] hover:text-[#faf9f5] transition-all font-gothic text-xs font-semibold uppercase tracking-[0.10em] group shadow-none"
+                  >
+                    <PlatformIcon platform={link.platform} className="h-4 w-4 shrink-0 transition-colors" />
+                    <span>{link.platform}</span>
+                    <ArrowUpRight className="h-3 w-3 opacity-60 group-hover:opacity-100 transition-opacity" />
+                  </a>
+                ))}
               </div>
-            )}
-          </>
-        )}
-      </section>
+            </div>
+          )}
+        </section>
+      )}
     </div>
   );
 };
