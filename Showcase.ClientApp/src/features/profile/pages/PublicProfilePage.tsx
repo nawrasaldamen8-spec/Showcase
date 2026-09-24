@@ -1,15 +1,4 @@
-import {
-  ArrowDown,
-  ArrowLeft,
-  ArrowUpRight,
-  Check,
-  Edit3,
-  Layers,
-  SearchX,
-  Share2,
-  User as UserIcon,
-  UserPlus,
-} from "lucide-react";
+import { ArrowDown, ArrowLeft, ArrowUpRight, Edit3, Layers, SearchX, Share2, User as UserIcon } from "lucide-react";
 import React, { useCallback, useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { apiClient } from "../../../shared/api/apiClient.ts";
@@ -40,9 +29,6 @@ export const PublicProfilePage: React.FC = () => {
 
   // Tabs state: 'works' is active and default
   const [activeTab, setActiveTab] = useState<ProfileTab>("works");
-
-  // Local follow state for visitor interaction
-  const [isFollowing, setIsFollowing] = useState<boolean>(false);
 
   const loadProfileData = useCallback(async () => {
     if (!username) {
@@ -104,19 +90,6 @@ export const PublicProfilePage: React.FC = () => {
     } finally {
       setIsLoadingMore(false);
     }
-  };
-
-  const handleToggleFollow = () => {
-    setIsFollowing((prev) => {
-      const next = !prev;
-      showToast(
-        "success",
-        next
-          ? `You are now following @${profile?.username || username}`
-          : `Unfollowed @${profile?.username || username}`,
-      );
-      return next;
-    });
   };
 
   const handleShare = async () => {
@@ -213,9 +186,9 @@ export const PublicProfilePage: React.FC = () => {
           registry.
         </p>
         <div className="mt-8">
-          <Link to="/explore">
+          <Link to="/studio">
             <Button variant="slate" size="md" leftIcon={<ArrowLeft className="h-4 w-4" />}>
-              Return to Curated Feed
+              Return to Studio
             </Button>
           </Link>
         </div>
@@ -230,9 +203,9 @@ export const PublicProfilePage: React.FC = () => {
         <div className="bg-[#faf9f5] border border-[#d97757]/40 rounded-[24px] p-8">
           <p className="font-serif text-lg text-[#141413]">{error}</p>
           <div className="mt-6 flex justify-center gap-4">
-            <Link to="/explore">
+            <Link to="/studio">
               <Button variant="outline" size="sm">
-                Explore Feed
+                Return to Studio
               </Button>
             </Link>
             <Button variant="slate" size="sm" onClick={loadProfileData}>
@@ -253,11 +226,11 @@ export const PublicProfilePage: React.FC = () => {
       {/* Editorial Breadcrumb / Back Link */}
       <nav className="mb-6" aria-label="Breadcrumb navigation">
         <Link
-          to="/explore"
+          to="/studio"
           className="inline-flex items-center gap-2 font-gothic text-xs font-semibold uppercase tracking-[0.12em] text-[#87867f] hover:text-[#141413] transition-colors group"
         >
           <ArrowLeft className="h-3.5 w-3.5 transition-transform group-hover:-translate-x-1" />
-          <span>Curated Visual Showcase</span>
+          <span>Creator Studio</span>
         </Link>
       </nav>
 
@@ -290,23 +263,14 @@ export const PublicProfilePage: React.FC = () => {
             </div>
           </div>
 
-          {/* Action Buttons: Follow / Edit Profile + Share */}
+          {/* Action Buttons: Edit Profile + Share */}
           <div className="flex items-center gap-2.5 sm:gap-3 self-start sm:self-center">
-            {isOwnProfile ? (
+            {isOwnProfile && (
               <Link to="/settings/profile" className="text-decoration-none">
                 <Button variant="outline" size="sm" leftIcon={<Edit3 className="h-3.5 w-3.5" />}>
                   Edit Profile
                 </Button>
               </Link>
-            ) : (
-              <Button
-                variant={isFollowing ? "outline" : "slate"}
-                size="sm"
-                onClick={handleToggleFollow}
-                leftIcon={isFollowing ? <Check className="h-3.5 w-3.5" /> : <UserPlus className="h-3.5 w-3.5" />}
-              >
-                {isFollowing ? "Following" : "Follow"}
-              </Button>
             )}
 
             <Button variant="outline" size="sm" onClick={handleShare} leftIcon={<Share2 className="h-3.5 w-3.5" />}>
@@ -365,9 +329,9 @@ export const PublicProfilePage: React.FC = () => {
                 This creator hasn&rsquo;t published any exhibition plates yet. Check back soon for upcoming collections.
               </p>
               <div className="mt-6">
-                <Link to="/explore">
+                <Link to="/studio">
                   <Button variant="slate" size="sm">
-                    Explore Other Artists
+                    {isOwnProfile ? "Go to Studio" : "Return to Studio"}
                   </Button>
                 </Link>
               </div>

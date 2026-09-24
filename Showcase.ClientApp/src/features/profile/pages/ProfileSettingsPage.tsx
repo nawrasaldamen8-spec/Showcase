@@ -87,11 +87,11 @@ export const ProfileSettingsPage: React.FC = () => {
       {/* Navigation Breadcrumb */}
       <nav className="mb-8" aria-label="Breadcrumb navigation">
         <Link
-          to="/explore"
+          to="/studio"
           className="inline-flex items-center gap-2 font-gothic text-xs font-semibold uppercase tracking-[0.12em] text-[#87867f] hover:text-[#141413] transition-colors group"
         >
           <ArrowLeft className="h-3.5 w-3.5 transition-transform group-hover:-translate-x-1" />
-          <span>Curated Visual Showcase</span>
+          <span>Creator Studio</span>
         </Link>
       </nav>
 

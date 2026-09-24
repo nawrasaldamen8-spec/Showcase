@@ -4,8 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { apiClient } from "../../../shared/api/apiClient.ts";
 import { Button } from "../../../shared/components/Button.tsx";
 import { Input } from "../../../shared/components/Input.tsx";
-import { useToast } from "../../../shared/context/ToastContext.tsx";
-import { useAuth } from "../../../shared/context/useAuth.ts";
+import { useAuth, useToast } from "../../../shared/context/index.ts";
 import type { ProblemDetails } from "../../../shared/types/index.ts";
 import { ProblemAlert } from "../components/ProblemAlert.tsx";
 import { SecurityActionLayout } from "../components/SecurityActionLayout.tsx";
@@ -15,7 +14,7 @@ export const UpdateEmailPage: React.FC = () => {
   const { currentUser, refreshUser } = useAuth();
   const { showToast } = useToast();
 
-  const [currentEmail, setCurrentEmail] = useState("");
+  const [currentEmail, setCurrentEmail] = useState(currentUser?.email || "");
   const [newEmail, setNewEmail] = useState("");
   const [currentPassword, setCurrentPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -23,14 +22,18 @@ export const UpdateEmailPage: React.FC = () => {
   const [problem, setProblem] = useState<ProblemDetails | null>(null);
 
   useEffect(() => {
-    if (currentUser?.email) {
-      setCurrentEmail(currentUser.email);
-    } else {
+    if (!currentUser?.email) {
+      let isMounted = true;
       void apiClient.getMyProfile().then((p) => {
-        if (p?.email) setCurrentEmail(p.email);
+        if (isMounted && p?.email) {
+          setCurrentEmail(p.email);
+        }
       });
+      return () => {
+        isMounted = false;
+      };
     }
-  }, [currentUser]);
+  }, [currentUser?.email]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -107,7 +110,7 @@ export const UpdateEmailPage: React.FC = () => {
                 Current Registered Address
               </span>
               <p className="font-serif text-sm font-semibold text-[#141413] truncate">
-                {currentEmail || "Loading current address..."}
+                {currentEmail || currentUser?.email || "Loading current address..."}
               </p>
             </div>
           </div>

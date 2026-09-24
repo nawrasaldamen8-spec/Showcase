@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "../../../shared/components/Button.tsx";
 import { Input } from "../../../shared/components/Input.tsx";
-import { useToast } from "../../../shared/context/ToastContext.tsx";
+import { useToast } from "../../../shared/context/index.ts";
 import { useAuth } from "../../../shared/context/useAuth.ts";
 import { SecurityActionLayout } from "../components/SecurityActionLayout.tsx";
 
@@ -38,7 +38,7 @@ export const DeleteAccountPage: React.FC = () => {
       setIsDeleting(false);
       logout();
       showToast("info", "Your account and all associated exhibition records have been permanently removed.");
-      navigate("/explore");
+      navigate("/studio");
     }, 800);
   };
 

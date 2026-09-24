@@ -1,7 +1,7 @@
 import { CheckCircle2, Clock, Laptop, LogOut, MapPin, Smartphone } from "lucide-react";
 import React, { useState } from "react";
 import { Button } from "../../../shared/components/Button.tsx";
-import { useToast } from "../../../shared/context/ToastContext.tsx";
+import { useToast } from "../../../shared/context/index.ts";
 import { SecurityActionLayout } from "../components/SecurityActionLayout.tsx";
 
 interface SessionItem {

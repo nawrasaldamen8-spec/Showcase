@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { apiClient } from "../../../shared/api/apiClient.ts";
 import { Button } from "../../../shared/components/Button.tsx";
 import { Input } from "../../../shared/components/Input.tsx";
-import { useToast } from "../../../shared/context/ToastContext.tsx";
+import { useToast } from "../../../shared/context/index.ts";
 import type { ProblemDetails } from "../../../shared/types/index.ts";
 import { ProblemAlert } from "../components/ProblemAlert.tsx";
 import { SecurityActionLayout } from "../components/SecurityActionLayout.tsx";

@@ -1,20 +1,6 @@
 import { AlertCircle, AlertTriangle, CheckCircle2, Info, X } from "lucide-react";
-import React, { createContext, useCallback, useContext, useState, type ReactNode } from "react";
-
-export type ToastType = "success" | "error" | "warning" | "info";
-
-export interface ToastItem {
-  id: string;
-  type: ToastType;
-  message: string;
-}
-
-interface ToastContextValue {
-  showToast: (type: ToastType, message: string) => void;
-  dismissToast: (id: string) => void;
-}
-
-const ToastContext = createContext<ToastContextValue | undefined>(undefined);
+import React, { useCallback, useState, type ReactNode } from "react";
+import { ToastContext, type ToastItem, type ToastType } from "./toastContextDef.ts";
 
 export const ToastProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [toasts, setToasts] = useState<ToastItem[]>([]);
@@ -95,12 +81,4 @@ export const ToastProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       </aside>
     </ToastContext.Provider>
   );
-};
-
-export const useToast = (): ToastContextValue => {
-  const context = useContext(ToastContext);
-  if (!context) {
-    throw new Error("useToast must be used within a ToastProvider");
-  }
-  return context;
 };
