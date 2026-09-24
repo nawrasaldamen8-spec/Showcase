@@ -1,11 +1,19 @@
-import { ArrowLeft, Compass } from "lucide-react";
+import { ArrowLeft, LayoutGrid } from "lucide-react";
 import React, { useEffect } from "react";
-import { BrowserRouter, Link, Route, Routes, useLocation } from "react-router-dom";
+import { BrowserRouter, Link, Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { Button } from "./shared/components/Button.tsx";
 import { AuthProvider, ToastProvider, useAuth } from "./shared/context/index.ts";
 import { Footer, MobileBottomNav, MobileTopBar, Sidebar } from "./shared/layout/index.ts";
 
-import { ExplorePage } from "./features/explore/pages/ExplorePage.tsx";
+import {
+  CareerAcademicsPage,
+  CareerAchievementsPage,
+  CareerCredentialsPage,
+  CareerExperiencePage,
+  CareerHubPage,
+  CareerLanguagesPage,
+  CareerSkillsPage,
+} from "./features/career/pages/index.ts";
 import { PostDetailsPage, PostEditorPage, StudioDashboardPage } from "./features/posts/pages/index.ts";
 import { ProfileSettingsPage, PublicProfilePage } from "./features/profile/pages/index.ts";
 import {
@@ -56,8 +64,8 @@ const AppLayout: React.FC = () => {
         {/* Primary Dynamic Route View */}
         <main className="flex-1 pb-20 md:pb-0">
           <Routes>
-            <Route path="/" element={<ExplorePage />} />
-            <Route path="/explore" element={<ExplorePage />} />
+            <Route path="/" element={<StudioDashboardPage />} />
+            <Route path="/explore" element={<Navigate to="/studio" replace />} />
             <Route path="/studio" element={<StudioDashboardPage />} />
             <Route path="/posts/mine" element={<StudioDashboardPage />} />
             <Route path="/posts/new" element={<PostEditorPage />} />
@@ -72,13 +80,22 @@ const AppLayout: React.FC = () => {
             <Route path="/settings/security/sessions" element={<ActiveSessionsPage />} />
             <Route path="/settings/security/delete-account" element={<DeleteAccountPage />} />
 
+            {/* Career Hub & Dedicated Sub-pages */}
+            <Route path="/career" element={<CareerHubPage />} />
+            <Route path="/career/experience" element={<CareerExperiencePage />} />
+            <Route path="/career/academics" element={<CareerAcademicsPage />} />
+            <Route path="/career/skills" element={<CareerSkillsPage />} />
+            <Route path="/career/credentials" element={<CareerCredentialsPage />} />
+            <Route path="/career/languages" element={<CareerLanguagesPage />} />
+            <Route path="/career/achievements" element={<CareerAchievementsPage />} />
+
             {/* 404 Editorial View */}
             <Route
               path="*"
               element={
                 <div className="max-w-xl mx-auto px-4 py-24 text-center">
                   <div className="inline-flex items-center justify-center p-4 rounded-full bg-[#faf9f5] border border-[#cccbc8]/60 text-[#87867f] mb-6">
-                    <Compass className="h-10 w-10 stroke-[1.5]" />
+                    <LayoutGrid className="h-10 w-10 stroke-[1.5]" />
                   </div>
                   <span className="font-gothic text-xs font-bold uppercase tracking-[0.16em] text-[#87867f] block mb-2">
                     Exhibition Archive &bull; Void
@@ -91,9 +108,9 @@ const AppLayout: React.FC = () => {
                     portfolio.
                   </p>
                   <div className="mt-8">
-                    <Link to="/explore">
+                    <Link to="/studio">
                       <Button variant="slate" size="md" leftIcon={<ArrowLeft className="h-4 w-4" />}>
-                        Return to Explore Feed
+                        Return to Studio
                       </Button>
                     </Link>
                   </div>

@@ -1,4 +1,4 @@
-import { Compass, LayoutGrid, Settings as SettingsIcon, User as UserIcon } from "lucide-react";
+import { Briefcase, LayoutGrid, Settings as SettingsIcon, User as UserIcon } from "lucide-react";
 import React from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import type { SidebarUser } from "./Sidebar.tsx";
@@ -12,14 +12,14 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({ user }) => {
 
   const isLinkActive = (to: string, isActive: boolean) => {
     if (isActive) return true;
-    if (to === "/explore" && location.pathname === "/") return true;
-    if (to === "/studio" && location.pathname === "/posts/mine") return true;
+    if (to === "/studio" && (location.pathname === "/" || location.pathname === "/posts/mine")) return true;
+    if (to === "/career" && location.pathname.startsWith("/career")) return true;
     return false;
   };
 
   const navItems = [
-    { label: "Explore", to: "/explore", icon: Compass },
     { label: "Studio", to: "/studio", icon: LayoutGrid },
+    { label: "Career", to: "/career", icon: Briefcase },
     {
       label: "Profile",
       to: user ? `/u/${user.username}` : "/settings",
@@ -66,7 +66,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({ user }) => {
                   ) : (
                     <Icon
                       className={`h-6 w-6 transition-transform duration-200 ${
-                        active ? "stroke-[2.2] scale-105" : "stroke-[1.6]"
+                        active ? "stroke-[2.2] scale-105 text-[#141413]" : "stroke-[1.6]"
                       }`}
                     />
                   )}
@@ -74,7 +74,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({ user }) => {
                   {/* Active Indicator Dot */}
                   <span
                     className={`w-1.5 h-1.5 rounded-full mt-1 transition-opacity duration-200 ${
-                      active ? "bg-[#141413] opacity-100" : "opacity-0"
+                      active ? "bg-[#d97757] opacity-100" : "opacity-0"
                     }`}
                   />
                 </>

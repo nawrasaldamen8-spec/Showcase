@@ -1,5 +1,5 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React from "react";
+import { Link } from "react-router-dom";
 
 export const Footer: React.FC = () => {
   const currentYear = new Date().getFullYear();
@@ -10,33 +10,33 @@ export const Footer: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-12 gap-10 lg:gap-12 pb-12 border-b border-[#cccbc8]/60">
           {/* Brand & Curation Statement (Left 6 cols) */}
           <div className="md:col-span-6 space-y-4">
-            <Link to="/explore" className="inline-block text-decoration-none">
+            <Link to="/studio" className="inline-block text-decoration-none">
               <span className="font-gothic font-extrabold text-2xl tracking-[0.18em] uppercase text-[#141413] hover:text-[#d97757] transition-colors">
                 SHOWCASE
               </span>
             </Link>
             <p className="font-serif text-base sm:text-lg leading-relaxed text-[#141413]/85 max-w-lg">
-              An open-canvas digital exhibition celebrating visionary architecture, documentary photography, industrial design, and contemporary visual culture.
+              An open-canvas digital exhibition celebrating visionary architecture, documentary photography, industrial
+              design, and contemporary visual culture.
             </p>
             <p className="font-serif text-xs italic text-[#87867f]">
-              Designed with the Warm Gallery aesthetic — where geometric headlines meet editorial reading text on ivory canvas.
+              Designed with the Warm Gallery aesthetic — where geometric headlines meet editorial reading text on ivory
+              canvas.
             </p>
           </div>
 
           {/* Quick Links (3 cols) */}
           <div className="md:col-span-3 space-y-3">
-            <h4 className="font-gothic text-xs font-bold uppercase tracking-[0.12em] text-[#87867f]">
-              Exhibition
-            </h4>
+            <h4 className="font-gothic text-xs font-bold uppercase tracking-[0.12em] text-[#87867f]">Exhibition</h4>
             <ul className="space-y-2 font-serif text-sm">
-              <li>
-                <Link to="/explore" className="text-[#141413] hover:text-[#d97757] transition-colors">
-                  Curated Feed
-                </Link>
-              </li>
               <li>
                 <Link to="/studio" className="text-[#141413] hover:text-[#d97757] transition-colors">
                   Creator Studio
+                </Link>
+              </li>
+              <li>
+                <Link to="/career" className="text-[#141413] hover:text-[#d97757] transition-colors">
+                  Career &amp; Curations
                 </Link>
               </li>
               <li>
@@ -54,9 +54,7 @@ export const Footer: React.FC = () => {
 
           {/* Editorial & Connect (3 cols) */}
           <div className="md:col-span-3 space-y-3">
-            <h4 className="font-gothic text-xs font-bold uppercase tracking-[0.12em] text-[#87867f]">
-              Connect
-            </h4>
+            <h4 className="font-gothic text-xs font-bold uppercase tracking-[0.12em] text-[#87867f]">Connect</h4>
             <ul className="space-y-2 font-serif text-sm">
               <li>
                 <a
@@ -89,9 +87,7 @@ export const Footer: React.FC = () => {
                 </a>
               </li>
               <li>
-                <span className="text-[#87867f] text-xs">
-                  Storage: Cloudflare R2
-                </span>
+                <span className="text-[#87867f] text-xs">Storage: Cloudflare R2</span>
               </li>
             </ul>
           </div>

@@ -1,5 +1,5 @@
 import {
-  Compass,
+  Briefcase,
   ExternalLink,
   LayoutGrid,
   LogOut,
@@ -50,14 +50,14 @@ export const Sidebar: React.FC<SidebarProps> = ({ user, currentPersona = "creato
 
   const isLinkActive = (to: string, isActive: boolean) => {
     if (isActive) return true;
-    if (to === "/explore" && location.pathname === "/") return true;
-    if (to === "/studio" && location.pathname === "/posts/mine") return true;
+    if (to === "/studio" && (location.pathname === "/" || location.pathname === "/posts/mine")) return true;
+    if (to === "/career" && location.pathname.startsWith("/career")) return true;
     return false;
   };
 
   const navLinks = [
-    { label: "Explore", to: "/explore", icon: Compass },
     { label: "Studio", to: "/studio", icon: LayoutGrid },
+    { label: "Career", to: "/career", icon: Briefcase },
     ...(user ? [{ label: "Profile", to: `/u/${user.username}`, icon: UserIcon }] : []),
     { label: "Settings", to: "/settings", icon: SettingsIcon },
   ];
@@ -69,7 +69,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ user, currentPersona = "creato
     >
       {/* 1. Header / Platform Branding (VSCO Style) */}
       <div className="h-18 lg:h-20 px-6 flex items-center justify-between border-b border-[#262624]">
-        <Link to="/explore" className="flex items-center gap-3 group text-decoration-none" aria-label="SHOWCASE Home">
+        <Link to="/studio" className="flex items-center gap-3 group text-decoration-none" aria-label="SHOWCASE Home">
           {/* Minimalist Aperture / Shutter Emblem */}
           <div className="w-8 h-8 rounded-full border border-[#faf9f5]/30 flex items-center justify-center bg-[#262624] group-hover:border-[#d97757] transition-colors">
             <svg
@@ -217,6 +217,16 @@ export const Sidebar: React.FC<SidebarProps> = ({ user, currentPersona = "creato
                     >
                       <ExternalLink className="h-3.5 w-3.5 text-[#87867f]" />
                       <span>View Public Profile</span>
+                    </Link>
+
+                    <Link
+                      to="/career"
+                      onClick={() => setUserMenuOpen(false)}
+                      className="flex items-center gap-2.5 px-4 py-2 text-xs font-gothic uppercase tracking-wider text-[#faf9f5] hover:bg-[#262624] transition-colors"
+                      role="menuitem"
+                    >
+                      <Briefcase className="h-3.5 w-3.5 text-[#87867f]" />
+                      <span>Career Hub</span>
                     </Link>
 
                     <Link

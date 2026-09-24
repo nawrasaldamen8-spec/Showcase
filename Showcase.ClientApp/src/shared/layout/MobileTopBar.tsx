@@ -1,7 +1,7 @@
 import { Bell, Plus } from "lucide-react";
 import React from "react";
 import { Link } from "react-router-dom";
-import { useToast } from "../context/ToastContext.tsx";
+import { useToast } from "../context/index.ts";
 
 export const MobileTopBar: React.FC = () => {
   const { showToast } = useToast();
@@ -29,7 +29,7 @@ export const MobileTopBar: React.FC = () => {
       {/* Center: Centered Platform Logo */}
       <div className="flex items-center justify-center">
         <Link
-          to="/explore"
+          to="/studio"
           className="font-gothic font-extrabold text-base tracking-[0.18em] uppercase text-[#141413] hover:text-[#d97757] transition-colors"
           aria-label="SHOWCASE Home"
         >
