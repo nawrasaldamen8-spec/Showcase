@@ -324,3 +324,8 @@ export interface SocialLinkIdResponse {
 export interface PostCreatedResponse {
   id: string;
 }
+
+// ---------------------------------------------------------------------------
+// Career Module Domain Contracts
+// ---------------------------------------------------------------------------
+export * from "./career.ts";

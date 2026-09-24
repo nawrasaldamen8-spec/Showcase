@@ -885,3 +885,6 @@ export const INITIAL_POSTS: Post[] = [
     ],
   },
 ];
+
+export * from './careerMockData.ts';
+
