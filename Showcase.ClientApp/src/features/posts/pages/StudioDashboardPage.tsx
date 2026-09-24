@@ -39,7 +39,7 @@ function formatDate(isoString?: string | null): string {
 }
 
 export const StudioDashboardPage: React.FC = () => {
-  const { activePersona, switchPersona } = useAuth();
+  const { activePersona, switchPersona, currentUser } = useAuth();
   const { showToast } = useToast();
 
   const [posts, setPosts] = useState<PostSummaryResponse[]>([]);
@@ -227,11 +227,13 @@ export const StudioDashboardPage: React.FC = () => {
           <Button variant="clay" size="md" onClick={() => switchPersona("creator")}>
             Switch to Creator Persona
           </Button>
-          <Link to="/explore">
-            <Button variant="outline" size="md">
-              Return to Explore
-            </Button>
-          </Link>
+          {currentUser ? (
+            <Link to={`/u/${currentUser.username}`}>
+              <Button variant="outline" size="md">
+                View My Portfolio
+              </Button>
+            </Link>
+          ) : null}
         </div>
       </div>
     );

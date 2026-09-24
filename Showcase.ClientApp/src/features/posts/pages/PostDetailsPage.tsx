@@ -155,9 +155,9 @@ export const PostDetailsPage: React.FC = () => {
           gallery collection.
         </p>
         <div className="mt-8">
-          <Link to="/explore">
+          <Link to="/studio">
             <Button variant="slate" size="md" leftIcon={<ArrowLeft className="h-4 w-4" />}>
-              Back to Explore
+              Back to Studio
             </Button>
           </Link>
         </div>
@@ -172,9 +172,9 @@ export const PostDetailsPage: React.FC = () => {
         <div className="bg-[#faf9f5] border border-[#d97757]/40 rounded-[24px] p-8">
           <p className="font-serif text-lg text-[#141413]">{error}</p>
           <div className="mt-6 flex justify-center gap-4">
-            <Link to="/explore">
+            <Link to="/studio">
               <Button variant="outline" size="sm">
-                Back to Explore
+                Back to Studio
               </Button>
             </Link>
             <Button variant="slate" size="sm" onClick={() => window.location.reload()}>
@@ -207,11 +207,11 @@ export const PostDetailsPage: React.FC = () => {
         aria-label="Main navigation"
       >
         <Link
-          to="/explore"
+          to="/studio"
           className="inline-flex items-center gap-2 text-[#87867f] hover:text-[#141413] transition-colors group shrink-0 font-medium"
         >
           <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
-          <span>Explore</span>
+          <span>Studio</span>
         </Link>
 
         {isOwnPost && (
@@ -322,15 +322,9 @@ export const PostDetailsPage: React.FC = () => {
           {post.tags && post.tags.length > 0 && (
             <div className="flex flex-wrap gap-2">
               {post.tags.map((tag) => (
-                <Link key={tag} to={`/explore?tag=${encodeURIComponent(tag)}`} className="text-decoration-none">
-                  <Badge
-                    variant="stone"
-                    size="sm"
-                    className="hover:border-[#141413] hover:text-[#141413] transition-colors cursor-pointer"
-                  >
-                    {tag}
-                  </Badge>
-                </Link>
+                <Badge key={tag} variant="stone" size="sm">
+                  {tag}
+                </Badge>
               ))}
             </div>
           )}
@@ -438,15 +432,9 @@ export const PostDetailsPage: React.FC = () => {
             {post.tags && post.tags.length > 0 && (
               <div className="flex flex-wrap gap-2 pt-1">
                 {post.tags.map((tag) => (
-                  <Link key={tag} to={`/explore?tag=${encodeURIComponent(tag)}`} className="text-decoration-none">
-                    <Badge
-                      variant="stone"
-                      size="sm"
-                      className="hover:border-[#141413] hover:text-[#141413] transition-colors cursor-pointer"
-                    >
-                      {tag}
-                    </Badge>
-                  </Link>
+                  <Badge key={tag} variant="stone" size="sm">
+                    {tag}
+                  </Badge>
                 ))}
               </div>
             )}
