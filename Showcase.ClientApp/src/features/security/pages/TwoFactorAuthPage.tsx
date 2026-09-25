@@ -1,9 +1,9 @@
 import { Check, Copy, ShieldAlert, ShieldCheck, Smartphone } from "lucide-react";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Button } from "../../../shared/components/Button.tsx";
-import { Input } from "../../../shared/components/Input.tsx";
-import { useToast } from "../../../shared/context/index.ts";
+import { Button } from "@shared/components/Button.tsx";
+import { Input } from "@shared/components/Input.tsx";
+import { useToast } from "@shared/context/index.ts";
 import { SecurityActionLayout } from "../components/SecurityActionLayout.tsx";
 
 const STORAGE_2FA_KEY = "showcase_2fa_enabled";

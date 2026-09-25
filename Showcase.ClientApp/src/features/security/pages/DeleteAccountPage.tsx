@@ -1,10 +1,10 @@
 import { AlertTriangle, Eye, EyeOff, Trash2 } from "lucide-react";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Button } from "../../../shared/components/Button.tsx";
-import { Input } from "../../../shared/components/Input.tsx";
-import { useToast } from "../../../shared/context/index.ts";
-import { useAuth } from "../../../shared/context/useAuth.ts";
+import { Button } from "@shared/components/Button.tsx";
+import { Input } from "@shared/components/Input.tsx";
+import { useToast } from "@shared/context/index.ts";
+import { useAuth } from "@shared/context/useAuth.ts";
 import { SecurityActionLayout } from "../components/SecurityActionLayout.tsx";
 
 export const DeleteAccountPage: React.FC = () => {

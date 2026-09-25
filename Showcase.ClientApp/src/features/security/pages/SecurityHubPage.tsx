@@ -1,27 +1,14 @@
 import { AlertTriangle, ArrowLeft, KeyRound, Laptop, Mail, ShieldAlert, ShieldCheck } from "lucide-react";
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { Link } from "react-router-dom";
-import { apiClient } from "../../../shared/api/apiClient.ts";
-import { useAuth } from "../../../shared/context/useAuth.ts";
-import type { ProfileDetailsResponse } from "../../../shared/types/index.ts";
+import { apiClient } from "@shared/api/apiClient.ts";
+import { useAuth } from "@shared/context/useAuth.ts";
+import { useAsyncData } from "@shared/hooks/index.ts";
 import { SecurityNavRow } from "../components/SecurityNavRow.tsx";
 
 export const SecurityHubPage: React.FC = () => {
   const { currentUser } = useAuth();
-  const [profile, setProfile] = useState<ProfileDetailsResponse | null>(null);
-
-  useEffect(() => {
-    let isCancelled = false;
-    void apiClient
-      .getMyProfile()
-      .then((data) => {
-        if (!isCancelled) setProfile(data);
-      })
-      .catch(() => {});
-    return () => {
-      isCancelled = true;
-    };
-  }, []);
+  const { data: profile } = useAsyncData(() => apiClient.getMyProfile());
 
   const displayEmail = profile?.email || currentUser?.email || "elena.vance@studio-vance.design";
 

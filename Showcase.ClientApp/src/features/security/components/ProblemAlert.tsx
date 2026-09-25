@@ -1,6 +1,6 @@
 import { AlertCircle } from "lucide-react";
 import React from "react";
-import type { ProblemDetails } from "../../../shared/types/index.ts";
+import type { ProblemDetails } from "@shared/types/index.ts";
 
 export interface ProblemAlertProps {
   problem: ProblemDetails | null;
