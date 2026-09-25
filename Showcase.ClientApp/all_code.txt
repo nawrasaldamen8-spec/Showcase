@@ -1,0 +1,3004 @@
+===== src\features\security\pages\UpdateEmailPage.tsx =====
+import { CheckCircle2, Eye, EyeOff, Mail } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { apiClient } from "../../../shared/api/apiClient.ts";
+import { Button } from "../../../shared/components/Button.tsx";
+import { Input } from "../../../shared/components/Input.tsx";
+import { useAuth, useToast } from "../../../shared/context/index.ts";
+import type { ProblemDetails } from "../../../shared/types/index.ts";
+import { ProblemAlert } from "../components/ProblemAlert.tsx";
+import { SecurityActionLayout } from "../components/SecurityActionLayout.tsx";
+
+export const UpdateEmailPage: React.FC = () => {
+  const navigate = useNavigate();
+  const { currentUser, refreshUser } = useAuth();
+  const { showToast } = useToast();
+
+  const [currentEmail, setCurrentEmail] = useState(currentUser?.email || "");
+  const [newEmail, setNewEmail] = useState("");
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [problem, setProblem] = useState<ProblemDetails | null>(null);
+
+  useEffect(() => {
+    if (!currentUser?.email) {
+      let isMounted = true;
+      void apiClient.getMyProfile().then((p) => {
+        if (isMounted && p?.email) {
+          setCurrentEmail(p.email);
+        }
+      });
+      return () => {
+        isMounted = false;
+      };
+    }
+  }, [currentUser?.email]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setProblem(null);
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const trimmedEmail = newEmail.trim().toLowerCase();
+
+    if (!trimmedEmail || !emailRegex.test(trimmedEmail)) {
+      setProblem({
+        title: "Invalid Email Address",
+        detail: "Please provide a valid, well-formed email address.",
+        status: 400,
+      });
+      return;
+    }
+
+    if (trimmedEmail === currentEmail.trim().toLowerCase()) {
+      setProblem({
+        title: "Unchanged Email",
+        detail: "The new email address matches your current registered address.",
+        status: 400,
+      });
+      return;
+    }
+
+    if (!currentPassword) {
+      setProblem({
+        title: "Authorization Required",
+        detail: "Your existing account password is required to authorize email changes.",
+        status: 400,
+      });
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      await apiClient.changeEmail({
+        newEmail: trimmedEmail,
+        currentPassword,
+      });
+
+      await refreshUser();
+      showToast("success", `Email address successfully updated to ${trimmedEmail}.`);
+      navigate("/settings/security");
+    } catch (err: unknown) {
+      const p = err as ProblemDetails;
+      setProblem({
+        title: p?.title || "Email Update Failed",
+        detail: p?.detail || "An unexpected error occurred while modifying your email.",
+        status: p?.status || 400,
+        errors: p?.errors,
+      });
+      showToast("error", p?.detail || "Failed to update email address.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <SecurityActionLayout
+      title="Update Email Address"
+      subtitle="Your email address is used for critical security notifications and account recovery."
+      badge="Credentials"
+    >
+      <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Current Email Info Box */}
+        <div className="p-4 rounded-xl bg-[#f0eee6] border border-[#cccbc8]/60 flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3 min-w-0">
+            <Mail className="h-5 w-5 text-[#87867f] shrink-0" />
+            <div className="min-w-0">
+              <span className="font-gothic text-[11px] font-bold uppercase tracking-wider text-[#87867f] block">
+                Current Registered Address
+              </span>
+              <p className="font-serif text-sm font-semibold text-[#141413] truncate">
+                {currentEmail || currentUser?.email || "Loading current address..."}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-1.5 shrink-0 px-2.5 py-1 rounded-full bg-[#2e7d32]/10 border border-[#2e7d32]/30 text-[#2e7d32]">
+            <CheckCircle2 className="h-3.5 w-3.5" />
+            <span className="font-gothic text-[10px] font-bold uppercase tracking-wider">Verified</span>
+          </div>
+        </div>
+
+        {/* New Email Input */}
+        <Input
+          label="New Email Address"
+          type="email"
+          value={newEmail}
+          onChange={(e) => setNewEmail(e.target.value)}
+          placeholder="your.new.email@domain.com"
+          required
+          disabled={isLoading}
+        />
+
+        {/* Current Password Authorization */}
+        <Input
+          label="Authorize With Current Password"
+          type={showPassword ? "text" : "password"}
+          value={currentPassword}
+          onChange={(e) => setCurrentPassword(e.target.value)}
+          placeholder="Enter current password"
+          required
+          disabled={isLoading}
+          rightIcon={
+            <button
+              type="button"
+              onClick={() => setShowPassword((prev) => !prev)}
+              className="hover:text-[#141413] transition-colors p-1"
+              aria-label={showPassword ? "Hide password" : "Show password"}
+            >
+              {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+            </button>
+          }
+        />
+
+        {/* Problem Alert */}
+        <ProblemAlert problem={problem} />
+
+        {/* Action Button: Full-width at the bottom */}
+        <div className="pt-2">
+          <Button
+            type="submit"
+            variant="clay"
+            size="lg"
+            fullWidth
+            isLoading={isLoading}
+            disabled={!newEmail || !currentPassword}
+            leftIcon={<Mail className="h-4 w-4" />}
+            className="justify-center font-gothic uppercase tracking-wider text-xs shadow-none"
+          >
+            Confirm Email Change
+          </Button>
+        </div>
+      </form>
+    </SecurityActionLayout>
+  );
+};
+
+===== src\features\security\pages\SecurityHubPage.tsx =====
+import { AlertTriangle, ArrowLeft, KeyRound, Laptop, Mail, ShieldAlert, ShieldCheck } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import { apiClient } from "../../../shared/api/apiClient.ts";
+import { useAuth } from "../../../shared/context/useAuth.ts";
+import type { ProfileDetailsResponse } from "../../../shared/types/index.ts";
+import { SecurityNavRow } from "../components/SecurityNavRow.tsx";
+
+export const SecurityHubPage: React.FC = () => {
+  const { currentUser } = useAuth();
+  const [profile, setProfile] = useState<ProfileDetailsResponse | null>(null);
+
+  useEffect(() => {
+    let isCancelled = false;
+    void apiClient
+      .getMyProfile()
+      .then((data) => {
+        if (!isCancelled) setProfile(data);
+      })
+      .catch(() => {});
+    return () => {
+      isCancelled = true;
+    };
+  }, []);
+
+  const displayEmail = profile?.email || currentUser?.email || "elena.vance@studio-vance.design";
+
+  // Read simulated 2FA status from localStorage
+  const is2FaEnabled = typeof window !== "undefined" && localStorage.getItem("showcase_2fa_enabled") === "true";
+
+  return (
+    <div className="min-h-screen bg-[#f0eee6] py-6 sm:py-10 px-4 sm:px-6 lg:px-8 pb-24">
+      <div className="max-w-2xl mx-auto space-y-8">
+        {/* Back Link to Profile Settings */}
+        <div>
+          <Link
+            to="/settings"
+            className="inline-flex items-center gap-2 font-gothic text-xs font-semibold uppercase tracking-[0.14em] text-[#87867f] hover:text-[#141413] transition-colors group text-decoration-none"
+          >
+            <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
+            <span>Settings &amp; Preferences</span>
+          </Link>
+        </div>
+
+        {/* Page Header */}
+        <div className="border-b border-[#cccbc8] pb-6 space-y-2">
+          <div className="flex items-center gap-2">
+            <span className="font-gothic text-xs font-bold uppercase tracking-[0.16em] text-[#d97757]">
+              Security Hub
+            </span>
+            <span className="text-[#cccbc8]">&bull;</span>
+            <span className="font-gothic text-xs font-semibold uppercase tracking-[0.10em] text-[#87867f]">
+              Authentication
+            </span>
+          </div>
+
+          <h1 className="font-gothic font-extrabold text-3xl sm:text-4xl uppercase tracking-tight text-[#141413]">
+            Account &amp; Security
+          </h1>
+
+          <p className="font-serif text-sm sm:text-base text-[#141413]/75 leading-relaxed">
+            Manage your credentials, secondary authentication factors, and active sessions across devices.
+          </p>
+        </div>
+
+        {/* Section 1: Login & Credentials */}
+        <section className="space-y-3.5" aria-labelledby="credentials-heading">
+          <div className="px-1">
+            <h2
+              id="credentials-heading"
+              className="font-gothic text-xs font-bold uppercase tracking-[0.14em] text-[#87867f]"
+            >
+              Login &amp; Credentials
+            </h2>
+          </div>
+
+          <div className="space-y-3">
+            <SecurityNavRow
+              to="/settings/security/change-password"
+              icon={KeyRound}
+              title="Change Password"
+              description="Last modified recently • Passphrase authentication"
+              badge={
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-gothic font-bold uppercase tracking-wider bg-[#2e7d32]/10 text-[#2e7d32] border border-[#2e7d32]/30">
+                  Secured
+                </span>
+              }
+            />
+
+            <SecurityNavRow
+              to="/settings/security/email"
+              icon={Mail}
+              title="Email Address"
+              description={displayEmail}
+              badge={
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-gothic font-bold uppercase tracking-wider bg-[#2e7d32]/10 text-[#2e7d32] border border-[#2e7d32]/30">
+                  Verified
+                </span>
+              }
+            />
+          </div>
+        </section>
+
+        {/* Section 2: Enhanced Protection & Devices */}
+        <section className="space-y-3.5" aria-labelledby="protection-heading">
+          <div className="px-1">
+            <h2
+              id="protection-heading"
+              className="font-gothic text-xs font-bold uppercase tracking-[0.14em] text-[#87867f]"
+            >
+              Multi-Factor &amp; Device Sessions
+            </h2>
+          </div>
+
+          <div className="space-y-3">
+            <SecurityNavRow
+              to="/settings/security/two-factor"
+              icon={ShieldCheck}
+              title="Two-Factor Authentication (2FA)"
+              description="Require an authenticator code when logging into your creator atelier"
+              badge={
+                is2FaEnabled ? (
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-gothic font-bold uppercase tracking-wider bg-[#2e7d32]/10 text-[#2e7d32] border border-[#2e7d32]/30">
+                    Enabled
+                  </span>
+                ) : (
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-gothic font-bold uppercase tracking-wider bg-[#cccbc8]/30 text-[#87867f] border border-[#cccbc8]">
+                    Disabled
+                  </span>
+                )
+              }
+            />
+
+            <SecurityNavRow
+              to="/settings/security/sessions"
+              icon={Laptop}
+              title="Active Sessions"
+              description="2 authorized client devices currently authenticated"
+              badge={
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-gothic font-bold uppercase tracking-wider bg-[#faf9f5] border border-[#cccbc8] text-[#141413]">
+                  2 Devices
+                </span>
+              }
+            />
+          </div>
+        </section>
+
+        {/* Section 3: Danger Zone */}
+        <section className="space-y-3.5 pt-4 border-t border-[#cccbc8]/60" aria-labelledby="danger-heading">
+          <div className="px-1 flex items-center gap-2">
+            <ShieldAlert className="h-4 w-4 text-[#d97757]" />
+            <h2
+              id="danger-heading"
+              className="font-gothic text-xs font-bold uppercase tracking-[0.14em] text-[#d97757]"
+            >
+              Danger Zone
+            </h2>
+          </div>
+
+          <SecurityNavRow
+            to="/settings/security/delete-account"
+            variant="danger"
+            icon={AlertTriangle}
+            title="Delete or Deactivate Account"
+            description="Permanently remove your creator profile, exhibitions, and all uploaded plates"
+            badge={
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-gothic font-bold uppercase tracking-wider bg-[#d97757]/15 text-[#d97757] border border-[#d97757]/40">
+                Permanent
+              </span>
+            }
+          />
+        </section>
+      </div>
+    </div>
+  );
+};
+
+===== src\features\security\pages\ActiveSessionsPage.tsx =====
+import { CheckCircle2, Clock, Laptop, LogOut, MapPin, Smartphone } from "lucide-react";
+import React, { useState } from "react";
+import { Button } from "../../../shared/components/Button.tsx";
+import { useToast } from "../../../shared/context/index.ts";
+import { SecurityActionLayout } from "../components/SecurityActionLayout.tsx";
+
+interface SessionItem {
+  id: string;
+  device: string;
+  browser: string;
+  location: string;
+  ip: string;
+  lastActive: string;
+  isCurrent: boolean;
+  type: "desktop" | "mobile";
+}
+
+const INITIAL_SESSIONS: SessionItem[] = [
+  {
+    id: "sess_current",
+    device: 'Apple MacBook Pro 16"',
+    browser: "Chrome 124.0 on macOS Sonoma",
+    location: "Stockholm, Sweden",
+    ip: "194.237.214.12",
+    lastActive: "Active now",
+    isCurrent: true,
+    type: "desktop",
+  },
+  {
+    id: "sess_iphone",
+    device: "Apple iPhone 15 Pro",
+    browser: "Mobile Safari on iOS 17.4",
+    location: "Stockholm, Sweden",
+    ip: "85.228.14.92",
+    lastActive: "2 hours ago",
+    isCurrent: false,
+    type: "mobile",
+  },
+  {
+    id: "sess_studio_ipad",
+    device: 'Apple iPad Pro 12.9"',
+    browser: "Safari on iPadOS 17.3",
+    location: "Gothenburg, Sweden",
+    ip: "213.115.112.50",
+    lastActive: "3 days ago",
+    isCurrent: false,
+    type: "desktop",
+  },
+];
+
+export const ActiveSessionsPage: React.FC = () => {
+  const { showToast } = useToast();
+  const [sessions, setSessions] = useState<SessionItem[]>(INITIAL_SESSIONS);
+  const [isTerminating, setIsTerminating] = useState(false);
+
+  const handleTerminateOtherSessions = () => {
+    setIsTerminating(true);
+    setTimeout(() => {
+      setIsTerminating(false);
+      setSessions((prev) => prev.filter((s) => s.isCurrent));
+      showToast("success", "All other active client sessions have been terminated.");
+    }, 500);
+  };
+
+  const handleTerminateSession = (id: string, device: string) => {
+    setSessions((prev) => prev.filter((s) => s.id !== id));
+    showToast("info", `Session on ${device} terminated.`);
+  };
+
+  const hasOtherSessions = sessions.some((s) => !s.isCurrent);
+
+  return (
+    <SecurityActionLayout
+      title="Active Sessions & Devices"
+      subtitle="Review all devices currently authenticated to your creator atelier and revoke unneeded access."
+      badge="Sessions"
+    >
+      <div className="space-y-6">
+        {/* Device Sessions List */}
+        <div className="space-y-3.5">
+          {sessions.map((sess) => (
+            <div
+              key={sess.id}
+              className={`p-4 sm:p-5 rounded-2xl border transition-all ${
+                sess.isCurrent
+                  ? "bg-[#f0eee6]/60 border-[#cccbc8]"
+                  : "bg-[#faf9f5] border-[#cccbc8]/60 hover:border-[#141413]/40"
+              }`}
+            >
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex items-start gap-3.5">
+                  <div className="p-2.5 rounded-xl bg-[#faf9f5] border border-[#cccbc8]/60 text-[#141413] shrink-0 mt-0.5">
+                    {sess.type === "desktop" ? (
+                      <Laptop className="h-5 w-5 stroke-[1.8]" />
+                    ) : (
+                      <Smartphone className="h-5 w-5 stroke-[1.8]" />
+                    )}
+                  </div>
+
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h4 className="font-gothic text-sm font-bold uppercase tracking-tight text-[#141413]">
+                        {sess.device}
+                      </h4>
+                      {sess.isCurrent && (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-gothic font-bold uppercase tracking-wider bg-[#2e7d32]/10 text-[#2e7d32] border border-[#2e7d32]/30">
+                          <CheckCircle2 className="h-3 w-3" />
+                          <span>This Device</span>
+                        </span>
+                      )}
+                    </div>
+
+                    <p className="font-serif text-xs text-[#87867f]">{sess.browser}</p>
+
+                    <div className="flex items-center gap-3 pt-1 text-[11px] font-serif text-[#87867f]">
+                      <span className="flex items-center gap-1">
+                        <MapPin className="h-3 w-3" />
+                        <span>{sess.location}</span>
+                      </span>
+                      <span>&bull;</span>
+                      <span className="flex items-center gap-1">
+                        <Clock className="h-3 w-3" />
+                        <span>{sess.lastActive}</span>
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {!sess.isCurrent && (
+                  <button
+                    type="button"
+                    onClick={() => handleTerminateSession(sess.id, sess.device)}
+                    className="text-xs font-gothic uppercase tracking-wider text-[#d97757] hover:underline p-1 shrink-0 cursor-pointer"
+                  >
+                    Revoke
+                  </button>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Global Kill Switch Button */}
+        {hasOtherSessions && (
+          <div className="pt-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="lg"
+              fullWidth
+              isLoading={isTerminating}
+              onClick={handleTerminateOtherSessions}
+              leftIcon={<LogOut className="h-4 w-4 text-[#d97757]" />}
+              className="justify-center font-gothic uppercase tracking-wider text-xs border-[#d97757]/40 text-[#d97757] hover:bg-[#d97757]/10 shadow-none"
+            >
+              Sign Out All Other Sessions
+            </Button>
+          </div>
+        )}
+      </div>
+    </SecurityActionLayout>
+  );
+};
+
+===== src\features\security\pages\ChangePasswordPage.tsx =====
+import { Eye, EyeOff, Lock } from "lucide-react";
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { apiClient } from "../../../shared/api/apiClient.ts";
+import { Button } from "../../../shared/components/Button.tsx";
+import { Input } from "../../../shared/components/Input.tsx";
+import { useToast } from "../../../shared/context/index.ts";
+import type { ProblemDetails } from "../../../shared/types/index.ts";
+import { ProblemAlert } from "../components/ProblemAlert.tsx";
+import { SecurityActionLayout } from "../components/SecurityActionLayout.tsx";
+
+export const ChangePasswordPage: React.FC = () => {
+  const navigate = useNavigate();
+  const { showToast } = useToast();
+
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [problem, setProblem] = useState<ProblemDetails | null>(null);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setProblem(null);
+
+    if (!currentPassword) {
+      setProblem({
+        title: "Validation Error",
+        detail: "Current password is required to authorize this credential change.",
+        status: 400,
+      });
+      return;
+    }
+
+    if (!newPassword || newPassword.length < 6) {
+      setProblem({
+        title: "Validation Error",
+        detail: "New password must contain at least 6 characters.",
+        status: 400,
+      });
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      setProblem({
+        title: "Validation Error",
+        detail: "New password and confirmation do not match.",
+        status: 400,
+      });
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      await apiClient.changePassword({
+        currentPassword,
+        newPassword,
+      });
+
+      showToast("success", "Your password has been successfully updated.");
+      navigate("/settings/security");
+    } catch (err: unknown) {
+      const p = err as ProblemDetails;
+      setProblem({
+        title: p?.title || "Password Update Failed",
+        detail: p?.detail || "An unexpected error occurred while modifying your passphrase.",
+        status: p?.status || 400,
+        errors: p?.errors,
+      });
+      showToast("error", p?.detail || "Failed to update password.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <SecurityActionLayout
+      title="Change Password"
+      subtitle="Ensure your creator atelier uses a secure passphrase of at least 6 characters."
+      badge="Credentials"
+    >
+      <form onSubmit={handleSubmit} className="space-y-5">
+        <Input
+          label="Current Password"
+          type={showCurrentPassword ? "text" : "password"}
+          value={currentPassword}
+          onChange={(e) => setCurrentPassword(e.target.value)}
+          placeholder="Enter current password"
+          required
+          disabled={isLoading}
+          rightIcon={
+            <button
+              type="button"
+              onClick={() => setShowCurrentPassword((prev) => !prev)}
+              className="hover:text-[#141413] transition-colors p-1"
+              aria-label={showCurrentPassword ? "Hide current password" : "Show current password"}
+            >
+              {showCurrentPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+            </button>
+          }
+        />
+
+        <div className="space-y-4 pt-1">
+          <Input
+            label="New Password"
+            type={showNewPassword ? "text" : "password"}
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
+            placeholder="Minimum 6 characters"
+            required
+            disabled={isLoading}
+            rightIcon={
+              <button
+                type="button"
+                onClick={() => setShowNewPassword((prev) => !prev)}
+                className="hover:text-[#141413] transition-colors p-1"
+                aria-label={showNewPassword ? "Hide new password" : "Show new password"}
+              >
+                {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </button>
+            }
+          />
+
+          <Input
+            label="Confirm New Password"
+            type={showNewPassword ? "text" : "password"}
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            placeholder="Re-enter new password"
+            required
+            disabled={isLoading}
+          />
+        </div>
+
+        {/* Problem Alert */}
+        <ProblemAlert problem={problem} />
+
+        {/* Action Button: Full-width at the bottom */}
+        <div className="pt-3">
+          <Button
+            type="submit"
+            variant="clay"
+            size="lg"
+            fullWidth
+            isLoading={isLoading}
+            disabled={!currentPassword || !newPassword || !confirmPassword}
+            leftIcon={<Lock className="h-4 w-4" />}
+            className="justify-center font-gothic uppercase tracking-wider text-xs shadow-none"
+          >
+            Update Password
+          </Button>
+        </div>
+      </form>
+    </SecurityActionLayout>
+  );
+};
+
+===== src\features\security\pages\DeleteAccountPage.tsx =====
+import { AlertTriangle, Eye, EyeOff, Trash2 } from "lucide-react";
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Button } from "../../../shared/components/Button.tsx";
+import { Input } from "../../../shared/components/Input.tsx";
+import { useToast } from "../../../shared/context/index.ts";
+import { useAuth } from "../../../shared/context/useAuth.ts";
+import { SecurityActionLayout } from "../components/SecurityActionLayout.tsx";
+
+export const DeleteAccountPage: React.FC = () => {
+  const navigate = useNavigate();
+  const { logout } = useAuth();
+  const { showToast } = useToast();
+
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [confirmText, setConfirmText] = useState("");
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleDelete = (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+
+    if (!password) {
+      setError("Please provide your current password to authorize account deletion.");
+      return;
+    }
+
+    if (confirmText.trim().toUpperCase() !== "DELETE") {
+      setError("Please type DELETE in capital letters to confirm this irreversible action.");
+      return;
+    }
+
+    setIsDeleting(true);
+
+    setTimeout(() => {
+      setIsDeleting(false);
+      logout();
+      showToast("info", "Your account and all associated exhibition records have been permanently removed.");
+      navigate("/studio");
+    }, 800);
+  };
+
+  return (
+    <SecurityActionLayout
+      title="Delete Account"
+      subtitle="Permanently withdraw your creator membership and destroy all associated records."
+      badge="Danger Zone"
+    >
+      <form onSubmit={handleDelete} className="space-y-6">
+        {/* Warning Callout Box */}
+        <div className="p-4 sm:p-5 rounded-2xl bg-[#d97757]/10 border border-[#d97757]/30 space-y-2.5 text-[#141413]">
+          <div className="flex items-center gap-2 text-[#d97757]">
+            <AlertTriangle className="h-5 w-5 shrink-0" />
+            <span className="font-gothic text-xs font-bold uppercase tracking-wider">Irreversible Action Warning</span>
+          </div>
+
+          <p className="font-serif text-xs sm:text-sm leading-relaxed text-[#141413]/85">
+            Deleting your account will permanently purge your portfolio plates, biographical statement, social archives,
+            and public profile slug. This data cannot be recovered.
+          </p>
+        </div>
+
+        {/* Password Authorization */}
+        <Input
+          label="Confirm Your Password"
+          type={showPassword ? "text" : "password"}
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          placeholder="Enter current password"
+          required
+          disabled={isDeleting}
+          rightIcon={
+            <button
+              type="button"
+              onClick={() => setShowPassword((prev) => !prev)}
+              className="hover:text-[#141413] transition-colors p-1"
+              aria-label={showPassword ? "Hide password" : "Show password"}
+            >
+              {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+            </button>
+          }
+        />
+
+        {/* Typed Confirmation Safeguard */}
+        <Input
+          label='Type "DELETE" To Confirm'
+          value={confirmText}
+          onChange={(e) => setConfirmText(e.target.value)}
+          placeholder="DELETE"
+          required
+          disabled={isDeleting}
+          helperText="Type the word in uppercase to prevent accidental deletion."
+          className="font-mono uppercase tracking-widest"
+        />
+
+        {error && (
+          <div className="p-3 rounded-lg bg-[#d97757]/10 border border-[#d97757]/30 text-xs font-serif text-[#d97757]">
+            {error}
+          </div>
+        )}
+
+        {/* Destructive Full-Width Action Button */}
+        <div className="pt-2">
+          <Button
+            type="submit"
+            variant="clay"
+            size="lg"
+            fullWidth
+            isLoading={isDeleting}
+            disabled={!password || confirmText.trim().toUpperCase() !== "DELETE"}
+            leftIcon={<Trash2 className="h-4 w-4" />}
+            className="justify-center font-gothic uppercase tracking-wider text-xs bg-[#d97757] hover:bg-[#c46142] text-[#faf9f5] border-transparent shadow-none"
+          >
+            Permanently Delete My Account
+          </Button>
+        </div>
+      </form>
+    </SecurityActionLayout>
+  );
+};
+
+===== src\features\security\components\SecurityNavRow.tsx =====
+import { ChevronRight, type LucideIcon } from "lucide-react";
+import React from "react";
+import { Link } from "react-router-dom";
+
+export interface SecurityNavRowProps {
+  to: string;
+  icon: LucideIcon;
+  title: string;
+  description?: string;
+  badge?: React.ReactNode;
+  variant?: "default" | "danger";
+}
+
+export const SecurityNavRow: React.FC<SecurityNavRowProps> = ({
+  to,
+  icon: Icon,
+  title,
+  description,
+  badge,
+  variant = "default",
+}) => {
+  const isDanger = variant === "danger";
+
+  return (
+    <Link
+      to={to}
+      className={`group flex items-center justify-between p-4 sm:p-5 rounded-2xl transition-all duration-200 border cursor-pointer text-decoration-none shadow-none ${
+        isDanger
+          ? "bg-[#faf9f5] border-[#d97757]/30 hover:border-[#d97757] hover:bg-[#d97757]/5"
+          : "bg-[#faf9f5] border-[#cccbc8]/60 hover:border-[#141413] hover:bg-[#faf9f5]"
+      }`}
+    >
+      <div className="flex items-center gap-4 min-w-0">
+        <div
+          className={`flex items-center justify-center h-10 w-10 sm:h-11 sm:w-11 rounded-xl shrink-0 transition-colors ${
+            isDanger
+              ? "bg-[#d97757]/15 text-[#d97757] group-hover:bg-[#d97757] group-hover:text-[#faf9f5]"
+              : "bg-[#f0eee6] text-[#141413] border border-[#cccbc8]/60 group-hover:border-[#141413]"
+          }`}
+        >
+          <Icon className="h-5 w-5 stroke-[1.8]" />
+        </div>
+
+        <div className="min-w-0">
+          <div className="flex items-center gap-2.5 flex-wrap">
+            <h3
+              className={`font-gothic text-sm sm:text-base font-bold uppercase tracking-tight truncate ${
+                isDanger ? "text-[#d97757]" : "text-[#141413]"
+              }`}
+            >
+              {title}
+            </h3>
+            {badge && <div>{badge}</div>}
+          </div>
+
+          {description && (
+            <p className="font-serif text-xs sm:text-[13px] text-[#87867f] truncate mt-0.5">{description}</p>
+          )}
+        </div>
+      </div>
+
+      <div className="flex items-center shrink-0 ml-3">
+        <ChevronRight
+          className={`h-5 w-5 transition-transform group-hover:translate-x-0.5 ${
+            isDanger ? "text-[#d97757]" : "text-[#87867f] group-hover:text-[#141413]"
+          }`}
+        />
+      </div>
+    </Link>
+  );
+};
+
+===== src\features\security\components\SecurityActionLayout.tsx =====
+import { ArrowLeft, Shield } from "lucide-react";
+import React from "react";
+import { Link } from "react-router-dom";
+
+export interface SecurityActionLayoutProps {
+  title: string;
+  subtitle: string;
+  badge?: string;
+  backTo?: string;
+  backLabel?: string;
+  children: React.ReactNode;
+}
+
+export const SecurityActionLayout: React.FC<SecurityActionLayoutProps> = ({
+  title,
+  subtitle,
+  badge = "Security Setting",
+  backTo = "/settings/security",
+  backLabel = "Back to Security",
+  children,
+}) => {
+  return (
+    <div className="min-h-screen bg-[#f0eee6] py-6 sm:py-10 px-4 sm:px-6 lg:px-8 pb-24">
+      <div className="max-w-xl mx-auto">
+        {/* Navigation Back Button */}
+        <div className="mb-6">
+          <Link
+            to={backTo}
+            className="inline-flex items-center gap-2 font-gothic text-xs font-semibold uppercase tracking-[0.14em] text-[#87867f] hover:text-[#141413] transition-colors group text-decoration-none"
+          >
+            <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
+            <span>{backLabel}</span>
+          </Link>
+        </div>
+
+        {/* Card Canvas */}
+        <div className="bg-[#faf9f5] rounded-[24px] border border-[#cccbc8]/60 p-6 sm:p-8 shadow-none space-y-6">
+          {/* Header */}
+          <div className="border-b border-[#cccbc8]/50 pb-5 space-y-2">
+            <div className="flex items-center gap-2">
+              <Shield className="h-4 w-4 text-[#d97757]" />
+              <span className="font-gothic text-[11px] font-bold uppercase tracking-[0.16em] text-[#d97757]">
+                {badge}
+              </span>
+            </div>
+
+            <h1 className="font-gothic text-2xl sm:text-3xl font-extrabold uppercase tracking-tight text-[#141413]">
+              {title}
+            </h1>
+
+            <p className="font-serif text-sm text-[#87867f] leading-relaxed">{subtitle}</p>
+          </div>
+
+          {/* Form / Content */}
+          <div>{children}</div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+===== src\features\security\components\ProblemAlert.tsx =====
+import { AlertCircle } from "lucide-react";
+import React from "react";
+import type { ProblemDetails } from "../../../shared/types/index.ts";
+
+export interface ProblemAlertProps {
+  problem: ProblemDetails | null;
+  className?: string;
+}
+
+export const ProblemAlert: React.FC<ProblemAlertProps> = ({ problem, className = "" }) => {
+  if (!problem) return null;
+
+  return (
+    <div
+      role="alert"
+      className={`p-4 rounded-xl bg-[#d97757]/10 border border-[#d97757]/40 text-[#141413] animate-in fade-in shadow-none ${className}`}
+    >
+      <div className="flex items-start gap-3">
+        <AlertCircle className="h-5 w-5 text-[#d97757] shrink-0 mt-0.5" />
+        <div className="flex-1 text-sm font-serif">
+          <p className="font-gothic font-bold uppercase tracking-wider text-xs text-[#d97757]">
+            {problem.title || "Security Action Error"}
+            {problem.status ? ` (HTTP ${problem.status})` : ""}
+          </p>
+          {problem.detail && <p className="mt-1 text-[#141413]/90">{problem.detail}</p>}
+
+          {/* Validation errors dictionary */}
+          {problem.errors && Object.keys(problem.errors).length > 0 && (
+            <ul className="mt-2 space-y-1 list-disc list-inside text-xs text-[#141413]/85 font-mono">
+              {Object.entries(problem.errors).flatMap(([field, msgs]) =>
+                msgs.map((msg, i) => (
+                  <li key={`${field}-${i}`}>
+                    <strong className="font-gothic uppercase tracking-wide">{field}:</strong> {msg}
+                  </li>
+                )),
+              )}
+            </ul>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+===== src\features\career\pages\CareerHubPage.tsx =====
+import {
+  Award,
+  Briefcase,
+  Globe,
+  GraduationCap,
+  Sparkles,
+  Trophy,
+} from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { apiClient } from "../../../shared/api/apiClient.ts";
+import type { CareerSummary } from "../../../shared/types/index.ts";
+import { CareerNavCard } from "../components/CareerNavCard.tsx";
+
+export const CareerHubPage: React.FC = () => {
+  const [summary, setSummary] = useState<CareerSummary | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let mounted = true;
+    async function loadSummary() {
+      try {
+        const data = await apiClient.getCareerSummary();
+        if (mounted) {
+          setSummary(data);
+          setLoading(false);
+        }
+      } catch (err) {
+        console.error("Failed to load career summary", err);
+        if (mounted) setLoading(false);
+      }
+    }
+    loadSummary();
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  const sections = [
+    {
+      title: "Experience",
+      count: summary?.experienceCount ?? 0,
+      countLabel: "positions",
+      description: "Directorial engagements, architectural curation, and spatial design roles.",
+      to: "/career/experience",
+      icon: Briefcase,
+    },
+    {
+      title: "Academics",
+      count: summary?.academicsCount ?? 0,
+      countLabel: "degrees",
+      description: "Degrees, institutional research fellowships, and academic qualifications.",
+      to: "/career/academics",
+      icon: GraduationCap,
+    },
+    {
+      title: "Skills & Mastery",
+      count: summary?.skillsCount ?? 0,
+      countLabel: "competencies",
+      description: "Disciplinary competencies across spatial design, daylight modeling, and tools.",
+      to: "/career/skills",
+      icon: Sparkles,
+    },
+    {
+      title: "Credentials",
+      count: summary?.credentialsCount ?? 0,
+      countLabel: "certifications",
+      description: "Professional licenses, architectural board accreditations, and honors.",
+      to: "/career/credentials",
+      icon: Award,
+    },
+    {
+      title: "Languages",
+      count: summary?.languagesCount ?? 0,
+      countLabel: "languages",
+      description: "Multilingual proficiency, conversational command, and native tongues.",
+      to: "/career/languages",
+      icon: Globe,
+    },
+    {
+      title: "Achievements",
+      count: summary?.achievementsCount ?? 0,
+      countLabel: "distinctions",
+      description: "Biennale awards, hardcover publications, and critical monograph honors.",
+      to: "/career/achievements",
+      icon: Trophy,
+    },
+  ];
+
+  return (
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+      {/* Editorial Overview Header */}
+      <div className="mb-10 sm:mb-12 border-b border-[#cccbc8]/60 pb-8">
+        <span className="font-gothic text-[11px] font-bold uppercase tracking-[0.2em] text-[#87867f] block mb-2">
+          Curatorial Curriculum &bull; Index
+        </span>
+        <h1 className="font-gothic text-3xl sm:text-4xl lg:text-5xl font-extrabold uppercase tracking-tight text-[#141413]">
+          Career Hub
+        </h1>
+        <p className="font-serif text-[16px] sm:text-[18px] text-[#141413]/70 mt-3 max-w-2xl leading-relaxed">
+          The unified professional archive documenting career trajectories, academic research, certifications, and institutional recognitions.
+        </p>
+      </div>
+
+      {/* Grid of 6 Category Navigation Cards (.pinpoint/group.md layout) */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {sections.map((section) => (
+          <CareerNavCard
+            key={section.to}
+            title={section.title}
+            count={loading ? 0 : section.count}
+            countLabel={section.countLabel}
+            description={section.description}
+            to={section.to}
+            icon={section.icon}
+          />
+        ))}
+      </div>
+    </div>
+  );
+};
+
+===== src\features\career\components\CareerHeader.tsx =====
+import { ArrowLeft, Plus } from "lucide-react";
+import React from "react";
+import { Link } from "react-router-dom";
+import { Button } from "../../../shared/components/Button.tsx";
+
+export interface CareerHeaderProps {
+  sectionTitle: string;
+  badge?: string;
+  description: string;
+  actionLabel?: string;
+  onAction?: () => void;
+  backTo?: string;
+  backLabel?: string;
+}
+
+export const CareerHeader: React.FC<CareerHeaderProps> = ({
+  sectionTitle,
+  badge = "Curated Dossier",
+  description,
+  actionLabel,
+  onAction,
+  backTo = "/career",
+  backLabel = "Career Hub",
+}) => {
+  return (
+    <div className="mb-8 pb-6 border-b border-[#cccbc8]/60">
+      {/* Editorial Breadcrumb */}
+      <div className="flex items-center gap-2 mb-3">
+        <Link
+          to={backTo}
+          className="inline-flex items-center gap-1.5 text-xs font-gothic font-bold uppercase tracking-[0.14em] text-[#87867f] hover:text-[#141413] transition-colors"
+        >
+          <ArrowLeft className="w-3.5 h-3.5" />
+          <span>{backLabel}</span>
+        </Link>
+        <span className="text-[#87867f] text-xs">/</span>
+        <span className="text-xs font-gothic font-bold uppercase tracking-[0.14em] text-[#d97757]">
+          {sectionTitle}
+        </span>
+      </div>
+
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+        <div className="max-w-2xl">
+          <span className="font-gothic text-[11px] font-bold uppercase tracking-[0.18em] text-[#87867f] block mb-1">
+            {badge}
+          </span>
+          <h1 className="font-gothic text-2xl sm:text-3xl lg:text-4xl font-extrabold uppercase tracking-tight text-[#141413]">
+            {sectionTitle}
+          </h1>
+          <p className="font-serif text-[15px] sm:text-[16px] text-[#141413]/70 mt-1.5 leading-relaxed">
+            {description}
+          </p>
+        </div>
+
+        {actionLabel && onAction && (
+          <div className="shrink-0">
+            <Button
+              variant="clay"
+              size="md"
+              leftIcon={<Plus className="w-4 h-4" />}
+              onClick={onAction}
+              className="shadow-none uppercase tracking-wider text-xs font-bold"
+            >
+              {actionLabel}
+            </Button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+===== src\features\career\components\CareerNavCard.tsx =====
+import { ArrowUpRight } from "lucide-react";
+import React from "react";
+import { Link } from "react-router-dom";
+
+export interface CareerNavCardProps {
+  title: string;
+  count: number;
+  countLabel?: string;
+  description: string;
+  to: string;
+  icon: React.ComponentType<{ className?: string }>;
+}
+
+export const CareerNavCard: React.FC<CareerNavCardProps> = ({
+  title,
+  count,
+  countLabel = "items",
+  description,
+  to,
+  icon: Icon,
+}) => {
+  return (
+    <Link
+      to={to}
+      className="group relative flex flex-col justify-between p-6 sm:p-7 rounded-[24px] bg-[#faf9f5] border border-[#cccbc8]/60 hover:border-[#141413] transition-colors duration-200 shadow-none text-decoration-none"
+    >
+      <div>
+        <div className="flex items-start justify-between gap-4 mb-4">
+          <div className="w-11 h-11 rounded-2xl bg-[#f0eee6] border border-[#cccbc8]/60 flex items-center justify-center text-[#141413] group-hover:bg-[#141413] group-hover:text-[#faf9f5] transition-colors">
+            <Icon className="w-5 h-5 stroke-[1.75]" />
+          </div>
+
+          <div className="flex items-center gap-2">
+            <span className="font-gothic text-[11px] font-bold uppercase tracking-[0.14em] px-2.5 py-1 rounded-full bg-[#f0eee6] text-[#87867f] group-hover:text-[#141413] border border-[#cccbc8]/40 transition-colors">
+              {count} {countLabel}
+            </span>
+            <div className="w-8 h-8 rounded-full border border-[#cccbc8]/60 flex items-center justify-center text-[#87867f] group-hover:text-[#141413] group-hover:border-[#141413] transition-colors">
+              <ArrowUpRight className="w-4 h-4" />
+            </div>
+          </div>
+        </div>
+
+        <h3 className="font-gothic text-lg sm:text-xl font-bold uppercase tracking-tight text-[#141413] mb-2 group-hover:text-[#d97757] transition-colors">
+          {title}
+        </h3>
+        <p className="font-serif text-[14px] leading-relaxed text-[#141413]/70 line-clamp-2">
+          {description}
+        </p>
+      </div>
+
+      <div className="mt-6 pt-4 border-t border-[#cccbc8]/40 flex items-center justify-between">
+        <span className="font-gothic text-[11px] font-bold uppercase tracking-[0.16em] text-[#87867f] group-hover:text-[#141413] transition-colors">
+          Manage Section
+        </span>
+        <span className="font-mono text-xs text-[#87867f] group-hover:translate-x-0.5 transition-transform">
+          &rarr;
+        </span>
+      </div>
+    </Link>
+  );
+};
+
+===== src\features\career\components\CareerEmptyState.tsx =====
+import { Plus } from "lucide-react";
+import React from "react";
+import { Button } from "../../../shared/components/Button.tsx";
+
+export interface CareerEmptyStateProps {
+  icon: React.ComponentType<{ className?: string }>;
+  title: string;
+  description: string;
+  actionLabel?: string;
+  onAction?: () => void;
+}
+
+export const CareerEmptyState: React.FC<CareerEmptyStateProps> = ({
+  icon: Icon,
+  title,
+  description,
+  actionLabel,
+  onAction,
+}) => {
+  return (
+    <div className="flex flex-col items-center justify-center p-10 sm:p-14 text-center rounded-[24px] bg-[#faf9f5] border border-[#cccbc8]/60 shadow-none">
+      <div className="w-14 h-14 rounded-2xl bg-[#f0eee6] border border-[#cccbc8]/60 flex items-center justify-center text-[#87867f] mb-5">
+        <Icon className="w-7 h-7 stroke-[1.5]" />
+      </div>
+
+      <span className="font-gothic text-[11px] font-bold uppercase tracking-[0.18em] text-[#87867f] mb-1">
+        Catalog Vacant
+      </span>
+      <h3 className="font-gothic text-xl sm:text-2xl font-bold uppercase tracking-tight text-[#141413] mb-2">
+        {title}
+      </h3>
+      <p className="font-serif text-[15px] text-[#141413]/70 max-w-md mx-auto mb-6 leading-relaxed">
+        {description}
+      </p>
+
+      {actionLabel && onAction && (
+        <Button
+          variant="clay"
+          size="md"
+          leftIcon={<Plus className="w-4 h-4" />}
+          onClick={onAction}
+          className="shadow-none uppercase tracking-wider text-xs font-bold"
+        >
+          {actionLabel}
+        </Button>
+      )}
+    </div>
+  );
+};
+
+===== src\features\career\components\DeleteConfirmModal.tsx =====
+import { AlertTriangle, X } from "lucide-react";
+import React, { useEffect } from "react";
+import { Button } from "../../../shared/components/Button.tsx";
+
+export interface DeleteConfirmModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onConfirm: () => void;
+  title: string;
+  itemName: string;
+  isDeleting?: boolean;
+}
+
+export const DeleteConfirmModal: React.FC<DeleteConfirmModalProps> = ({
+  isOpen,
+  onClose,
+  onConfirm,
+  title,
+  itemName,
+  isDeleting = false,
+}) => {
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && isOpen && !isDeleting) {
+        onClose();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, isDeleting, onClose]);
+
+  if (!isOpen) return null;
+
+  return (
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="delete-modal-title"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#141413]/60 backdrop-blur-sm animate-in fade-in duration-150"
+    >
+      <div className="relative w-full max-w-md rounded-[24px] bg-[#faf9f5] border border-[#cccbc8] p-6 sm:p-7 shadow-none text-[#141413]">
+        <button
+          type="button"
+          onClick={onClose}
+          disabled={isDeleting}
+          className="absolute top-5 right-5 text-[#87867f] hover:text-[#141413] transition-colors cursor-pointer"
+          aria-label="Close dialog"
+        >
+          <X className="w-5 h-5" />
+        </button>
+
+        <div className="w-12 h-12 rounded-2xl bg-[#d97757]/10 border border-[#d97757]/30 text-[#d97757] flex items-center justify-center mb-4">
+          <AlertTriangle className="w-6 h-6 stroke-[1.75]" />
+        </div>
+
+        <span className="font-gothic text-[10px] font-bold uppercase tracking-[0.2em] text-[#d97757] block mb-1">
+          Irreversible Action
+        </span>
+        <h3 id="delete-modal-title" className="font-gothic text-xl font-bold uppercase tracking-tight text-[#141413] mb-2">
+          {title}
+        </h3>
+        <p className="font-serif text-[15px] text-[#141413]/70 mb-6 leading-relaxed">
+          Are you sure you wish to expunge <strong className="text-[#141413] font-sans font-semibold">"{itemName}"</strong> from your curated record? This action cannot be reversed.
+        </p>
+
+        <div className="flex items-center justify-end gap-3 pt-4 border-t border-[#cccbc8]/40">
+          <Button
+            variant="outline"
+            size="md"
+            onClick={onClose}
+            disabled={isDeleting}
+            className="shadow-none text-xs uppercase font-bold tracking-wider"
+          >
+            Cancel
+          </Button>
+          <button
+            type="button"
+            onClick={onConfirm}
+            disabled={isDeleting}
+            className="px-4 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-gothic text-xs font-bold uppercase tracking-wider transition-colors disabled:opacity-50 cursor-pointer"
+          >
+            {isDeleting ? "Expunging..." : "Expunge Record"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+===== src\features\explore\components\PostCard.tsx =====
+import { Image as ImageIcon, Layers } from "lucide-react";
+import React from "react";
+import { useNavigate } from "react-router-dom";
+import type { ExplorePostResponse } from "../../../shared/types/index.ts";
+
+export type TileSpanType = "square" | "tall" | "wide" | "hero";
+
+export interface PostCardProps {
+  post: ExplorePostResponse;
+  spanType?: TileSpanType;
+  className?: string;
+  aspectRatio?: "square" | "4/3" | "4/5" | "16/9" | "auto";
+}
+
+const SPAN_CLASSES: Record<TileSpanType, string> = {
+  square: "col-span-1 row-span-1",
+  tall: "col-span-1 row-span-2",
+  wide: "col-span-2 row-span-1",
+  hero: "col-span-2 row-span-2",
+};
+
+const ASPECT_CLASSES: Record<string, string> = {
+  square: "aspect-square",
+  "4/3": "aspect-[4/3]",
+  "4/5": "aspect-[4/5]",
+  "16/9": "aspect-[16/9]",
+  auto: "",
+};
+
+export const PostCard: React.FC<PostCardProps> = ({ post, spanType = "square", className = "", aspectRatio }) => {
+  const navigate = useNavigate();
+
+  const handleCardClick = () => {
+    navigate(`/posts/${post.id}`);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLElement>) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      handleCardClick();
+    }
+  };
+
+  const creatorUsername = post.creator?.username || "artist";
+  const isAutoAspect = aspectRatio === "auto";
+  const spanClass = isAutoAspect ? "" : SPAN_CLASSES[spanType] || SPAN_CLASSES.square;
+  const aspectClass = aspectRatio && !isAutoAspect ? ASPECT_CLASSES[aspectRatio] || "" : isAutoAspect ? "" : "h-full";
+  const imgHeightClass = isAutoAspect ? "h-auto block" : "h-full";
+
+  return (
+    <article
+      onClick={handleCardClick}
+      onKeyDown={handleKeyDown}
+      tabIndex={0}
+      role="button"
+      aria-label={`View exhibition plate: ${post.title} by @${creatorUsername}`}
+      className={`group relative w-full overflow-hidden bg-[#e6e3da] cursor-pointer focus-visible:outline-2 focus-visible:outline-[#141413] shadow-none ${aspectClass} ${spanClass} ${className}`}
+    >
+      {/* Photography Preview */}
+      {post.thumbnailUrl ? (
+        <img
+          src={post.thumbnailUrl}
+          alt={post.title}
+          loading="lazy"
+          className={`w-full ${imgHeightClass} object-cover transition-transform duration-500 ease-out group-hover:scale-105`}
+        />
+      ) : (
+        <div className="w-full aspect-[4/3] flex flex-col items-center justify-center text-[#87867f] gap-2">
+          <ImageIcon className="h-6 w-6 stroke-[1.5]" />
+          <span className="font-gothic text-[10px] uppercase tracking-widest">Plate</span>
+        </div>
+      )}
+
+      {/* Multi-plate indicator (Instagram carousel style - no video indicator) */}
+      {post.imageCount > 1 && (
+        <div
+          className="absolute top-2.5 right-2.5 z-10 pointer-events-none drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)]"
+          aria-label={`${post.imageCount} plates`}
+        >
+          <Layers className="h-4 w-4 sm:h-5 sm:w-5 text-white stroke-[2]" />
+        </div>
+      )}
+
+      {/* Hover / Focus Overlay (Warm dark overlay displaying plate title & artist) */}
+      <div className="absolute inset-0 bg-[#141413]/55 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100 transition-opacity duration-200 flex flex-col justify-end p-3 sm:p-4 text-[#faf9f5]">
+        <h3 className="font-gothic text-xs sm:text-sm font-bold uppercase tracking-tight line-clamp-2 text-[#faf9f5] leading-snug">
+          {post.title}
+        </h3>
+        <div className="flex items-center gap-1.5 mt-1 sm:mt-1.5 text-[11px] sm:text-xs text-[#faf9f5]/80 font-serif">
+          <span className="truncate">@{creatorUsername}</span>
+          {post.imageCount > 1 && (
+            <>
+              <span className="text-[#faf9f5]/50">•</span>
+              <span>{post.imageCount} plates</span>
+            </>
+          )}
+        </div>
+      </div>
+    </article>
+  );
+};
+
+===== src\features\posts\components\PostStatusBadge.tsx =====
+import React from 'react';
+import { PostStatus, type PostStatus as PostStatusType } from '../../../shared/types/index.ts';
+
+export interface PostStatusBadgeProps {
+  status: PostStatusType | number | string;
+  size?: 'sm' | 'md';
+  showDot?: boolean;
+  className?: string;
+}
+
+/**
+ * Normalizes input status to standard canonical representation.
+ */
+function normalizeStatus(status: PostStatusType | number | string): {
+  key: 'draft' | 'published' | 'unpublished';
+  label: string;
+} {
+  if (typeof status === 'number') {
+    switch (status) {
+      case PostStatus.Published:
+        return { key: 'published', label: 'Published' };
+      case PostStatus.Unpublished:
+        return { key: 'unpublished', label: 'Unpublished' };
+      case PostStatus.Draft:
+      default:
+        return { key: 'draft', label: 'Draft' };
+    }
+  }
+
+  const normalized = String(status).trim().toLowerCase();
+  if (normalized === 'published' || normalized === '1') {
+    return { key: 'published', label: 'Published' };
+  }
+  if (normalized === 'unpublished' || normalized === '2') {
+    return { key: 'unpublished', label: 'Unpublished' };
+  }
+  return { key: 'draft', label: 'Draft' };
+}
+
+/**
+ * Warm Gallery Post Status Badge
+ * - Amber for Draft (#f1a900)
+ * - Clay for Published (#d97757)
+ * - Stone for Unpublished (#cccbc8)
+ */
+export const PostStatusBadge: React.FC<PostStatusBadgeProps> = ({
+  status,
+  size = 'md',
+  showDot = true,
+  className = '',
+}) => {
+  const { key, label } = normalizeStatus(status);
+
+  // Warm Gallery palette mapping
+  const styles: Record<
+    'draft' | 'published' | 'unpublished',
+    { container: string; dot: string }
+  > = {
+    draft: {
+      container: 'bg-[#f1a900]/15 text-[#141413] border border-[#f1a900]/40',
+      dot: 'bg-[#f1a900]',
+    },
+    published: {
+      container: 'bg-[#d97757] text-[#faf9f5] border border-transparent',
+      dot: 'bg-[#faf9f5]',
+    },
+    unpublished: {
+      container: 'bg-[#cccbc8]/30 text-[#87867f] border border-[#cccbc8]',
+      dot: 'bg-[#87867f]',
+    },
+  };
+
+  const sizeClasses = {
+    sm: 'px-2.5 py-0.5 text-[10px] gap-1.5',
+    md: 'px-3 py-1 text-[11px] gap-2',
+  };
+
+  const currentStyle = styles[key];
+
+  return (
+    <span
+      className={`inline-flex items-center justify-center font-gothic font-semibold uppercase tracking-[0.12em] rounded-full select-none leading-none transition-colors ${sizeClasses[size]} ${currentStyle.container} ${className}`.trim()}
+      role="status"
+      aria-label={`Status: ${label}`}
+    >
+      {showDot && (
+        <span
+          className={`h-1.5 w-1.5 rounded-full shrink-0 ${currentStyle.dot}`}
+          aria-hidden="true"
+        />
+      )}
+      <span>{label}</span>
+    </span>
+  );
+};
+
+===== src\features\profile\components\PlatformIcon.tsx =====
+import { ExternalLink, Globe } from "lucide-react";
+import React from "react";
+
+export interface PlatformIconProps {
+  platform: string;
+  className?: string;
+}
+
+/**
+ * PlatformIcon: Crisp vector glyphs for major designer & developer social archives,
+ * with fallback to a global web icon for custom links.
+ */
+export const PlatformIcon: React.FC<PlatformIconProps> = ({ platform, className = "h-4 w-4" }) => {
+  switch (platform.trim().toLowerCase()) {
+    case "github":
+      return (
+        <svg
+          className={className}
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden="true"
+        >
+          <path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4" />
+          <path d="M9 18c-4.51 2-5-2-7-2" />
+        </svg>
+      );
+    case "linkedin":
+      return (
+        <svg
+          className={className}
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden="true"
+        >
+          <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z" />
+          <rect x="2" y="9" width="4" height="12" />
+          <circle cx="4" cy="4" r="2" />
+        </svg>
+      );
+    case "behance":
+      return (
+        <svg className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M7.79 13.53c-.45 0-.91-.02-1.37-.02v2.85c.44.03.88.04 1.32.04 1.45 0 2.45-.63 2.45-1.46 0-.89-.92-1.41-2.4-1.41zm-.05-4.47c-.43 0-.87.02-1.32.02v2.42c.43.02.86.03 1.28.03 1.28 0 2.16-.54 2.16-1.28 0-.74-.82-1.19-2.12-1.19zm8.12 3.86h3.42c-.08-.94-.8-1.54-1.74-1.54-.92 0-1.63.59-1.68 1.54zm5.95 2.12c-.51 1.76-2.14 2.94-4.29 2.94-2.73 0-4.63-1.89-4.63-4.59s1.95-4.68 4.67-4.68c2.81 0 4.54 1.94 4.54 4.67 0 .34-.04.66-.09.95h-6.4c.09 1.21.94 1.99 2.05 1.99 1.05 0 1.69-.5 1.96-1.28h2.19zm-3.8-5.38h3.04v-1.07h-3.04v1.07zm-7.65.65c1.47 0 2.53.51 3.19 1.48.51.75.7 1.69.58 2.65-.24 2.01-1.99 3.13-4.14 3.13H3.6V6.62h5.59c1.93 0 3.51.98 3.51 2.82 0 1.03-.57 1.84-1.54 2.25z" />
+        </svg>
+      );
+    case "dribbble":
+      return (
+        <svg
+          className={className}
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden="true"
+        >
+          <circle cx="12" cy="12" r="10" />
+          <path d="M19.13 5.09C15.22 9.14 10 10.44 2.25 10.94" />
+          <path d="M21.75 12.84c-6.62-1.41-12.14 1-16.38 6.32" />
+          <path d="M8.56 2.75c4.37 6 6 9.42 8 17.72" />
+        </svg>
+      );
+    case "x":
+    case "twitter":
+      return (
+        <svg className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+        </svg>
+      );
+    case "instagram":
+      return (
+        <svg
+          className={className}
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden="true"
+        >
+          <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
+          <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+          <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
+        </svg>
+      );
+    case "website":
+      return <Globe className={className} aria-hidden="true" />;
+    default:
+      return <ExternalLink className={className} aria-hidden="true" />;
+  }
+};
+
+===== src\shared\layout\Footer.tsx =====
+import React from "react";
+import { Link } from "react-router-dom";
+
+export const Footer: React.FC = () => {
+  const currentYear = new Date().getFullYear();
+
+  return (
+    <footer className="w-full bg-[#faf9f5] border-t border-[#cccbc8] text-[#141413] transition-colors mt-auto">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-10 lg:gap-12 pb-12 border-b border-[#cccbc8]/60">
+          {/* Brand & Curation Statement (Left 6 cols) */}
+          <div className="md:col-span-6 space-y-4">
+            <Link to="/studio" className="inline-block text-decoration-none">
+              <span className="font-gothic font-extrabold text-2xl tracking-[0.18em] uppercase text-[#141413] hover:text-[#d97757] transition-colors">
+                SHOWCASE
+              </span>
+            </Link>
+            <p className="font-serif text-base sm:text-lg leading-relaxed text-[#141413]/85 max-w-lg">
+              An open-canvas digital exhibition celebrating visionary architecture, documentary photography, industrial
+              design, and contemporary visual culture.
+            </p>
+            <p className="font-serif text-xs italic text-[#87867f]">
+              Designed with the Warm Gallery aesthetic — where geometric headlines meet editorial reading text on ivory
+              canvas.
+            </p>
+          </div>
+
+          {/* Quick Links (3 cols) */}
+          <div className="md:col-span-3 space-y-3">
+            <h4 className="font-gothic text-xs font-bold uppercase tracking-[0.12em] text-[#87867f]">Exhibition</h4>
+            <ul className="space-y-2 font-serif text-sm">
+              <li>
+                <Link to="/studio" className="text-[#141413] hover:text-[#d97757] transition-colors">
+                  Creator Studio
+                </Link>
+              </li>
+              <li>
+                <Link to="/career" className="text-[#141413] hover:text-[#d97757] transition-colors">
+                  Career &amp; Curations
+                </Link>
+              </li>
+              <li>
+                <Link to="/posts/new" className="text-[#141413] hover:text-[#d97757] transition-colors">
+                  Submit a Work
+                </Link>
+              </li>
+              <li>
+                <Link to="/settings" className="text-[#141413] hover:text-[#d97757] transition-colors">
+                  Artist Settings
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* Editorial & Connect (3 cols) */}
+          <div className="md:col-span-3 space-y-3">
+            <h4 className="font-gothic text-xs font-bold uppercase tracking-[0.12em] text-[#87867f]">Connect</h4>
+            <ul className="space-y-2 font-serif text-sm">
+              <li>
+                <a
+                  href="https://github.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[#141413] hover:text-[#d97757] transition-colors"
+                >
+                  GitHub Repository
+                </a>
+              </li>
+              <li>
+                <a
+                  href="https://instagram.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[#141413] hover:text-[#d97757] transition-colors"
+                >
+                  Instagram Archives
+                </a>
+              </li>
+              <li>
+                <a
+                  href="https://vsco.co"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[#141413] hover:text-[#d97757] transition-colors"
+                >
+                  VSCO Visuals
+                </a>
+              </li>
+              <li>
+                <span className="text-[#87867f] text-xs">Storage: Cloudflare R2</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        {/* Bottom Bar: Copyright & Attribution */}
+        <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-serif text-[#87867f]">
+          <p>© {currentYear} SHOWCASE Gallery Platform. All rights reserved.</p>
+          <div className="flex items-center gap-6">
+            <span className="font-gothic text-[11px] uppercase tracking-wider text-[#141413]/70">
+              Ivory Medium Canvas (#f0eee6)
+            </span>
+            <span className="h-1 w-1 rounded-full bg-[#cccbc8]" />
+            <span className="font-gothic text-[11px] uppercase tracking-wider text-[#d97757]">
+              Clay Accent (#d97757)
+            </span>
+          </div>
+        </div>
+      </div>
+    </footer>
+  );
+};
+
+===== src\shared\layout\DemoSwitcher.tsx =====
+import React, { useState, useEffect } from 'react';
+import { Eye, Sparkles } from 'lucide-react';
+
+export type DemoPersona = 'visitor' | 'creator';
+
+export interface DemoSwitcherProps {
+  currentPersona?: DemoPersona;
+  onPersonaChange?: (persona: DemoPersona) => void;
+  className?: string;
+}
+
+const STORAGE_KEY = 'showcase_active_persona';
+
+export const DemoSwitcher: React.FC<DemoSwitcherProps> = ({
+  currentPersona: controlledPersona,
+  onPersonaChange,
+  className = '',
+}) => {
+  const [internalPersona, setInternalPersona] = useState<DemoPersona>(() => {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (stored === 'visitor' || stored === 'creator') {
+        return stored;
+      }
+    }
+    return 'creator';
+  });
+
+  const activePersona = controlledPersona ?? internalPersona;
+
+  useEffect(() => {
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key === STORAGE_KEY && (e.newValue === 'visitor' || e.newValue === 'creator')) {
+        setInternalPersona(e.newValue);
+      }
+    };
+
+    const handleCustomChange = (e: Event) => {
+      const customEvent = e as CustomEvent<DemoPersona>;
+      if (customEvent.detail === 'visitor' || customEvent.detail === 'creator') {
+        setInternalPersona(customEvent.detail);
+      }
+    };
+
+    window.addEventListener('storage', handleStorage);
+    window.addEventListener('showcase:persona-change', handleCustomChange);
+
+    return () => {
+      window.removeEventListener('storage', handleStorage);
+      window.removeEventListener('showcase:persona-change', handleCustomChange);
+    };
+  }, []);
+
+  const handleSelect = (mode: DemoPersona) => {
+    if (mode === activePersona) return;
+
+    if (controlledPersona === undefined) {
+      setInternalPersona(mode);
+      if (typeof window !== 'undefined') {
+        localStorage.setItem(STORAGE_KEY, mode);
+        window.dispatchEvent(new CustomEvent('showcase:persona-change', { detail: mode }));
+      }
+    }
+
+    onPersonaChange?.(mode);
+  };
+
+  return (
+    <div
+      role="radiogroup"
+      aria-label="Demo persona switcher"
+      className={`inline-flex items-center p-0.5 sm:p-1 bg-[#e8e5dc] rounded-[999px] border border-[#cccbc8] select-none ${className}`.trim()}
+    >
+      <button
+        type="button"
+        role="radio"
+        aria-checked={activePersona === 'visitor'}
+        onClick={() => handleSelect('visitor')}
+        className={`inline-flex items-center gap-1.5 px-3 py-1 sm:py-1.5 rounded-[999px] font-gothic text-[11px] sm:text-[12px] font-semibold uppercase tracking-[0.10em] transition-all duration-150 cursor-pointer ${
+          activePersona === 'visitor'
+            ? 'bg-[#141413] text-[#faf9f5]'
+            : 'text-[#87867f] hover:text-[#141413]'
+        }`}
+      >
+        <Eye className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+        <span>Visitor</span>
+      </button>
+
+      <button
+        type="button"
+        role="radio"
+        aria-checked={activePersona === 'creator'}
+        onClick={() => handleSelect('creator')}
+        className={`inline-flex items-center gap-1.5 px-3 py-1 sm:py-1.5 rounded-[999px] font-gothic text-[11px] sm:text-[12px] font-semibold uppercase tracking-[0.10em] transition-all duration-150 cursor-pointer ${
+          activePersona === 'creator'
+            ? 'bg-[#d97757] text-[#faf9f5]'
+            : 'text-[#87867f] hover:text-[#141413]'
+        }`}
+      >
+        <Sparkles className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+        <span>Creator</span>
+      </button>
+    </div>
+  );
+};
+
+===== src\shared\layout\MobileBottomNav.tsx =====
+import { Briefcase, LayoutGrid, Settings as SettingsIcon, User as UserIcon } from "lucide-react";
+import React from "react";
+import { NavLink, useLocation } from "react-router-dom";
+import type { SidebarUser } from "./Sidebar.tsx";
+
+export interface MobileBottomNavProps {
+  user?: SidebarUser | null;
+}
+
+export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({ user }) => {
+  const location = useLocation();
+
+  const isLinkActive = (to: string, isActive: boolean) => {
+    if (isActive) return true;
+    if (to === "/studio" && (location.pathname === "/" || location.pathname === "/posts/mine")) return true;
+    if (to === "/career" && location.pathname.startsWith("/career")) return true;
+    return false;
+  };
+
+  const navItems = [
+    { label: "Studio", to: "/studio", icon: LayoutGrid },
+    { label: "Career", to: "/career", icon: Briefcase },
+    {
+      label: "Profile",
+      to: user ? `/u/${user.username}` : "/settings",
+      icon: UserIcon,
+      isAvatar: Boolean(user?.avatarUrl),
+      avatarUrl: user?.avatarUrl,
+    },
+    { label: "Settings", to: "/settings", icon: SettingsIcon },
+  ];
+
+  return (
+    <nav
+      aria-label="Mobile Primary Navigation"
+      className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-[#faf9f5]/95 backdrop-blur-md border-t border-[#cccbc8]/60 flex items-center justify-around z-40 px-2 shadow-none select-none transition-colors"
+    >
+      {navItems.map((item) => {
+        const Icon = item.icon;
+        return (
+          <NavLink
+            key={item.to}
+            to={item.to}
+            aria-label={item.label}
+            className={({ isActive }) => {
+              const active = isLinkActive(item.to, isActive);
+              return `flex flex-col items-center justify-center py-1 px-3 rounded-xl transition-all ${
+                active ? "text-[#141413]" : "text-[#87867f] hover:text-[#141413]"
+              }`;
+            }}
+          >
+            {({ isActive }) => {
+              const active = isLinkActive(item.to, isActive);
+              return (
+                <>
+                  {item.isAvatar && item.avatarUrl ? (
+                    <img
+                      src={item.avatarUrl}
+                      alt={item.label}
+                      className={`h-6 w-6 rounded-full object-cover transition-all ${
+                        active
+                          ? "ring-2 ring-[#141413] ring-offset-1 ring-offset-[#faf9f5]"
+                          : "opacity-70 hover:opacity-100"
+                      }`}
+                    />
+                  ) : (
+                    <Icon
+                      className={`h-6 w-6 transition-transform duration-200 ${
+                        active ? "stroke-[2.2] scale-105 text-[#141413]" : "stroke-[1.6]"
+                      }`}
+                    />
+                  )}
+
+                  {/* Active Indicator Dot */}
+                  <span
+                    className={`w-1.5 h-1.5 rounded-full mt-1 transition-opacity duration-200 ${
+                      active ? "bg-[#d97757] opacity-100" : "opacity-0"
+                    }`}
+                  />
+                </>
+              );
+            }}
+          </NavLink>
+        );
+      })}
+    </nav>
+  );
+};
+
+===== src\shared\layout\MobileTopBar.tsx =====
+import { Bell, Plus } from "lucide-react";
+import React from "react";
+import { Link } from "react-router-dom";
+import { useToast } from "../context/index.ts";
+
+export const MobileTopBar: React.FC = () => {
+  const { showToast } = useToast();
+
+  const handleNotificationClick = () => {
+    showToast("info", "Exhibition notifications will be available in the upcoming release.");
+  };
+
+  return (
+    <header
+      aria-label="Mobile Top Bar"
+      className="md:hidden sticky top-0 z-30 h-14 bg-[#faf9f5]/95 backdrop-blur-md border-b border-[#cccbc8]/60 px-4 flex items-center justify-between shadow-none select-none transition-colors"
+    >
+      {/* Left: Quick Add Button (+) with Soft Rounded Corners */}
+      <div className="flex items-center">
+        <Link
+          to="/posts/new"
+          aria-label="Create new exhibition plate"
+          className="flex items-center justify-center h-9 w-9 rounded-xl bg-[#141413] text-[#faf9f5] hover:bg-[#d97757] active:scale-95 transition-all shadow-none"
+        >
+          <Plus className="h-5 w-5 stroke-[2.2]" />
+        </Link>
+      </div>
+
+      {/* Center: Centered Platform Logo */}
+      <div className="flex items-center justify-center">
+        <Link
+          to="/studio"
+          className="font-gothic font-extrabold text-base tracking-[0.18em] uppercase text-[#141413] hover:text-[#d97757] transition-colors"
+          aria-label="SHOWCASE Home"
+        >
+          SHOWCASE
+        </Link>
+      </div>
+
+      {/* Right: Notifications Bell (UI Placeholder) */}
+      <div className="flex items-center">
+        <button
+          type="button"
+          onClick={handleNotificationClick}
+          aria-label="Notifications"
+          className="flex items-center justify-center h-9 w-9 rounded-xl text-[#141413] hover:bg-[#e8e5dc]/70 active:scale-95 transition-all cursor-pointer relative"
+        >
+          <Bell className="h-5 w-5 stroke-[1.8]" />
+          {/* Subtle indicator dot */}
+          <span className="absolute top-2 right-2 w-1.5 h-1.5 rounded-full bg-[#d97757]" />
+        </button>
+      </div>
+    </header>
+  );
+};
+
+===== src\shared\components\Input.tsx =====
+import React, { forwardRef, useId } from 'react';
+
+export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
+  label?: string;
+  helperText?: string;
+  errorMessage?: string;
+  leftIcon?: React.ReactNode;
+  rightIcon?: React.ReactNode;
+  fullWidth?: boolean;
+}
+
+export const Input = forwardRef<HTMLInputElement, InputProps>(
+  (
+    {
+      label,
+      helperText,
+      errorMessage,
+      leftIcon,
+      rightIcon,
+      fullWidth = true,
+      id: customId,
+      disabled,
+      className = '',
+      ...props
+    },
+    ref
+  ) => {
+    const generatedId = useId();
+    const inputId = customId || generatedId;
+    const helperId = `${inputId}-helper`;
+    const errorId = `${inputId}-error`;
+
+    const hasError = Boolean(errorMessage);
+
+    const borderClass = hasError
+      ? 'border-[#d97757] focus:border-[#d97757]'
+      : 'border-[#cccbc8] focus:border-[#141413]';
+
+    return (
+      <div className={`${fullWidth ? 'w-full' : 'inline-block'} flex flex-col`}>
+        {label && (
+          <label
+            htmlFor={inputId}
+            className="text-label text-[#87867f] mb-1.5 cursor-pointer font-gothic text-[12px] font-semibold uppercase tracking-[0.10em]"
+          >
+            {label}
+          </label>
+        )}
+
+        <div className="relative flex items-center">
+          {leftIcon && (
+            <div className="absolute left-3.5 flex items-center pointer-events-none text-[#87867f]">
+              {leftIcon}
+            </div>
+          )}
+
+          <input
+            ref={ref}
+            id={inputId}
+            disabled={disabled}
+            aria-invalid={hasError ? 'true' : undefined}
+            aria-describedby={
+              hasError ? errorId : helperText ? helperId : undefined
+            }
+            className={`w-full bg-[#faf9f5] text-[#141413] text-body-sm font-serif border ${borderClass} rounded-lg px-3.5 py-2.5 outline-none transition-colors duration-150 placeholder:text-[#87867f]/70 placeholder:font-serif disabled:opacity-50 disabled:bg-[#f0eee6] disabled:cursor-not-allowed ${
+              leftIcon ? 'pl-10' : ''
+            } ${rightIcon ? 'pr-10' : ''} ${className}`.trim()}
+            {...props}
+          />
+
+          {rightIcon && (
+            <div className="absolute right-3.5 flex items-center text-[#87867f]">
+              {rightIcon}
+            </div>
+          )}
+        </div>
+
+        {hasError && (
+          <p id={errorId} role="alert" className="mt-1 text-xs text-[#d97757] font-gothic tracking-wide">
+            {errorMessage}
+          </p>
+        )}
+
+        {!hasError && helperText && (
+          <p id={helperId} className="mt-1 text-xs text-[#87867f] font-serif">
+            {helperText}
+          </p>
+        )}
+      </div>
+    );
+  }
+);
+
+Input.displayName = 'Input';
+
+===== src\shared\components\Button.tsx =====
+import React, { forwardRef } from 'react';
+import { Loader2 } from 'lucide-react';
+
+export type ButtonVariant = 'clay' | 'slate' | 'outline' | 'ghost';
+export type ButtonSize = 'sm' | 'md' | 'lg';
+
+export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  variant?: ButtonVariant;
+  size?: ButtonSize;
+  isLoading?: boolean;
+  leftIcon?: React.ReactNode;
+  rightIcon?: React.ReactNode;
+  fullWidth?: boolean;
+}
+
+export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
+  (
+    {
+      children,
+      variant = 'slate',
+      size = 'md',
+      isLoading = false,
+      leftIcon,
+      rightIcon,
+      fullWidth = false,
+      disabled,
+      className = '',
+      type = 'button',
+      ...props
+    },
+    ref
+  ) => {
+    const baseClasses =
+      'inline-flex items-center justify-center font-gothic font-medium uppercase tracking-[0.10em] select-none transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#141413] disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none rounded-[999px]';
+
+    const variantClasses: Record<ButtonVariant, string> = {
+      clay: 'bg-[#d97757] text-[#faf9f5] hover:bg-[#c8694a] active:bg-[#b75d3f]',
+      slate: 'bg-[#141413] text-[#faf9f5] hover:bg-[#282725] active:bg-black',
+      outline:
+        'bg-transparent text-[#141413] border border-[#cccbc8] hover:border-[#141413] hover:bg-[#141413]/5 active:bg-[#141413]/10',
+      ghost: 'bg-transparent text-[#141413] hover:bg-[#cccbc8]/25 active:bg-[#cccbc8]/40',
+    };
+
+    const sizeClasses: Record<ButtonSize, string> = {
+      sm: 'px-4 py-1.5 text-[11px] gap-1.5',
+      md: 'px-6 py-2.5 text-[13px] gap-2',
+      lg: 'px-8 py-3.5 text-sm gap-2.5',
+    };
+
+    const widthClass = fullWidth ? 'w-full' : '';
+
+    return (
+      <button
+        ref={ref}
+        type={type}
+        disabled={disabled || isLoading}
+        aria-busy={isLoading}
+        className={`${baseClasses} ${variantClasses[variant]} ${sizeClasses[size]} ${widthClass} ${className}`.trim()}
+        {...props}
+      >
+        {isLoading ? (
+          <Loader2 className="h-4 w-4 animate-spin text-current shrink-0" aria-hidden="true" />
+        ) : (
+          leftIcon && <span className="shrink-0 leading-none">{leftIcon}</span>
+        )}
+        <span className="truncate">{children}</span>
+        {!isLoading && rightIcon && <span className="shrink-0 leading-none">{rightIcon}</span>}
+      </button>
+    );
+  }
+);
+
+Button.displayName = 'Button';
+
+===== src\shared\components\Badge.tsx =====
+import React from 'react';
+import { X } from 'lucide-react';
+
+export type BadgeVariant = 'slate' | 'clay' | 'stone' | 'amber';
+export type BadgeSize = 'sm' | 'md';
+
+export interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
+  variant?: BadgeVariant;
+  size?: BadgeSize;
+  dot?: boolean;
+  icon?: React.ReactNode;
+  onRemove?: () => void;
+}
+
+export const Badge: React.FC<BadgeProps> = ({
+  children,
+  variant = 'stone',
+  size = 'md',
+  dot = false,
+  icon,
+  onRemove,
+  className = '',
+  ...props
+}) => {
+  const baseClasses =
+    'inline-flex items-center justify-center font-gothic font-semibold uppercase tracking-[0.10em] rounded-[999px] select-none transition-colors duration-150 leading-none';
+
+  const variantClasses: Record<BadgeVariant, string> = {
+    slate: 'bg-[#141413] text-[#faf9f5]',
+    clay: 'bg-[#d97757] text-[#faf9f5]',
+    stone: 'bg-[#cccbc8]/30 text-[#141413] border border-[#cccbc8]',
+    amber: 'bg-[#f1a900] text-[#141413]',
+  };
+
+  const sizeClasses: Record<BadgeSize, string> = {
+    sm: 'px-2.5 py-1 text-[10px] gap-1',
+    md: 'px-3.5 py-1.5 text-[11px] gap-1.5',
+  };
+
+  const dotClasses: Record<BadgeVariant, string> = {
+    slate: 'bg-[#faf9f5]',
+    clay: 'bg-[#faf9f5]',
+    stone: 'bg-[#141413]',
+    amber: 'bg-[#141413]',
+  };
+
+  return (
+    <span
+      className={`${baseClasses} ${variantClasses[variant]} ${sizeClasses[size]} ${className}`.trim()}
+      {...props}
+    >
+      {dot && (
+        <span
+          className={`h-1.5 w-1.5 rounded-full shrink-0 ${dotClasses[variant]}`}
+          aria-hidden="true"
+        />
+      )}
+      {icon && <span className="shrink-0 leading-none">{icon}</span>}
+      <span>{children}</span>
+      {onRemove && (
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            onRemove();
+          }}
+          className="ml-0.5 -mr-1 p-0.5 rounded-full hover:bg-black/10 active:bg-black/20 focus:outline-none transition-colors cursor-pointer"
+          aria-label="Remove badge"
+        >
+          <X className="h-3 w-3" />
+        </button>
+      )}
+    </span>
+  );
+};
+
+===== src\shared\components\Skeleton.tsx =====
+import React from 'react';
+
+export type SkeletonVariant = 'text' | 'circular' | 'rectangular' | 'card';
+
+export interface SkeletonProps extends React.HTMLAttributes<HTMLDivElement> {
+  variant?: SkeletonVariant;
+  width?: string | number;
+  height?: string | number;
+}
+
+export const Skeleton: React.FC<SkeletonProps> = ({
+  variant = 'text',
+  width,
+  height,
+  className = '',
+  style,
+  ...props
+}) => {
+  const variantClasses: Record<SkeletonVariant, string> = {
+    text: 'h-4 w-full rounded',
+    circular: 'rounded-full shrink-0',
+    rectangular: 'rounded-lg w-full',
+    card: 'rounded-[24px] w-full border border-[#cccbc8]/40',
+  };
+
+  const styleOverrides: React.CSSProperties = {
+    ...style,
+    ...(width !== undefined ? { width: typeof width === 'number' ? `${width}px` : width } : {}),
+    ...(height !== undefined ? { height: typeof height === 'number' ? `${height}px` : height } : {}),
+  };
+
+  return (
+    <div
+      aria-hidden="true"
+      className={`animate-pulse bg-[#e6e3da] ${variantClasses[variant]} ${className}`.trim()}
+      style={styleOverrides}
+      {...props}
+    />
+  );
+};
+
+===== src\shared\context\ToastContext.tsx =====
+import { AlertCircle, AlertTriangle, CheckCircle2, Info, X } from "lucide-react";
+import React, { useCallback, useState, type ReactNode } from "react";
+import { ToastContext, type ToastItem, type ToastType } from "./toastContextDef.ts";
+
+export const ToastProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const [toasts, setToasts] = useState<ToastItem[]>([]);
+
+  const dismissToast = useCallback((id: string) => {
+    setToasts((prev) => prev.filter((t) => t.id !== id));
+  }, []);
+
+  const showToast = useCallback((type: ToastType, message: string) => {
+    const id = `toast_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
+    setToasts((prev) => [...prev, { id, type, message }]);
+
+    setTimeout(() => {
+      setToasts((prev) => prev.filter((t) => t.id !== id));
+    }, 4500);
+  }, []);
+
+  const getBorderAndBg = (type: ToastType) => {
+    switch (type) {
+      case "success":
+        return "border-[#2e7d32]/40 bg-[#faf9f5] text-[#141413]";
+      case "error":
+        return "border-[#d97757]/60 bg-[#faf9f5] text-[#141413]";
+      case "warning":
+        return "border-[#f1a900]/60 bg-[#faf9f5] text-[#141413]";
+      case "info":
+      default:
+        return "border-[#cccbc8] bg-[#faf9f5] text-[#141413]";
+    }
+  };
+
+  const getIcon = (type: ToastType) => {
+    switch (type) {
+      case "success":
+        return <CheckCircle2 className="h-4 w-4 text-[#2e7d32] shrink-0" />;
+      case "error":
+        return <AlertCircle className="h-4 w-4 text-[#d97757] shrink-0" />;
+      case "warning":
+        return <AlertTriangle className="h-4 w-4 text-[#f1a900] shrink-0" />;
+      case "info":
+      default:
+        return <Info className="h-4 w-4 text-[#87867f] shrink-0" />;
+    }
+  };
+
+  return (
+    <ToastContext.Provider value={{ showToast, dismissToast }}>
+      {children}
+
+      {/* Global Toast Container */}
+      <aside
+        aria-live="polite"
+        aria-atomic="false"
+        className="fixed bottom-6 right-6 z-50 flex flex-col gap-2.5 max-w-sm pointer-events-none"
+      >
+        {toasts.map((toast) => (
+          <div
+            key={toast.id}
+            role="status"
+            className={`pointer-events-auto flex items-center justify-between gap-3 px-4 py-3 rounded-2xl border font-serif text-sm transition-all duration-200 animate-in slide-in-from-bottom-3 ${getBorderAndBg(
+              toast.type,
+            )}`}
+          >
+            <div className="flex items-center gap-2.5">
+              {getIcon(toast.type)}
+              <span className="leading-snug">{toast.message}</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => dismissToast(toast.id)}
+              className="text-[#87867f] hover:text-[#141413] transition-colors p-1 rounded-full cursor-pointer"
+              aria-label="Dismiss notification"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+          </div>
+        ))}
+      </aside>
+    </ToastContext.Provider>
+  );
+};
+
+===== src\shared\context\authContextDef.ts =====
+import { createContext } from 'react';
+import type {
+  CurrentUserResponse,
+  LoginRequest,
+  RegisterRequest,
+} from '../types/index.ts';
+
+export type ActivePersona = 'visitor' | 'creator';
+
+export interface AuthContextValue {
+  currentUser: CurrentUserResponse | null;
+  activePersona: ActivePersona;
+  isAuthenticated: boolean;
+  isLoading: boolean;
+  switchPersona: (persona: ActivePersona) => void;
+  login: (request: LoginRequest) => Promise<void>;
+  register: (request: RegisterRequest) => Promise<void>;
+  logout: () => Promise<void>;
+  refreshUser: () => Promise<void>;
+}
+
+export const AuthContext = createContext<AuthContextValue | undefined>(undefined);
+export const PERSONA_STORAGE_KEY = 'showcase_active_persona';
+
+===== src\shared\context\toastContextDef.ts =====
+import { createContext } from "react";
+
+export type ToastType = "success" | "error" | "warning" | "info";
+
+export interface ToastItem {
+  id: string;
+  type: ToastType;
+  message: string;
+}
+
+export interface ToastContextValue {
+  showToast: (type: ToastType, message: string) => void;
+  dismissToast: (id: string) => void;
+}
+
+export const ToastContext = createContext<ToastContextValue | null>(null);
+
+===== src\shared\context\useToast.ts =====
+import { useContext } from "react";
+import { ToastContext, type ToastContextValue } from "./toastContextDef.ts";
+
+export const useToast = (): ToastContextValue => {
+  const context = useContext(ToastContext);
+  if (!context) {
+    throw new Error("useToast must be used within a ToastProvider");
+  }
+  return context;
+};
+
+===== src\shared\context\useAuth.ts =====
+import { useContext } from 'react';
+import { AuthContext, type AuthContextValue } from './authContextDef.ts';
+
+export const useAuth = (): AuthContextValue => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
+};
+
+===== src\shared\types\career.ts =====
+/**
+ * Showcase Portfolio Platform — Career Module Domain Contracts
+ * Aligned with Warm Gallery editorial aesthetics and ASP.NET Core Clean Architecture.
+ */
+
+export interface CareerExperience {
+  id: string;
+  company: string;
+  jobTitle: string;
+  startDate: string; // YYYY-MM
+  endDate?: string; // YYYY-MM
+  currentlyWorking?: boolean;
+  employmentType?: string;
+  location?: string;
+  description?: string;
+  achievements?: string;
+  skillsUsed?: string[];
+  createdAt: string;
+}
+
+export interface CareerAcademic {
+  id: string;
+  institution: string;
+  degree: string;
+  fieldOfStudy: string;
+  startDate: string; // YYYY-MM
+  endDate?: string; // YYYY-MM
+  currentlyStudying?: boolean;
+  location?: string;
+  description?: string;
+  gpa?: string;
+  achievements?: string;
+  createdAt: string;
+}
+
+export type SkillCategory = 'Technical' | 'Design' | 'Leadership' | 'Tools' | 'General';
+
+export interface CareerSkill {
+  id: string;
+  name: string;
+  category?: string;
+  createdAt: string;
+}
+
+export interface CareerCredential {
+  id: string;
+  name: string;
+  issuingOrganization: string;
+  issueDate?: string;
+  expirationDate?: string;
+  credentialId?: string;
+  verificationUrl?: string;
+  mediaUrl?: string;
+  createdAt: string;
+}
+
+export type LanguageProficiency = 'Native' | 'Fluent' | 'Professional' | 'Intermediate' | 'Basic';
+
+export interface CareerLanguage {
+  id: string;
+  language: string;
+  proficiency: LanguageProficiency | string;
+  createdAt: string;
+}
+
+export interface CareerAchievement {
+  id: string;
+  title: string;
+  type?: string;
+  date?: string;
+  organization?: string;
+  description?: string;
+  url?: string;
+  mediaUrl?: string;
+  createdAt: string;
+}
+
+export interface CareerSummary {
+  experienceCount: number;
+  academicsCount: number;
+  skillsCount: number;
+  credentialsCount: number;
+  languagesCount: number;
+  achievementsCount: number;
+}
+
+===== src\shared\api\careerMockData.ts =====
+import type {
+  CareerExperience,
+  CareerAcademic,
+  CareerSkill,
+  CareerCredential,
+  CareerLanguage,
+  CareerAchievement,
+} from "../types/career.ts";
+
+export const initialExperiences: CareerExperience[] = [
+  {
+    id: "exp-1",
+    company: "Studio Vance Spatial Research",
+    jobTitle: "Principal Architectural Documentarian",
+    startDate: "2020-05",
+    currentlyWorking: true,
+    employmentType: "Full-time",
+    location: "Copenhagen, Denmark",
+    description: "Documenting spatial interventions and light phenomena.",
+    achievements: "Curated 14 exhibitions; co-authored daylight monograph",
+    skillsUsed: ["Architectural Curation", "Daylight Scenography", "Medium Format"],
+    createdAt: "2024-01-01T00:00:00Z",
+  },
+];
+
+export const initialAcademics: CareerAcademic[] = [
+  {
+    id: "aca-1",
+    institution: "Royal Danish Academy of Fine Arts (KADK)",
+    degree: "Master of Architecture",
+    fieldOfStudy: "Spatial Design & Daylight",
+    startDate: "2016-09",
+    endDate: "2018-06",
+    currentlyStudying: false,
+    location: "Copenhagen, Denmark",
+    gpa: "First Class Distinction",
+    description: "Focus on Nordic light.",
+    achievements: "Dean's List",
+    createdAt: "2024-01-01T00:00:00Z",
+  },
+];
+
+export const initialSkills: CareerSkill[] = [
+  {
+    id: "skl-1",
+    name: "Architectural Daylight Scenography",
+    category: "Design",
+    createdAt: "2024-01-01T00:00:00Z",
+  },
+];
+
+export const initialCredentials: CareerCredential[] = [
+  {
+    id: "crd-1",
+    name: "Certified Spatial Scenographer",
+    issuingOrganization: "Royal Institute of British Architects (RIBA)",
+    issueDate: "2019-08",
+    credentialId: "RIBA-SS-99201",
+    createdAt: "2024-01-01T00:00:00Z",
+  },
+];
+
+export const initialLanguages: CareerLanguage[] = [
+  {
+    id: "lan-1",
+    language: "Danish",
+    proficiency: "Native",
+    createdAt: "2024-01-01T00:00:00Z",
+  },
+  {
+    id: "lan-2",
+    language: "English",
+    proficiency: "Fluent",
+    createdAt: "2024-01-01T00:00:00Z",
+  },
+];
+
+export const initialAchievements: CareerAchievement[] = [
+  {
+    id: "ach-1",
+    title: "Golden Shutter Award",
+    type: "Award",
+    date: "2022-11",
+    organization: "Venice Biennale of Architecture",
+    description: "Awarded for best architectural documentary.",
+    createdAt: "2024-01-01T00:00:00Z",
+  },
+];
+
+===== src\features\explore\types.ts =====
+export const CATEGORIES = [
+  'All',
+  'Photography',
+  'Architecture',
+  'Design',
+  'Typography',
+] as const;
+
+export type Category = (typeof CATEGORIES)[number];
+
+===== src\main.tsx =====
+import { StrictMode } from 'react'
+import { createRoot } from 'react-dom/client'
+import './index.css'
+import App from './App.tsx'
+
+createRoot(document.getElementById('root')!).render(
+  <StrictMode>
+    <App />
+  </StrictMode>,
+)
+
+===== src\index.css =====
+@import "tailwindcss";
+
+@theme {
+  --color-slate-dark: #141413;
+  --color-ivory-medium: #f0eee6;
+  --color-ivory-light: #faf9f5;
+  --color-fog-gray: #f2f2f2;
+  --color-cloud-dark: #87867f;
+  --color-stone: #cccbc8;
+  --color-clay: #d97757;
+  --color-amber: #f1a900;
+
+  --font-gothic: "Plus Jakarta Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-serif: "Newsreader", Georgia, Cambria, "Times New Roman", Times, serif;
+
+  --radius-card: 24px;
+  --radius-pill: 999px;
+}
+
+:root {
+  --color-slate-dark: #141413;
+  --color-ivory-medium: #f0eee6;
+  --color-ivory-light: #faf9f5;
+  --color-fog-gray: #f2f2f2;
+  --color-cloud-dark: #87867f;
+  --color-stone: #cccbc8;
+  --color-clay: #d97757;
+  --color-amber: #f1a900;
+
+  --font-gothic: "Plus Jakarta Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-serif: "Newsreader", Georgia, Cambria, "Times New Roman", Times, serif;
+
+  --surface-canvas: #f0eee6;
+  --surface-card: #faf9f5;
+  --surface-inverted: #141413;
+}
+
+/* ZERO Box Shadows Guarantee: Elevation is strictly tonal and structural */
+*, *::before, *::after {
+  box-shadow: none !important;
+}
+
+html {
+  scroll-behavior: smooth;
+  background-color: var(--color-ivory-medium);
+  color: var(--color-slate-dark);
+}
+
+::selection {
+  background-color: var(--color-clay);
+  color: var(--color-ivory-light);
+}
+
+body {
+  background-color: var(--color-ivory-medium);
+  color: var(--color-slate-dark);
+  font-family: var(--font-serif);
+  min-height: 100vh;
+  margin: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Typography Utility Classes */
+.font-gothic {
+  font-family: var(--font-gothic);
+}
+
+.font-serif {
+  font-family: var(--font-serif);
+}
+
+.text-label {
+  font-family: var(--font-gothic);
+  font-size: 13px;
+  line-height: 1;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.text-body-sm {
+  font-family: var(--font-serif);
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.text-body-lg {
+  font-family: var(--font-serif);
+  font-size: 20px;
+  line-height: 1.4;
+}
+
+.text-subheading {
+  font-family: var(--font-gothic);
+  font-size: 24px;
+  line-height: 1.29;
+  letter-spacing: -0.02em;
+  font-weight: 600;
+}
+
+.text-heading {
+  font-family: var(--font-gothic);
+  font-size: 54px;
+  line-height: 1.08;
+  letter-spacing: -0.05em;
+  font-weight: 700;
+}
+
+.text-display {
+  font-family: var(--font-gothic);
+  font-size: 89px;
+  line-height: 0.95;
+  letter-spacing: -0.05em;
+  font-weight: 800;
+}
+
+=====  =====
+{
+  "name": "showcase-clientapp",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "lint": "eslint .",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@tailwindcss/vite": "^4.3.3",
+    "lucide-react": "^1.47.0",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "react-router-dom": "^7.18.4",
+    "tailwindcss": "^4.3.3"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^24.13.3",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.7",
+    "@vitejs/plugin-react": "^6.1.1",
+    "eslint": "^10.10.0",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "eslint-plugin-react-refresh": "^0.5.6",
+    "globals": "^17.12.0",
+    "typescript": "~6.0.2",
+    "typescript-eslint": "^8.69.0",
+    "vite": "^8.3.0"
+  }
+}
+
+=====  =====
+import tailwindcss from "@tailwindcss/vite";
+import react from "@vitejs/plugin-react";
+import { defineConfig } from "vite";
+
+// https://vite.dev/config/
+export default defineConfig({
+  plugins: [react(), tailwindcss()],
+});
+
+=====  =====
+{
+  "files": [],
+  "references": [
+    { "path": "./tsconfig.app.json" },
+    { "path": "./tsconfig.node.json" }
+  ]
+}
+
+=====  =====
+{
+  "compilerOptions": {
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
+    "target": "es2023",
+    "lib": ["ES2023", "DOM"],
+    "module": "esnext",
+    "types": ["vite/client"],
+    "allowArbitraryExtensions": true,
+    "skipLibCheck": true,
+
+    /* Bundler mode */
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "verbatimModuleSyntax": true,
+    "moduleDetection": "force",
+    "noEmit": true,
+    "jsx": "react-jsx",
+
+    /* Linting */
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "erasableSyntaxOnly": true,
+    "noFallthroughCasesInSwitch": true
+  },
+  "include": ["src"]
+}
+
+===== src\features\security\index.ts =====
+export * from "./components/ProblemAlert.tsx";
+export * from "./components/SecurityActionLayout.tsx";
+export * from "./components/SecurityNavRow.tsx";
+export * from "./pages/ActiveSessionsPage.tsx";
+export * from "./pages/ChangePasswordPage.tsx";
+export * from "./pages/DeleteAccountPage.tsx";
+export * from "./pages/SecurityHubPage.tsx";
+export * from "./pages/TwoFactorAuthPage.tsx";
+export * from "./pages/UpdateEmailPage.tsx";
+
+===== src\features\career\index.ts =====
+===== src\features\posts\index.ts =====
+export * from './pages/index.ts';
+export * from './components/index.ts';
+
+===== src\features\posts\components\index.ts =====
+export { PostStatusBadge, type PostStatusBadgeProps } from './PostStatusBadge.tsx';
+export {
+  ImageDropzone,
+  type ImageDropzoneProps,
+  type UploadedImageData,
+} from './ImageDropzone.tsx';
+export {
+  ImageReorderGrid,
+  type ImageReorderGridProps,
+  type ImageGridItem,
+} from './ImageReorderGrid.tsx';
+
+===== src\features\posts\pages\index.ts =====
+export * from './PostDetailsPage.tsx';
+export * from './StudioDashboardPage.tsx';
+export * from './PostEditorPage.tsx';
+
+===== src\features\explore\index.ts =====
+export * from "./components/PostCard.tsx";
+export * from "./pages/ExplorePage.tsx";
+
+===== src\features\profile\index.ts =====
+export * from './pages/index.ts';
+export * from './components/index.ts';
+
+===== src\features\profile\components\index.ts =====
+export * from "./AccountSecurityCard.tsx";
+export * from "./AvatarUploader.tsx";
+export * from "./BioEditor.tsx";
+export * from "./PlatformIcon.tsx";
+export * from "./SocialLinksManager.tsx";
+
+===== src\features\profile\pages\index.ts =====
+export * from './PublicProfilePage.tsx';
+export * from './ProfileSettingsPage.tsx';
+
+===== src\features\career\components\index.ts =====
+export * from "./AcademicModal.tsx";
+export * from "./AchievementModal.tsx";
+export * from "./CareerEmptyState.tsx";
+export * from "./CareerHeader.tsx";
+export * from "./CareerNavCard.tsx";
+export * from "./CredentialModal.tsx";
+export * from "./DeleteConfirmModal.tsx";
+export * from "./ExperienceModal.tsx";
+export * from "./LanguageModal.tsx";
+export * from "./SkillModal.tsx";
+
+===== src\features\career\pages\index.ts =====
+export * from "./CareerAcademicsPage.tsx";
+export * from "./CareerAchievementsPage.tsx";
+export * from "./CareerCredentialsPage.tsx";
+export * from "./CareerExperiencePage.tsx";
+export * from "./CareerHubPage.tsx";
+export * from "./CareerLanguagesPage.tsx";
+export * from "./CareerSkillsPage.tsx";
+
+===== src\shared\components\index.ts =====
+export * from './Button';
+export * from './Input';
+export * from './Textarea';
+export * from './Badge';
+export * from './Modal';
+export * from './Drawer';
+export * from './Skeleton';
+
+===== src\shared\layout\index.ts =====
+export * from "./DemoSwitcher.tsx";
+export * from "./Footer.tsx";
+export * from "./MobileBottomNav.tsx";
+export * from "./MobileTopBar.tsx";
+export * from "./Sidebar.tsx";
+
+===== src\shared\api\index.ts =====
+export { apiClient, USE_MOCK_API } from './apiClient.ts';
+export { mockService, MockApiError } from './mockService.ts';
+export { INITIAL_USERS, INITIAL_PROFILES, INITIAL_POSTS } from './mockData.ts';
+
+===== src\shared\context\index.ts =====
+export { AuthProvider, type AuthProviderProps } from "./AuthContext.tsx";
+export { AuthContext, PERSONA_STORAGE_KEY, type ActivePersona, type AuthContextValue } from "./authContextDef.ts";
+export { ToastContext, type ToastContextValue, type ToastItem, type ToastType } from "./toastContextDef.ts";
+export { ToastProvider } from "./ToastContext.tsx";
+export { useToast } from "./useToast.ts";
+export { useAuth } from "./useAuth.ts";
+

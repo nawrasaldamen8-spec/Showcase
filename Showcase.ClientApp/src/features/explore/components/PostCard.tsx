@@ -1,7 +1,7 @@
 import { Image as ImageIcon, Layers } from "lucide-react";
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import type { ExplorePostResponse } from "../../../shared/types/index.ts";
+import type { ExplorePostResponse } from "@shared/types/index.ts";
 
 export type TileSpanType = "square" | "tall" | "wide" | "hero";
 

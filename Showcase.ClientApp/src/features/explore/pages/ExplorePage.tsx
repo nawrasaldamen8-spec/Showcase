@@ -1,9 +1,9 @@
 import { ArrowDown, RefreshCw, SearchX } from "lucide-react";
 import React, { useCallback, useEffect, useState } from "react";
-import { apiClient } from "../../../shared/api/apiClient.ts";
-import { Button } from "../../../shared/components/Button.tsx";
-import { Skeleton } from "../../../shared/components/Skeleton.tsx";
-import type { ExplorePostResponse } from "../../../shared/types/index.ts";
+import { apiClient } from "@shared/api/apiClient.ts";
+import { Button } from "@shared/components/Button.tsx";
+import { Skeleton } from "@shared/components/Skeleton.tsx";
+import type { ExplorePostResponse } from "@shared/types/index.ts";
 import { PostCard, type TileSpanType } from "../components/PostCard.tsx";
 
 const PAGE_SIZE = 10;
