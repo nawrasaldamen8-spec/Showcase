@@ -1,5 +1,5 @@
 import React from 'react';
-import { PostStatus, type PostStatus as PostStatusType } from '../../../shared/types/index.ts';
+import { PostStatus, type PostStatus as PostStatusType } from '@shared/types/index.ts';
 
 export interface PostStatusBadgeProps {
   status: PostStatusType | number | string;

@@ -1,13 +1,8 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React from 'react';
 import { UploadCloud, AlertCircle, Loader2, CheckCircle2, Image as ImageIcon, Plus } from 'lucide-react';
-import { apiClient } from '../../../shared/api/apiClient.ts';
+import { useDropzoneUpload, type UploadedImageData } from '../hooks/useDropzoneUpload.ts';
 
-export interface UploadedImageData {
-  id?: string;
-  storageKey: string;
-  url: string;
-  file?: File;
-}
+export type { UploadedImageData };
 
 export interface ImageDropzoneProps {
   postId?: string;
@@ -33,205 +28,27 @@ export const ImageDropzone: React.FC<ImageDropzoneProps> = ({
   className = '',
   variant = 'full',
 }) => {
-  const [isDragOver, setIsDragOver] = useState(false);
-  const [isUploading, setIsUploading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState<{
-    current: number;
-    total: number;
-    percent: number;
-    filename: string;
-  } | null>(null);
-  const [validationError, setValidationError] = useState<string | null>(null);
-  const [recentSuccess, setRecentSuccess] = useState<string | null>(null);
-
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const validateFiles = useCallback(
-    (files: File[]): { valid: File[]; error?: string } => {
-      for (const file of files) {
-        // Validate MIME type
-        const isTypeAllowed =
-          allowedTypes.includes(file.type.toLowerCase()) ||
-          /\.(jpe?g|png|webp)$/i.test(file.name);
-
-        if (!isTypeAllowed) {
-          return {
-            valid: [],
-            error: `"${file.name}" is not a supported format. Please upload JPEG, PNG, or WebP images.`,
-          };
-        }
-
-        // Validate size
-        if (file.size > maxSizeBytes) {
-          const sizeMb = (file.size / (1024 * 1024)).toFixed(1);
-          const maxMb = (maxSizeBytes / (1024 * 1024)).toFixed(0);
-          return {
-            valid: [],
-            error: `"${file.name}" exceeds the ${maxMb}MB size limit (${sizeMb}MB).`,
-          };
-        }
-      }
-
-      return { valid: files };
-    },
-    [allowedTypes, maxSizeBytes]
-  );
-
-  const processUploads = useCallback(
-    async (files: File[]) => {
-      if (files.length === 0 || disabled || isUploading) return;
-
-      setValidationError(null);
-      setRecentSuccess(null);
-
-      const { valid, error } = validateFiles(files);
-      if (error) {
-        setValidationError(error);
-        onError?.(error);
-        return;
-      }
-
-      setIsUploading(true);
-      const uploadedResults: UploadedImageData[] = [];
-
-      try {
-        for (let i = 0; i < valid.length; i++) {
-          const file = valid[i];
-          const progressBase = Math.round((i / valid.length) * 100);
-
-          setUploadProgress({
-            current: i + 1,
-            total: valid.length,
-            percent: progressBase + 10,
-            filename: file.name,
-          });
-
-          // 1. Ingest plate via API client simulating Cloudflare R2 presigned upload
-          if (postId) {
-            // Live/Mock direct R2 upload flow with active post ID
-            const { uploadUrl, storageKey } = await apiClient.getPostImageUploadUrl(postId, {
-              contentType: file.type || 'image/jpeg',
-              fileSizeBytes: file.size,
-            });
-
-            setUploadProgress({
-              current: i + 1,
-              total: valid.length,
-              percent: progressBase + 50,
-              filename: file.name,
-            });
-
-            // Upload directly to storage URL
-            const previewUrl = await apiClient.uploadImageFile(uploadUrl, file);
-
-            setUploadProgress({
-              current: i + 1,
-              total: valid.length,
-              percent: progressBase + 85,
-              filename: file.name,
-            });
-
-            // Register image record in post
-            const added = await apiClient.addPostImage(postId, storageKey, previewUrl);
-
-            uploadedResults.push({
-              id: added.imageId,
-              storageKey,
-              url: previewUrl,
-              file,
-            });
-          } else {
-            // Local client ingestion staging before post creation
-            // Generate direct object preview URL
-            const previewUrl = URL.createObjectURL(file);
-            const ext = file.type.split('/')[1] || 'jpg';
-            const storageKey = `posts/staged/${Date.now()}-${Math.random().toString(36).substring(2, 8)}.${ext}`;
-
-            // Simulate realistic Cloudflare R2 network ingestion latency
-            await new Promise((resolve) => setTimeout(resolve, 320));
-
-            uploadedResults.push({
-              id: `local_${Date.now()}_${i}`,
-              storageKey,
-              url: previewUrl,
-              file,
-            });
-          }
-        }
-
-        setUploadProgress({
-          current: valid.length,
-          total: valid.length,
-          percent: 100,
-          filename: 'Complete',
-        });
-
-        setRecentSuccess(
-          valid.length === 1
-            ? 'Plate successfully ingested into storage.'
-            : `${valid.length} plates successfully ingested into storage.`
-        );
-
-        onImagesUploaded?.(uploadedResults);
-      } catch (err) {
-        console.error('Direct R2 ingestion error:', err);
-        const errMsg = err instanceof Error ? err.message : 'Failed to ingest image to Cloudflare R2.';
-        setValidationError(errMsg);
-        onError?.(errMsg);
-      } finally {
-        setIsUploading(false);
-        setUploadProgress(null);
-        if (fileInputRef.current) {
-          fileInputRef.current.value = '';
-        }
-      }
-    },
-    [postId, disabled, isUploading, validateFiles, onImagesUploaded, onError]
-  );
-
-  const handleDragEnter = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (disabled || isUploading) return;
-    setIsDragOver(true);
-  };
-
-  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
-    // Only deactivate if leaving the container itself
-    if (e.currentTarget.contains(e.relatedTarget as Node)) return;
-    setIsDragOver(false);
-  };
-
-  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
-  };
-
-  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragOver(false);
-    if (disabled || isUploading) return;
-
-    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-      const files = Array.from(e.dataTransfer.files);
-      void processUploads(files);
-    }
-  };
-
-  const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      const files = Array.from(e.target.files);
-      void processUploads(files);
-    }
-  };
-
-  const openFilePicker = () => {
-    if (disabled || isUploading) return;
-    fileInputRef.current?.click();
-  };
+  const {
+    isDragOver,
+    isUploading,
+    uploadProgress,
+    validationError,
+    recentSuccess,
+    fileInputRef,
+    handleDragEnter,
+    handleDragLeave,
+    handleDragOver,
+    handleDrop,
+    handleFileInputChange,
+    openFilePicker,
+  } = useDropzoneUpload({
+    postId,
+    disabled,
+    maxSizeBytes,
+    allowedTypes,
+    onImagesUploaded,
+    onError,
+  });
 
   if (variant === 'tile') {
     return (
