@@ -1,7 +1,7 @@
 import { Sparkles, X } from "lucide-react";
 import React, { useState } from "react";
-import { Button } from "../../../shared/components/Button.tsx";
-import type { CareerSkill } from "../../../shared/types/index.ts";
+import { Button } from "@shared/components/Button.tsx";
+import type { CareerSkill } from "@shared/types/index.ts";
 
 export interface SkillModalProps {
   isOpen: boolean;
@@ -79,7 +79,7 @@ const SkillModalForm: React.FC<Omit<SkillModalProps, "isOpen">> = ({
         {/* Skill Name */}
         <div>
           <label className="block font-gothic text-xs font-bold uppercase tracking-[0.12em] text-[#141413] mb-1.5">
-            Skill Name <span className="text-[#d97757]">*</span>
+            Skill Name
           </label>
           <input
             type="text"

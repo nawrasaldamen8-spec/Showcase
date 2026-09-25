@@ -1,7 +1,8 @@
 import { GraduationCap, X } from "lucide-react";
 import React, { useState } from "react";
-import { Button } from "../../../shared/components/Button.tsx";
-import type { CareerAcademic } from "../../../shared/types/index.ts";
+import type { CareerAcademic } from "@shared/types/index.ts";
+import { AcademicStep1 } from "./AcademicStep1.tsx";
+import { AcademicStep2 } from "./AcademicStep2.tsx";
 
 export interface AcademicModalProps {
   isOpen: boolean;
@@ -17,10 +18,15 @@ const AcademicModalForm: React.FC<Omit<AcademicModalProps, "isOpen">> = ({
   initialData,
   isSaving = false,
 }) => {
+  const [step, setStep] = useState<1 | 2>(1);
+
+  // Mandatory fields (Step 1)
   const [institution, setInstitution] = useState(initialData?.institution || "");
   const [degree, setDegree] = useState(initialData?.degree || "");
   const [fieldOfStudy, setFieldOfStudy] = useState(initialData?.fieldOfStudy || "");
   const [startDate, setStartDate] = useState(initialData?.startDate || "");
+
+  // Additional fields (Step 2)
   const [endDate, setEndDate] = useState(initialData?.endDate || "");
   const [currentlyStudying, setCurrentlyStudying] = useState(!!initialData?.currentlyStudying);
   const [location, setLocation] = useState(initialData?.location || "");
@@ -35,19 +41,19 @@ const AcademicModalForm: React.FC<Omit<AcademicModalProps, "isOpen">> = ({
     const errs: Record<string, string> = { ...errors };
 
     if (!field || field === "institution") {
-      if (!institution.trim()) errs.institution = "Academic institution is required.";
+      if (!institution.trim()) errs.institution = "Academic institution is needed to proceed.";
       else delete errs.institution;
     }
     if (!field || field === "degree") {
-      if (!degree.trim()) errs.degree = "Degree or Diploma is required.";
+      if (!degree.trim()) errs.degree = "Degree or Diploma is needed to proceed.";
       else delete errs.degree;
     }
     if (!field || field === "fieldOfStudy") {
-      if (!fieldOfStudy.trim()) errs.fieldOfStudy = "Field of study is required.";
+      if (!fieldOfStudy.trim()) errs.fieldOfStudy = "Field of study is needed to proceed.";
       else delete errs.fieldOfStudy;
     }
     if (!field || field === "startDate") {
-      if (!startDate.trim()) errs.startDate = "Start date is required (YYYY-MM).";
+      if (!startDate.trim()) errs.startDate = "Start date is needed (YYYY-MM).";
       else delete errs.startDate;
     }
 
@@ -60,10 +66,20 @@ const AcademicModalForm: React.FC<Omit<AcademicModalProps, "isOpen">> = ({
     validate(field);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleContinue = (e: React.MouseEvent) => {
     e.preventDefault();
     setTouched({ institution: true, degree: true, fieldOfStudy: true, startDate: true });
     if (!validate()) return;
+    setStep(2);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setTouched({ institution: true, degree: true, fieldOfStudy: true, startDate: true });
+    if (!validate()) {
+      setStep(1);
+      return;
+    }
 
     await onSave({
       institution: institution.trim(),
@@ -96,8 +112,8 @@ const AcademicModalForm: React.FC<Omit<AcademicModalProps, "isOpen">> = ({
           <GraduationCap className="w-5 h-5 stroke-[1.75]" />
         </div>
         <div>
-          <span className="font-gothic text-[10px] font-bold uppercase tracking-[0.2em] text-[#87867f] block">
-            Academic Background
+          <span className="font-gothic text-xs font-bold uppercase tracking-[0.2em] text-[#87867f] block">
+            Academic Background • Step {step} of 2
           </span>
           <h2 id="academic-modal-title" className="font-gothic text-xl font-bold uppercase tracking-tight text-[#141413]">
             {initialData ? "Edit Academic Record" : "Add Academic Record"}
@@ -106,206 +122,43 @@ const AcademicModalForm: React.FC<Omit<AcademicModalProps, "isOpen">> = ({
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-5">
-        {/* Institution */}
-        <div>
-          <label className="block font-gothic text-xs font-bold uppercase tracking-[0.12em] text-[#141413] mb-1.5">
-            Institution / University <span className="text-[#d97757]">*</span>
-          </label>
-          <input
-            type="text"
-            value={institution}
-            onChange={(e) => {
-              setInstitution(e.target.value);
-              if (errors.institution) validate("institution");
-            }}
-            onBlur={() => handleBlur("institution")}
-            placeholder="e.g. Royal Danish Academy of Fine Arts (KADK)"
-            className={`w-full px-3.5 py-2.5 rounded-xl bg-[#f0eee6] border text-sm text-[#141413] focus:outline-none focus:ring-1 focus:ring-[#141413] ${
-              touched.institution && errors.institution ? "border-red-500 bg-red-50/20" : "border-[#cccbc8]/60"
-            }`}
+        {step === 1 ? (
+          <AcademicStep1
+            institution={institution}
+            setInstitution={setInstitution}
+            degree={degree}
+            setDegree={setDegree}
+            fieldOfStudy={fieldOfStudy}
+            setFieldOfStudy={setFieldOfStudy}
+            startDate={startDate}
+            setStartDate={setStartDate}
+            touched={touched}
+            errors={errors}
+            validate={validate}
+            handleBlur={handleBlur}
+            onCancel={onClose}
+            onContinue={handleContinue}
+            isSaving={isSaving}
           />
-          {touched.institution && errors.institution && (
-            <p className="font-serif text-xs text-red-600 mt-1">{errors.institution}</p>
-          )}
-        </div>
-
-        {/* Degree & Field of Study */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label className="block font-gothic text-xs font-bold uppercase tracking-[0.12em] text-[#141413] mb-1.5">
-              Degree <span className="text-[#d97757]">*</span>
-            </label>
-            <input
-              type="text"
-              value={degree}
-              onChange={(e) => {
-                setDegree(e.target.value);
-                if (errors.degree) validate("degree");
-              }}
-              onBlur={() => handleBlur("degree")}
-              placeholder="e.g. Master of Architecture"
-              className={`w-full px-3.5 py-2.5 rounded-xl bg-[#f0eee6] border text-sm text-[#141413] focus:outline-none focus:ring-1 focus:ring-[#141413] ${
-                touched.degree && errors.degree ? "border-red-500 bg-red-50/20" : "border-[#cccbc8]/60"
-              }`}
-            />
-            {touched.degree && errors.degree && (
-              <p className="font-serif text-xs text-red-600 mt-1">{errors.degree}</p>
-            )}
-          </div>
-
-          <div>
-            <label className="block font-gothic text-xs font-bold uppercase tracking-[0.12em] text-[#141413] mb-1.5">
-              Field of Study <span className="text-[#d97757]">*</span>
-            </label>
-            <input
-              type="text"
-              value={fieldOfStudy}
-              onChange={(e) => {
-                setFieldOfStudy(e.target.value);
-                if (errors.fieldOfStudy) validate("fieldOfStudy");
-              }}
-              onBlur={() => handleBlur("fieldOfStudy")}
-              placeholder="e.g. Spatial Design &amp; Daylight"
-              className={`w-full px-3.5 py-2.5 rounded-xl bg-[#f0eee6] border text-sm text-[#141413] focus:outline-none focus:ring-1 focus:ring-[#141413] ${
-                touched.fieldOfStudy && errors.fieldOfStudy ? "border-red-500 bg-red-50/20" : "border-[#cccbc8]/60"
-              }`}
-            />
-            {touched.fieldOfStudy && errors.fieldOfStudy && (
-              <p className="font-serif text-xs text-red-600 mt-1">{errors.fieldOfStudy}</p>
-            )}
-          </div>
-        </div>
-
-        {/* Location & Honors/GPA */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label className="block font-gothic text-xs font-bold uppercase tracking-[0.12em] text-[#141413] mb-1.5">
-              Location
-            </label>
-            <input
-              type="text"
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
-              placeholder="e.g. Copenhagen, Denmark"
-              className="w-full px-3.5 py-2.5 rounded-xl bg-[#f0eee6] border border-[#cccbc8]/60 text-sm text-[#141413] focus:outline-none focus:ring-1 focus:ring-[#141413]"
-            />
-          </div>
-
-          <div>
-            <label className="block font-gothic text-xs font-bold uppercase tracking-[0.12em] text-[#141413] mb-1.5">
-              Honors / Distinction / GPA
-            </label>
-            <input
-              type="text"
-              value={gpa}
-              onChange={(e) => setGpa(e.target.value)}
-              placeholder="e.g. First Class Distinction"
-              className="w-full px-3.5 py-2.5 rounded-xl bg-[#f0eee6] border border-[#cccbc8]/60 text-sm text-[#141413] focus:outline-none focus:ring-1 focus:ring-[#141413]"
-            />
-          </div>
-        </div>
-
-        {/* Dates & Currently Studying */}
-        <div className="p-4 rounded-2xl bg-[#f0eee6]/60 border border-[#cccbc8]/40 space-y-3">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block font-gothic text-xs font-bold uppercase tracking-[0.12em] text-[#141413] mb-1.5">
-                Start Date <span className="text-[#d97757]">*</span>
-              </label>
-              <input
-                type="month"
-                value={startDate}
-                onChange={(e) => {
-                  setStartDate(e.target.value);
-                  if (errors.startDate) validate("startDate");
-                }}
-                onBlur={() => handleBlur("startDate")}
-                className={`w-full px-3 py-2 rounded-xl bg-[#faf9f5] border text-sm text-[#141413] focus:outline-none focus:ring-1 focus:ring-[#141413] ${
-                  touched.startDate && errors.startDate ? "border-red-500 bg-red-50/20" : "border-[#cccbc8]/60"
-                }`}
-              />
-              {touched.startDate && errors.startDate && (
-                <p className="font-serif text-xs text-red-600 mt-1">{errors.startDate}</p>
-              )}
-            </div>
-
-            <div>
-              <label className="block font-gothic text-xs font-bold uppercase tracking-[0.12em] text-[#141413] mb-1.5">
-                End Date
-              </label>
-              <input
-                type="month"
-                value={endDate}
-                disabled={currentlyStudying}
-                onChange={(e) => setEndDate(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl bg-[#faf9f5] border border-[#cccbc8]/60 text-sm text-[#141413] focus:outline-none focus:ring-1 focus:ring-[#141413] disabled:opacity-40 disabled:cursor-not-allowed"
-              />
-            </div>
-          </div>
-
-          <label className="flex items-center gap-2.5 pt-1 cursor-pointer select-none">
-            <input
-              type="checkbox"
-              checked={currentlyStudying}
-              onChange={(e) => setCurrentlyStudying(e.target.checked)}
-              className="w-4 h-4 rounded text-[#d97757] focus:ring-0 focus:ring-offset-0"
-            />
-            <span className="font-gothic text-xs font-bold uppercase tracking-wider text-[#141413]">
-              I am currently enrolled / studying here
-            </span>
-          </label>
-        </div>
-
-        {/* Thesis / Description */}
-        <div>
-          <label className="block font-gothic text-xs font-bold uppercase tracking-[0.12em] text-[#141413] mb-1.5">
-            Thesis / Academic Focus
-          </label>
-          <textarea
-            rows={3}
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            placeholder="Outline your thesis topic, structural focus, or academic research..."
-            className="w-full px-3.5 py-2.5 rounded-xl bg-[#f0eee6] border border-[#cccbc8]/60 text-sm text-[#141413] focus:outline-none focus:ring-1 focus:ring-[#141413] resize-none"
+        ) : (
+          <AcademicStep2
+            endDate={endDate}
+            setEndDate={setEndDate}
+            currentlyStudying={currentlyStudying}
+            setCurrentlyStudying={setCurrentlyStudying}
+            location={location}
+            setLocation={setLocation}
+            gpa={gpa}
+            setGpa={setGpa}
+            description={description}
+            setDescription={setDescription}
+            achievements={achievements}
+            setAchievements={setAchievements}
+            onBack={() => setStep(1)}
+            isSaving={isSaving}
+            isEditing={Boolean(initialData)}
           />
-        </div>
-
-        {/* Academic Achievements */}
-        <div>
-          <label className="block font-gothic text-xs font-bold uppercase tracking-[0.12em] text-[#141413] mb-1.5">
-            Honors, Grants &amp; Fellowships
-          </label>
-          <input
-            type="text"
-            value={achievements}
-            onChange={(e) => setAchievements(e.target.value)}
-            placeholder="e.g. Dean's List, Research Fellow, Travel Grant"
-            className="w-full px-3.5 py-2.5 rounded-xl bg-[#f0eee6] border border-[#cccbc8]/60 text-sm text-[#141413] focus:outline-none focus:ring-1 focus:ring-[#141413]"
-          />
-        </div>
-
-        {/* Form Actions */}
-        <div className="flex items-center justify-end gap-3 pt-4 border-t border-[#cccbc8]/40">
-          <Button
-            type="button"
-            variant="outline"
-            size="md"
-            onClick={onClose}
-            disabled={isSaving}
-            className="shadow-none uppercase tracking-wider text-xs font-bold"
-          >
-            Cancel
-          </Button>
-          <Button
-            type="submit"
-            variant="clay"
-            size="md"
-            disabled={isSaving}
-            className="shadow-none uppercase tracking-wider text-xs font-bold"
-          >
-            {isSaving ? "Saving..." : initialData ? "Update Record" : "Save Record"}
-          </Button>
-        </div>
+        )}
       </form>
     </div>
   );
@@ -328,7 +181,7 @@ export const AcademicModal: React.FC<AcademicModalProps> = ({
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#141413]/60 backdrop-blur-sm overflow-y-auto animate-in fade-in duration-150"
     >
       <AcademicModalForm
-        key={initialData?.id || "new-academic"}
+        key={initialData?.id || "new-acad"}
         onClose={onClose}
         onSave={onSave}
         initialData={initialData}

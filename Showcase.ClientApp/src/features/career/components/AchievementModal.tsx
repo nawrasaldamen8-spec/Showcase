@@ -1,7 +1,8 @@
-import { Image as ImageIcon, Link as LinkIcon, Trophy, X } from "lucide-react";
+import { Trophy, X } from "lucide-react";
 import React, { useState } from "react";
-import { Button } from "../../../shared/components/Button.tsx";
-import type { CareerAchievement } from "../../../shared/types/index.ts";
+import type { CareerAchievement } from "@shared/types/index.ts";
+import { AchievementStep1 } from "./AchievementStep1.tsx";
+import { AchievementStep2 } from "./AchievementStep2.tsx";
 
 export interface AchievementModalProps {
   isOpen: boolean;
@@ -11,7 +12,6 @@ export interface AchievementModalProps {
   isSaving?: boolean;
 }
 
-const ACHIEVEMENT_TYPES = ["Award", "Publication", "Exhibition", "Fellowship", "Grant", "Honor"];
 
 const AchievementModalForm: React.FC<Omit<AchievementModalProps, "isOpen">> = ({
   onClose,
@@ -19,8 +19,13 @@ const AchievementModalForm: React.FC<Omit<AchievementModalProps, "isOpen">> = ({
   initialData,
   isSaving = false,
 }) => {
+  const [step, setStep] = useState<1 | 2>(1);
+
+  // Mandatory fields (Step 1)
   const [title, setTitle] = useState(initialData?.title || "");
   const [type, setType] = useState(initialData?.type || "Award");
+
+  // Additional fields (Step 2)
   const [date, setDate] = useState(initialData?.date || "");
   const [organization, setOrganization] = useState(initialData?.organization || "");
   const [description, setDescription] = useState(initialData?.description || "");
@@ -33,7 +38,7 @@ const AchievementModalForm: React.FC<Omit<AchievementModalProps, "isOpen">> = ({
   const validate = () => {
     const errs: Record<string, string> = {};
     if (!title.trim()) {
-      errs.title = "Achievement title is required.";
+      errs.title = "Achievement title is needed to proceed.";
     }
     setErrors(errs);
     return Object.keys(errs).length === 0;
@@ -44,10 +49,20 @@ const AchievementModalForm: React.FC<Omit<AchievementModalProps, "isOpen">> = ({
     validate();
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleContinue = (e: React.MouseEvent) => {
     e.preventDefault();
     setTouched({ title: true });
     if (!validate()) return;
+    setStep(2);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setTouched({ title: true });
+    if (!validate()) {
+      setStep(1);
+      return;
+    }
 
     await onSave({
       title: title.trim(),
@@ -77,8 +92,8 @@ const AchievementModalForm: React.FC<Omit<AchievementModalProps, "isOpen">> = ({
           <Trophy className="w-5 h-5 stroke-[1.75]" />
         </div>
         <div>
-          <span className="font-gothic text-[10px] font-bold uppercase tracking-[0.2em] text-[#87867f] block">
-            Editorial Recognition
+          <span className="font-gothic text-xs font-bold uppercase tracking-[0.2em] text-[#87867f] block">
+            Editorial Recognition • Step {step} of 2
           </span>
           <h2 id="achievement-modal-title" className="font-gothic text-xl font-bold uppercase tracking-tight text-[#141413]">
             {initialData ? "Edit Achievement" : "Honor / Milestone"}
@@ -87,162 +102,37 @@ const AchievementModalForm: React.FC<Omit<AchievementModalProps, "isOpen">> = ({
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-5">
-        {/* Title */}
-        <div>
-          <label className="block font-gothic text-xs font-bold uppercase tracking-[0.12em] text-[#141413] mb-1.5">
-            Distinction Title <span className="text-[#d97757]">*</span>
-          </label>
-          <input
-            type="text"
-            value={title}
-            onChange={(e) => {
-              setTitle(e.target.value);
-              if (errors.title) validate();
-            }}
-            onBlur={handleBlur}
-            placeholder="e.g. Golden Shutter Award for Documentary Architecture"
-            className={`w-full px-3.5 py-2.5 rounded-xl bg-[#f0eee6] border text-sm text-[#141413] focus:outline-none focus:ring-1 focus:ring-[#141413] ${
-              touched.title && errors.title ? "border-red-500 bg-red-50/20" : "border-[#cccbc8]/60"
-            }`}
+        {step === 1 ? (
+          <AchievementStep1
+            title={title}
+            setTitle={setTitle}
+            type={type}
+            setType={setType}
+            touched={touched}
+            errors={errors}
+            validate={validate}
+            handleBlur={handleBlur}
+            onCancel={onClose}
+            onContinue={handleContinue}
+            isSaving={isSaving}
           />
-          {touched.title && errors.title && (
-            <p className="font-serif text-xs text-red-600 mt-1">{errors.title}</p>
-          )}
-        </div>
-
-        {/* Type & Organization */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label className="block font-gothic text-xs font-bold uppercase tracking-[0.12em] text-[#141413] mb-1.5">
-              Type
-            </label>
-            <select
-              value={type}
-              onChange={(e) => setType(e.target.value)}
-              className="w-full px-3 py-2.5 rounded-xl bg-[#f0eee6] border border-[#cccbc8]/60 text-sm text-[#141413] focus:outline-none focus:ring-1 focus:ring-[#141413]"
-            >
-              {ACHIEVEMENT_TYPES.map((t) => (
-                <option key={t} value={t}>
-                  {t}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label className="block font-gothic text-xs font-bold uppercase tracking-[0.12em] text-[#141413] mb-1.5">
-              Conferring Body / Organization
-            </label>
-            <input
-              type="text"
-              value={organization}
-              onChange={(e) => setOrganization(e.target.value)}
-              placeholder="e.g. Venice Biennale of Architecture"
-              className="w-full px-3.5 py-2.5 rounded-xl bg-[#f0eee6] border border-[#cccbc8]/60 text-sm text-[#141413] focus:outline-none focus:ring-1 focus:ring-[#141413]"
-            />
-          </div>
-        </div>
-
-        {/* Date & URL */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label className="block font-gothic text-xs font-bold uppercase tracking-[0.12em] text-[#141413] mb-1.5">
-              Date / Year
-            </label>
-            <input
-              type="month"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-              className="w-full px-3 py-2 rounded-xl bg-[#f0eee6] border border-[#cccbc8]/60 text-sm text-[#141413] focus:outline-none focus:ring-1 focus:ring-[#141413]"
-            />
-          </div>
-
-          <div>
-            <label className="block font-gothic text-xs font-bold uppercase tracking-[0.12em] text-[#141413] mb-1.5">
-              Reference / Citation URL
-            </label>
-            <div className="relative">
-              <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-[#87867f]">
-                <LinkIcon className="w-4 h-4" />
-              </span>
-              <input
-                type="url"
-                value={url}
-                onChange={(e) => setUrl(e.target.value)}
-                placeholder="https://www.labiennale.org"
-                className="w-full pl-9 pr-3.5 py-2 rounded-xl bg-[#f0eee6] border border-[#cccbc8]/60 text-sm text-[#141413] focus:outline-none focus:ring-1 focus:ring-[#141413]"
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Description */}
-        <div>
-          <label className="block font-gothic text-xs font-bold uppercase tracking-[0.12em] text-[#141413] mb-1.5">
-            Description &amp; Critical Context
-          </label>
-          <textarea
-            rows={3}
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            placeholder="Outline the significance, review citations, or juror notes..."
-            className="w-full px-3.5 py-2.5 rounded-xl bg-[#f0eee6] border border-[#cccbc8]/60 text-sm text-[#141413] focus:outline-none focus:ring-1 focus:ring-[#141413] resize-none"
+        ) : (
+          <AchievementStep2
+            organization={organization}
+            setOrganization={setOrganization}
+            date={date}
+            setDate={setDate}
+            url={url}
+            setUrl={setUrl}
+            mediaUrl={mediaUrl}
+            setMediaUrl={setMediaUrl}
+            description={description}
+            setDescription={setDescription}
+            onBack={() => setStep(1)}
+            isSaving={isSaving}
+            isEditing={Boolean(initialData)}
           />
-        </div>
-
-        {/* Media URL */}
-        <div>
-          <label className="block font-gothic text-xs font-bold uppercase tracking-[0.12em] text-[#141413] mb-1.5">
-            Exhibition Artwork / Catalogue Cover URL
-          </label>
-          <div className="relative">
-            <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-[#87867f]">
-              <ImageIcon className="w-4 h-4" />
-            </span>
-            <input
-              type="url"
-              value={mediaUrl}
-              onChange={(e) => setMediaUrl(e.target.value)}
-              placeholder="https://images.unsplash.com/... or asset URL"
-              className="w-full pl-9 pr-3.5 py-2 rounded-xl bg-[#f0eee6] border border-[#cccbc8]/60 text-sm text-[#141413] focus:outline-none focus:ring-1 focus:ring-[#141413]"
-            />
-          </div>
-          {mediaUrl && (
-            <div className="mt-2.5 p-2 rounded-xl bg-[#f0eee6] border border-[#cccbc8]/60 max-w-xs overflow-hidden">
-              <img
-                src={mediaUrl}
-                alt="Achievement Preview"
-                className="w-full h-32 object-cover rounded-lg"
-                onError={(e) => {
-                  (e.target as HTMLElement).style.display = "none";
-                }}
-              />
-            </div>
-          )}
-        </div>
-
-        {/* Form Actions */}
-        <div className="flex items-center justify-end gap-3 pt-4 border-t border-[#cccbc8]/40">
-          <Button
-            type="button"
-            variant="outline"
-            size="md"
-            onClick={onClose}
-            disabled={isSaving}
-            className="shadow-none uppercase tracking-wider text-xs font-bold"
-          >
-            Cancel
-          </Button>
-          <Button
-            type="submit"
-            variant="clay"
-            size="md"
-            disabled={isSaving}
-            className="shadow-none uppercase tracking-wider text-xs font-bold"
-          >
-            {isSaving ? "Saving..." : initialData ? "Update Achievement" : "Save Achievement"}
-          </Button>
-        </div>
+        )}
       </form>
     </div>
   );
@@ -265,7 +155,7 @@ export const AchievementModal: React.FC<AchievementModalProps> = ({
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#141413]/60 backdrop-blur-sm overflow-y-auto animate-in fade-in duration-150"
     >
       <AchievementModalForm
-        key={initialData?.id || "new-achievement"}
+        key={initialData?.id || "new-achieve"}
         onClose={onClose}
         onSave={onSave}
         initialData={initialData}

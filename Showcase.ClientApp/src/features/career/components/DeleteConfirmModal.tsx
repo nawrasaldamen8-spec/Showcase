@@ -1,6 +1,6 @@
 import { AlertTriangle, X } from "lucide-react";
 import React, { useEffect } from "react";
-import { Button } from "../../../shared/components/Button.tsx";
+import { Button } from "@shared/components/Button.tsx";
 
 export interface DeleteConfirmModalProps {
   isOpen: boolean;

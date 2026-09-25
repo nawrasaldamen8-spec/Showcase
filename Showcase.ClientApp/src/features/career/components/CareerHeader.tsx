@@ -1,7 +1,7 @@
 import { ArrowLeft, Plus } from "lucide-react";
 import React from "react";
 import { Link } from "react-router-dom";
-import { Button } from "../../../shared/components/Button.tsx";
+import { Button } from "@shared/components/Button.tsx";
 
 export interface CareerHeaderProps {
   sectionTitle: string;

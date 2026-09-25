@@ -1,7 +1,7 @@
 import { Globe, X } from "lucide-react";
 import React, { useState } from "react";
-import { Button } from "../../../shared/components/Button.tsx";
-import type { CareerLanguage, LanguageProficiency } from "../../../shared/types/index.ts";
+import { Button } from "@shared/components/Button.tsx";
+import type { CareerLanguage, LanguageProficiency } from "@shared/types/index.ts";
 
 export interface LanguageModalProps {
   isOpen: boolean;
@@ -88,7 +88,7 @@ const LanguageModalForm: React.FC<Omit<LanguageModalProps, "isOpen">> = ({
         {/* Language */}
         <div>
           <label className="block font-gothic text-xs font-bold uppercase tracking-[0.12em] text-[#141413] mb-1.5">
-            Language <span className="text-[#d97757]">*</span>
+            Language
           </label>
           <input
             type="text"
@@ -111,7 +111,7 @@ const LanguageModalForm: React.FC<Omit<LanguageModalProps, "isOpen">> = ({
         {/* Proficiency */}
         <div>
           <label className="block font-gothic text-xs font-bold uppercase tracking-[0.12em] text-[#141413] mb-2">
-            Fluency Level <span className="text-[#d97757]">*</span>
+            Fluency Level
           </label>
           <div className="grid grid-cols-1 gap-2">
             {PROFICIENCY_LEVELS.map((level) => {
