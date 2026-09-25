@@ -1,121 +1,71 @@
-import { Pencil, Sparkles, Trash2 } from "lucide-react";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { apiClient } from "../../../shared/api/apiClient.ts";
-import { useToast } from "../../../shared/context/index.ts";
-import type { CareerSkill } from "../../../shared/types/index.ts";
+import { Sparkles } from "lucide-react";
+import React, { useState } from "react";
+import { apiClient } from "@shared/api/apiClient.ts";
+import type { CareerSkill } from "@shared/types/index.ts";
 import {
   CareerEmptyState,
   CareerHeader,
   DeleteConfirmModal,
+  SkillCard,
   SkillModal,
 } from "../components/index.ts";
-
-const FILTER_CATEGORIES = ["All", "Design", "Technical", "Leadership", "Tools", "General"];
+import { useCareerCrud } from "../hooks/index.ts";
 
 export const CareerSkillsPage: React.FC = () => {
-  const [skills, setSkills] = useState<CareerSkill[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [activeCategory, setActiveCategory] = useState("All");
-  const [modalOpen, setModalOpen] = useState(false);
-  const [editingItem, setEditingItem] = useState<CareerSkill | null>(null);
-  const [isSaving, setIsSaving] = useState(false);
-  const [deleteTarget, setDeleteTarget] = useState<CareerSkill | null>(null);
-  const [isDeleting, setIsDeleting] = useState(false);
+  const [activeCategory, setActiveCategory] = useState<string>("All");
 
-  const { showToast } = useToast();
+  const {
+    items: skills,
+    loading,
+    modalOpen,
+    editingItem,
+    isSaving,
+    deleteTarget,
+    isDeleting,
+    openCreate,
+    openEdit,
+    closeModal,
+    setDeleteTarget,
+    handleSave,
+    handleDeleteConfirm,
+  } = useCareerCrud<CareerSkill>({
+    loadFn: apiClient.getSkills,
+    createFn: apiClient.createSkill,
+    updateFn: apiClient.updateSkill,
+    deleteFn: apiClient.deleteSkill,
+    entityLabel: "Skill",
+    messages: {
+      loadError: "Failed to load skills",
+      createSuccess: "Skill cataloged",
+      updateSuccess: "Skill updated",
+      saveError: "Failed to save skill",
+      deleteSuccess: "Skill expunged",
+      deleteError: "Failed to expunge skill",
+    },
+  });
 
-  const loadItems = useCallback(async () => {
-    setLoading(true);
-    try {
-      const data = await apiClient.getSkills();
-      setSkills(data);
-    } catch (err) {
-      console.error(err);
-      showToast("error", "Failed to load skills");
-    } finally {
-      setLoading(false);
-    }
-  }, [showToast]);
+  const categories = [
+    "All",
+    ...Array.from(new Set(skills.map((s) => s.category || "General").filter(Boolean))),
+  ];
 
-  useEffect(() => {
-    let isCancelled = false;
-
-    void Promise.resolve().then(async () => {
-      if (isCancelled) return;
-      await loadItems();
-    });
-
-    return () => {
-      isCancelled = true;
-    };
-  }, [loadItems]);
-
-  const filteredSkills = useMemo(() => {
-    if (activeCategory === "All") return skills;
-    return skills.filter(
-      (s) => (s.category || "General").toLowerCase() === activeCategory.toLowerCase()
-    );
-  }, [skills, activeCategory]);
-
-  const handleOpenCreate = () => {
-    setEditingItem(null);
-    setModalOpen(true);
-  };
-
-  const handleOpenEdit = (item: CareerSkill) => {
-    setEditingItem(item);
-    setModalOpen(true);
-  };
-
-  const handleSave = async (data: Omit<CareerSkill, "id" | "createdAt">) => {
-    try {
-      setIsSaving(true);
-      if (editingItem) {
-        await apiClient.updateSkill(editingItem.id, data);
-        showToast("success", "Skill updated");
-      } else {
-        await apiClient.createSkill(data);
-        showToast("success", "Skill cataloged");
-      }
-      setModalOpen(false);
-      setEditingItem(null);
-      await loadItems();
-    } catch (err) {
-      console.error(err);
-      showToast("error", "Failed to save skill");
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
-  const handleDeleteConfirm = async () => {
-    if (!deleteTarget) return;
-    try {
-      setIsDeleting(true);
-      await apiClient.deleteSkill(deleteTarget.id);
-      showToast("success", "Skill expunged");
-      setDeleteTarget(null);
-      await loadItems();
-    } catch (err) {
-      console.error(err);
-      showToast("error", "Failed to expunge skill");
-    } finally {
-      setIsDeleting(false);
-    }
-  };
+  const filteredSkills =
+    activeCategory === "All"
+      ? skills
+      : skills.filter((s) => (s.category || "General") === activeCategory);
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
       <CareerHeader
-        sectionTitle="Skills & Competencies"
-        description="Curated index of technical proficiencies, spatial theories, design methodologies, and analog tools."
+        sectionTitle="Skills & Masteries"
+        description="Comprehensive taxonomy of design methodologies, drafting tools, and architectural software capabilities."
         actionLabel="Catalog Skill"
-        onAction={handleOpenCreate}
+        onAction={openCreate}
       />
 
       {/* Category Filter Pills */}
-      <div className="flex flex-wrap items-center gap-2 mb-8 pb-4 border-b border-[#cccbc8]/40">
-        {FILTER_CATEGORIES.map((cat) => {
+      <div className="flex flex-wrap gap-2 mb-8">
+        {categories.map((cat) => {
           const isSelected = activeCategory === cat;
           return (
             <button
@@ -148,60 +98,29 @@ export const CareerSkillsPage: React.FC = () => {
               : `No skills found under the "${activeCategory}" classification. You can catalog new skills or switch category filters.`
           }
           actionLabel="Catalog Skill"
-          onAction={handleOpenCreate}
+          onAction={openCreate}
         />
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
           {filteredSkills.map((skill) => (
-            <div
+            <SkillCard
               key={skill.id}
-              className="p-5 rounded-[20px] bg-[#faf9f5] border border-[#cccbc8]/60 hover:border-[#141413] transition-colors flex flex-col justify-between shadow-none group"
-            >
-              <div>
-                <span className="font-gothic text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-[#f0eee6] border border-[#cccbc8]/40 text-[#87867f] inline-block mb-2">
-                  {skill.category || "General"}
-                </span>
-                <h4 className="font-gothic text-base font-bold uppercase tracking-tight text-[#141413]">
-                  {skill.name}
-                </h4>
-              </div>
-
-              <div className="flex items-center justify-end gap-1.5 mt-4 pt-3 border-t border-[#cccbc8]/30">
-                <button
-                  type="button"
-                  onClick={() => handleOpenEdit(skill)}
-                  className="p-1.5 rounded-lg text-[#87867f] hover:text-[#141413] hover:bg-[#f0eee6] transition-colors cursor-pointer"
-                  aria-label={`Edit ${skill.name}`}
-                >
-                  <Pencil className="w-3.5 h-3.5" />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setDeleteTarget(skill)}
-                  className="p-1.5 rounded-lg text-[#87867f] hover:text-red-600 hover:bg-red-50/40 transition-colors cursor-pointer"
-                  aria-label={`Delete ${skill.name}`}
-                >
-                  <Trash2 className="w-3.5 h-3.5" />
-                </button>
-              </div>
-            </div>
+              item={skill}
+              onEdit={openEdit}
+              onDelete={setDeleteTarget}
+            />
           ))}
         </div>
       )}
 
-      {/* Skill Modal */}
       <SkillModal
         isOpen={modalOpen}
-        onClose={() => {
-          setModalOpen(false);
-          setEditingItem(null);
-        }}
+        onClose={closeModal}
         onSave={handleSave}
         initialData={editingItem}
         isSaving={isSaving}
       />
 
-      {/* Delete Confirmation Modal */}
       <DeleteConfirmModal
         isOpen={!!deleteTarget}
         onClose={() => setDeleteTarget(null)}

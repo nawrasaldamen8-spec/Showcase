@@ -7,8 +7,8 @@ import {
   Trophy,
 } from "lucide-react";
 import React, { useEffect, useState } from "react";
-import { apiClient } from "../../../shared/api/apiClient.ts";
-import type { CareerSummary } from "../../../shared/types/index.ts";
+import { apiClient } from "@shared/api/apiClient.ts";
+import type { CareerSummary } from "@shared/types/index.ts";
 import { CareerNavCard } from "../components/CareerNavCard.tsx";
 
 export const CareerHubPage: React.FC = () => {
