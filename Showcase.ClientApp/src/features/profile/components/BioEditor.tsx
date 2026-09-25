@@ -1,10 +1,9 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Check, AlertCircle, Save, Undo2 } from 'lucide-react';
-import { Input } from '../../../shared/components/Input.tsx';
-import { Textarea } from '../../../shared/components/Textarea.tsx';
-import { Button } from '../../../shared/components/Button.tsx';
-import { apiClient } from '../../../shared/api/apiClient.ts';
-import { useAuth } from '../../../shared/context/useAuth.ts';
+import { Input } from '@shared/components/Input.tsx';
+import { Textarea } from '@shared/components/Textarea.tsx';
+import { Button } from '@shared/components/Button.tsx';
+import { useBioEditor } from '../hooks/useBioEditor.ts';
 
 export interface BioEditorProps {
   initialFirstName: string;
@@ -14,120 +13,24 @@ export interface BioEditorProps {
   onNotify?: (message: string, type?: 'success' | 'error') => void;
 }
 
-export const BioEditor: React.FC<BioEditorProps> = ({
-  initialFirstName,
-  initialLastName,
-  initialBio = '',
-  onProfileUpdated,
-  onNotify,
-}) => {
-  const { refreshUser } = useAuth();
+export const BioEditor: React.FC<BioEditorProps> = (props) => {
+  const {
+    firstName,
+    setFirstName,
+    lastName,
+    setLastName,
+    bio,
+    setBio,
+    fieldErrors,
+    setFieldErrors,
+    generalError,
+    saveSuccess,
+    hasChanges,
+    isSaving,
+    handleReset,
+    handleSave,
+  } = useBioEditor(props);
 
-  const [firstName, setFirstName] = useState(initialFirstName);
-  const [lastName, setLastName] = useState(initialLastName);
-  const [bio, setBio] = useState(initialBio || '');
-
-  const [prevProps, setPrevProps] = useState({
-    firstName: initialFirstName,
-    lastName: initialLastName,
-    bio: initialBio || '',
-  });
-
-  const [isSaving, setIsSaving] = useState(false);
-  const [fieldErrors, setFieldErrors] = useState<{
-    firstName?: string;
-    lastName?: string;
-    bio?: string;
-  }>({});
-  const [generalError, setGeneralError] = useState<string | null>(null);
-  const [saveSuccess, setSaveSuccess] = useState(false);
-
-  // Sync state if initial props change without triggering cascading renders
-  if (
-    initialFirstName !== prevProps.firstName ||
-    initialLastName !== prevProps.lastName ||
-    (initialBio || '') !== prevProps.bio
-  ) {
-    setPrevProps({
-      firstName: initialFirstName,
-      lastName: initialLastName,
-      bio: initialBio || '',
-    });
-    setFirstName(initialFirstName);
-    setLastName(initialLastName);
-    setBio(initialBio || '');
-  }
-
-  const hasChanges =
-    firstName.trim() !== initialFirstName.trim() ||
-    lastName.trim() !== initialLastName.trim() ||
-    (bio.trim() || '') !== (initialBio?.trim() || '');
-
-  const handleReset = () => {
-    setFirstName(initialFirstName);
-    setLastName(initialLastName);
-    setBio(initialBio || '');
-    setFieldErrors({});
-    setGeneralError(null);
-    setSaveSuccess(false);
-  };
-
-  const handleSave = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    const errors: { firstName?: string; lastName?: string; bio?: string } = {};
-
-    if (!firstName.trim()) {
-      errors.firstName = 'First name is required.';
-    }
-    if (!lastName.trim()) {
-      errors.lastName = 'Last name is required.';
-    }
-    if (bio.length > 500) {
-      errors.bio = 'Biography cannot exceed 500 characters.';
-    }
-
-    if (Object.keys(errors).length > 0) {
-      setFieldErrors(errors);
-      return;
-    }
-
-    setFieldErrors({});
-    setGeneralError(null);
-    setIsSaving(true);
-    setSaveSuccess(false);
-
-    try {
-      await apiClient.updateProfile({
-        firstName: firstName.trim(),
-        lastName: lastName.trim(),
-        bio: bio.trim() || null,
-      });
-
-      await refreshUser();
-
-      setSaveSuccess(true);
-      onProfileUpdated?.({
-        firstName: firstName.trim(),
-        lastName: lastName.trim(),
-        bio: bio.trim(),
-      });
-      onNotify?.('Profile details updated successfully.', 'success');
-
-      // Dismiss inline success indicator after 4 seconds
-      setTimeout(() => {
-        setSaveSuccess(false);
-      }, 4000);
-    } catch (err: unknown) {
-      const problem = err as { detail?: string; title?: string; errors?: Record<string, string[]> };
-      const errorMessage =
-        problem?.detail || problem?.title || 'Failed to update profile details. Please try again.';
-      setGeneralError(errorMessage);
-      onNotify?.(errorMessage, 'error');
-    } finally {
-      setIsSaving(false);
-    }
-  };
 
   return (
     <section aria-labelledby="bio-editor-heading" className="bg-[#faf9f5] rounded-[24px] border border-[#cccbc8]/60 p-6 sm:p-8">

@@ -1,90 +1,40 @@
-import {
-  AlertCircle,
-  AlertTriangle,
-  ArrowLeft,
-  Compass,
-  ExternalLink,
-  KeyRound,
-  Laptop,
-  Mail,
-  ShieldCheck,
-  Sparkles,
-  UserCheck,
-} from "lucide-react";
-import React, { useCallback, useEffect, useState } from "react";
+import { AlertCircle, ArrowLeft, Compass, ExternalLink, UserCheck } from "lucide-react";
+import React from "react";
 import { Link } from "react-router-dom";
-import { apiClient } from "../../../shared/api/apiClient.ts";
-import { Button } from "../../../shared/components/Button.tsx";
-import { Skeleton } from "../../../shared/components/Skeleton.tsx";
-import { useAuth, useToast } from "../../../shared/context/index.ts";
-import type { ProfileDetailsResponse, SocialLinkDto } from "../../../shared/types/index.ts";
-import { SecurityNavRow } from "../../security/index.ts";
+import { Button } from "@shared/components/Button.tsx";
+import { Skeleton } from "@shared/components/Skeleton.tsx";
+import { VisitorGuard } from "@shared/components/VisitorGuard.tsx";
+import type { SocialLinkDto } from "@shared/types/index.ts";
 import { AvatarUploader } from "../components/AvatarUploader.tsx";
 import { BioEditor } from "../components/BioEditor.tsx";
+import { SecuritySettingsTab } from "../components/SecuritySettingsTab.tsx";
 import { SocialLinksManager } from "../components/SocialLinksManager.tsx";
+import { useProfileSettings, type SettingsTab } from "../hooks/useProfileSettings.ts";
 
-export type SettingsTab = "details" | "links" | "security";
+export type { SettingsTab };
+
+const TABS: { id: SettingsTab; label: string }[] = [
+  { id: "details", label: "Profile Details" },
+  { id: "links", label: "Social Links" },
+  { id: "security", label: "Account Security" },
+];
 
 export const ProfileSettingsPage: React.FC = () => {
-  const { activePersona, switchPersona } = useAuth();
-  const { showToast } = useToast();
-
-  const [activeTab, setActiveTab] = useState<SettingsTab>("details");
-  const [profile, setProfile] = useState<ProfileDetailsResponse | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  // Toast notification helper delegating to global toast
-  const triggerToast = useCallback(
-    (message: string, type: "success" | "error" = "success") => {
-      showToast(type, message);
-    },
-    [showToast],
-  );
-
-  // Load My Profile
-  const loadProfile = useCallback(async () => {
-    if (activePersona === "visitor") {
-      setIsLoading(false);
-      return;
-    }
-
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      const data = await apiClient.getMyProfile();
-      setProfile(data);
-    } catch (err: unknown) {
-      console.error("Failed to load profile details:", err);
-      const problem = err as { detail?: string; title?: string };
-      setError(problem?.detail || problem?.title || "Unable to retrieve creator profile.");
-    } finally {
-      setIsLoading(false);
-    }
-  }, [activePersona]);
-
-  useEffect(() => {
-    let isCancelled = false;
-    void Promise.resolve().then(async () => {
-      if (isCancelled) return;
-      await loadProfile();
-    });
-    return () => {
-      isCancelled = true;
-    };
-  }, [loadProfile]);
-
-  // Tab definitions
-  const tabs: { id: SettingsTab; label: string }[] = [
-    { id: "details", label: "Profile Details" },
-    { id: "links", label: "Social Links" },
-    { id: "security", label: "Account Security" },
-  ];
+  const {
+    activePersona,
+    switchPersona,
+    activeTab,
+    setActiveTab,
+    profile,
+    setProfile,
+    isLoading,
+    error,
+    loadProfile,
+    triggerToast,
+  } = useProfileSettings();
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 relative min-h-[80vh]">
-      {/* Navigation Breadcrumb */}
       <nav className="mb-8" aria-label="Breadcrumb navigation">
         <Link
           to="/studio"
@@ -95,7 +45,6 @@ export const ProfileSettingsPage: React.FC = () => {
         </Link>
       </nav>
 
-      {/* Header Banner */}
       <header className="flex flex-col md:flex-row md:items-center justify-between gap-6 border-b border-[#cccbc8] pb-8 mb-8">
         <div>
           <h1 className="font-gothic font-extrabold text-3xl sm:text-5xl text-[#141413] tracking-[-0.03em] uppercase">
@@ -103,7 +52,6 @@ export const ProfileSettingsPage: React.FC = () => {
           </h1>
         </div>
 
-        {/* Action: View Public Profile Link */}
         {profile && (
           <div className="shrink-0">
             <Link to={`/u/${profile.username}`} className="text-decoration-none">
@@ -115,44 +63,25 @@ export const ProfileSettingsPage: React.FC = () => {
         )}
       </header>
 
-      {/* Visitor Persona Warning / Switch Prompt */}
       {activePersona === "visitor" ? (
         <div className="bg-[#faf9f5] rounded-[24px] border border-[#cccbc8]/60 p-8 sm:p-12 text-center max-w-2xl mx-auto my-12">
-          <div className="inline-flex items-center justify-center p-4 rounded-full bg-[#f0eee6] border border-[#cccbc8]/60 text-[#87867f] mb-5">
-            <Compass className="h-8 w-8 stroke-[1.5]" />
-          </div>
-          <span className="font-gothic text-xs font-bold uppercase tracking-[0.16em] text-[#d97757] block mb-2">
-            Persona Restriction
-          </span>
-          <h2 className="font-gothic text-2xl sm:text-3xl font-bold uppercase tracking-tight text-[#141413]">
-            Currently Browsing as Visitor
-          </h2>
-          <p className="font-serif text-base text-[#141413]/80 mt-3 leading-relaxed">
-            The profile customization workspace is exclusive to active Creators. Switch personas to configure your
-            biography, upload avatars, and manage external archives.
-          </p>
-          <div className="mt-8 flex justify-center">
-            <Button
-              variant="clay"
-              size="md"
-              onClick={() => switchPersona("creator")}
-              leftIcon={<Sparkles className="h-4 w-4" />}
-            >
-              Switch to Creator Persona
-            </Button>
-          </div>
+          <VisitorGuard
+            icon={Compass}
+            eyebrow="Persona Restriction"
+            title="Currently Browsing as Visitor"
+            description="The profile customization workspace is exclusive to active Creators. Switch personas to configure your biography, upload avatars, and manage external archives."
+            onSwitchPersona={() => switchPersona("creator")}
+            secondaryAction={null}
+          />
         </div>
       ) : isLoading ? (
-        /* Loading Skeleton State */
         <div className="space-y-8" aria-busy="true">
-          {/* Skeleton Tabs */}
           <div className="flex gap-8 border-b border-[#cccbc8]/60 pb-3">
             <Skeleton variant="text" width={120} height={20} />
             <Skeleton variant="text" width={100} height={20} />
             <Skeleton variant="text" width={140} height={20} />
           </div>
 
-          {/* Skeleton Card 1: Avatar */}
           <div className="bg-[#faf9f5] rounded-[24px] border border-[#cccbc8]/60 p-8">
             <div className="flex items-center gap-6">
               <Skeleton variant="circular" width={112} height={112} />
@@ -164,7 +93,6 @@ export const ProfileSettingsPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Skeleton Card 2: Bio */}
           <div className="bg-[#faf9f5] rounded-[24px] border border-[#cccbc8]/60 p-8 space-y-6">
             <Skeleton variant="text" width="30%" height={24} />
             <div className="grid grid-cols-2 gap-4">
@@ -175,7 +103,6 @@ export const ProfileSettingsPage: React.FC = () => {
           </div>
         </div>
       ) : error ? (
-        /* Error Alert State */
         <div className="bg-[#faf9f5] rounded-[24px] border border-[#d97757]/40 p-8 text-center max-w-xl mx-auto my-12">
           <AlertCircle className="h-10 w-10 text-[#d97757] mx-auto mb-3" />
           <h2 className="font-gothic text-xl font-bold uppercase tracking-tight text-[#141413]">
@@ -189,14 +116,12 @@ export const ProfileSettingsPage: React.FC = () => {
           </div>
         </div>
       ) : profile ? (
-        /* Full Editorial Layout */
         <div>
-          {/* Typographic Tabs (DESIGN.md specification) */}
           <nav
             className="flex items-center gap-6 sm:gap-10 border-b border-[#cccbc8] mb-8 overflow-x-auto no-scrollbar"
             aria-label="Settings sections"
           >
-            {tabs.map((tab) => {
+            {TABS.map((tab) => {
               const isActive = activeTab === tab.id;
               return (
                 <button
@@ -217,11 +142,9 @@ export const ProfileSettingsPage: React.FC = () => {
             })}
           </nav>
 
-          {/* Active Tab View */}
           <div role="tabpanel" className="space-y-8 animate-in fade-in duration-150">
             {activeTab === "details" && (
               <div className="space-y-8">
-                {/* 1. Avatar Uploader */}
                 <AvatarUploader
                   avatarUrl={profile.avatarUrl}
                   firstName={profile.firstName}
@@ -233,7 +156,6 @@ export const ProfileSettingsPage: React.FC = () => {
                   onNotify={triggerToast}
                 />
 
-                {/* 2. Bio & Identity Editor */}
                 <BioEditor
                   initialFirstName={profile.firstName}
                   initialLastName={profile.lastName}
@@ -256,7 +178,6 @@ export const ProfileSettingsPage: React.FC = () => {
             )}
 
             {activeTab === "links" && (
-              /* 3. Social Links Manager */
               <SocialLinksManager
                 initialLinks={profile.socialLinks || []}
                 onLinksChanged={(updatedLinks: SocialLinkDto[]) => {
@@ -266,77 +187,9 @@ export const ProfileSettingsPage: React.FC = () => {
               />
             )}
 
-            {activeTab === "security" && (
-              <div className="space-y-6">
-                <div className="space-y-3">
-                  <SecurityNavRow
-                    to="/settings/security/change-password"
-                    icon={KeyRound}
-                    title="Change Password"
-                    description="Last modified recently • Passphrase authentication"
-                    badge={
-                      <span className="px-2 py-0.5 rounded-full text-[10px] font-gothic font-bold uppercase tracking-wider bg-[#2e7d32]/10 text-[#2e7d32] border border-[#2e7d32]/30">
-                        Secured
-                      </span>
-                    }
-                  />
-
-                  <SecurityNavRow
-                    to="/settings/security/email"
-                    icon={Mail}
-                    title="Email Address"
-                    description={profile.email}
-                    badge={
-                      <span className="px-2 py-0.5 rounded-full text-[10px] font-gothic font-bold uppercase tracking-wider bg-[#2e7d32]/10 text-[#2e7d32] border border-[#2e7d32]/30">
-                        Verified
-                      </span>
-                    }
-                  />
-
-                  <SecurityNavRow
-                    to="/settings/security/two-factor"
-                    icon={ShieldCheck}
-                    title="Two-Factor Authentication (2FA)"
-                    description="Require an authenticator code when logging into your creator atelier"
-                    badge={
-                      <span className="px-2 py-0.5 rounded-full text-[10px] font-gothic font-bold uppercase tracking-wider bg-[#cccbc8]/30 text-[#87867f] border border-[#cccbc8]">
-                        Configured
-                      </span>
-                    }
-                  />
-
-                  <SecurityNavRow
-                    to="/settings/security/sessions"
-                    icon={Laptop}
-                    title="Active Sessions"
-                    description="2 authorized client devices currently authenticated"
-                    badge={
-                      <span className="px-2 py-0.5 rounded-full text-[10px] font-gothic font-bold uppercase tracking-wider bg-[#faf9f5] border border-[#cccbc8] text-[#141413]">
-                        2 Devices
-                      </span>
-                    }
-                  />
-                </div>
-
-                <div className="pt-4 border-t border-[#cccbc8]/60">
-                  <SecurityNavRow
-                    to="/settings/security/delete-account"
-                    variant="danger"
-                    icon={AlertTriangle}
-                    title="Delete or Deactivate Account"
-                    description="Permanently withdraw your creator membership and portfolio records"
-                    badge={
-                      <span className="px-2 py-0.5 rounded-full text-[10px] font-gothic font-bold uppercase tracking-wider bg-[#d97757]/15 text-[#d97757] border border-[#d97757]/40">
-                        Permanent
-                      </span>
-                    }
-                  />
-                </div>
-              </div>
-            )}
+            {activeTab === "security" && <SecuritySettingsTab email={profile.email} />}
           </div>
 
-          {/* Editorial Footer Note */}
           <div className="mt-14 pt-6 border-t border-[#cccbc8]/50 flex flex-col sm:flex-row items-center justify-between gap-4 font-serif text-xs text-[#87867f]">
             <div className="flex items-center gap-2">
               <UserCheck className="h-4 w-4 text-[#87867f]" />
