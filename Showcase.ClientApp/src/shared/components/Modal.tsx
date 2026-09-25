@@ -1,6 +1,7 @@
-import React, { useEffect, useRef, useId, useCallback } from 'react';
+import React, { useEffect, useRef, useId } from 'react';
 import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
+import { useEscapeKey, useScrollLock } from '../hooks/index.ts';
 
 export type ModalSize = 'sm' | 'md' | 'lg' | 'xl';
 
@@ -34,37 +35,19 @@ export const Modal: React.FC<ModalProps> = ({
   const titleId = useId();
   const descId = useId();
 
-  const handleKeyDown = useCallback(
-    (e: KeyboardEvent) => {
-      if (closeOnEscape && e.key === 'Escape') {
-        e.preventDefault();
-        onClose();
-      }
-    },
-    [closeOnEscape, onClose]
-  );
+  useEscapeKey(onClose, isOpen && closeOnEscape);
+  useScrollLock(isOpen);
 
   useEffect(() => {
     if (isOpen) {
       previousActiveElement.current = document.activeElement as HTMLElement;
-      document.body.style.overflow = 'hidden';
-      window.addEventListener('keydown', handleKeyDown);
-
-      // Focus modal container
       setTimeout(() => {
         dialogRef.current?.focus();
       }, 50);
     } else {
-      document.body.style.overflow = '';
-      window.removeEventListener('keydown', handleKeyDown);
       previousActiveElement.current?.focus?.();
     }
-
-    return () => {
-      document.body.style.overflow = '';
-      window.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [isOpen, handleKeyDown]);
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
