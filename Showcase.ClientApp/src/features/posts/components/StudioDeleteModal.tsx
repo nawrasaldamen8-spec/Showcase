@@ -20,8 +20,8 @@ export const StudioDeleteModal: React.FC<StudioDeleteModalProps> = ({
     <Modal
       isOpen={post !== null}
       onClose={() => !isDeleting && onClose()}
-      title="Delete Exhibition Plate"
-      description="This action will permanently withdraw this plate from your archive."
+      title="Delete Project"
+      description="This action cannot be undone."
       size="md"
       footer={
         <>
@@ -40,7 +40,7 @@ export const StudioDeleteModal: React.FC<StudioDeleteModalProps> = ({
           <strong className="font-gothic font-bold text-[#141413]">&ldquo;{post?.title}&rdquo;</strong>?
         </p>
         <div className="p-3.5 rounded-xl bg-[#d97757]/10 border border-[#d97757]/30 text-xs font-serif text-[#141413]/85 leading-relaxed">
-          All associated Cloudflare R2 imagery references and portfolio catalog records will be removed immediately.
+          All associated images and project details will be permanently removed.
         </div>
       </div>
     </Modal>

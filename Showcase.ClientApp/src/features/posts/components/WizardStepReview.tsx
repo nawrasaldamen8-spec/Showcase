@@ -32,18 +32,18 @@ export const WizardStepReview: React.FC<WizardStepReviewProps> = ({
       {images.length > 0 && (
         <div className="space-y-3">
           <span className="font-gothic text-xs font-bold uppercase tracking-wider text-[#87867f] block">
-            Visual Presentation &bull; {images.length} {images.length === 1 ? "Plate" : "Plates"}
+            Images &bull; {images.length} {images.length === 1 ? "Image" : "Images"}
           </span>
           <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-start">
             {/* Primary Hero Plate */}
             <div className="md:col-span-8 rounded-[20px] overflow-hidden bg-[#e6e3da] border border-[#cccbc8]/60 relative">
               <img
                 src={images[0].url}
-                alt="Primary exhibition plate preview"
+                alt="Primary cover image preview"
                 className="w-full h-72 sm:h-80 object-cover"
               />
               <div className="absolute top-3 left-3 bg-[#141413]/80 backdrop-blur-xs text-[#faf9f5] px-3 py-1 rounded-full font-gothic text-[10px] font-bold uppercase tracking-wider">
-                Primary Cover Plate
+                Primary Cover
               </div>
             </div>
 
@@ -57,11 +57,11 @@ export const WizardStepReview: React.FC<WizardStepReviewProps> = ({
                   >
                     <img
                       src={img.url}
-                      alt={`Secondary plate ${idx + 2}`}
+                      alt={`Image ${idx + 2}`}
                       className="w-full h-full object-cover"
                     />
                     <span className="absolute bottom-1.5 right-1.5 bg-[#141413]/70 text-[#faf9f5] px-1.5 py-0.5 rounded text-[9px] font-gothic uppercase">
-                      Plate {idx + 2}
+                      Image {idx + 2}
                     </span>
                   </div>
                 ))}
@@ -72,11 +72,11 @@ export const WizardStepReview: React.FC<WizardStepReviewProps> = ({
       )}
 
       {/* Metadata & Statement Review Card */}
-      <div className="bg-[#faf9f5] rounded-[24px] border border-[#cccbc8]/60 p-6 sm:p-8 space-y-6">
+      <div className="bg-[#faf9f5] rounded-2xl sm:rounded-[24px] border border-[#cccbc8]/60 p-5 sm:p-7 lg:p-8 space-y-6 shadow-none">
         <div className="space-y-2">
           <div className="flex flex-wrap items-center gap-2">
             <span className="font-gothic text-[11px] font-bold uppercase tracking-wider text-[#87867f]">
-              Artwork Title
+              Project Title
             </span>
             {currentUser && (
               <>
@@ -87,8 +87,8 @@ export const WizardStepReview: React.FC<WizardStepReviewProps> = ({
               </>
             )}
           </div>
-          <h2 className="font-gothic text-2xl sm:text-3xl font-extrabold uppercase tracking-tight text-[#141413]">
-            {title || "Untitled Plate"}
+          <h2 className="font-gothic text-xl sm:text-3xl font-extrabold uppercase tracking-tight text-[#141413] break-words">
+            {title || "Untitled Project"}
           </h2>
         </div>
 
@@ -104,31 +104,33 @@ export const WizardStepReview: React.FC<WizardStepReviewProps> = ({
 
         <div className="pt-2 border-t border-[#cccbc8]/40">
           <span className="font-gothic text-[11px] font-bold uppercase tracking-wider text-[#87867f] block mb-2">
-            Exhibition Statement
+            Project Description
           </span>
-          <p className="font-serif text-[16px] sm:text-[17px] text-[#141413]/90 leading-relaxed whitespace-pre-line">
-            {description || "No exhibition statement specified."}
+          <p className="font-serif text-[15px] sm:text-[17px] text-[#141413]/90 leading-relaxed whitespace-pre-line break-words">
+            {description || "No description provided."}
           </p>
         </div>
 
         {externalUrl && (
-          <div className="pt-3 border-t border-[#cccbc8]/40 flex items-center gap-2 text-xs font-gothic uppercase tracking-wider text-[#141413]">
-            <Globe className="h-3.5 w-3.5 text-[#87867f]" />
-            <span className="text-[#87867f]">Live Project Reference:</span>
+          <div className="pt-3 border-t border-[#cccbc8]/40 flex flex-wrap items-center gap-2 text-xs font-gothic uppercase tracking-wider text-[#141413]">
+            <div className="flex items-center gap-1.5">
+              <Globe className="h-3.5 w-3.5 text-[#87867f]" />
+              <span className="text-[#87867f]">Live Link:</span>
+            </div>
             <a
               href={normalizedUrl || externalUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-[#d97757] hover:underline flex items-center gap-1 font-semibold truncate"
+              className="text-[#d97757] hover:underline inline-flex items-center gap-1 font-semibold truncate max-w-[200px] sm:max-w-none"
             >
-              <span>{externalUrl}</span>
-              <ExternalLink className="h-3 w-3" />
+              <span className="truncate">{externalUrl}</span>
+              <ExternalLink className="h-3 w-3 shrink-0" />
             </a>
           </div>
         )}
       </div>
 
-      {/* Curatorial Decision Guidance Cards */}
+      {/* Decision Guidance Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
         <div className="p-4 rounded-2xl bg-[#faf9f5]/80 border border-[#cccbc8]/50 space-y-1">
           <div className="flex items-center gap-2 font-gothic text-xs font-bold uppercase tracking-wider text-[#141413]">
@@ -136,8 +138,7 @@ export const WizardStepReview: React.FC<WizardStepReviewProps> = ({
             <span>Save as Draft</span>
           </div>
           <p className="font-serif text-xs text-[#87867f] leading-relaxed">
-            Preserves all artwork plates and metadata safely in your Studio workspace without exposing it to the
-            public feed.
+            Saves your project privately to your Studio workspace without publishing it.
           </p>
         </div>
         <div className="p-4 rounded-2xl bg-[#faf9f5]/80 border border-[#cccbc8]/50 space-y-1">
@@ -146,8 +147,7 @@ export const WizardStepReview: React.FC<WizardStepReviewProps> = ({
             <span>Publish Work</span>
           </div>
           <p className="font-serif text-xs text-[#87867f] leading-relaxed">
-            Immediately renders this exhibition plate in the global curated feed for all community members to
-            experience.
+            Publishes your project to the public feed and your profile.
           </p>
         </div>
       </div>

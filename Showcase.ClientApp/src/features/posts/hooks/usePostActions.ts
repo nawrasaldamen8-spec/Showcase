@@ -35,7 +35,7 @@ export function usePostActions({ setPosts }: UsePostActionsProps) {
       if (!post.imageCount || post.imageCount < 1) {
         showToast(
           "warning",
-          'Publishing Invariant: A post must have at least one uploaded plate before publishing. Click "Edit" to add artwork.'
+          'A project must have at least one image before publishing. Click "Edit" to add images.'
         );
         return;
       }
@@ -51,10 +51,10 @@ export function usePostActions({ setPosts }: UsePostActionsProps) {
               : p
           )
         );
-        showToast("success", `"${post.title}" is now published to the public gallery.`);
+        showToast("success", `"${post.title}" is now published.`);
       } catch (err) {
         console.error("Failed to publish post:", err);
-        showToast("error", "Failed to publish post. Ensure artwork is uploaded.");
+        showToast("error", "Failed to publish post. Please check your connection and try again.");
       } finally {
         setActionInProgressId(null);
       }
@@ -67,7 +67,7 @@ export function usePostActions({ setPosts }: UsePostActionsProps) {
     try {
       await apiClient.deletePost(postToDelete.id);
       setPosts((prev) => prev.filter((p) => p.id !== postToDelete.id));
-      showToast("success", `"${postToDelete.title}" permanently removed.`);
+      showToast("success", `"${postToDelete.title}" deleted.`);
       setPostToDelete(null);
     } catch (err) {
       console.error("Failed to delete post:", err);

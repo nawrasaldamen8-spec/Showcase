@@ -12,7 +12,8 @@ export interface WizardStepMediaProps {
   isPublishing: boolean;
   isCurrentlyPublished: boolean;
   onImagesUploaded: (newImages: UploadedImageData[]) => void;
-  onReorderImages: (reordered: ImageGridItem[]) => void;
+  onReorderImages?: (reordered: ImageGridItem[]) => void;
+  onSetCoverImage?: (imageId: string) => void;
   onDeleteImage: (imageId: string) => void;
 }
 
@@ -26,6 +27,7 @@ export const WizardStepMedia: React.FC<WizardStepMediaProps> = ({
   isCurrentlyPublished,
   onImagesUploaded,
   onReorderImages,
+  onSetCoverImage,
   onDeleteImage,
 }) => {
   return (
@@ -38,7 +40,7 @@ export const WizardStepMedia: React.FC<WizardStepMediaProps> = ({
           <AlertCircle className="h-5 w-5 shrink-0 mt-0.5" />
           <div className="flex-1 font-serif text-xs leading-relaxed">
             <span className="font-gothic font-bold uppercase tracking-wider block text-[11px] mb-0.5">
-              Plate Requirement
+              Image Requirement
             </span>
             {imageInvariantError}
           </div>
@@ -59,6 +61,7 @@ export const WizardStepMedia: React.FC<WizardStepMediaProps> = ({
         <ImageReorderGrid
           images={images}
           onReorder={onReorderImages}
+          onSetCover={onSetCoverImage}
           onDelete={onDeleteImage}
           isPublished={isCurrentlyPublished}
           disabled={isSaving || isPublishing}

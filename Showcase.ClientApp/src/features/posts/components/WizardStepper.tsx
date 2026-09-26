@@ -57,9 +57,9 @@ export const WizardStepper: React.FC<WizardStepperProps> = ({
                 isAccessible ? "cursor-pointer" : "cursor-not-allowed opacity-40"
               }`}
             >
-              <div className="flex items-center gap-2 mb-2">
+              <div className="flex items-center gap-1.5 sm:gap-2 mb-2 min-w-0">
                 <span
-                  className={`h-5 w-5 rounded-full flex items-center justify-center font-gothic text-[10px] font-bold transition-all shrink-0 ${
+                  className={`h-5 w-5 sm:h-6 sm:w-6 rounded-full flex items-center justify-center font-gothic text-[10px] sm:text-xs font-bold transition-all shrink-0 ${
                     isCurrent
                       ? "bg-[#141413] text-[#faf9f5]"
                       : isCompleted
@@ -67,10 +67,10 @@ export const WizardStepper: React.FC<WizardStepperProps> = ({
                         : "bg-[#e8e5dc] text-[#87867f]"
                   }`}
                 >
-                  {isCompleted ? <Check className="h-3 w-3" /> : s.step}
+                  {isCompleted ? <Check className="h-3 w-3 sm:h-3.5 sm:w-3.5" /> : s.step}
                 </span>
                 <span
-                  className={`font-gothic text-[11px] font-semibold uppercase tracking-[0.12em] truncate transition-colors ${
+                  className={`font-gothic text-[10px] sm:text-[11px] font-semibold uppercase tracking-[0.08em] sm:tracking-[0.12em] truncate transition-colors ${
                     isCurrent
                       ? "text-[#141413]"
                       : isCompleted

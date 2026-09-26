@@ -61,7 +61,7 @@ export const ImageDropzone: React.FC<ImageDropzoneProps> = ({
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
-          aria-label="Add additional artwork plate"
+          aria-label="Add image"
           onKeyDown={(e) => {
             if (e.key === 'Enter' || e.key === ' ') {
               e.preventDefault();
@@ -92,7 +92,7 @@ export const ImageDropzone: React.FC<ImageDropzoneProps> = ({
               <Loader2 className="h-6 w-6 text-[#d97757] animate-spin stroke-[2]" />
               <div className="space-y-0.5">
                 <span className="font-gothic text-[11px] font-bold uppercase tracking-wider text-[#141413] block">
-                  Ingesting...
+                  Uploading...
                 </span>
                 <span className="font-serif text-[10px] text-[#87867f]">
                   {uploadProgress?.percent || 0}%
@@ -112,7 +112,7 @@ export const ImageDropzone: React.FC<ImageDropzoneProps> = ({
               </div>
               <div className="space-y-0.5">
                 <p className="font-gothic text-[11px] font-bold uppercase tracking-wider text-[#141413]">
-                  {isDragOver ? 'Drop Plate' : 'Add Plate'}
+                  {isDragOver ? 'Drop Image' : 'Add Image'}
                 </p>
                 <p className="font-serif text-[10px] text-[#87867f]">
                   Drop or browse
@@ -124,7 +124,7 @@ export const ImageDropzone: React.FC<ImageDropzoneProps> = ({
 
         {/* Card Footer matching sibling plates */}
         <div className="flex items-center justify-center px-3.5 py-2.5 bg-[#faf9f5] border-t border-[#cccbc8]/60 text-[#87867f] font-gothic text-[10px] uppercase tracking-wider">
-          <span>+ Ingest Media</span>
+          <span>+ Add Image</span>
         </div>
       </div>
     );
@@ -141,7 +141,7 @@ export const ImageDropzone: React.FC<ImageDropzoneProps> = ({
         onClick={openFilePicker}
         role="button"
         tabIndex={disabled || isUploading ? -1 : 0}
-        aria-label="Upload artwork dropzone"
+        aria-label="Upload images"
         onKeyDown={(e) => {
           if (e.key === 'Enter' || e.key === ' ') {
             e.preventDefault();
@@ -177,11 +177,11 @@ export const ImageDropzone: React.FC<ImageDropzoneProps> = ({
 
             <div className="space-y-1 w-full">
               <p className="font-gothic text-[13px] font-bold uppercase tracking-wider text-[#141413]">
-                Ingesting to Cloudflare R2...
+                Uploading images...
               </p>
               {uploadProgress && (
                 <p className="font-serif text-xs text-[#87867f] truncate">
-                  Plate {uploadProgress.current} of {uploadProgress.total}: {uploadProgress.filename}
+                  Image {uploadProgress.current} of {uploadProgress.total}: {uploadProgress.filename}
                 </p>
               )}
             </div>
@@ -212,15 +212,15 @@ export const ImageDropzone: React.FC<ImageDropzoneProps> = ({
 
             <div className="space-y-1">
               <p className="font-gothic text-[14px] font-bold uppercase tracking-wider text-[#141413]">
-                {isDragOver ? 'Drop plates to ingest' : 'Drag & drop artwork or click to browse'}
+                {isDragOver ? 'Drop images here' : 'Drag & drop images or browse'}
               </p>
               <p className="font-serif text-xs text-[#87867f]">
-                Supports JPEG, PNG, and WebP &bull; Max 10MB per plate &bull; Multi-file ingestion supported
+                Supports JPEG, PNG, and WebP &bull; Max 10MB each
               </p>
             </div>
 
             <div className="mt-2 inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full border border-[#cccbc8] bg-[#faf9f5] font-gothic text-[11px] font-semibold uppercase tracking-[0.10em] text-[#141413] hover:border-[#141413] transition-colors">
-              <span>Select Plates</span>
+              <span>Browse Files</span>
             </div>
           </div>
         )}

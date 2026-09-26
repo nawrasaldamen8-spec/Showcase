@@ -11,28 +11,28 @@ export const WIZARD_STEPS: readonly WizardStepMeta[] = [
   {
     step: 1,
     label: "Media",
-    title: "Exhibition Plates",
+    title: "Project Images",
     description:
-      "Upload and arrange high-resolution visual plates. The first plate serves as the primary exhibition cover.",
+      "Upload and arrange your project images. The primary cover image will be shown first.",
   },
   {
     step: 2,
     label: "Identity",
-    title: "Artwork Identity",
-    description: "Define a commanding project title and an optional external live reference or repository link.",
+    title: "Project Identity",
+    description: "Enter your project title and an optional link to the live demo or repository.",
   },
   {
     step: 3,
     label: "Editorial",
-    title: "Statement & Tags",
+    title: "Description & Tags",
     description:
-      "Craft an intellectual exhibition statement in Anthropic Serif, and assign categorical tags for discoverability.",
+      "Provide a description of your work and select relevant tags to improve discoverability.",
   },
   {
     step: 4,
     label: "Review",
-    title: "Curatorial Review",
-    description: "Perform a final curatorial assessment before publishing publicly or securing as a private draft.",
+    title: "Review & Publish",
+    description: "Review your project details before publishing live or saving as a draft.",
   },
 ] as const;
 

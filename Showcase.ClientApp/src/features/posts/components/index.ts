@@ -1,7 +1,6 @@
 export * from "./ImageDropzone.tsx";
 export * from "./ImageReorderGrid.tsx";
-export * from "./HeroCoverCard.tsx";
-export * from "./SecondaryPlateCard.tsx";
+export * from "./PostLikeButton.tsx";
 export * from "./PostDetailDesktop.tsx";
 export * from "./PostDetailMobile.tsx";
 export * from "./PostStatusBadge.tsx";
@@ -14,3 +13,6 @@ export * from "./WizardStepIdentity.tsx";
 export * from "./WizardStepMedia.tsx";
 export * from "./WizardStepper.tsx";
 export * from "./WizardStepReview.tsx";
+export * from "./PostCard.tsx";
+
+

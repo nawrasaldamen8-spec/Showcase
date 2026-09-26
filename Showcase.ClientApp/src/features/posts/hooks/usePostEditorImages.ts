@@ -75,6 +75,31 @@ export function usePostEditorImages({
     });
   };
 
+  const handleSetCoverImage = async (imageId: string) => {
+    setImageInvariantError(null);
+    setIsDirty(true);
+    let reorderedList: ImageGridItem[] = [];
+
+    setImages((prev) => {
+      const target = prev.find((img) => img.id === imageId);
+      if (!target) return prev;
+      const others = prev.filter((img) => img.id !== imageId);
+      reorderedList = [target, ...others].map((img, idx) => ({ ...img, displayOrder: idx }));
+      return reorderedList;
+    });
+
+    if (id && reorderedList.length > 0) {
+      try {
+        await apiClient.reorderPostImages(id, {
+          items: reorderedList.map((img) => ({ id: img.id, displayOrder: img.displayOrder })),
+        });
+        showToast("success", "Cover image updated successfully.");
+      } catch (err) {
+        console.error("Failed to synchronize cover image update:", err);
+      }
+    }
+  };
+
   return {
     images,
     setImages,
@@ -82,6 +107,7 @@ export function usePostEditorImages({
     setImageInvariantError,
     handleImagesUploaded,
     handleReorderImages,
+    handleSetCoverImage,
     handleDeleteImage,
   };
 }

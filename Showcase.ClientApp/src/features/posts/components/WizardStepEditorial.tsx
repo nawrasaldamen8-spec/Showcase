@@ -34,8 +34,8 @@ export const WizardStepEditorial: React.FC<WizardStepEditorialProps> = ({
     <div className="bg-[#faf9f5] border border-[#cccbc8] rounded-[24px] p-6 sm:p-8 space-y-6">
       <div>
         <Textarea
-          label="Exhibition Statement / Description *"
-          placeholder="Articulate the context, architectural vision, photographic techniques, or design philosophy..."
+          label="Project Description *"
+          placeholder="Describe the background, approach, key outcomes, or technologies used..."
           value={description}
           onChange={(e) => {
             setDescription(e.target.value);
@@ -46,13 +46,13 @@ export const WizardStepEditorial: React.FC<WizardStepEditorialProps> = ({
           showCount
           maxLength={2000}
           errorMessage={descriptionError || undefined}
-          helperText="Anthropic Serif body copy. Captures the intellectual voice of the exhibition."
+          helperText="Detailed overview of your project, role, and results."
         />
       </div>
 
       <div className="space-y-2 pt-2 border-t border-[#cccbc8]/50">
         <label className="font-gothic text-xs font-semibold uppercase tracking-[0.10em] text-[#141413] flex items-center justify-between">
-          <span>Categorical Tags</span>
+          <span>Tags</span>
           <span className="text-[#87867f] font-normal lowercase">{tags.length}/10 tags</span>
         </label>
         <div className="min-h-[46px] p-2 bg-[#f0eee6]/60 border border-[#cccbc8] rounded-xl flex flex-wrap items-center gap-1.5 focus-within:border-[#141413] focus-within:bg-[#faf9f5] transition-all">

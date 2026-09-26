@@ -49,7 +49,7 @@ export function usePostEditorSubmit(options: UsePostEditorSubmitOptions) {
       }
 
       options.setIsDirty(false);
-      options.showToast("success", options.id ? "Draft changes saved successfully." : "New exhibition plate saved as Draft.");
+      options.showToast("success", options.id ? "Draft saved successfully." : "Draft created successfully.");
       setTimeout(() => navigate("/studio"), 800);
     } catch (err) {
       console.error("Failed to save draft:", err);
@@ -62,7 +62,7 @@ export function usePostEditorSubmit(options: UsePostEditorSubmitOptions) {
   const handlePublishWork = async () => {
     if (!options.validateFullForm()) return;
     if (options.images.length === 0) {
-      options.setImageInvariantError("A post cannot be published without at least one uploaded plate.");
+      options.setImageInvariantError("Please upload at least one image to publish.");
       options.setCurrentStep(1);
       return;
     }
@@ -83,7 +83,7 @@ export function usePostEditorSubmit(options: UsePostEditorSubmitOptions) {
       await apiClient.publishPost(targetPostId);
       options.setPostStatus(PostStatus.Published);
       options.setIsDirty(false);
-      options.showToast("success", "Work successfully published to the exhibition gallery!");
+      options.showToast("success", "Project published successfully!");
       setTimeout(() => navigate(`/posts/${targetPostId}`), 900);
     } catch (err) {
       console.error("Failed to publish work:", err);

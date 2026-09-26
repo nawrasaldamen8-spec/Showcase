@@ -1,6 +1,6 @@
 import { ArrowLeft, Pencil } from "lucide-react";
 import React, { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import { apiClient } from "@shared/api/apiClient.ts";
 import { Button } from "@shared/components/Button.tsx";
 import { Lightbox } from "@shared/components/Lightbox.tsx";
@@ -13,13 +13,17 @@ import { PostDetailDesktop, PostDetailMobile } from "../components/index.ts";
 export const PostDetailsPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const { currentUser } = useAuth();
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  const fromState = location.state as { from?: string; fromLabel?: string } | null;
 
   const [post, setPost] = useState<PostDetailsResponse | null>(null);
   const [creatorProfile, setCreatorProfile] = useState<PublicProfileResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [activeLightboxUrl, setActiveLightboxUrl] = useState<string | null>(null);
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -53,7 +57,7 @@ export const PostDetailsPage: React.FC = () => {
         if (!isMounted) return;
         const status = (err as { status?: number })?.status;
         if (status === 404) setNotFound(true);
-        else setError("Unable to load exhibition plate details. Please try again.");
+        else setError("Unable to load project details. Please try again.");
       } finally {
         if (isMounted) setIsLoading(false);
       }
@@ -103,9 +107,9 @@ export const PostDetailsPage: React.FC = () => {
   if (notFound || !post) {
     return (
       <NotFoundView
-        eyebrow="Error 404 \u2022 Plate Unavailable"
-        title="Exhibition Plate Not Found"
-        description="The requested portfolio work may have been moved, set to draft status by its author, or never existed in this gallery collection."
+        eyebrow="Error 404"
+        title="Project Not Found"
+        description="The requested project may have been moved, set to draft status by its author, or does not exist."
         backHref="/studio"
         backLabel="Back to Studio"
       />
@@ -132,10 +136,8 @@ export const PostDetailsPage: React.FC = () => {
     );
   }
 
-  const primaryImage = post.images[0];
-  const secondaryImages = post.images.slice(1);
-  const creatorName = post.creator ? `${post.creator.firstName} ${post.creator.lastName}` : "Unknown Artist";
-  const creatorUsername = post.creator?.username || "artist";
+  const creatorName = post.creator ? `${post.creator.firstName} ${post.creator.lastName}` : "Creator";
+  const creatorUsername = post.creator?.username || "user";
   const creatorAvatar = (creatorProfile?.avatarUrl || post.creator?.avatarUrl) ?? undefined;
 
   const isOwnPost = Boolean(
@@ -144,18 +146,36 @@ export const PostDetailsPage: React.FC = () => {
     currentUser.username.toLowerCase() === post.creator.username.toLowerCase()
   );
 
+  const handleBack = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (fromState?.from) {
+      navigate(fromState.from);
+    } else if (window.history.length > 2) {
+      navigate(-1);
+    } else {
+      navigate(isOwnPost ? "/studio" : "/feed");
+    }
+  };
+
+  const backLabel = fromState?.fromLabel || (isOwnPost ? "Studio" : "Feed");
+
   return (
-    <article className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-10">
+    <article className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 sm:py-10">
       <nav className="mb-8 sm:mb-10 flex items-center justify-between gap-4 text-xs font-gothic uppercase tracking-[0.12em]">
-        <Link
-          to="/studio"
-          className="inline-flex items-center gap-2 text-[#87867f] hover:text-[#141413] transition-colors group shrink-0 font-medium"
+        <button
+          type="button"
+          onClick={handleBack}
+          className="inline-flex items-center gap-2 text-[#87867f] hover:text-[#141413] transition-colors group shrink-0 font-medium cursor-pointer bg-transparent border-none p-0"
         >
           <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
-          <span>Studio</span>
-        </Link>
+          <span>{backLabel}</span>
+        </button>
         {isOwnPost && (
-          <Link to={`/posts/${post.id}/edit`} className="shrink-0 text-decoration-none">
+          <Link
+            to={`/posts/${post.id}/edit`}
+            state={{ from: `/posts/${post.id}`, fromLabel: post.title }}
+            className="shrink-0 text-decoration-none"
+          >
             <Button variant="outline" size="sm" leftIcon={<Pencil className="h-3.5 w-3.5" />}>
               Edit
             </Button>
@@ -168,7 +188,7 @@ export const PostDetailsPage: React.FC = () => {
         creatorName={creatorName}
         creatorUsername={creatorUsername}
         creatorAvatar={creatorAvatar}
-        onInspectImage={setActiveLightboxUrl}
+        onInspectImage={setLightboxIndex}
       />
 
       <PostDetailDesktop
@@ -176,15 +196,17 @@ export const PostDetailsPage: React.FC = () => {
         creatorName={creatorName}
         creatorUsername={creatorUsername}
         creatorAvatar={creatorAvatar}
-        primaryImage={primaryImage}
-        secondaryImages={secondaryImages}
-        onInspectImage={setActiveLightboxUrl}
+        onInspectImage={setLightboxIndex}
       />
 
-      <Lightbox
-        imageUrl={activeLightboxUrl}
-        onClose={() => setActiveLightboxUrl(null)}
-      />
+      {lightboxIndex !== null && (
+        <Lightbox
+          images={post.images.map((img) => ({ url: img.url, alt: post.title }))}
+          initialIndex={lightboxIndex}
+          onClose={() => setLightboxIndex(null)}
+          onIndexChange={(newIdx) => setLightboxIndex(newIdx)}
+        />
+      )}
     </article>
   );
 };

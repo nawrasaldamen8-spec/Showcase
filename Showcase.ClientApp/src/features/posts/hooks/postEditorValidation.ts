@@ -28,7 +28,7 @@ export function validateStep(
 ): boolean {
   if (step === 1) {
     if (state.imagesCount === 0) {
-      errors.setImageInvariantError("At least one visual plate is required to proceed.");
+      errors.setImageInvariantError("At least one image is required to proceed.");
       return false;
     }
     errors.setImageInvariantError(null);
@@ -38,7 +38,7 @@ export function validateStep(
   if (step === 2) {
     let valid = true;
     if (!state.title.trim() || state.title.trim().length < 3) {
-      errors.setTitleError("Artwork title is required and must be at least 3 characters.");
+      errors.setTitleError("Title is required and must be at least 3 characters.");
       valid = false;
     } else if (state.title.trim().length > 120) {
       errors.setTitleError("Title cannot exceed 120 characters.");
@@ -66,7 +66,7 @@ export function validateStep(
 
   if (step === 3) {
     if (!state.description.trim()) {
-      errors.setDescriptionError("Exhibition statement is required.");
+      errors.setDescriptionError("Description is required.");
       return false;
     }
     errors.setDescriptionError(null);

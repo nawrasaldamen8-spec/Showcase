@@ -84,7 +84,7 @@ export const StudioDashboardPage: React.FC = () => {
       setPosts(response.items);
     } catch (err) {
       console.error("Failed to load studio posts:", err);
-      setError("Unable to load exhibition plates. Please try again.");
+      setError("Unable to load projects. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -118,9 +118,9 @@ export const StudioDashboardPage: React.FC = () => {
   if (activePersona === "visitor") {
     return (
       <VisitorGuard
-        eyebrow="Studio Access \u2022 Authentication Notice"
+        eyebrow="Studio Access"
         title="Creator Mode Required"
-        description="The Creator Studio is reserved for cataloging, uploading, and publishing exhibition works. Switch to the Creator persona in the sidebar to access your workshop."
+        description="The Studio is where you create, manage, and publish your projects. Switch to Creator mode in the sidebar to get started."
         onSwitchPersona={() => switchPersona("creator")}
         secondaryAction={
           currentUser ? (
@@ -181,15 +181,15 @@ export const StudioDashboardPage: React.FC = () => {
         {!isLoading && filteredAndSortedPosts.length === 0 && (
           <EmptyState
             icon={Layers}
-            title={searchQuery ? "No Matching Works Found" : "No Exhibition Works"}
+            title={searchQuery ? "No Matching Projects Found" : "No Projects Yet"}
             description={
               searchQuery
-                ? `No exhibition plates matched your search query "${searchQuery}".`
+                ? `No projects matched your search query "${searchQuery}".`
                 : activeTab === "published"
-                  ? "You do not have any published works yet. Publish a draft to exhibit it in the gallery."
+                  ? "You haven't published any projects yet. Publish a draft to make it visible on your profile."
                   : activeTab === "drafts"
-                    ? "Your draft archive is currently empty. Start drafting a new portfolio plate."
-                    : "No works found in your creator portfolio. Begin creating your first exhibition plate now."
+                    ? "You don't have any drafts. Create a new project to get started."
+                    : "No projects found. Create your first project now."
             }
             actionLabel={searchQuery ? "Clear Search" : undefined}
             actionVariant="outline"

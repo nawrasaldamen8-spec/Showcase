@@ -29,8 +29,8 @@ export const WizardStepIdentity: React.FC<WizardStepIdentityProps> = ({
     <div className="bg-[#faf9f5] border border-[#cccbc8] rounded-[24px] p-6 sm:p-8 space-y-6">
       <div>
         <Input
-          label="Artwork / Project Title *"
-          placeholder="e.g., Brutalist Perspectives: Concrete & Light"
+          label="Project Title *"
+          placeholder="e.g., Pority Platform Redesign or AI Analytics Engine"
           value={title}
           onChange={(e) => {
             setTitle(e.target.value);
@@ -38,14 +38,14 @@ export const WizardStepIdentity: React.FC<WizardStepIdentityProps> = ({
             if (titleError) setTitleError(null);
           }}
           errorMessage={titleError || undefined}
-          helperText="A concise, commanding title displayed prominently across the gallery (min 3 characters)."
+          helperText="A clear and descriptive title for your project (minimum 3 characters)."
         />
       </div>
 
       <div>
         <Input
-          label="Live Reference URL (Optional)"
-          placeholder="https://behance.net/... or https://github.com/..."
+          label="Live Link or Repository (Optional)"
+          placeholder="https://example.com or https://github.com/..."
           value={externalUrl}
           onChange={(e) => {
             setExternalUrl(e.target.value);
@@ -54,7 +54,7 @@ export const WizardStepIdentity: React.FC<WizardStepIdentityProps> = ({
           }}
           leftIcon={<Globe className="h-4 w-4" />}
           errorMessage={urlError || undefined}
-          helperText="Optional link to live site, GitHub repository, Behance project, or publication."
+          helperText="Optional link to a live demo, website, or code repository."
         />
       </div>
     </div>

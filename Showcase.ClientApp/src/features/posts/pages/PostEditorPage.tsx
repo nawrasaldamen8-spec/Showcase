@@ -28,9 +28,9 @@ export const PostEditorPage: React.FC = () => {
   if (activePersona === "visitor") {
     return (
       <VisitorGuard
-        eyebrow="Curator Workspace \u2022 Authentication Notice"
+        eyebrow="Studio Access"
         title="Creator Mode Required"
-        description="Creating and editing exhibition works is reserved for authenticated creators. Switch to the Creator persona to compose statements and ingest photography plates."
+        description="Creating and editing projects is reserved for creators. Switch to Creator mode to continue."
         onSwitchPersona={() => switchPersona("creator")}
         secondaryAction={
           <Link to="/studio">
@@ -73,10 +73,10 @@ export const PostEditorPage: React.FC = () => {
             Step {editor.currentStep} of 4 &bull; {WIZARD_STEPS[editor.currentStep - 1].title}
           </span>
           <h1 className="font-gothic text-2xl sm:text-3xl lg:text-4xl font-extrabold uppercase tracking-tight text-[#141413]">
-            {editor.currentStep === 1 && "Exhibition Plates Ingestion"}
-            {editor.currentStep === 2 && "Artwork Identity & Reference"}
-            {editor.currentStep === 3 && "Editorial Statement & Tags"}
-            {editor.currentStep === 4 && "Curatorial Review & Decision"}
+            {editor.currentStep === 1 && "Project Images"}
+            {editor.currentStep === 2 && "Project Identity"}
+            {editor.currentStep === 3 && "Project Description & Tags"}
+            {editor.currentStep === 4 && "Review & Publish"}
           </h1>
           <p className="font-serif text-base text-[#141413]/70 leading-relaxed max-w-2xl">
             {WIZARD_STEPS[editor.currentStep - 1].description}
@@ -86,7 +86,7 @@ export const PostEditorPage: React.FC = () => {
         {editor.generalError && (
           <ErrorBanner
             className="mb-8"
-            title="Catalog Error"
+            title="Error"
             message={editor.generalError}
           />
         )}
@@ -103,6 +103,7 @@ export const PostEditorPage: React.FC = () => {
               isCurrentlyPublished={isCurrentlyPublished}
               onImagesUploaded={editor.handleImagesUploaded}
               onReorderImages={editor.handleReorderImages}
+              onSetCoverImage={editor.handleSetCoverImage}
               onDeleteImage={editor.handleDeleteImage}
             />
           )}
@@ -171,7 +172,7 @@ export const PostEditorPage: React.FC = () => {
       >
         <div className="space-y-4">
           <p className="font-serif text-sm text-[#141413]/80 leading-relaxed">
-            You have unsaved changes in this exhibition plate. Are you sure you want to discard them and return to your
+            You have unsaved changes in this project. Are you sure you want to discard them and return to your
             studio?
           </p>
           <div className="flex items-center justify-end gap-3 pt-2">
@@ -184,7 +185,7 @@ export const PostEditorPage: React.FC = () => {
               onClick={() => {
                 editor.setShowDiscardModal(false);
                 editor.setIsDirty(false);
-                navigate("/studio");
+                navigate(editor.returnUrl);
               }}
             >
               Discard & Exit

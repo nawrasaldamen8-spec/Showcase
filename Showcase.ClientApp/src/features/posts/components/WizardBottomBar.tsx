@@ -29,8 +29,8 @@ export const WizardBottomBar: React.FC<WizardBottomBarProps> = ({
   onPublishWork,
 }) => {
   return (
-    <div className="sticky bottom-4 z-30 mt-10 bg-[#faf9f5]/95 backdrop-blur-md border border-[#cccbc8] rounded-[24px] p-4 sm:p-5 flex items-center justify-between gap-4 shadow-none">
-      <div>
+    <div className="sticky bottom-4 z-30 mt-8 sm:mt-10 bg-[#faf9f5]/95 backdrop-blur-md border border-[#cccbc8] rounded-2xl sm:rounded-[24px] p-3.5 sm:p-5 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-4 shadow-none">
+      <div className="order-2 sm:order-1 flex items-center">
         {currentStep > 1 ? (
           <Button
             variant="outline"
@@ -38,17 +38,24 @@ export const WizardBottomBar: React.FC<WizardBottomBarProps> = ({
             onClick={onPrevStep}
             leftIcon={<ArrowLeft className="h-4 w-4" />}
             disabled={isSaving || isPublishing}
+            className="w-full sm:w-auto justify-center"
           >
             Previous
           </Button>
         ) : (
-          <Button variant="ghost" size="md" onClick={onCancelClick} disabled={isSaving || isPublishing}>
+          <Button
+            variant="ghost"
+            size="md"
+            onClick={onCancelClick}
+            disabled={isSaving || isPublishing}
+            className="w-full sm:w-auto justify-center"
+          >
             Cancel
           </Button>
         )}
       </div>
 
-      <div className="flex items-center gap-3">
+      <div className="order-1 sm:order-2 flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-3">
         {currentStep < 4 ? (
           <Button
             variant="slate"
@@ -56,11 +63,12 @@ export const WizardBottomBar: React.FC<WizardBottomBarProps> = ({
             onClick={onNextStep}
             rightIcon={<ArrowRight className="h-4 w-4" />}
             disabled={isSaving || isPublishing}
+            className="w-full sm:w-auto justify-center"
           >
             Continue
           </Button>
         ) : (
-          <div className="flex items-center gap-3">
+          <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-3">
             <Button
               variant="slate"
               size="md"
@@ -68,6 +76,7 @@ export const WizardBottomBar: React.FC<WizardBottomBarProps> = ({
               disabled={isPublishing}
               onClick={onSaveDraft}
               leftIcon={<Save className="h-4 w-4" />}
+              className="w-full sm:w-auto justify-center"
             >
               Save as Draft
             </Button>
@@ -78,8 +87,9 @@ export const WizardBottomBar: React.FC<WizardBottomBarProps> = ({
               disabled={isSaving || imagesCount === 0}
               onClick={onPublishWork}
               leftIcon={<Globe className="h-4 w-4" />}
+              className="w-full sm:w-auto justify-center"
             >
-              {isCurrentlyPublished ? "Update & Publish" : "Publish Work"}
+              {isCurrentlyPublished ? "Update & Publish" : "Publish Project"}
             </Button>
           </div>
         )}

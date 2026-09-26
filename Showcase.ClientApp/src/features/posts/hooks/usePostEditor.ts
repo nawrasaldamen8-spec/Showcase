@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useToast } from "@shared/context/index.ts";
 import { PostStatus } from "@shared/types/index.ts";
 import { fetchPostEditorData } from "./postEditorOperations.ts";
@@ -17,8 +17,11 @@ export type { WizardStepNumber };
 
 export function usePostEditor(id?: string) {
   const navigate = useNavigate();
+  const location = useLocation();
   const { showToast } = useToast();
   const isEditing = Boolean(id);
+  const fromState = location.state as { from?: string } | null;
+  const returnUrl = fromState?.from || (id ? `/posts/${id}` : "/studio");
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -50,6 +53,7 @@ export function usePostEditor(id?: string) {
     setImageInvariantError,
     handleImagesUploaded,
     handleReorderImages,
+    handleSetCoverImage,
     handleDeleteImage,
   } = usePostEditorImages({
     id,
@@ -132,7 +136,7 @@ export function usePostEditor(id?: string) {
         if (data.images.length > 0) setMaxReachedStep(4);
       } catch (err) {
         console.error("Failed to load post for editing:", err);
-        if (isMounted) setGeneralError("Exhibition plate not found or inaccessible.");
+        if (isMounted) setGeneralError("Project not found or inaccessible.");
       } finally {
         if (isMounted) setIsLoading(false);
       }
@@ -147,11 +151,12 @@ export function usePostEditor(id?: string) {
   const handleCancelClick = (e?: React.MouseEvent) => {
     if (e) e.preventDefault();
     if (isDirty) setShowDiscardModal(true);
-    else navigate("/studio");
+    else navigate(returnUrl);
   };
 
   return {
     isEditing,
+    returnUrl,
     currentStep,
     maxReachedStep,
     title,
@@ -187,6 +192,7 @@ export function usePostEditor(id?: string) {
     handleCancelClick,
     handleImagesUploaded,
     handleReorderImages,
+    handleSetCoverImage,
     handleDeleteImage,
     getNormalizedUrl,
     handleNextStep,

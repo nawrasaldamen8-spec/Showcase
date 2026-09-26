@@ -44,12 +44,21 @@ async function uploadToR2(
   };
 }
 
+function readFileAsDataUrl(file: File | Blob): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = (err) => reject(err);
+    reader.readAsDataURL(file);
+  });
+}
+
 async function stageLocalFile(file: File, index: number): Promise<UploadedImageData> {
-  const previewUrl = URL.createObjectURL(file);
+  const previewUrl = await readFileAsDataUrl(file);
   const ext = file.type.split('/')[1] || 'jpg';
   const storageKey = `posts/staged/${Date.now()}-${Math.random().toString(36).substring(2, 8)}.${ext}`;
 
-  await new Promise((resolve) => setTimeout(resolve, 320));
+  await new Promise((resolve) => setTimeout(resolve, 200));
 
   return {
     id: `local_${Date.now()}_${index}`,
@@ -161,14 +170,14 @@ export function useDropzoneUpload({
 
         setRecentSuccess(
           valid.length === 1
-            ? 'Plate successfully ingested into storage.'
-            : `${valid.length} plates successfully ingested into storage.`
+            ? 'Image uploaded successfully.'
+            : `${valid.length} images uploaded successfully.`
         );
 
         onImagesUploaded?.(uploadedResults);
       } catch (err) {
-        console.error('Direct R2 ingestion error:', err);
-        const errMsg = err instanceof Error ? err.message : 'Failed to ingest image to Cloudflare R2.';
+        console.error('Direct upload error:', err);
+        const errMsg = err instanceof Error ? err.message : 'Failed to upload image.';
         setValidationError(errMsg);
         onError?.(errMsg);
       } finally {
