@@ -28,7 +28,7 @@ export const ChangePasswordPage: React.FC = () => {
     if (!currentPassword) {
       setProblem({
         title: "Validation Error",
-        detail: "Current password is required to authorize this credential change.",
+        detail: "Current password is required.",
         status: 400,
       });
       return;
@@ -46,7 +46,7 @@ export const ChangePasswordPage: React.FC = () => {
     if (newPassword !== confirmPassword) {
       setProblem({
         title: "Validation Error",
-        detail: "New password and confirmation do not match.",
+        detail: "Passwords do not match.",
         status: 400,
       });
       return;
@@ -60,13 +60,13 @@ export const ChangePasswordPage: React.FC = () => {
         newPassword,
       });
 
-      showToast("success", "Your password has been successfully updated.");
+      showToast("success", "Password updated successfully.");
       navigate("/settings/security");
     } catch (err: unknown) {
       const p = err as ProblemDetails;
       setProblem({
         title: p?.title || "Password Update Failed",
-        detail: p?.detail || "An unexpected error occurred while modifying your passphrase.",
+        detail: p?.detail || "An error occurred while updating your password.",
         status: p?.status || 400,
         errors: p?.errors,
       });
@@ -79,7 +79,7 @@ export const ChangePasswordPage: React.FC = () => {
   return (
     <SecurityActionLayout
       title="Change Password"
-      subtitle="Ensure your creator atelier uses a secure passphrase of at least 6 characters."
+      subtitle="Choose a strong password with at least 6 characters."
       badge="Credentials"
     >
       <form onSubmit={handleSubmit} className="space-y-5">

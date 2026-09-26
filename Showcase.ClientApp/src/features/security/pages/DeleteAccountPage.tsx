@@ -23,12 +23,12 @@ export const DeleteAccountPage: React.FC = () => {
     setError(null);
 
     if (!password) {
-      setError("Please provide your current password to authorize account deletion.");
+      setError("Please enter your password.");
       return;
     }
 
     if (confirmText.trim().toUpperCase() !== "DELETE") {
-      setError("Please type DELETE in capital letters to confirm this irreversible action.");
+      setError("Please type DELETE to confirm.");
       return;
     }
 
@@ -37,7 +37,7 @@ export const DeleteAccountPage: React.FC = () => {
     setTimeout(() => {
       setIsDeleting(false);
       logout();
-      showToast("info", "Your account and all associated exhibition records have been permanently removed.");
+      showToast("info", "Your account and data have been permanently deleted.");
       navigate("/studio");
     }, 800);
   };
@@ -45,7 +45,7 @@ export const DeleteAccountPage: React.FC = () => {
   return (
     <SecurityActionLayout
       title="Delete Account"
-      subtitle="Permanently withdraw your creator membership and destroy all associated records."
+      subtitle="Permanently delete your account and all associated data."
       badge="Danger Zone"
     >
       <form onSubmit={handleDelete} className="space-y-6">
@@ -53,12 +53,11 @@ export const DeleteAccountPage: React.FC = () => {
         <div className="p-4 sm:p-5 rounded-2xl bg-[#d97757]/10 border border-[#d97757]/30 space-y-2.5 text-[#141413]">
           <div className="flex items-center gap-2 text-[#d97757]">
             <AlertTriangle className="h-5 w-5 shrink-0" />
-            <span className="font-gothic text-xs font-bold uppercase tracking-wider">Irreversible Action Warning</span>
+            <span className="font-gothic text-xs font-bold uppercase tracking-wider">Warning: Irreversible Action</span>
           </div>
 
           <p className="font-serif text-xs sm:text-sm leading-relaxed text-[#141413]/85">
-            Deleting your account will permanently purge your portfolio plates, biographical statement, social archives,
-            and public profile slug. This data cannot be recovered.
+            Deleting your account will permanently remove your profile, published works, career records, and account data. This action cannot be undone.
           </p>
         </div>
 
@@ -113,7 +112,7 @@ export const DeleteAccountPage: React.FC = () => {
             leftIcon={<Trash2 className="h-4 w-4" />}
             className="justify-center font-gothic uppercase tracking-wider text-xs bg-[#d97757] hover:bg-[#c46142] text-[#faf9f5] border-transparent shadow-none"
           >
-            Permanently Delete My Account
+            Permanently Delete Account
           </Button>
         </div>
       </form>

@@ -15,15 +15,15 @@ export const SecurityActionLayout: React.FC<SecurityActionLayoutProps> = ({
   title,
   subtitle,
   badge = "Security Setting",
-  backTo = "/settings/security",
-  backLabel = "Back to Security",
+  backTo = "/settings",
+  backLabel = "Back to Account Settings",
   children,
 }) => {
   return (
-    <div className="min-h-screen bg-[#f0eee6] py-6 sm:py-10 px-4 sm:px-6 lg:px-8 pb-24">
+    <div className="min-h-screen bg-[#f0eee6] py-5 sm:py-10 px-3.5 sm:px-6 lg:px-8 pb-24">
       <div className="max-w-xl mx-auto">
         {/* Navigation Back Button */}
-        <div className="mb-6">
+        <div className="mb-5 sm:mb-6">
           <Link
             to={backTo}
             className="inline-flex items-center gap-2 font-gothic text-xs font-semibold uppercase tracking-[0.14em] text-[#87867f] hover:text-[#141413] transition-colors group text-decoration-none"
@@ -34,7 +34,7 @@ export const SecurityActionLayout: React.FC<SecurityActionLayoutProps> = ({
         </div>
 
         {/* Card Canvas */}
-        <div className="bg-[#faf9f5] rounded-[24px] border border-[#cccbc8]/60 p-6 sm:p-8 shadow-none space-y-6">
+        <div className="bg-[#faf9f5] rounded-2xl sm:rounded-[24px] border border-[#cccbc8]/60 p-5 sm:p-7 lg:p-8 shadow-none space-y-6">
           {/* Header */}
           <div className="border-b border-[#cccbc8]/50 pb-5 space-y-2">
             <div className="flex items-center gap-2">

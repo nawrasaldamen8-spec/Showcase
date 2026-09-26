@@ -24,13 +24,13 @@ export const SecurityNavRow: React.FC<SecurityNavRowProps> = ({
   return (
     <Link
       to={to}
-      className={`group flex items-center justify-between p-4 sm:p-5 rounded-2xl transition-all duration-200 border cursor-pointer text-decoration-none shadow-none ${
+      className={`group flex items-center justify-between p-3.5 sm:p-5 rounded-2xl transition-all duration-200 border cursor-pointer text-decoration-none shadow-none ${
         isDanger
           ? "bg-[#faf9f5] border-[#d97757]/30 hover:border-[#d97757] hover:bg-[#d97757]/5"
           : "bg-[#faf9f5] border-[#cccbc8]/60 hover:border-[#141413] hover:bg-[#faf9f5]"
       }`}
     >
-      <div className="flex items-center gap-4 min-w-0">
+      <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
         <div
           className={`flex items-center justify-center h-10 w-10 sm:h-11 sm:w-11 rounded-xl shrink-0 transition-colors ${
             isDanger
@@ -41,20 +41,20 @@ export const SecurityNavRow: React.FC<SecurityNavRowProps> = ({
           <Icon className="h-5 w-5 stroke-[1.8]" />
         </div>
 
-        <div className="min-w-0">
-          <div className="flex items-center gap-2.5 flex-wrap">
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2 flex-wrap">
             <h3
-              className={`font-gothic text-sm sm:text-base font-bold uppercase tracking-tight truncate ${
+              className={`font-gothic text-xs sm:text-base font-bold uppercase tracking-tight truncate ${
                 isDanger ? "text-[#d97757]" : "text-[#141413]"
               }`}
             >
               {title}
             </h3>
-            {badge && <div>{badge}</div>}
+            {badge && <div className="shrink-0">{badge}</div>}
           </div>
 
           {description && (
-            <p className="font-serif text-xs sm:text-[13px] text-[#87867f] truncate mt-0.5">{description}</p>
+            <p className="font-serif text-[11px] sm:text-[13px] text-[#87867f] truncate mt-0.5">{description}</p>
           )}
         </div>
       </div>
