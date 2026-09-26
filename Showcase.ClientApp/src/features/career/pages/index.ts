@@ -1,3 +1,5 @@
+export * from "./AcademicFormPage.tsx";
+export * from "./AchievementFormPage.tsx";
 export * from "./CareerAcademicsPage.tsx";
 export * from "./CareerAchievementsPage.tsx";
 export * from "./CareerCredentialsPage.tsx";
@@ -5,3 +7,7 @@ export * from "./CareerExperiencePage.tsx";
 export * from "./CareerHubPage.tsx";
 export * from "./CareerLanguagesPage.tsx";
 export * from "./CareerSkillsPage.tsx";
+export * from "./CredentialFormPage.tsx";
+export * from "./ExperienceFormPage.tsx";
+export * from "./LanguageFormPage.tsx";
+export * from "./SkillFormPage.tsx";

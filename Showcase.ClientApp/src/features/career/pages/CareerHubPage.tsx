@@ -1,4 +1,5 @@
 import {
+  ArrowLeft,
   Award,
   Briefcase,
   Globe,
@@ -7,6 +8,7 @@ import {
   Trophy,
 } from "lucide-react";
 import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { apiClient } from "@shared/api/apiClient.ts";
 import type { CareerSummary } from "@shared/types/index.ts";
 import { CareerNavCard } from "../components/CareerNavCard.tsx";
@@ -39,24 +41,24 @@ export const CareerHubPage: React.FC = () => {
     {
       title: "Experience",
       count: summary?.experienceCount ?? 0,
-      countLabel: "positions",
-      description: "Directorial engagements, architectural curation, and spatial design roles.",
+      countLabel: "roles",
+      description: "Work history, roles, and professional achievements.",
       to: "/career/experience",
       icon: Briefcase,
     },
     {
       title: "Academics",
       count: summary?.academicsCount ?? 0,
-      countLabel: "degrees",
-      description: "Degrees, institutional research fellowships, and academic qualifications.",
+      countLabel: "qualifications",
+      description: "Degrees, diplomas, and academic background.",
       to: "/career/academics",
       icon: GraduationCap,
     },
     {
-      title: "Skills & Mastery",
+      title: "Skills",
       count: summary?.skillsCount ?? 0,
-      countLabel: "competencies",
-      description: "Disciplinary competencies across spatial design, daylight modeling, and tools.",
+      countLabel: "skills",
+      description: "Key skills, technical competencies, and proficiencies.",
       to: "/career/skills",
       icon: Sparkles,
     },
@@ -64,7 +66,7 @@ export const CareerHubPage: React.FC = () => {
       title: "Credentials",
       count: summary?.credentialsCount ?? 0,
       countLabel: "certifications",
-      description: "Professional licenses, architectural board accreditations, and honors.",
+      description: "Professional licenses, certifications, and accreditations.",
       to: "/career/credentials",
       icon: Award,
     },
@@ -72,15 +74,15 @@ export const CareerHubPage: React.FC = () => {
       title: "Languages",
       count: summary?.languagesCount ?? 0,
       countLabel: "languages",
-      description: "Multilingual proficiency, conversational command, and native tongues.",
+      description: "Languages and proficiency levels.",
       to: "/career/languages",
       icon: Globe,
     },
     {
       title: "Achievements",
       count: summary?.achievementsCount ?? 0,
-      countLabel: "distinctions",
-      description: "Biennale awards, hardcover publications, and critical monograph honors.",
+      countLabel: "awards",
+      description: "Honors, awards, publications, and key milestones.",
       to: "/career/achievements",
       icon: Trophy,
     },
@@ -88,20 +90,31 @@ export const CareerHubPage: React.FC = () => {
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
-      {/* Editorial Overview Header */}
+      {/* Editorial Breadcrumb Navigation */}
+      <nav className="mb-6" aria-label="Breadcrumb navigation">
+        <Link
+          to="/studio"
+          className="inline-flex items-center gap-2 font-gothic text-xs font-semibold uppercase tracking-[0.14em] text-[#87867f] hover:text-[#141413] transition-colors group text-decoration-none"
+        >
+          <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
+          <span>Studio</span>
+        </Link>
+      </nav>
+
+      {/* Overview Header */}
       <div className="mb-10 sm:mb-12 border-b border-[#cccbc8]/60 pb-8">
         <span className="font-gothic text-[11px] font-bold uppercase tracking-[0.2em] text-[#87867f] block mb-2">
-          Curatorial Curriculum &bull; Index
+          Professional Profile &bull; Overview
         </span>
         <h1 className="font-gothic text-3xl sm:text-4xl lg:text-5xl font-extrabold uppercase tracking-tight text-[#141413]">
           Career Hub
         </h1>
         <p className="font-serif text-[16px] sm:text-[18px] text-[#141413]/70 mt-3 max-w-2xl leading-relaxed">
-          The unified professional archive documenting career trajectories, academic research, certifications, and institutional recognitions.
+          Manage your work history, education, skills, certifications, and achievements.
         </p>
       </div>
 
-      {/* Grid of 6 Category Navigation Cards (.pinpoint/group.md layout) */}
+      {/* Grid of 6 Category Navigation Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {sections.map((section) => (
           <CareerNavCard

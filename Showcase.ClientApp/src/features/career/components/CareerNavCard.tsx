@@ -47,15 +47,6 @@ export const CareerNavCard: React.FC<CareerNavCardProps> = ({
           {description}
         </p>
       </div>
-
-      <div className="mt-6 pt-4 border-t border-[#cccbc8]/40 flex items-center justify-between">
-        <span className="font-gothic text-[11px] font-bold uppercase tracking-[0.16em] text-[#87867f] group-hover:text-[#141413] transition-colors">
-          Manage Section
-        </span>
-        <span className="font-mono text-xs text-[#87867f] group-hover:translate-x-0.5 transition-transform">
-          &rarr;
-        </span>
-      </div>
     </Link>
   );
 };

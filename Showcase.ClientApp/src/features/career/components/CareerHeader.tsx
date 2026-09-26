@@ -2,6 +2,7 @@ import { ArrowLeft, Plus } from "lucide-react";
 import React from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@shared/components/Button.tsx";
+import { Toggle } from "@shared/components/Toggle.tsx";
 
 export interface CareerHeaderProps {
   sectionTitle: string;
@@ -11,16 +12,24 @@ export interface CareerHeaderProps {
   onAction?: () => void;
   backTo?: string;
   backLabel?: string;
+  showVisibilityToggle?: boolean;
+  isVisibleInProfile?: boolean;
+  onToggleVisibility?: (visible: boolean) => void;
+  isTogglingVisibility?: boolean;
 }
 
 export const CareerHeader: React.FC<CareerHeaderProps> = ({
   sectionTitle,
-  badge = "Curated Dossier",
+  badge = "Career",
   description,
   actionLabel,
   onAction,
   backTo = "/career",
   backLabel = "Career Hub",
+  showVisibilityToggle = false,
+  isVisibleInProfile = true,
+  onToggleVisibility,
+  isTogglingVisibility = false,
 }) => {
   return (
     <div className="mb-8 pb-6 border-b border-[#cccbc8]/60">
@@ -39,7 +48,7 @@ export const CareerHeader: React.FC<CareerHeaderProps> = ({
         </span>
       </div>
 
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-5">
         <div className="max-w-2xl">
           <span className="font-gothic text-[11px] font-bold uppercase tracking-[0.18em] text-[#87867f] block mb-1">
             {badge}
@@ -52,19 +61,40 @@ export const CareerHeader: React.FC<CareerHeaderProps> = ({
           </p>
         </div>
 
-        {actionLabel && onAction && (
-          <div className="shrink-0">
+        <div className="flex flex-wrap items-center gap-2.5 sm:gap-4 w-full md:w-auto justify-start md:justify-end shrink-0">
+          {showVisibilityToggle && onToggleVisibility && (
+            <div className="flex items-center gap-2.5 px-3 sm:px-3.5 py-1.5 sm:py-2 rounded-full bg-[#faf9f5] border border-[#cccbc8]/60">
+              <Toggle
+                size="sm"
+                checked={isVisibleInProfile}
+                onChange={onToggleVisibility}
+                disabled={isTogglingVisibility}
+                label="Show in profile"
+              />
+              <span
+                className={`font-gothic text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border ${
+                  isVisibleInProfile
+                    ? "bg-[#141413]/5 text-[#141413] border-[#141413]/20"
+                    : "bg-[#87867f]/10 text-[#87867f] border-[#cccbc8]/40"
+                }`}
+              >
+                {isVisibleInProfile ? "Visible" : "Hidden"}
+              </span>
+            </div>
+          )}
+
+          {actionLabel && onAction && (
             <Button
               variant="clay"
               size="md"
               leftIcon={<Plus className="w-4 h-4" />}
               onClick={onAction}
-              className="shadow-none uppercase tracking-wider text-xs font-bold"
+              className="shadow-none uppercase tracking-wider text-xs font-bold w-full sm:w-auto"
             >
               {actionLabel}
             </Button>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );
