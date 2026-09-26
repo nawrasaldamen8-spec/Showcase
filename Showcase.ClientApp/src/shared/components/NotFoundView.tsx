@@ -13,11 +13,11 @@ export interface NotFoundViewProps {
 }
 
 export const NotFoundView: React.FC<NotFoundViewProps> = ({
-  eyebrow = "Exhibition Archive \u2022 Void",
+  eyebrow = "Pority \u2022 404",
   title = "Page Not Found",
-  description = "The gallery corridor you attempted to visit does not lead to any cataloged plate or artist portfolio.",
+  description = "The page you are looking for does not exist or has been moved.",
   backHref = "/studio",
-  backLabel = "Return to Studio",
+  backLabel = "Back to Studio",
   icon: Icon = LayoutGrid,
 }) => {
   return (

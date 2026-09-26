@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 150" fill="currentColor">
+  <!-- Left Pillar -->
+  <rect x="5" y="55" width="26" height="90" rx="1" />
+  
+  <!-- Main Arch and Upper Right Structure -->
+  <path d="M 36 15 
+           L 95 15 
+           L 95 90 
+           L 68 90 
+           L 68 35 
+           C 68 22, 36 22, 36 35 
+           L 36 15 Z" />
+  
+  <!-- Lower Right Support Block -->
+  <rect x="49" y="90" width="19" height="55" rx="1" />
+</svg>
