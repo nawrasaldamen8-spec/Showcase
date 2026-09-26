@@ -1,4 +1,4 @@
-import { Briefcase, LayoutGrid, Settings as SettingsIcon, User as UserIcon } from "lucide-react";
+import { Bell, Briefcase, LayoutGrid, Search, User as UserIcon } from "lucide-react";
 import React from "react";
 import { NavLink, useLocation } from "react-router-dom";
 
@@ -7,6 +7,8 @@ export interface SidebarUser {
   firstName?: string;
   lastName?: string;
   avatarUrl?: string;
+  isVerified?: boolean;
+  roles?: string[];
 }
 
 export interface SidebarNavLinksProps {
@@ -19,22 +21,25 @@ export const SidebarNavLinks: React.FC<SidebarNavLinksProps> = ({ user }) => {
   const isLinkActive = (to: string, isActive: boolean) => {
     if (isActive) return true;
     if (to === "/studio" && (location.pathname === "/" || location.pathname === "/posts/mine")) return true;
+    if (to === "/feed" && (location.pathname.startsWith("/feed") || location.pathname.startsWith("/search"))) return true;
     if (to === "/career" && location.pathname.startsWith("/career")) return true;
+    if (to === "/notifications" && location.pathname.startsWith("/notifications")) return true;
     return false;
   };
 
   const navLinks = [
     { label: "Studio", to: "/studio", icon: LayoutGrid },
+    { label: "Feed", to: "/feed", icon: Search },
     { label: "Career", to: "/career", icon: Briefcase },
+    { label: "Notifications", to: "/notifications", icon: Bell },
     ...(user ? [{ label: "Profile", to: `/u/${user.username}`, icon: UserIcon }] : []),
-    { label: "Settings", to: "/settings", icon: SettingsIcon },
   ];
 
   return (
     <div className="flex-1 py-6 px-3.5 space-y-1.5 overflow-y-auto">
       <div className="px-3 pb-2">
         <p className="font-gothic text-[10px] font-bold uppercase tracking-[0.18em] text-[#87867f]">
-          Exhibition Feed
+          Community &amp; Studio
         </p>
       </div>
 

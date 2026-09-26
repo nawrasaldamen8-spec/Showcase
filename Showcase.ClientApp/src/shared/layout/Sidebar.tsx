@@ -1,6 +1,7 @@
 import { Plus } from "lucide-react";
 import React from "react";
 import { Link } from "react-router-dom";
+import { BrandLogo } from "../components/BrandLogo.tsx";
 import { Button } from "../components/Button.tsx";
 import { DemoSwitcher, type DemoPersona } from "./DemoSwitcher.tsx";
 import { SidebarNavLinks, type SidebarUser } from "./SidebarNavLinks.tsx";
@@ -23,29 +24,14 @@ export const Sidebar: React.FC<SidebarProps> = ({ user, currentPersona = "creato
     >
       {/* 1. Header / Platform Branding */}
       <div className="h-18 lg:h-20 px-6 flex items-center justify-between border-b border-[#262624]">
-        <Link to="/studio" className="flex items-center gap-3 group text-decoration-none" aria-label="SHOWCASE Home">
-          <div className="w-8 h-8 rounded-full border border-[#faf9f5]/30 flex items-center justify-center bg-[#262624] group-hover:border-[#d97757] transition-colors">
-            <svg
-              className="w-4 h-4 text-[#faf9f5] group-hover:text-[#d97757] transition-colors"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <circle cx="12" cy="12" r="10" />
-              <line x1="14.31" y1="8" x2="20.05" y2="17.94" />
-              <line x1="9.69" y1="8" x2="21.17" y2="8" />
-              <line x1="7.38" y1="12" x2="13.12" y2="2.06" />
-              <line x1="9.69" y1="16" x2="3.95" y2="6.06" />
-              <line x1="14.31" y1="16" x2="2.83" y2="16" />
-              <line x1="16.62" y1="12" x2="10.88" y2="21.94" />
-            </svg>
-          </div>
-          <span className="font-gothic font-extrabold text-lg lg:text-xl tracking-[0.18em] uppercase text-[#faf9f5] group-hover:text-[#d97757] transition-colors">
-            SHOWCASE
-          </span>
+        <Link to="/studio" className="flex items-center gap-3 group text-decoration-none" aria-label="Pority Home">
+          <BrandLogo
+            variant="full"
+            theme="dark"
+            size="md"
+            className="group-hover:opacity-90 transition-opacity"
+            textClassName="text-xl tracking-tight text-[#faf9f5] font-serif"
+          />
         </Link>
       </div>
 

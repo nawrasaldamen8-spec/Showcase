@@ -1,6 +1,7 @@
-import { Briefcase, ExternalLink, LayoutGrid, LogOut, Settings as SettingsIcon, Sparkles, User as UserIcon } from "lucide-react";
+import { LogOut, Settings as SettingsIcon, Shield, Sparkles, User as UserIcon } from "lucide-react";
 import React, { useRef, useState } from "react";
 import { Link } from "react-router-dom";
+import { VerifiedBadge } from "../components/VerifiedBadge.tsx";
 import { useClickOutside } from "../hooks/useClickOutside.ts";
 import type { DemoPersona } from "./DemoSwitcher.tsx";
 import type { SidebarUser } from "./SidebarNavLinks.tsx";
@@ -40,9 +41,12 @@ export const SidebarUserMenu: React.FC<SidebarUserMenuProps> = ({ user, onPerson
             </div>
           )}
           <div className="min-w-0">
-            <p className="font-gothic text-xs font-bold uppercase tracking-wider text-[#faf9f5] truncate">
-              {user ? (user.firstName ? `${user.firstName} ${user.lastName || ""}` : user.username) : "Visitor"}
-            </p>
+            <div className="flex items-center gap-1.5 min-w-0">
+              <p className="font-gothic text-xs font-bold uppercase tracking-wider text-[#faf9f5] truncate">
+                {user ? (user.firstName ? `${user.firstName} ${user.lastName || ""}` : user.username) : "Visitor"}
+              </p>
+              {user?.isVerified && <VerifiedBadge size="xs" className="shrink-0" />}
+            </div>
             <p className="font-serif text-[11px] text-[#87867f] truncate">
               {user ? `@${user.username}` : "Public Gallery"}
             </p>
@@ -59,42 +63,27 @@ export const SidebarUserMenu: React.FC<SidebarUserMenuProps> = ({ user, onPerson
           {user ? (
             <>
               <div className="px-4 py-2 border-b border-[#262624]">
-                <p className="font-gothic text-xs font-bold uppercase tracking-wider text-[#faf9f5] truncate">
-                  {user.firstName ? `${user.firstName} ${user.lastName || ""}` : user.username}
-                </p>
+                <div className="flex items-center gap-1.5 min-w-0">
+                  <p className="font-gothic text-xs font-bold uppercase tracking-wider text-[#faf9f5] truncate">
+                    {user.firstName ? `${user.firstName} ${user.lastName || ""}` : user.username}
+                  </p>
+                  {user.isVerified && <VerifiedBadge size="xs" className="shrink-0" />}
+                </div>
                 <p className="font-serif text-xs text-[#87867f] truncate">@{user.username}</p>
               </div>
 
               <div className="py-1">
-                <Link
-                  to={`/u/${user.username}`}
-                  onClick={() => setUserMenuOpen(false)}
-                  className="flex items-center gap-2.5 px-4 py-2 text-xs font-gothic uppercase tracking-wider text-[#faf9f5] hover:bg-[#262624] transition-colors"
-                  role="menuitem"
-                >
-                  <ExternalLink className="h-3.5 w-3.5 text-[#87867f]" />
-                  <span>View Public Profile</span>
-                </Link>
-
-                <Link
-                  to="/career"
-                  onClick={() => setUserMenuOpen(false)}
-                  className="flex items-center gap-2.5 px-4 py-2 text-xs font-gothic uppercase tracking-wider text-[#faf9f5] hover:bg-[#262624] transition-colors"
-                  role="menuitem"
-                >
-                  <Briefcase className="h-3.5 w-3.5 text-[#87867f]" />
-                  <span>Career Hub</span>
-                </Link>
-
-                <Link
-                  to="/studio"
-                  onClick={() => setUserMenuOpen(false)}
-                  className="flex items-center gap-2.5 px-4 py-2 text-xs font-gothic uppercase tracking-wider text-[#faf9f5] hover:bg-[#262624] transition-colors"
-                  role="menuitem"
-                >
-                  <LayoutGrid className="h-3.5 w-3.5 text-[#87867f]" />
-                  <span>Creator Studio</span>
-                </Link>
+                {user?.roles?.includes("Admin") && (
+                  <Link
+                    to="/admin"
+                    onClick={() => setUserMenuOpen(false)}
+                    className="flex items-center gap-2.5 px-4 py-2 text-xs font-gothic uppercase tracking-wider text-[#d97757] hover:bg-[#262624] transition-colors"
+                    role="menuitem"
+                  >
+                    <Shield className="h-3.5 w-3.5 text-[#d97757]" />
+                    <span>Admin Console</span>
+                  </Link>
+                )}
 
                 <Link
                   to="/settings"

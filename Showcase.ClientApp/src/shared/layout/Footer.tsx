@@ -5,105 +5,68 @@ export const Footer: React.FC = () => {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="w-full bg-[#faf9f5] border-t border-[#cccbc8] text-[#141413] transition-colors mt-auto">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-10 lg:gap-12 pb-12 border-b border-[#cccbc8]/60">
-          {/* Brand & Curation Statement (Left 6 cols) */}
-          <div className="md:col-span-6 space-y-4">
-            <Link to="/studio" className="inline-block text-decoration-none">
-              <span className="font-gothic font-extrabold text-2xl tracking-[0.18em] uppercase text-[#141413] hover:text-[#d97757] transition-colors">
-                SHOWCASE
-              </span>
-            </Link>
-            <p className="font-serif text-base sm:text-lg leading-relaxed text-[#141413]/85 max-w-lg">
-              An open-canvas digital exhibition celebrating visionary architecture, documentary photography, industrial
-              design, and contemporary visual culture.
-            </p>
-            <p className="font-serif text-xs italic text-[#87867f]">
-              Designed with the Warm Gallery aesthetic — where geometric headlines meet editorial reading text on ivory
-              canvas.
+    <footer className="w-full bg-[#faf9f5] border-t border-[#cccbc8] text-[#141413] transition-colors mt-auto overflow-hidden">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-12 sm:pt-12 sm:pb-16 lg:pt-16 lg:pb-20 space-y-10 sm:space-y-14">
+        {/* Top Info Grid: Brand Description (Left) & Platform Links (Right) */}
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-12 items-start">
+          {/* Brand Statement (Left 7-8 cols) */}
+          <div className="md:col-span-7 lg:col-span-8 space-y-3">
+            <p className="font-serif text-base sm:text-lg leading-relaxed text-[#141413]/85 max-w-md">
+              A modern platform for professionals and creatives to showcase their work, career milestones, and projects.
             </p>
           </div>
 
-          {/* Quick Links (3 cols) */}
-          <div className="md:col-span-3 space-y-3">
-            <h4 className="font-gothic text-xs font-bold uppercase tracking-[0.12em] text-[#87867f]">Exhibition</h4>
+          {/* Platform Navigation Links (Right 5-4 cols) */}
+          <div className="md:col-span-5 lg:col-span-4 space-y-3 md:pl-6 lg:pl-12">
+            <h4 className="font-gothic text-xs font-bold uppercase tracking-[0.14em] text-[#87867f]">
+              Platform
+            </h4>
             <ul className="space-y-2 font-serif text-sm">
               <li>
                 <Link to="/studio" className="text-[#141413] hover:text-[#d97757] transition-colors">
-                  Creator Studio
+                  Studio
                 </Link>
               </li>
               <li>
                 <Link to="/career" className="text-[#141413] hover:text-[#d97757] transition-colors">
-                  Career &amp; Curations
+                  Career Hub
                 </Link>
               </li>
               <li>
                 <Link to="/posts/new" className="text-[#141413] hover:text-[#d97757] transition-colors">
-                  Submit a Work
+                  New Project
                 </Link>
               </li>
               <li>
                 <Link to="/settings" className="text-[#141413] hover:text-[#d97757] transition-colors">
-                  Artist Settings
+                  Settings
                 </Link>
-              </li>
-            </ul>
-          </div>
-
-          {/* Editorial & Connect (3 cols) */}
-          <div className="md:col-span-3 space-y-3">
-            <h4 className="font-gothic text-xs font-bold uppercase tracking-[0.12em] text-[#87867f]">Connect</h4>
-            <ul className="space-y-2 font-serif text-sm">
-              <li>
-                <a
-                  href="https://github.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-[#141413] hover:text-[#d97757] transition-colors"
-                >
-                  GitHub Repository
-                </a>
-              </li>
-              <li>
-                <a
-                  href="https://instagram.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-[#141413] hover:text-[#d97757] transition-colors"
-                >
-                  Instagram Archives
-                </a>
-              </li>
-              <li>
-                <a
-                  href="https://vsco.co"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-[#141413] hover:text-[#d97757] transition-colors"
-                >
-                  VSCO Visuals
-                </a>
-              </li>
-              <li>
-                <span className="text-[#87867f] text-xs">Storage: Cloudflare R2</span>
               </li>
             </ul>
           </div>
         </div>
 
-        {/* Bottom Bar: Copyright & Attribution */}
-        <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-serif text-[#87867f]">
-          <p>© {currentYear} SHOWCASE Gallery Platform. All rights reserved.</p>
-          <div className="flex items-center gap-6">
-            <span className="font-gothic text-[11px] uppercase tracking-wider text-[#141413]/70">
-              Ivory Medium Canvas (#f0eee6)
-            </span>
-            <span className="h-1 w-1 rounded-full bg-[#cccbc8]" />
-            <span className="font-gothic text-[11px] uppercase tracking-wider text-[#d97757]">
-              Clay Accent (#d97757)
-            </span>
+        {/* Giant Bold Statement Typography (Centered - No Logo Icon) */}
+        <div className="pt-4 sm:pt-8 border-t border-[#cccbc8]/60 overflow-hidden select-none flex justify-center">
+          <h2 className="font-gothic font-black text-[17vw] sm:text-[16vw] md:text-[15vw] lg:text-[170px] xl:text-[200px] tracking-[-0.045em] text-[#141413] leading-[0.82] uppercase text-center truncate pointer-events-none w-full">
+            Pority
+          </h2>
+        </div>
+
+        {/* Bottom Bar: Copyright (Centered) */}
+        <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4 text-xs font-serif text-[#87867f] border-t border-[#cccbc8]/40 text-center">
+          <p className="font-serif text-xs text-[#87867f] text-center">
+            &copy; {currentYear} Pority. All rights reserved.
+          </p>
+          <span className="hidden sm:inline text-[#cccbc8]">&bull;</span>
+          <div className="flex items-center gap-3">
+            <Link to="/terms" className="text-[#87867f] hover:text-[#141413] transition-colors">
+              Terms of Service
+            </Link>
+            <span className="text-[#cccbc8]">&bull;</span>
+            <Link to="/privacy" className="text-[#87867f] hover:text-[#141413] transition-colors">
+              Privacy Policy
+            </Link>
           </div>
         </div>
       </div>
