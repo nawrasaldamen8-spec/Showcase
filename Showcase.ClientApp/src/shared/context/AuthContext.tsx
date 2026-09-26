@@ -20,7 +20,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [activePersona, setActivePersonaState] = useState<ActivePersona>(() => {
     if (typeof window !== 'undefined') {
       const stored = localStorage.getItem(PERSONA_STORAGE_KEY);
-      if (stored === 'visitor' || stored === 'creator') {
+      if (stored === 'visitor' || stored === 'creator' || stored === 'admin') {
         return stored;
       }
     }
@@ -30,9 +30,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [creatorUser, setCreatorUser] = useState<CurrentUserResponse | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  // Synchronize creator user details when in creator mode
+  // Synchronize creator/admin user details when in authenticated mode
   useEffect(() => {
-    if (activePersona !== 'creator') {
+    if (activePersona === 'visitor') {
       return;
     }
 
@@ -47,7 +47,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           setCreatorUser(user);
         }
       } catch (err) {
-        console.error('Failed to load creator identity:', err);
+        console.error('Failed to load identity:', err);
         if (!isCancelled) {
           setCreatorUser(null);
         }
@@ -66,14 +66,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   // Synchronize across window events and cross-tab storage changes
   useEffect(() => {
     const handleStorage = (e: StorageEvent) => {
-      if (e.key === PERSONA_STORAGE_KEY && (e.newValue === 'visitor' || e.newValue === 'creator')) {
+      if (e.key === PERSONA_STORAGE_KEY && (e.newValue === 'visitor' || e.newValue === 'creator' || e.newValue === 'admin')) {
         setActivePersonaState(e.newValue);
       }
     };
 
     const handleCustomChange = (e: Event) => {
       const customEvent = e as CustomEvent<ActivePersona>;
-      if (customEvent.detail === 'visitor' || customEvent.detail === 'creator') {
+      if (customEvent.detail === 'visitor' || customEvent.detail === 'creator' || customEvent.detail === 'admin') {
         setActivePersonaState(customEvent.detail);
       }
     };
@@ -97,7 +97,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   }, []);
 
   const refreshUser = useCallback(async () => {
-    if (activePersona === 'creator') {
+    if (activePersona !== 'visitor') {
       setIsLoading(true);
       try {
         const user = await apiClient.getCurrentUser();
@@ -150,7 +150,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   }, [switchPersona]);
 
   const currentUser = activePersona === 'visitor' ? null : creatorUser;
-  const isAuthenticated = activePersona === 'creator' && currentUser !== null;
+  const isAuthenticated = activePersona !== 'visitor' && currentUser !== null;
 
   const value: AuthContextValue = {
     currentUser,

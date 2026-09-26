@@ -9,9 +9,21 @@ import {
 } from "../types/index.ts";
 import { MockApiError, mockDb, paginateList, simulateNetworkLatency } from "./mockDb.ts";
 
-function mapPostSummary(post: Post, creator?: Profile | null): PostSummaryResponse {
+function getInitialPostLikes(postId: string): number {
+  let hash = 0;
+  for (let i = 0; i < postId.length; i++) {
+    hash = (hash + postId.charCodeAt(i)) % 29;
+  }
+  return hash + 7;
+}
+
+function mapPostSummary(post: Post, creator?: Profile | null, likedIds?: Set<string>): PostSummaryResponse {
   const sortedImages = [...post.images].sort((a, b) => a.displayOrder - b.displayOrder);
   const firstImage = sortedImages[0];
+  const likedSet = likedIds || mockDb.getLikedPostIds();
+  const isLiked = likedSet.has(post.id);
+  const likeCount = post.likeCount ?? getInitialPostLikes(post.id);
+
   return {
     id: post.id,
     profileId: post.profileId,
@@ -24,6 +36,8 @@ function mapPostSummary(post: Post, creator?: Profile | null): PostSummaryRespon
     publishedAt: post.publishedAt,
     thumbnailUrl: firstImage ? firstImage.url : null,
     imageCount: post.images.length,
+    likeCount,
+    isLiked,
     creator: creator
       ? {
           profileId: creator.id,
@@ -116,6 +130,9 @@ export const mockPostsQueryService = {
     }
 
     const sortedImages = [...post.images].sort((a, b) => a.displayOrder - b.displayOrder);
+    const likedSet = mockDb.getLikedPostIds();
+    const isLiked = likedSet.has(post.id);
+    const likeCount = post.likeCount ?? getInitialPostLikes(post.id);
 
     return {
       id: post.id,
@@ -125,6 +142,8 @@ export const mockPostsQueryService = {
       externalUrl: post.externalUrl,
       status: post.status,
       tags: post.tags,
+      likeCount,
+      isLiked,
       createdAt: post.createdAt,
       publishedAt: post.publishedAt,
       updatedAt: post.updatedAt,

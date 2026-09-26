@@ -83,3 +83,22 @@ export interface CareerSummary {
   languagesCount: number;
   achievementsCount: number;
 }
+
+export interface CareerVisibilitySettings {
+  experience: boolean;
+  academics: boolean;
+  skills: boolean;
+  credentials: boolean;
+  languages: boolean;
+  achievements: boolean;
+}
+
+export interface PublicCareerData {
+  visibility: CareerVisibilitySettings;
+  experiences: CareerExperience[];
+  academics: CareerAcademic[];
+  skills: CareerSkill[];
+  credentials: CareerCredential[];
+  languages: CareerLanguage[];
+  achievements: CareerAchievement[];
+}

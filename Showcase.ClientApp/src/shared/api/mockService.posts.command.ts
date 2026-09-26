@@ -135,9 +135,14 @@ export const mockPostsCommandService = {
   },
 
   async uploadImageDirect(uploadUrl: string, file: File | Blob): Promise<string> {
-    await simulateNetworkLatency(150, 350);
-    if (typeof URL !== "undefined" && typeof URL.createObjectURL === "function") {
-      return URL.createObjectURL(file);
+    await simulateNetworkLatency(150, 300);
+    if (typeof FileReader !== "undefined") {
+      return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = () => resolve(uploadUrl);
+        reader.readAsDataURL(file);
+      });
     }
     return uploadUrl;
   },
@@ -161,7 +166,7 @@ export const mockPostsCommandService = {
       id: imageId,
       postId,
       storageKey,
-      url: url || `https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=1600&q=80`,
+      url: url || storageKey,
       displayOrder: order,
       createdAt: new Date().toISOString(),
     };
@@ -224,5 +229,46 @@ export const mockPostsCommandService = {
     post.updatedAt = new Date().toISOString();
 
     mockDb.saveDb(db);
+  },
+
+  async toggleLikePost(postId: string): Promise<{ isLiked: boolean; likeCount: number }> {
+    await simulateNetworkLatency(50, 120);
+    const db = mockDb.loadDb();
+    const post = db.posts.find((p) => p.id === postId);
+    if (!post) {
+      throw new MockApiError(404, "Post.NotFound", `Post with ID "${postId}" was not found.`);
+    }
+
+    const likedIds = mockDb.getLikedPostIds();
+    const currentlyLiked = likedIds.has(postId);
+
+    let baseCount = post.likeCount;
+    if (baseCount === undefined) {
+      let hash = 0;
+      for (let i = 0; i < postId.length; i++) {
+        hash = (hash + postId.charCodeAt(i)) % 29;
+      }
+      baseCount = hash + 7;
+    }
+
+    let newLiked: boolean;
+    let newCount: number;
+
+    if (currentlyLiked) {
+      likedIds.delete(postId);
+      newLiked = false;
+      newCount = Math.max(0, baseCount - 1);
+    } else {
+      likedIds.add(postId);
+      newLiked = true;
+      newCount = baseCount + 1;
+    }
+
+    post.likeCount = newCount;
+    post.isLiked = newLiked;
+    mockDb.setLikedPostIds(likedIds);
+    mockDb.saveDb(db);
+
+    return { isLiked: newLiked, likeCount: newCount };
   },
 };

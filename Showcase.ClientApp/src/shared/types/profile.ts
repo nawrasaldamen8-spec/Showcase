@@ -15,9 +15,15 @@ export interface Profile {
   email: string;
   firstName: string;
   lastName: string;
+  specialty?: string | null;
   bio?: string | null;
   avatarKey?: string | null;
   avatarUrl?: string | null;
+  phoneNumber?: string | null;
+  accountNumber?: string | null;
+  isVerified?: boolean;
+  verificationStatus?: "none" | "pending" | "verified" | "rejected";
+  featuredStatus?: "none" | "pending" | "featured" | "rejected";
   createdAt: string;
   updatedAt?: string | null;
   socialLinks: SocialLink[];
@@ -38,9 +44,15 @@ export interface ProfileDetailsResponse {
   userName?: string;
   firstName: string;
   lastName: string;
+  specialty?: string | null;
   bio?: string | null;
   avatarKey?: string | null;
   avatarUrl?: string | null;
+  phoneNumber?: string | null;
+  accountNumber?: string | null;
+  isVerified?: boolean;
+  verificationStatus?: "none" | "pending" | "verified" | "rejected";
+  featuredStatus?: "none" | "pending" | "featured" | "rejected";
   socialLinks: SocialLinkDto[];
   createdAt: string;
   updatedAt?: string | null;
@@ -54,15 +66,44 @@ export interface PublicProfileResponse {
   userName?: string;
   firstName: string;
   lastName: string;
+  specialty?: string | null;
   bio?: string | null;
   avatarUrl?: string | null;
+  phoneNumber?: string | null;
+  accountNumber?: string | null;
+  isVerified?: boolean;
+  verificationStatus?: "none" | "pending" | "verified" | "rejected";
+  featuredStatus?: "none" | "pending" | "featured" | "rejected";
   socialLinks: SocialLinkDto[];
 }
 
 export interface UpdateProfileRequest {
   firstName: string;
   lastName: string;
+  specialty?: string | null;
   bio?: string | null;
+  phoneNumber?: string | null;
+  accountNumber?: string | null;
+}
+
+export interface UpdatePhoneRequest {
+  phoneNumber: string;
+  accountNumber?: string;
+}
+
+export interface VerificationRequestDto {
+  message?: string;
+  notes?: string;
+  category?: string;
+  identificationNumber?: string;
+  websiteUrl?: string;
+  portfolioUrl?: string;
+  documentUrl?: string;
+}
+
+export interface FeaturedRequestDto {
+  message: string;
+  notes?: string;
 }
 
 export interface AddSocialLinkRequest {

@@ -5,6 +5,13 @@ export interface UserAccount {
   passwordHash: string;
   profileId: string;
   roles: string[];
+  phoneNumber?: string | null;
+  accountNumber?: string | null;
+  isVerified?: boolean;
+  verificationStatus?: "none" | "pending" | "verified" | "rejected";
+  featuredStatus?: "none" | "pending" | "featured" | "rejected";
+  isBanned?: boolean;
+  banReason?: string | null;
 }
 
 export interface UserIdentityDetails {
@@ -23,6 +30,13 @@ export interface CurrentUserResponse {
   profileId: string;
   bio?: string | null;
   avatarUrl?: string | null;
+  phoneNumber?: string | null;
+  accountNumber?: string | null;
+  isVerified?: boolean;
+  verificationStatus?: "none" | "pending" | "verified" | "rejected";
+  featuredStatus?: "none" | "pending" | "featured" | "rejected";
+  isBanned?: boolean;
+  banReason?: string | null;
   roles: string[];
 }
 
@@ -38,6 +52,8 @@ export interface RegisterRequest {
   password: string;
   firstName: string;
   lastName: string;
+  bio?: string;
+  avatarUrl?: string;
 }
 
 export interface LoginRequest {

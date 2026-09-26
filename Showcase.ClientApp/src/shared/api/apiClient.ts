@@ -1,3 +1,4 @@
+import { apiAdminClient } from "./apiClient.admin.ts";
 import { apiAuthClient } from "./apiClient.auth.ts";
 import { apiCareerClient } from "./apiClient.career.ts";
 import { apiPostsClient } from "./apiClient.posts.ts";
@@ -11,4 +12,5 @@ export const apiClient = {
   ...apiProfileClient,
   ...apiPostsClient,
   ...apiCareerClient,
+  ...apiAdminClient,
 };

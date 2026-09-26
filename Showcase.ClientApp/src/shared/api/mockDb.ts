@@ -4,6 +4,7 @@ import { INITIAL_POSTS, INITIAL_PROFILES, INITIAL_USERS } from "./mockData.ts";
 const DB_STORAGE_KEY = "showcase_portfolio_db";
 const AUTH_STORAGE_KEY = "showcase_auth_state";
 const PERSONA_STORAGE_KEY = "showcase_active_persona";
+const LIKES_STORAGE_KEY = "showcase_liked_posts";
 
 export interface MockDatabase {
   users: UserAccount[];
@@ -63,12 +64,6 @@ export const mockDb = {
       if (raw) {
         const parsed = JSON.parse(raw) as MockDatabase;
         if (parsed.users && parsed.profiles && parsed.posts) {
-          const existingIds = new Set(parsed.posts.map((p) => p.id));
-          const newSeedPosts = INITIAL_POSTS.filter((p) => !existingIds.has(p.id));
-          if (newSeedPosts.length > 0) {
-            parsed.posts.push(...JSON.parse(JSON.stringify(newSeedPosts)));
-            this.saveDb(parsed);
-          }
           return parsed;
         }
       }
@@ -77,9 +72,9 @@ export const mockDb = {
     }
 
     const initialDb: MockDatabase = {
-      users: JSON.parse(JSON.stringify(INITIAL_USERS)),
-      profiles: JSON.parse(JSON.stringify(INITIAL_PROFILES)),
-      posts: JSON.parse(JSON.stringify(INITIAL_POSTS)),
+      users: [],
+      profiles: [],
+      posts: [],
     };
     this.saveDb(initialDb);
     return initialDb;
@@ -95,21 +90,44 @@ export const mockDb = {
     if (typeof window !== "undefined") {
       localStorage.removeItem(DB_STORAGE_KEY);
       localStorage.removeItem(AUTH_STORAGE_KEY);
-      localStorage.setItem(PERSONA_STORAGE_KEY, "creator");
+      localStorage.removeItem(LIKES_STORAGE_KEY);
+      localStorage.setItem(PERSONA_STORAGE_KEY, "visitor");
     }
   },
 
-  getActivePersona(): "visitor" | "creator" {
+  getLikedPostIds(): Set<string> {
+    if (typeof window === "undefined") return new Set();
+    try {
+      const raw = localStorage.getItem(LIKES_STORAGE_KEY);
+      if (raw) {
+        const arr = JSON.parse(raw);
+        if (Array.isArray(arr)) {
+          return new Set(arr);
+        }
+      }
+    } catch {
+      // Fallback
+    }
+    return new Set();
+  },
+
+  setLikedPostIds(ids: Set<string>): void {
+    if (typeof window !== "undefined") {
+      localStorage.setItem(LIKES_STORAGE_KEY, JSON.stringify(Array.from(ids)));
+    }
+  },
+
+  getActivePersona(): "visitor" | "creator" | "admin" {
     if (typeof window !== "undefined") {
       const stored = localStorage.getItem(PERSONA_STORAGE_KEY);
-      if (stored === "visitor" || stored === "creator") {
+      if (stored === "visitor" || stored === "creator" || stored === "admin") {
         return stored;
       }
     }
-    return "creator";
+    return "visitor";
   },
 
-  setActivePersona(persona: "visitor" | "creator"): void {
+  setActivePersona(persona: "visitor" | "creator" | "admin"): void {
     if (typeof window !== "undefined") {
       localStorage.setItem(PERSONA_STORAGE_KEY, persona);
       window.dispatchEvent(new CustomEvent("showcase:persona-change", { detail: persona }));
@@ -130,13 +148,7 @@ export const mockDb = {
       // Fallback
     }
 
-    const defaultAuth: StoredAuthState = {
-      userId: "usr_elena_vance",
-      accessToken: "mock_jwt_token_elena_vance",
-      refreshToken: "mock_refresh_token_elena_vance",
-    };
-    localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(defaultAuth));
-    return defaultAuth;
+    return null;
   },
 
   setStoredAuth(auth: StoredAuthState | null): void {

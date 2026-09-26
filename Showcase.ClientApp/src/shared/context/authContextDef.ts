@@ -5,7 +5,7 @@ import type {
   RegisterRequest,
 } from '../types/index.ts';
 
-export type ActivePersona = 'visitor' | 'creator';
+export type ActivePersona = 'visitor' | 'creator' | 'admin';
 
 export interface AuthContextValue {
   currentUser: CurrentUserResponse | null;

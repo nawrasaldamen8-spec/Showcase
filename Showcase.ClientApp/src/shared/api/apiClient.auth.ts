@@ -81,11 +81,11 @@ export const apiAuthClient = {
     });
   },
 
-  getActivePersona(): "visitor" | "creator" {
+  getActivePersona(): "visitor" | "creator" | "admin" {
     return mockService.getActivePersona();
   },
 
-  async switchPersona(persona: "visitor" | "creator"): Promise<void> {
+  async switchPersona(persona: "visitor" | "creator" | "admin"): Promise<void> {
     mockService.setActivePersona(persona);
   },
 

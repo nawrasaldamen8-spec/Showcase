@@ -33,6 +33,8 @@ export interface Post {
   externalUrl?: string | null;
   status: PostStatus;
   tags?: string[];
+  likeCount?: number;
+  isLiked?: boolean;
   createdAt: string;
   publishedAt?: string | null;
   updatedAt?: string | null;
@@ -53,6 +55,7 @@ export interface PostCreatorDto {
   lastName: string;
   avatarUrl?: string | null;
   bio?: string | null;
+  isVerified?: boolean;
 }
 
 export interface PostDetailsResponse {
@@ -63,6 +66,8 @@ export interface PostDetailsResponse {
   externalUrl?: string | null;
   status: PostStatus | string;
   tags?: string[];
+  likeCount?: number;
+  isLiked?: boolean;
   createdAt: string;
   publishedAt?: string | null;
   updatedAt?: string | null;
@@ -80,6 +85,8 @@ export interface PostSummaryResponse {
   externalUrl?: string | null;
   status: PostStatus | string;
   tags?: string[];
+  likeCount?: number;
+  isLiked?: boolean;
   createdAt: string;
   publishedAt?: string | null;
   thumbnailUrl?: string | null;

@@ -6,6 +6,8 @@ import type {
   CareerLanguage,
   CareerSkill,
   CareerSummary,
+  CareerVisibilitySettings,
+  PublicCareerData,
 } from "../types/index.ts";
 import { httpFetch, USE_MOCK_API } from "./apiClient.base.ts";
 import { careerMockService } from "./careerMockService.ts";
@@ -220,5 +222,43 @@ export const apiCareerClient = {
       return careerMockService.deleteAchievement(id);
     }
     return httpFetch<void>(`/api/career/achievements/${id}`, { method: "DELETE" });
+  },
+
+  async getCareerVisibility(): Promise<CareerVisibilitySettings> {
+    if (USE_MOCK_API) {
+      return careerMockService.getCareerVisibility();
+    }
+    return httpFetch<CareerVisibilitySettings>("/api/career/visibility");
+  },
+
+  async updateCareerVisibility(settings: Partial<CareerVisibilitySettings>): Promise<CareerVisibilitySettings> {
+    if (USE_MOCK_API) {
+      return careerMockService.updateCareerVisibility(settings);
+    }
+    return httpFetch<CareerVisibilitySettings>("/api/career/visibility", {
+      method: "PUT",
+      body: JSON.stringify(settings),
+    });
+  },
+
+  async toggleSectionVisibility(
+    section: keyof CareerVisibilitySettings,
+    isVisible: boolean
+  ): Promise<CareerVisibilitySettings> {
+    if (USE_MOCK_API) {
+      return careerMockService.toggleSectionVisibility(section, isVisible);
+    }
+    return httpFetch<CareerVisibilitySettings>(`/api/career/visibility/${section}`, {
+      method: "PUT",
+      body: JSON.stringify({ isVisible }),
+    });
+  },
+
+  async getPublicCareer(username?: string): Promise<PublicCareerData> {
+    if (USE_MOCK_API) {
+      return careerMockService.getPublicCareer(username);
+    }
+    const path = username ? `/api/career/public/${encodeURIComponent(username)}` : "/api/career/public";
+    return httpFetch<PublicCareerData>(path, { requiresAuth: false });
   },
 };

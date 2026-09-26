@@ -4,10 +4,13 @@ import type {
   PublicProfileResponse,
   ReorderSocialLinksRequest,
   SocialLinkIdResponse,
+  UpdatePhoneRequest,
   UpdateProfileRequest,
   UpdateSocialLinkRequest,
   UploadUrlRequest,
   UploadUrlResponse,
+  VerificationRequestDto,
+  FeaturedRequestDto,
 } from "../types/index.ts";
 import { httpFetch, USE_MOCK_API } from "./apiClient.base.ts";
 import { mockService } from "./mockService.ts";
@@ -99,6 +102,36 @@ export const apiProfileClient = {
     }
     return httpFetch<void>("/api/profiles/me/social-links/reorder", {
       method: "PUT",
+      body: JSON.stringify(data),
+    });
+  },
+
+  async updatePhone(data: UpdatePhoneRequest): Promise<void> {
+    if (USE_MOCK_API) {
+      return mockService.updatePhone(data);
+    }
+    return httpFetch<void>("/api/profiles/me/phone", {
+      method: "PUT",
+      body: JSON.stringify(data),
+    });
+  },
+
+  async submitVerificationRequest(data: VerificationRequestDto): Promise<void> {
+    if (USE_MOCK_API) {
+      return mockService.submitVerificationRequest(data);
+    }
+    return httpFetch<void>("/api/profiles/me/verify", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  },
+
+  async submitFeaturedRequest(data: FeaturedRequestDto): Promise<void> {
+    if (USE_MOCK_API) {
+      return mockService.submitFeaturedRequest(data);
+    }
+    return httpFetch<void>("/api/profiles/me/featured", {
+      method: "POST",
       body: JSON.stringify(data),
     });
   },

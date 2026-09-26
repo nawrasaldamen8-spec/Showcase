@@ -187,4 +187,13 @@ export const apiPostsClient = {
       body: JSON.stringify(data),
     });
   },
+
+  async toggleLikePost(postId: string): Promise<{ isLiked: boolean; likeCount: number }> {
+    if (USE_MOCK_API) {
+      return mockService.toggleLikePost(postId);
+    }
+    return httpFetch<{ isLiked: boolean; likeCount: number }>(`/api/posts/${postId}/like`, {
+      method: "POST",
+    });
+  },
 };

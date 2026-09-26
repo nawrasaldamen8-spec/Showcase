@@ -6,6 +6,8 @@ import type {
   CareerLanguage,
   CareerAchievement,
   CareerSummary,
+  CareerVisibilitySettings,
+  PublicCareerData,
 } from "../types/career.ts";
 import {
   initialExperiences,
@@ -14,6 +16,7 @@ import {
   initialCredentials,
   initialLanguages,
   initialAchievements,
+  initialCareerVisibility,
 } from "./careerMockData.ts";
 import { createMockCrud } from "./mockCrudFactory.ts";
 
@@ -24,7 +27,28 @@ const STORAGE_KEYS = {
   credentials: "showcase_career_credentials",
   languages: "showcase_career_languages",
   achievements: "showcase_career_achievements",
+  visibility: "showcase_career_visibility",
 };
+
+function loadVisibilityFromStorage(): CareerVisibilitySettings {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEYS.visibility);
+    if (raw) {
+      return { ...initialCareerVisibility, ...JSON.parse(raw) };
+    }
+  } catch (e) {
+    console.error("Failed to read career visibility from localStorage", e);
+  }
+  return { ...initialCareerVisibility };
+}
+
+function saveVisibilityToStorage(settings: CareerVisibilitySettings): void {
+  try {
+    localStorage.setItem(STORAGE_KEYS.visibility, JSON.stringify(settings));
+  } catch (e) {
+    console.error("Failed to write career visibility to localStorage", e);
+  }
+}
 
 const experienceMock = createMockCrud<CareerExperience>({
   storageKey: STORAGE_KEYS.experiences,
@@ -116,4 +140,48 @@ export const careerMockService = {
   createAchievement: (data: Omit<CareerAchievement, "id" | "createdAt">) => achievementMock.create(data),
   updateAchievement: (id: string, data: Partial<CareerAchievement>) => achievementMock.update(id, data),
   deleteAchievement: (id: string) => achievementMock.delete(id),
+
+  getCareerVisibility: async (): Promise<CareerVisibilitySettings> => {
+    return loadVisibilityFromStorage();
+  },
+
+  updateCareerVisibility: async (settings: Partial<CareerVisibilitySettings>): Promise<CareerVisibilitySettings> => {
+    const current = loadVisibilityFromStorage();
+    const updated: CareerVisibilitySettings = { ...current, ...settings };
+    saveVisibilityToStorage(updated);
+    return updated;
+  },
+
+  toggleSectionVisibility: async (
+    section: keyof CareerVisibilitySettings,
+    isVisible: boolean
+  ): Promise<CareerVisibilitySettings> => {
+    const current = loadVisibilityFromStorage();
+    const updated: CareerVisibilitySettings = { ...current, [section]: isVisible };
+    saveVisibilityToStorage(updated);
+    return updated;
+  },
+
+  getPublicCareer: async (username?: string): Promise<PublicCareerData> => {
+    void username;
+    const visibility = loadVisibilityFromStorage();
+    const [experiences, academics, skills, credentials, languages, achievements] = await Promise.all([
+      experienceMock.getAll(),
+      academicMock.getAll(),
+      skillMock.getAll(),
+      credentialMock.getAll(),
+      languageMock.getAll(),
+      achievementMock.getAll(),
+    ]);
+
+    return {
+      visibility,
+      experiences,
+      academics,
+      skills,
+      credentials,
+      languages,
+      achievements,
+    };
+  },
 };

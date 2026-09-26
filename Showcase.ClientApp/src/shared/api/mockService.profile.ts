@@ -1,13 +1,16 @@
 import type {
   AddSocialLinkRequest,
+  FeaturedRequestDto,
   ProfileDetailsResponse,
   PublicProfileResponse,
   ReorderSocialLinksRequest,
   SocialLinkIdResponse,
+  UpdatePhoneRequest,
   UpdateProfileRequest,
   UpdateSocialLinkRequest,
   UploadUrlRequest,
   UploadUrlResponse,
+  VerificationRequestDto,
 } from "../types/index.ts";
 import { generateUuid, MockApiError, mockDb, simulateNetworkLatency } from "./mockDb.ts";
 
@@ -27,9 +30,15 @@ export const mockProfileService = {
       userName: profile.username,
       firstName: profile.firstName,
       lastName: profile.lastName,
+      specialty: profile.specialty,
       bio: profile.bio,
       avatarKey: profile.avatarKey,
       avatarUrl: profile.avatarUrl,
+      phoneNumber: profile.phoneNumber || user.phoneNumber,
+      accountNumber: profile.accountNumber || user.accountNumber,
+      isVerified: profile.isVerified ?? user.isVerified ?? false,
+      verificationStatus: profile.verificationStatus ?? user.verificationStatus ?? "none",
+      featuredStatus: profile.featuredStatus ?? user.featuredStatus ?? "none",
       socialLinks: sortedSocialLinks.map((s) => ({
         id: s.id,
         platform: s.platform,
@@ -58,8 +67,14 @@ export const mockProfileService = {
       userName: profile.username,
       firstName: profile.firstName,
       lastName: profile.lastName,
+      specialty: profile.specialty,
       bio: profile.bio,
       avatarUrl: profile.avatarUrl,
+      phoneNumber: profile.phoneNumber,
+      accountNumber: profile.accountNumber,
+      isVerified: profile.isVerified ?? false,
+      verificationStatus: profile.verificationStatus ?? "none",
+      featuredStatus: profile.featuredStatus ?? "none",
       socialLinks: sortedSocialLinks.map((s) => ({
         id: s.id,
         platform: s.platform,
@@ -84,6 +99,7 @@ export const mockProfileService = {
 
     profile.firstName = request.firstName.trim();
     profile.lastName = request.lastName.trim();
+    profile.specialty = request.specialty ? request.specialty.trim() : null;
     profile.bio = request.bio ? request.bio.trim() : null;
     profile.updatedAt = new Date().toISOString();
 
@@ -108,8 +124,7 @@ export const mockProfileService = {
     const { profile } = mockDb.getAuthenticatedUser(db);
 
     profile.avatarKey = storageKey;
-    profile.avatarUrl =
-      avatarUrl || `https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=600&q=80`;
+    profile.avatarUrl = avatarUrl || null;
     profile.updatedAt = new Date().toISOString();
 
     mockDb.saveDb(db);
@@ -222,6 +237,57 @@ export const mockProfileService = {
     }
 
     profile.updatedAt = new Date().toISOString();
+    mockDb.saveDb(db);
+  },
+
+  async updatePhone(request: UpdatePhoneRequest): Promise<void> {
+    await simulateNetworkLatency();
+    const db = mockDb.loadDb();
+    const { user, profile } = mockDb.getAuthenticatedUser(db);
+
+    const phone = request.phoneNumber?.trim() || "";
+    const accountNum = request.accountNumber?.trim() || "";
+
+    user.phoneNumber = phone || undefined;
+    user.accountNumber = accountNum || undefined;
+    profile.phoneNumber = phone || undefined;
+    profile.accountNumber = accountNum || undefined;
+    profile.updatedAt = new Date().toISOString();
+
+    mockDb.saveDb(db);
+  },
+
+  async submitVerificationRequest(request: VerificationRequestDto): Promise<void> {
+    await simulateNetworkLatency();
+    const db = mockDb.loadDb();
+    const { user, profile } = mockDb.getAuthenticatedUser(db);
+
+    const message = (request.message || request.notes || "").trim();
+    if (!message) {
+      throw new MockApiError(400, "Bad Request", "Please provide a message for your verification request.");
+    }
+
+    user.verificationStatus = "pending";
+    profile.verificationStatus = "pending";
+    profile.updatedAt = new Date().toISOString();
+
+    mockDb.saveDb(db);
+  },
+
+  async submitFeaturedRequest(request: FeaturedRequestDto): Promise<void> {
+    await simulateNetworkLatency();
+    const db = mockDb.loadDb();
+    const { user, profile } = mockDb.getAuthenticatedUser(db);
+
+    const message = (request.message || request.notes || "").trim();
+    if (!message) {
+      throw new MockApiError(400, "Bad Request", "Please provide a message for your featured suggestions request.");
+    }
+
+    user.featuredStatus = "pending";
+    profile.featuredStatus = "pending";
+    profile.updatedAt = new Date().toISOString();
+
     mockDb.saveDb(db);
   },
 };

@@ -50,9 +50,9 @@ export const mockAuthService = {
       email: request.email.trim().toLowerCase(),
       firstName: request.firstName.trim(),
       lastName: request.lastName.trim(),
-      bio: null,
+      bio: request.bio ? request.bio.trim() : null,
       avatarKey: null,
-      avatarUrl: null,
+      avatarUrl: request.avatarUrl || null,
       createdAt: now,
       updatedAt: null,
       socialLinks: [],
@@ -129,6 +129,11 @@ export const mockAuthService = {
         profileId: profile.id,
         bio: profile.bio,
         avatarUrl: profile.avatarUrl,
+        phoneNumber: profile.phoneNumber || user.phoneNumber,
+        accountNumber: profile.accountNumber || user.accountNumber,
+        isVerified: profile.isVerified ?? user.isVerified ?? false,
+        verificationStatus: profile.verificationStatus ?? user.verificationStatus ?? "none",
+        featuredStatus: profile.featuredStatus ?? user.featuredStatus ?? "none",
         roles: user.roles,
       };
     } catch {
