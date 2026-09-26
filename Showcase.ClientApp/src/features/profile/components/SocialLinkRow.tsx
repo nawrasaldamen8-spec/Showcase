@@ -100,7 +100,7 @@ export const SocialLinkRow: React.FC<SocialLinkRowProps> = ({
         </div>
       ) : (
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
-          <div className="flex items-center gap-3 min-w-0">
+          <div className="flex items-center gap-3 min-w-0 flex-1 w-full sm:w-auto">
             <div className="flex sm:flex-col items-center gap-0.5 shrink-0 bg-[#f0eee6] rounded-lg p-0.5 border border-[#cccbc8]/60">
               <button
                 type="button"
@@ -126,7 +126,7 @@ export const SocialLinkRow: React.FC<SocialLinkRowProps> = ({
               <PlatformIcon platform={link.platform} className="h-4 w-4" />
             </div>
 
-            <div className="min-w-0">
+            <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2">
                 <span className="font-gothic text-xs font-bold uppercase tracking-wider text-[#141413]">
                   {link.platform}
@@ -139,7 +139,7 @@ export const SocialLinkRow: React.FC<SocialLinkRowProps> = ({
                 href={link.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="font-serif text-xs text-[#87867f] hover:text-[#141413] transition-colors flex items-center gap-1 truncate max-w-xs sm:max-w-md mt-0.5"
+                className="font-serif text-xs text-[#87867f] hover:text-[#141413] transition-colors flex items-center gap-1 truncate max-w-[170px] sm:max-w-xs md:max-w-md mt-0.5"
               >
                 <span className="truncate">{link.url}</span>
                 <ExternalLink className="h-3 w-3 shrink-0 opacity-70" />

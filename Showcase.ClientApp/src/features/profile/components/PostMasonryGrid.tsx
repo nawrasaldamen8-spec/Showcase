@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@shared/components/Button.tsx";
 import { EmptyState } from "@shared/components/EmptyState.tsx";
 import type { ExplorePostResponse, PostSummaryResponse, PublicProfileResponse } from "@shared/types/index.ts";
-import { PostCard } from "@features/explore/components/PostCard.tsx";
+import { PostCard } from "@features/posts/components/index.ts";
 
 export interface PostMasonryGridProps {
   posts: PostSummaryResponse[];
@@ -27,13 +27,13 @@ export const PostMasonryGrid: React.FC<PostMasonryGridProps> = ({
     return (
       <EmptyState
         icon={Layers}
-        title="No Published Works Yet"
-        description="This creator hasn't published any exhibition plates yet. Check back soon for upcoming collections."
+        title="No Projects Yet"
+        description="No published projects yet."
         className="max-w-lg mx-auto my-8"
       >
-        <Link to="/studio">
+        <Link to={isOwnProfile ? "/studio" : "/feed"}>
           <Button variant="slate" size="sm">
-            {isOwnProfile ? "Go to Studio" : "Return to Studio"}
+            {isOwnProfile ? "Go to Studio" : "Explore Projects"}
           </Button>
         </Link>
       </EmptyState>
@@ -74,7 +74,7 @@ export const PostMasonryGrid: React.FC<PostMasonryGridProps> = ({
             rightIcon={!isLoadingMore ? <ArrowDown className="h-4 w-4" /> : undefined}
             className="px-8"
           >
-            Load More Works
+            Load More Projects
           </Button>
         </div>
       )}

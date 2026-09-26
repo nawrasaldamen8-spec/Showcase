@@ -106,9 +106,9 @@ export const UsernameSecuritySection: React.FC<UsernameSecuritySectionProps> = (
       <div className="flex items-center gap-2 font-serif text-xs sm:text-sm text-[#87867f]">
         <span>Current Public Handle:</span>
         <span className="font-gothic text-xs font-semibold text-[#141413] bg-[#f0eee6] px-2 py-0.5 rounded">
-          @{currentUsername || "elena_v"}
+          @{currentUsername || "—"}
         </span>
-        <span className="text-xs text-[#87867f]/80">(Target URL: /u/{currentUsername || "elena_v"})</span>
+        <span className="text-xs text-[#87867f]/80">(Target URL: /u/{currentUsername || ""})</span>
       </div>
 
       <form onSubmit={handleUsernameSubmit} className="space-y-4 max-w-xl">
@@ -117,7 +117,7 @@ export const UsernameSecuritySection: React.FC<UsernameSecuritySectionProps> = (
             label="New Username"
             value={newUsername}
             onChange={(e) => setNewUsername(e.target.value)}
-            placeholder="e.g. elena_vance"
+            placeholder="e.g. new_username"
             helperText="3-30 chars. Letters, digits, underscores, hyphens."
             required
             disabled={isUpdatingUsername}

@@ -105,7 +105,7 @@ export const EmailSecuritySection: React.FC<EmailSecuritySectionProps> = ({
       <div className="flex items-center gap-2 font-serif text-xs sm:text-sm text-[#87867f]">
         <span>Current Address:</span>
         <span className="font-gothic text-xs font-semibold text-[#141413] bg-[#f0eee6] px-2 py-0.5 rounded">
-          {currentEmail || "elena.vance@showcase.gallery"}
+          {currentEmail || "—"}
         </span>
       </div>
 

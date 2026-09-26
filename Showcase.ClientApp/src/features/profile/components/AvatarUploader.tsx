@@ -51,10 +51,10 @@ export const AvatarUploader: React.FC<AvatarUploaderProps> = ({
           id="avatar-uploader-heading"
           className="font-gothic text-xl sm:text-2xl font-bold uppercase tracking-tight text-[#141413]"
         >
-          Exhibition Avatar
+          Profile Photo
         </h2>
         <p className="font-serif text-sm sm:text-base text-[#87867f] mt-1 leading-relaxed">
-          High-resolution artist portrait representing your showcase identity. Recommended minimum 400x400px.
+          Upload a clear photo representing yourself. Recommended minimum 400x400px.
         </p>
       </div>
 
@@ -64,7 +64,7 @@ export const AvatarUploader: React.FC<AvatarUploaderProps> = ({
           <div
             tabIndex={0}
             role="button"
-            aria-label="Upload new avatar image"
+            aria-label="Upload profile photo"
             onClick={triggerPicker}
             onKeyDown={(e) => {
               if (e.key === "Enter" || e.key === " ") {
@@ -84,7 +84,7 @@ export const AvatarUploader: React.FC<AvatarUploaderProps> = ({
             {currentUrl ? (
               <img
                 src={currentUrl}
-                alt={`${firstName || username || "Creator"} avatar`}
+                alt={`${firstName || username || "User"} avatar`}
                 className={`h-full w-full object-cover transition-opacity duration-200 ${
                   isUploading ? "opacity-40" : "group-hover:opacity-85"
                 }`}
@@ -133,7 +133,7 @@ export const AvatarUploader: React.FC<AvatarUploaderProps> = ({
                   {isDragging ? "Drop Image Here to Upload" : "Click to Upload or Drag and Drop"}
                 </p>
                 <p className="font-serif text-xs text-[#87867f] mt-0.5">
-                  JPEG, PNG, WebP, or GIF up to 5MB. Cloudflare R2 storage simulated.
+                  JPEG, PNG, WebP, or GIF up to 5MB.
                 </p>
               </div>
             </div>
@@ -158,7 +158,7 @@ export const AvatarUploader: React.FC<AvatarUploaderProps> = ({
               disabled={isDeleting}
               leftIcon={<Upload className="h-3.5 w-3.5" />}
             >
-              Upload New Photo
+              Upload Photo
             </Button>
 
             {currentUrl && (
@@ -172,7 +172,7 @@ export const AvatarUploader: React.FC<AvatarUploaderProps> = ({
                 leftIcon={<Trash2 className="h-3.5 w-3.5 text-[#d97757]" />}
                 className="hover:border-[#d97757] hover:text-[#d97757]"
               >
-                Remove Avatar
+                Remove Photo
               </Button>
             )}
 

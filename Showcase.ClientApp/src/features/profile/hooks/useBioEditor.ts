@@ -5,14 +5,16 @@ import { useAuth } from '@shared/context/useAuth.ts';
 export interface UseBioEditorProps {
   initialFirstName: string;
   initialLastName: string;
+  initialSpecialty?: string | null;
   initialBio?: string | null;
-  onProfileUpdated?: (updated: { firstName: string; lastName: string; bio: string }) => void;
+  onProfileUpdated?: (updated: { firstName: string; lastName: string; specialty: string | null; bio: string }) => void;
   onNotify?: (message: string, type?: 'success' | 'error') => void;
 }
 
 export function useBioEditor({
   initialFirstName,
   initialLastName,
+  initialSpecialty = null,
   initialBio = '',
   onProfileUpdated,
   onNotify,
@@ -21,11 +23,13 @@ export function useBioEditor({
 
   const [firstName, setFirstName] = useState(initialFirstName);
   const [lastName, setLastName] = useState(initialLastName);
+  const [specialty, setSpecialty] = useState<string | null>(initialSpecialty || null);
   const [bio, setBio] = useState(initialBio || '');
 
   const [prevProps, setPrevProps] = useState({
     firstName: initialFirstName,
     lastName: initialLastName,
+    specialty: initialSpecialty || null,
     bio: initialBio || '',
   });
 
@@ -33,6 +37,7 @@ export function useBioEditor({
   const [fieldErrors, setFieldErrors] = useState<{
     firstName?: string;
     lastName?: string;
+    specialty?: string;
     bio?: string;
   }>({});
   const [generalError, setGeneralError] = useState<string | null>(null);
@@ -41,26 +46,31 @@ export function useBioEditor({
   if (
     initialFirstName !== prevProps.firstName ||
     initialLastName !== prevProps.lastName ||
+    (initialSpecialty || null) !== prevProps.specialty ||
     (initialBio || '') !== prevProps.bio
   ) {
     setPrevProps({
       firstName: initialFirstName,
       lastName: initialLastName,
+      specialty: initialSpecialty || null,
       bio: initialBio || '',
     });
     setFirstName(initialFirstName);
     setLastName(initialLastName);
+    setSpecialty(initialSpecialty || null);
     setBio(initialBio || '');
   }
 
   const hasChanges =
     firstName.trim() !== initialFirstName.trim() ||
     lastName.trim() !== initialLastName.trim() ||
+    (specialty || null) !== (initialSpecialty || null) ||
     (bio.trim() || '') !== (initialBio?.trim() || '');
 
   const handleReset = () => {
     setFirstName(initialFirstName);
     setLastName(initialLastName);
+    setSpecialty(initialSpecialty || null);
     setBio(initialBio || '');
     setFieldErrors({});
     setGeneralError(null);
@@ -70,7 +80,7 @@ export function useBioEditor({
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const errors: { firstName?: string; lastName?: string; bio?: string } = {};
+    const errors: { firstName?: string; lastName?: string; specialty?: string; bio?: string } = {};
 
     if (!firstName.trim()) {
       errors.firstName = 'First name is required.';
@@ -96,6 +106,7 @@ export function useBioEditor({
       await apiClient.updateProfile({
         firstName: firstName.trim(),
         lastName: lastName.trim(),
+        specialty: specialty || null,
         bio: bio.trim() || null,
       });
 
@@ -105,6 +116,7 @@ export function useBioEditor({
       onProfileUpdated?.({
         firstName: firstName.trim(),
         lastName: lastName.trim(),
+        specialty: specialty || null,
         bio: bio.trim(),
       });
       onNotify?.('Profile details updated successfully.', 'success');
@@ -128,6 +140,8 @@ export function useBioEditor({
     setFirstName,
     lastName,
     setLastName,
+    specialty,
+    setSpecialty,
     bio,
     setBio,
     fieldErrors,

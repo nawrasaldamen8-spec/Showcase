@@ -64,7 +64,7 @@ export const SocialLinksManager: React.FC<SocialLinksManagerProps> = ({ initialL
       const updatedLinks = [...links, newLink].sort((a, b) => a.displayOrder - b.displayOrder);
       setLinks(updatedLinks);
       onLinksChanged?.(updatedLinks);
-      onNotify?.(`Added ${platform} profile link.`, "success");
+      onNotify?.(`Added ${platform} link.`, "success");
       return true;
     } catch (err: unknown) {
       const problem = err as { detail?: string; title?: string };
@@ -177,11 +177,10 @@ export const SocialLinksManager: React.FC<SocialLinksManagerProps> = ({ initialL
           id="social-links-heading"
           className="font-gothic text-xl sm:text-2xl font-bold uppercase tracking-tight text-[#141413]"
         >
-          Curated Social &amp; Portfolio Links
+          Social &amp; Web Links
         </h2>
         <p className="font-serif text-sm sm:text-base text-[#87867f] mt-1 leading-relaxed">
-          Order and manage external channels displayed on your artist showcase. Use reorder arrows to curate the
-          hierarchy.
+          Manage external websites and social profiles shown on your public profile.
         </p>
       </div>
 
@@ -190,10 +189,10 @@ export const SocialLinksManager: React.FC<SocialLinksManagerProps> = ({ initialL
       <div>
         <div className="flex items-center justify-between mb-4">
           <h3 className="font-gothic text-xs font-bold uppercase tracking-[0.14em] text-[#87867f]">
-            Active Channels ({links.length})
+            Links ({links.length})
           </h3>
           {links.length > 1 && (
-            <span className="font-serif text-xs text-[#87867f]">Use arrows to adjust display precedence</span>
+            <span className="font-serif text-xs text-[#87867f]">Use arrows to reorder links</span>
           )}
         </div>
 
@@ -201,14 +200,14 @@ export const SocialLinksManager: React.FC<SocialLinksManagerProps> = ({ initialL
           <div className="text-center py-10 px-4 rounded-2xl border border-dashed border-[#cccbc8] bg-[#f0eee6]/30">
             <Globe className="h-8 w-8 text-[#87867f] mx-auto mb-2 opacity-60" />
             <p className="font-gothic text-xs font-semibold uppercase tracking-wider text-[#141413]">
-              No External Channels Linked
+              No Links Added
             </p>
             <p className="font-serif text-sm text-[#87867f] max-w-md mx-auto mt-1">
-              Add your portfolio, GitHub, Behance, or social handles to enable visitors to discover your broader work.
+              Add your portfolio, GitHub, LinkedIn, or social profiles so visitors can connect with you.
             </p>
           </div>
         ) : (
-          <ul className="space-y-3" aria-label="Curated social links">
+          <ul className="space-y-3" aria-label="Social links">
             {links.map((link, index) => (
               <SocialLinkRow
                 key={link.id}

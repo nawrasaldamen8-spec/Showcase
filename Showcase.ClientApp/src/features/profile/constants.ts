@@ -19,5 +19,27 @@ export const PLATFORM_PLACEHOLDERS: Record<string, string> = {
   Dribbble: "https://dribbble.com/yourusername",
   X: "https://x.com/yourhandle",
   Instagram: "https://instagram.com/yourhandle",
-  Custom: "https://external-archive.org/profile",
+  Custom: "https://example.com/profile",
 };
+
+export const CREATIVE_SPECIALTIES = [
+  "Software Engineering & Architecture",
+  "UI/UX & Product Design",
+  "Frontend & Web Development",
+  "Backend & Distributed Systems",
+  "Graphic & Brand Design",
+  "Architecture & Spatial Design",
+  "Architectural Photography",
+  "Documentary Photography",
+  "Data Science & Machine Learning",
+  "Creative Technology",
+  "Product Management",
+  "Content Writing & Editorial",
+  "3D Motion & Visual Effects",
+  "Industrial & Hardware Design",
+  "Sound Design & Audio Engineering",
+  "Fine Art & Illustration",
+] as const;
+
+export type CreativeSpecialty = (typeof CREATIVE_SPECIALTIES)[number];
+
