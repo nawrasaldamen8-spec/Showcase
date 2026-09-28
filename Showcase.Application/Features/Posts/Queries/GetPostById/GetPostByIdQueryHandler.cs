@@ -70,8 +70,7 @@ public class GetPostByIdQueryHandler : IRequestHandler<GetPostByIdQuery, Result<
             creator = new PostCreatorDto(
                 profile.Id,
                 userResult.Value.UserName,
-                profile.FirstName,
-                profile.LastName,
+                profile.Name,
                 avatarUrl);
         }
 

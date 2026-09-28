@@ -30,9 +30,9 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, Result<Au
     {
         // 1. Register User in Identity
         var registerResult = await _identityService.RegisterUserAsync(
-            request.Email,
             request.Username,
             request.Password,
+            request.Email,
             ct);
 
         if (registerResult.IsFailure)
@@ -43,13 +43,13 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, Result<Au
         var userId = registerResult.Value;
 
         // 2. Provision linked Profile entity in Domain
-        var profile = new Profile(userId, request.FirstName, request.LastName);
+        var profile = new Profile(userId, request.Name);
         _context.Set<Profile>().Add(profile);
         await _context.SaveChangesAsync(ct);
 
         // 3. Generate tokens
         var roles = new List<string>();
-        var accessToken = _tokenService.GenerateAccessToken(userId, request.Email.Trim(), roles);
+        var accessToken = _tokenService.GenerateAccessToken(userId, request.Username, request.Email, roles);
         var refreshToken = _tokenService.GenerateRefreshToken();
 
         // 4. Persist refresh token with 7-day expiration

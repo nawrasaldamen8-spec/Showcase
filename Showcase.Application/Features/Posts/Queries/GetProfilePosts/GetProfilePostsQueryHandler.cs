@@ -36,7 +36,11 @@ public class GetProfilePostsQueryHandler : IRequestHandler<GetProfilePostsQuery,
         }
 
         var user = userResult.Value;
-        var profile = await _context.Profiles.FirstOrDefaultAsync(p => p.UserId == user.Id, ct);
+
+        // Public route: a banned or soft-deleted account must appear as missing rather than as empty.
+        var profile = await _context.Profiles
+            .FirstOrDefaultAsync(p => p.UserId == user.Id && !p.IsBanned && !p.IsDeleted, ct);
+
         if (profile is null)
         {
             return ProfileErrors.NotFoundForUser(user.Id);
@@ -61,8 +65,7 @@ public class GetProfilePostsQueryHandler : IRequestHandler<GetProfilePostsQuery,
         var creator = new PostCreatorDto(
             profile.Id,
             user.UserName,
-            profile.FirstName,
-            profile.LastName,
+            profile.Name,
             avatarUrl);
 
         var items = posts.Select(post =>

@@ -60,11 +60,13 @@ public class GetCurrentUserQueryHandler : IRequestHandler<GetCurrentUserQuery, R
             user.Id,
             user.Email,
             user.UserName,
-            profile.FirstName,
-            profile.LastName,
+            profile.Name,
             profile.Id,
             profile.Bio?.Value,
             avatarUrl,
+            profile.IsVerified,
+            profile.IsBanned,
+            profile.BanReason,
             user.Roles);
     }
 }

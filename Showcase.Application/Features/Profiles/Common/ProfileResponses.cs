@@ -12,10 +12,11 @@ public record SocialLinkDto(
 public record MyProfileResponse(
     Guid Id,
     string UserId,
-    string Email,
+    string? Email,
     string UserName,
-    string FirstName,
-    string LastName,
+    string Name,
+    string? Specialty,
+    string? Country,
     string? Bio,
     string? AvatarKey,
     string? AvatarUrl,
@@ -26,10 +27,12 @@ public record MyProfileResponse(
 public record PublicProfileResponse(
     Guid Id,
     string UserName,
-    string FirstName,
-    string LastName,
+    string Name,
+    string? Specialty,
+    string? Country,
     string? Bio,
     string? AvatarUrl,
+    bool IsVerified,
     IReadOnlyCollection<SocialLinkDto> SocialLinks);
 
 public record AvatarUploadUrlResponse(

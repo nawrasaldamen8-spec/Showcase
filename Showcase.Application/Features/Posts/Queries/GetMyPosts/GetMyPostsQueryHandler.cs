@@ -72,8 +72,7 @@ public class GetMyPostsQueryHandler : IRequestHandler<GetMyPostsQuery, Result<Pa
             creator = new PostCreatorDto(
                 profile.Id,
                 userResult.Value.UserName,
-                profile.FirstName,
-                profile.LastName,
+                profile.Name,
                 avatarUrl);
         }
 

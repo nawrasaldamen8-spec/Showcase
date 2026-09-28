@@ -48,7 +48,7 @@ public class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCommand, R
 
         var user = validateResult.Value;
 
-        var newAccessToken = _tokenService.GenerateAccessToken(user.Id, user.Email, user.Roles);
+        var newAccessToken = _tokenService.GenerateAccessToken(user.Id, user.UserName, user.Email, user.Roles);
         var newRefreshToken = _tokenService.GenerateRefreshToken();
 
         var updateTokenResult = await _identityService.UpdateRefreshTokenAsync(

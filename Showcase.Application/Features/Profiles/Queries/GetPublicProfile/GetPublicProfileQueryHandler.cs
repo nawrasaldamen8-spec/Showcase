@@ -35,9 +35,14 @@ public class GetPublicProfileQueryHandler : IRequestHandler<GetPublicProfileQuer
         }
 
         var user = userResult.Value;
+
+        // Banned and soft-deleted accounts must not leak through the public profile route. The filter is
+        // applied per query rather than globally so the owner can still reach their own profile.
         var profile = await _context.Profiles
             .Include(p => p.SocialLinks)
-            .FirstOrDefaultAsync(p => p.UserId == user.Id, ct);
+            .FirstOrDefaultAsync(
+                p => p.UserId == user.Id && !p.IsBanned && !p.IsDeleted,
+                ct);
 
         if (profile is null)
         {
@@ -56,10 +61,12 @@ public class GetPublicProfileQueryHandler : IRequestHandler<GetPublicProfileQuer
         var response = new PublicProfileResponse(
             profile.Id,
             user.UserName,
-            profile.FirstName,
-            profile.LastName,
+            profile.Name,
+            profile.Specialty,
+            profile.Country,
             profile.Bio?.Value,
             avatarUrl,
+            profile.IsVerified,
             socialLinks);
 
         return response;

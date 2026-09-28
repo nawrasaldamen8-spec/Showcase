@@ -42,7 +42,7 @@ public class UpdateProfileCommandHandler : IRequestHandler<UpdateProfileCommand,
             return Result.Failure(bioResult.Error);
         }
 
-        profile.UpdateDetails(request.FirstName, request.LastName, bioResult.Value);
+        profile.UpdateDetails(request.Name, request.Specialty, request.Country, bioResult.Value);
         await _context.SaveChangesAsync(ct);
 
         return Result.Success();

@@ -30,9 +30,15 @@ public class GetExplorePostsQueryHandler : IRequestHandler<GetExplorePostsQuery,
 
     public async Task<Result<PaginatedList<PostSummaryResponse>>> Handle(GetExplorePostsQuery request, CancellationToken ct)
     {
+        // Post exposes only ProfileId (no navigation), so visible creators are resolved as a subquery. This keeps
+        // the ban and soft-delete filter inside SQL, which a post-filter over loaded profiles would break for paging.
+        var visibleProfileIds = _context.Profiles
+            .Where(profile => !profile.IsBanned && !profile.IsDeleted)
+            .Select(profile => profile.Id);
+
         var query = _context.Posts
             .Include(p => p.Images)
-            .Where(p => p.Status == PostStatus.Published);
+            .Where(p => p.Status == PostStatus.Published && visibleProfileIds.Contains(p.ProfileId));
 
         if (!string.IsNullOrWhiteSpace(request.Search))
         {
@@ -68,8 +74,7 @@ public class GetExplorePostsQueryHandler : IRequestHandler<GetExplorePostsQuery,
                 creatorCache[profile.Id] = new PostCreatorDto(
                     profile.Id,
                     userResult.Value.UserName,
-                    profile.FirstName,
-                    profile.LastName,
+                    profile.Name,
                     avatarUrl);
             }
         }

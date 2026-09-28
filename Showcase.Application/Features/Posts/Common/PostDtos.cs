@@ -12,8 +12,7 @@ public record PostImageDto(
 public record PostCreatorDto(
     Guid ProfileId,
     string Username,
-    string FirstName,
-    string LastName,
+    string Name,
     string? AvatarUrl);
 
 public record PostResponse(

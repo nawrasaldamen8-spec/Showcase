@@ -7,16 +7,16 @@ namespace Showcase.Application.Common.Interfaces;
 
 public record UserIdentityDetails(
     string Id,
-    string Email,
+    string? Email,
     string UserName,
     IList<string> Roles);
 
 public interface IIdentityService
 {
     Task<Result<string>> RegisterUserAsync(
-        string email,
         string username,
         string password,
+        string? email = null,
         CancellationToken ct = default);
 
     Task<Result<UserIdentityDetails>> AuthenticateAsync(

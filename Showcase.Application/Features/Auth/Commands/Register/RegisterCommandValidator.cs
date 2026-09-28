@@ -6,11 +6,6 @@ public class RegisterCommandValidator : AbstractValidator<RegisterCommand>
 {
     public RegisterCommandValidator()
     {
-        RuleFor(x => x.Email)
-            .NotEmpty().WithMessage("Email is required.")
-            .EmailAddress().WithMessage("Email must be a valid email address.")
-            .MaximumLength(256).WithMessage("Email must not exceed 256 characters.");
-
         RuleFor(x => x.Username)
             .NotEmpty().WithMessage("Username is required.")
             .Length(3, 30).WithMessage("Username must be between 3 and 30 characters.")
@@ -20,12 +15,16 @@ public class RegisterCommandValidator : AbstractValidator<RegisterCommand>
             .NotEmpty().WithMessage("Password is required.")
             .MinimumLength(6).WithMessage("Password must be at least 6 characters long.");
 
-        RuleFor(x => x.FirstName)
-            .NotEmpty().WithMessage("First name is required.")
-            .MaximumLength(100).WithMessage("First name must not exceed 100 characters.");
+        RuleFor(x => x.Name)
+            .NotEmpty().WithMessage("Name is required.")
+            .MaximumLength(150).WithMessage("Name must not exceed 150 characters.");
 
-        RuleFor(x => x.LastName)
-            .NotEmpty().WithMessage("Last name is required.")
-            .MaximumLength(100).WithMessage("Last name must not exceed 100 characters.");
+        // Email is optional; when supplied it must be usable for account recovery.
+#pragma warning disable CS0618
+        RuleFor(x => x.Email)
+            .MaximumLength(256).WithMessage("Email must not exceed 256 characters.")
+            .EmailAddress(FluentValidation.Validators.EmailValidationMode.Net4xRegex).WithMessage("Email must be a valid email address.")
+            .When(x => !string.IsNullOrWhiteSpace(x.Email));
+#pragma warning restore CS0618
     }
 }
