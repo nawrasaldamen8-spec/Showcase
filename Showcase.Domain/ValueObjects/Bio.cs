@@ -4,7 +4,7 @@ namespace Showcase.Domain.ValueObjects;
 
 public sealed record Bio
 {
-    public const int MaxLength = 500;
+    public const int MaxLength = 1000;
 
     public string Value { get; }
 

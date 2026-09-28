@@ -11,17 +11,20 @@ namespace Showcase.Domain.Entities;
 public class Post : BaseEntity
 {
     private readonly List<PostImage> _images = new();
+    private readonly List<PostTag> _postTags = new();
 
     public Guid ProfileId { get; private set; }
     public string Title { get; private set; } = string.Empty;
     public string Description { get; private set; } = string.Empty;
     public Url? ExternalUrl { get; private set; }
     public PostStatus Status { get; private set; }
+    public int LikesCount { get; private set; }
     public DateTime CreatedAt { get; private set; }
     public DateTime? PublishedAt { get; private set; }
     public DateTime? UpdatedAt { get; private set; }
 
     public IReadOnlyCollection<PostImage> Images => _images.AsReadOnly();
+    public IReadOnlyCollection<PostTag> PostTags => _postTags.AsReadOnly();
 
     private Post() { } // EF Core
 
@@ -107,5 +110,54 @@ public class Post : BaseEntity
         }
 
         UpdatedAt = DateTime.UtcNow;
+    }
+
+    public PostTag AddTag(Guid tagId)
+    {
+        if (tagId == Guid.Empty)
+            throw new ArgumentException("TagId is required.", nameof(tagId));
+
+        var existing = _postTags.FirstOrDefault(pt => pt.TagId == tagId);
+        if (existing is not null)
+            return existing;
+
+        var postTag = new PostTag(Id, tagId);
+        _postTags.Add(postTag);
+        UpdatedAt = DateTime.UtcNow;
+        return postTag;
+    }
+
+    public void RemoveTag(Guid tagId)
+    {
+        var postTag = _postTags.FirstOrDefault(pt => pt.TagId == tagId);
+        if (postTag is not null)
+        {
+            _postTags.Remove(postTag);
+            UpdatedAt = DateTime.UtcNow;
+        }
+    }
+
+    public void ClearTags()
+    {
+        if (_postTags.Count > 0)
+        {
+            _postTags.Clear();
+            UpdatedAt = DateTime.UtcNow;
+        }
+    }
+
+    public void IncrementLikes()
+    {
+        LikesCount++;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    public void DecrementLikes()
+    {
+        if (LikesCount > 0)
+        {
+            LikesCount--;
+            UpdatedAt = DateTime.UtcNow;
+        }
     }
 }
