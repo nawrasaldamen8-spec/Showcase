@@ -91,20 +91,113 @@ classDiagram
     class Profile {
         +Guid Id
         +string UserId
-        +string FirstName
-        +string LastName
+        +string Name
+        +string? Specialty
+        +string? Country
         +Bio? Bio
         +StorageKey? AvatarKey
+        +bool IsVerified
+        +VerificationStatus VerificationStatus
+        +FeaturedStatus FeaturedStatus
+        +bool IsBanned
+        +string? BanReason
+        +DateTime? BannedAtUtc
+        +bool IsDeleted
+        +DateTime? DeletedAtUtc
         +DateTime CreatedAt
         +DateTime? UpdatedAt
+        +CareerVisibility CareerVisibility
         +IReadOnlyCollection~SocialLink~ SocialLinks
-        +UpdateDetails(firstName, lastName, bio)
+        +IReadOnlyCollection~Experience~ Experiences
+        +IReadOnlyCollection~Academic~ Academics
+        +IReadOnlyCollection~Skill~ Skills
+        +IReadOnlyCollection~Credential~ Credentials
+        +IReadOnlyCollection~Language~ Languages
+        +IReadOnlyCollection~Achievement~ Achievements
+        +UpdateDetails(name, specialty, country, bio)
         +SetAvatar(avatarKey)
         +RemoveAvatar()
+        +Ban(reason)
+        +Unban()
+        +SoftDelete()
+        +Restore()
+        +RequestVerification() Result
+        +MarkVerified(verified)
+        +RejectVerification() Result
+        +SetFeaturedStatus(status) Result
+        +UpdateVisibility(...)
         +AddSocialLink(platform, url, displayOrder)
         +UpdateSocialLink(id, platform, url, displayOrder)
         +RemoveSocialLink(id)
         +ReorderSocialLinks(orderedIds)
+        +AddExperience(...) / AddAcademic(...) / AddSkill(...)
+        +AddCredential(...) / AddLanguage(...) / AddAchievement(...)
+    }
+
+    class CareerVisibility {
+        +Guid Id
+        +Guid ProfileId
+        +bool IsProfileVisible
+        +bool IsContactVisible
+        +bool ShowExperience
+        +bool ShowAcademics
+        +bool ShowSkills
+        +bool ShowCredentials
+        +bool ShowLanguages
+        +bool ShowAchievements
+        +Update(...)
+    }
+
+    class Experience {
+        +Guid Id
+        +Guid ProfileId
+        +string JobTitle
+        +string Company
+        +DateRange? Period
+        +bool IsCurrent
+        +string? Description
+        +DateTime CreatedAt
+    }
+
+    class Academic {
+        +Guid Id
+        +Guid ProfileId
+        +string Degree
+        +string Institution
+        +DateRange Period
+        +string? Description
+    }
+
+    class Skill {
+        +Guid Id
+        +Guid ProfileId
+        +string Name
+        +string? Category
+        +int DisplayOrder
+    }
+
+    class Credential {
+        +Guid Id
+        +Guid ProfileId
+        +string Title
+        +string? Issuer
+        +DateOnly? IssuedOn
+        +Url? Url
+    }
+
+    class Language {
+        +Guid Id
+        +Guid ProfileId
+        +string Name
+        +LanguageProficiency Proficiency
+    }
+
+    class Achievement {
+        +Guid Id
+        +Guid ProfileId
+        +string Title
+        +DateOnly? AchievedOn
+        +string? Description
     }
 
     class SocialLink {
@@ -147,13 +240,21 @@ classDiagram
 
     Profile "1" *-- "0..*" SocialLink : encapsulates
     Post "1" *-- "0..*" PostImage : encapsulates
+    Profile "1" *-- "0..1" CareerVisibility : owns
+    Profile "1" *-- "0..*" Experience : encapsulates
+    Profile "1" *-- "0..*" Academic : encapsulates
+    Profile "1" *-- "0..*" Skill : encapsulates
+    Profile "1" *-- "0..*" Credential : encapsulates
+    Profile "1" *-- "0..*" Language : encapsulates
+    Profile "1" *-- "0..*" Achievement : encapsulates
 ```
 
 ### 2.2 Value Objects
 
-- **`Bio`**: Immutable record encapsulating creator biography text. Validates that text cannot exceed 500 characters.
+- **`Bio`**: Immutable record encapsulating creator biography text. Validates that text cannot exceed 1000 characters.
 - **`Url`**: Immutable record enforcing absolute URI format (`http://` or `https://`).
 - **`StorageKey`**: Immutable record validating non-empty Cloudflare R2 object key strings (e.g. `avatars/{profileId}/{guid}.webp` or `posts/{profileId}/{guid}.jpg`).
+- **`DateRange`**: Immutable record for employment / education periods. Accepts `yyyy-MM` (open month) and `yyyy-MM-dd` (exact day) on input, stores both bounds as `DateOnly`, and rejects a range whose end precedes its start. A null `End` means the period is current.
 
 ### 2.3 Enums
 
@@ -161,6 +262,9 @@ classDiagram
   - `Draft = 0`: Work in progress; strictly hidden from public discovery and search.
   - `Published = 1`: Work made publicly discoverable in the Explore feed and on creator's public profile.
   - `Unpublished = 2`: Previously published work withdrawn from public visibility.
+- **`VerificationStatus`**: `None` → the creator never asked. `Pending` → a request is awaiting review. `Verified` → approved. `Rejected` → declined; the creator may request again.
+- **`FeaturedStatus`**: `None` → never suggested. `Pending` → suggestion under review. `Featured` → shown in curated placements. `Rejected` → declined.
+- **`LanguageProficiency`**: Ordinal scale from `Basic` through `Intermediate`, `Advanced`, to `Native`.
 
 ### 2.4 Invariants & Business Logic
 
@@ -168,6 +272,10 @@ classDiagram
 2. **Published Post Image Integrity**: A published post cannot delete its last remaining image while in `Published` status (`PostErrors.CannotRemoveLastImageFromPublishedPost`). It must either be unpublished first or another image must be added.
 3. **Strict Ownership Enforcement**: All mutations (Profile, SocialLinks, Posts, Images) verify creator ownership (`currentUserService.UserId`). Mismatches return `PostErrors.UnauthorizedAccess` or `ProfileErrors.NotFoundForUser`.
 4. **Draft Privacy**: Draft and Unpublished posts queried by ID return `PostErrors.NotFound` (404) to anonymous visitors or non-owners to prevent data leakage.
+5. **Verification State Machine**: `RequestVerification` is only legal from `None` or `Rejected`; any other current status yields `ProfileErrors.VerificationNotRequestable`. `RejectVerification` is only legal from `Pending` (`ProfileErrors.VerificationNotPending`). This prevents duplicate review requests.
+6. **Featured State Machine**: `SetFeaturedStatus` rejects illegal moves (for example `Pending` → `Featured` without a verification decision) with `ProfileErrors.InvalidFeaturedTransition`.
+7. **Ban And Delete Are Distinct**: `Ban` blocks the account from authenticating; `SoftDelete` hides it. Both are reversible (`Unban`, `Restore`) and neither erases data.
+8. **Moderation Hides Banned And Deleted Profiles From Public Reads Only**: `GetPublicProfile`, `GetProfilePosts`, and `GetExplorePosts` filter out `IsBanned` or `IsDeleted` profiles. `GetMyProfile` deliberately does **not** filter, so a suspended creator can still see their own profile and understand why. There is no EF global query filter — see the changelog for why.
 
 ### 2.5 Domain Error Catalog
 
@@ -175,7 +283,11 @@ classDiagram
 | :-------------------------------------------- | :--------------- | :--------------------------------------------------------------- |
 | `Profile.NotFound`                            | NotFound (404)   | Profile not found for requested username or identifier           |
 | `Profile.NotFoundForUser`                     | NotFound (404)   | Authenticated user has no associated creator profile             |
-| `Profile.InvalidBio`                          | Validation (400) | Bio exceeds max 500 characters                                   |
+| `Profile.VerificationNotRequestable`          | Conflict (409)   | Invariant: verification requested while not `None` or `Rejected` |
+| `Profile.VerificationNotPending`              | Conflict (409)   | Invariant: verification rejected while not `Pending`              |
+| `Profile.InvalidFeaturedTransition`           | Conflict (409)   | Invariant: illegal `FeaturedStatus` move                         |
+| `Bio.Empty`                                   | Validation (400) | Bio value is null or whitespace                                  |
+| `Bio.TooLong`                                 | Validation (400) | Bio exceeds 1000 characters                                      |
 | `SocialLink.NotFound`                         | NotFound (404)   | Social link ID does not exist under the target profile           |
 | `SocialLink.InvalidUrl`                       | Validation (400) | URL provided is not a valid absolute HTTP/HTTPS address          |
 | `Post.NotFound`                               | NotFound (404)   | Post ID not found or post is in Draft state queried by non-owner |
@@ -213,9 +325,12 @@ public interface IApplicationDbContext
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }
 
+public record UserIdentityDetails(string Id, string? Email, string UserName, IList<string> Roles);
+
 public interface IIdentityService
 {
-    Task<Result<string>> RegisterUserAsync(string email, string username, string password, CancellationToken ct = default);
+    // Email is optional: a creator may register with a username only.
+    Task<Result<string>> RegisterUserAsync(string username, string password, string? email = null, CancellationToken ct = default);
     Task<Result<UserIdentityDetails>> AuthenticateAsync(string emailOrUsername, string password, CancellationToken ct = default);
     Task<Result<UserIdentityDetails>> ValidateRefreshTokenAsync(string userId, string refreshToken, CancellationToken ct = default);
     Task<Result> UpdateRefreshTokenAsync(string userId, string refreshToken, DateTime expiryTime, CancellationToken ct = default);
@@ -229,7 +344,8 @@ public interface IIdentityService
 
 public interface ITokenService
 {
-    string GenerateAccessToken(string userId, string email, string username, IList<string> roles);
+    // username is required; email is optional. Email claims are omitted when it is null.
+    string GenerateAccessToken(string userId, string username, string? email, IList<string>? roles = null);
     string GenerateRefreshToken();
     ClaimsPrincipal? GetPrincipalFromExpiredToken(string token);
 }
@@ -264,12 +380,12 @@ public interface IStorageService
 
 #### 2. Creator Profiles (`Features/Profiles/`)
 
-- `GetMyProfileQuery`: Returns authenticated creator's profile, resolved avatar CDN URL, and ordered social links.
-- `UpdateProfileCommand`: Updates first name, last name, and bio (validates max 500 chars).
+- `GetMyProfileQuery`: Returns authenticated creator's profile, resolved avatar CDN URL, verification state, and ordered social links. Does **not** filter banned or soft-deleted profiles, so a suspended creator can still see their own account.
+- `UpdateProfileCommand`: Updates name, specialty, country, and bio (validates max 1000 chars).
 - `GetAvatarUploadUrlCommand`: Validates MIME type (`image/jpeg`, `image/png`, `image/webp`, `image/gif`) and file size ($\le 5$ MB); returns presigned PUT URL and storage key `avatars/{profileId}/{guid}.ext`.
 - `UpdateAvatarCommand`: Updates profile `AvatarKey`; schedules deletion of prior avatar key from R2.
 - `RemoveAvatarCommand`: Deletes avatar from R2 and sets `AvatarKey` to null.
-- `GetPublicProfileQuery`: Public anonymous query fetching creator profile by username.
+- `GetPublicProfileQuery`: Public anonymous query fetching creator profile by username. Returns `Profile.NotFoundForUser` for banned or soft-deleted profiles.
 
 #### 3. Social Links (`Features/SocialLinks/`)
 
@@ -304,12 +420,14 @@ public interface IStorageService
 
 - `string? RefreshToken` (indexed, max length 500).
 - `DateTime? RefreshTokenExpiryTime`.
+- Moderation state mirroring the `Profile` aggregate: `bool IsBanned`, `string? BanReason`, `DateTime? BannedAtUtc`, `bool IsDeleted`, `DateTime? DeletedAtUtc`.
 - `Guid ProfileId` with EF Core 1-to-1 relationship to `Profile` entity:
   - Configured with `HasForeignKey<Profile>(p => p.UserId)` and `OnDelete(DeleteBehavior.Cascade)`.
+- **Email is optional**: `Email` is nullable and `RequireUniqueEmail` is configured as `false`, so a creator can register with a username alone. Login still accepts either an email or a username via `EmailOrUsername`. The `Users` unique index on `Email` must not be present in the database — it would reject a second account that has no email.
 
 ### 4.2 Token Service (JWT & Refresh Token Rotation)
 
-- **Access Token**: Signed using HMAC-SHA256 (`HmacSha256Signature`) with custom `JwtSettings.Secret` (min 256 bits). Includes standard claims: `sub`, `email`, `unique_name`, `role`, and `jti`.
+- **Access Token**: Signed using HMAC-SHA256 (`HmacSha256Signature`) with custom `JwtSettings.Secret` (min 256 bits). Includes `sub`, `unique_name`, `preferred_username`, `jti`, and `role` claims. The `email` claim pair (`email` + `ClaimTypes.Email`) is emitted **only when the account has an email** — `email` is a non-nullable claim per the JWT spec, so emitting an empty value would break strict consumers.
 - **Refresh Token**: Cryptographically secure 64-byte random sequence generated via `RandomNumberGenerator.GetBytes(64)` and converted to base64.
 - **Clock Skew**: Strict `TimeSpan.Zero` enforcement in token validation parameters.
 - **Principal Extraction**: `GetPrincipalFromExpiredToken` disables lifetime validation to safely read identity claims during refresh flow.
@@ -328,13 +446,17 @@ Implemented via `AWSSDK.S3` with singleton `AmazonS3Client` targeting Cloudflare
 ### 4.4 EF Core Persistence & Database Mapping
 
 - **PostgreSQL Provider**: Configured using `Npgsql.EntityFrameworkCore.PostgreSQL`.
+- **Conventions**: No `ToTable` calls anywhere — table names come from EF Core's default pluralisation convention. Configurations are discovered by `ApplyConfigurationsFromAssembly`, so the new entities need no `DbSet<T>` on `ApplicationDbContext`.
 - **Value Objects Mapping**:
-  - `Bio` mapped via EF Core `ComplexProperty` with max length 500.
-  - `Url` mapped via `ComplexProperty` with max length 2000.
-  - `StorageKey` mapped via `ComplexProperty` with max length 1000.
+  - `Bio` mapped via `OwnsOne` with max length 1000.
+  - `Url` mapped via `OwnsOne` with max length 2000.
+  - `StorageKey` mapped via `OwnsOne` with max length 1000.
+  - `DateRange` mapped via `OwnsOne` inside `Experiences` and `Academics` (nullable on `Experience` for a single ongoing entry, required on `Academic`).
+- **Tables introduced**: `Experiences`, `Academics`, `Skills`, `Credentials`, `Languages`, `Achievements`, `CareerVisibilities`.
 - **Indexes**:
   - `IX_Posts_Status_PublishedAt` on `Posts` for instant Explore feed pagination.
   - `IX_Profiles_UserId` (Unique) ensuring 1-to-1 integrity between Identity user and Profile.
+- **Migrations**: The model is ahead of the database — no migration was generated for these changes. See `docs/changelog/2026-09/27-profile-career-and-moderation-model/changelog.md` for the required manual migration steps. The API will fail at runtime until it is written.
 
 ### 4.5 Diagnostics & PostgreSQL Health Check
 
@@ -422,25 +544,29 @@ Standardized extension method `ResultExtensions.ToResponse()` maps typed domain 
 
 | Method | Route                       | Auth Required | Rate Limit    | Request Body                                         | Response (200 / 201)                                                               |
 | :----- | :-------------------------- | :------------ | :------------ | :--------------------------------------------------- | :--------------------------------------------------------------------------------- |
-| `POST` | `/api/auth/register`        | No            | `auth-policy` | `{ email, username, password, firstName, lastName }` | `AuthResponse (accessToken, refreshToken, expiry)`                                 |
+| `POST` | `/api/auth/register`        | No            | `auth-policy` | `{ username, password, name, email? }`               | `AuthResponse (accessToken, refreshToken, expiry)`                                 |
 | `POST` | `/api/auth/login`           | No            | `auth-policy` | `{ emailOrUsername, password }`                      | `AuthResponse (accessToken, refreshToken, expiry)`                                 |
 | `POST` | `/api/auth/refresh`         | No            | `auth-policy` | `{ accessToken, refreshToken }`                      | `AuthResponse (accessToken, refreshToken, expiry)`                                 |
-| `GET`  | `/api/auth/me`              | Yes (Bearer)  | None          | None                                                 | `CurrentUserResponse (id, email, username, firstName, lastName, profileId, roles)` |
+| `GET`  | `/api/auth/me`              | Yes (Bearer)  | None          | None                                                 | `CurrentUserResponse (id, email, username, name, profileId, bio, avatarUrl, isVerified, isBanned, banReason, roles)` |
 | `POST` | `/api/auth/logout`          | Yes (Bearer)  | None          | None                                                 | `200 OK` (Refresh token revoked)                                                   |
 | `POST` | `/api/auth/change-password` | Yes (Bearer)  | `auth-policy` | `{ currentPassword, newPassword }`                   | `200 OK`                                                                           |
 | `PUT`  | `/api/auth/change-email`    | Yes (Bearer)  | `auth-policy` | `{ newEmail, currentPassword }`                      | `200 OK`                                                                           |
 | `PUT`  | `/api/auth/change-username` | Yes (Bearer)  | `auth-policy` | `{ newUsername, currentPassword }`                   | `200 OK`                                                                           |
 
+`email` is optional on register — omitting it creates an account with no recovery address. Login and refresh return `Auth.AccountBanned` or `Auth.AccountDeleted` for a suspended or soft-deleted account.
+
 ### 6.2 Creator Profiles Endpoints
 
-| Method   | Route                                | Auth Required | Rate Limit      | Request Body                     | Response (200)                                                                            |
-| :------- | :----------------------------------- | :------------ | :-------------- | :------------------------------- | :---------------------------------------------------------------------------------------- |
-| `GET`    | `/api/profiles/me`                   | Yes (Bearer)  | None            | None                             | `ProfileDetailsResponse (id, username, firstName, lastName, bio, avatarUrl, socialLinks)` |
-| `PUT`    | `/api/profiles/me`                   | Yes (Bearer)  | None            | `{ firstName, lastName, bio }`   | `200 OK`                                                                                  |
-| `POST`   | `/api/profiles/me/avatar/upload-url` | Yes (Bearer)  | `upload-policy` | `{ contentType, fileSizeBytes }` | `AvatarUploadUrlResponse (uploadUrl, storageKey)`                                         |
-| `PUT`    | `/api/profiles/me/avatar`            | Yes (Bearer)  | None            | `{ storageKey }`                 | `200 OK`                                                                                  |
-| `DELETE` | `/api/profiles/me/avatar`            | Yes (Bearer)  | None            | None                             | `200 OK`                                                                                  |
-| `GET`    | `/api/profiles/{username}`           | No            | None            | None                             | `PublicProfileResponse (id, username, firstName, lastName, bio, avatarUrl, socialLinks)`  |
+| Method   | Route                                | Auth Required | Rate Limit      | Request Body                                | Response (200)                                                                            |
+| :------- | :----------------------------------- | :------------ | :-------------- | :------------------------------------------ | :---------------------------------------------------------------------------------------- |
+| `GET`    | `/api/profiles/me`                   | Yes (Bearer)  | None            | None                                        | `ProfileDetailsResponse (id, username, name, specialty, country, bio, avatarUrl, isVerified, socialLinks)` |
+| `PUT`    | `/api/profiles/me`                   | Yes (Bearer)  | None            | `{ name, specialty?, country?, bio? }`      | `200 OK`                                                                                  |
+| `POST`   | `/api/profiles/me/avatar/upload-url` | Yes (Bearer)  | `upload-policy` | `{ contentType, fileSizeBytes }`            | `AvatarUploadUrlResponse (uploadUrl, storageKey)`                                         |
+| `PUT`    | `/api/profiles/me/avatar`            | Yes (Bearer)  | None            | `{ storageKey }`                            | `200 OK`                                                                                  |
+| `DELETE` | `/api/profiles/me/avatar`            | Yes (Bearer)  | None            | None                                        | `200 OK`                                                                                  |
+| `GET`    | `/api/profiles/{username}`           | No            | None            | None                                        | `PublicProfileResponse (id, username, name, specialty, country, bio, avatarUrl, isVerified, socialLinks)` |
+
+`/api/profiles/{username}` returns `Profile.NotFoundForUser` (404) for a banned or soft-deleted creator, so a suspended profile is indistinguishable from a missing one to the public.
 
 ### 6.3 Social Links Endpoints
 
@@ -522,6 +648,8 @@ The backend configuration is structured as follows:
 
 The solution contains an automated test suite located in `tests/Showcase.Infrastructure.Tests/`. All tests run in-memory without requiring active network or cloud credentials.
 
+> **Not verified since the profile career & moderation change.** The test files were updated so the suite would *compile* (renamed `FirstName`/`LastName` references, reordered the `RegisterCommand` arguments, added the `username` argument to `GenerateAccessToken` call sites), but `dotnet test` was deliberately not run. The counts below are the pre-change baseline and have not been re-confirmed, and no test currently covers the new ban, soft-delete, or optional-email behaviour.
+
 ### Running Automated Tests:
 
 ```powershell
@@ -532,7 +660,7 @@ dotnet test Showcase.slnx
 
 - **`AuthFeatureTests` (20 tests)**: Registration validation, login credential matching, token refresh rotation, and authenticated logout token revocation.
 - **`AccountSecurityFeatureTests` (15 tests)**: Password complexity validation, email format/uniqueness, username slug format (3-30 chars).
-- **`ProfileFeatureTests` (16 tests)**: Profile details updating, bio length boundary tests ($\le 500$ chars), avatar presigned upload generation, avatar deletion.
+- **`ProfileFeatureTests` (16 tests)**: Profile details updating, bio length boundary tests ($\le 1000$ chars), avatar presigned upload generation, avatar deletion.
 - **`SocialLinkFeatureTests` (13 tests)**: Social link addition, URL validation, link removal, and reordering.
 - **`PostFeatureTests` (22 tests)**: Post CRUD, publishing invariants ($\ge 1$ image enforcement), unpublishing, last image removal prevention on published posts, R2 image cleanup orchestration, draft privacy authorization checks.
 - **`IdentityServiceTests` (13 tests)**: Password verification, username/email conflict checks, refresh token persistence and revocation.

@@ -1,205 +1,186 @@
-# Showcase Portfolio Platform
+# Pority
 
 ## 1. Project Overview
 
-Showcase Portfolio is a visual portfolio platform where users can create an account, build a personal profile, and showcase their work through visual posts.
+**Pority** is a personal web presence platform that allows anyone to create and maintain a ready-made personal portfolio and professional profile on the web.
 
-The platform is inspired by the visual browsing experience of platforms such as VSCO, but its purpose is not to build a social network. The main purpose is simple:
+The core problem Pority solves is simple:
 
-**Give people a place where they can create a public profile and visually present their work.**
+> People want a professional presence on the internet, but building and maintaining a personal website from scratch requires unnecessary time, technical knowledge, design work, hosting, and continuous maintenance.
 
-The platform can be used for any type of work, including:
+Pority removes that burden.
 
-- Software projects
-- UI/UX designs
-- Photography
-- Graphic design
-- Branding
-- Illustrations
-- Artwork
-- Architecture
-- Other creative or professional work
+A person creates an account, builds their profile, adds their work and career information, and receives a **public personal profile** that can be shared directly on the web.
 
-Users can publish posts containing images and information about their work. Other visitors can explore published work and visit the creator's public profile.
-
-## 2. Core Experience
-
-The main user journey is:
+Instead of:
 
 ```text
-Create Account
-      ↓
-Create Profile
-      ↓
-Add Bio & Social Links
-      ↓
-Create Post
-      ↓
-Upload Images
-      ↓
-Add Work Information
-      ↓
-Publish
-      ↓
-Appear in Explore
-      ↓
-Visitors Discover the Work
-      ↓
-Visitors Visit the Creator's Profile
+Person
+   ↓
+Design Website
+   ↓
+Build Website
+   ↓
+Buy / Configure Hosting
+   ↓
+Maintain Website
+   ↓
+Update Portfolio
 ```
 
-The system should focus on this experience and avoid unnecessary social-network functionality.
-
-## 3. Core Features
-
-### Authentication
-
-Users can:
-
-- Register
-- Login
-- Logout
-- Refresh their access token
-- Access protected resources
-- Manage their authenticated session
-
-Authentication is implemented using:
-
-- ASP.NET Core Identity
-- JWT Access Tokens
-- Refresh Tokens
-- Authorization
-
-Identity-related implementation remains in the Infrastructure layer.
-
-## 4. User Profile
-
-Every registered user has a profile. The profile contains information such as:
-
-- First name
-- Last name
-- Username
-- Bio
-- Avatar
-- Social links
-
-The profile is publicly accessible so visitors can discover the creator and their work.
-
-**Example:**
-
-> **/u/john**
->
-> **John Doe**
-> Full-stack developer building web applications.
->
-> GitHub | LinkedIn | Website
->
-> **Showcase**
-> [ Work ] [ Work ] [ Work ]
-
-## 5. Social Links
-
-Users can add multiple social or external links to their profile.
-Instead of hardcoding specific platforms such as GitHub or LinkedIn into the profile entity, links are represented as separate `SocialLink` entities.
-
-A social link contains:
-
-- Platform name
-- URL
-- Optional display order
-
-This allows the platform to support different types of links without modifying the Profile entity.
-_Examples: GitHub, LinkedIn, Instagram, X, Personal Website, Behance, Dribbble, Custom Link._
-
-## 6. Posts
-
-`Post` is the main content entity of the platform. A user can create multiple posts to present their work.
-
-A post can contain:
-
-- Title
-- Description
-- Images
-- External URL
-- Publication state
-- Creation date
-- Publication date
-
-The exact fields should remain focused on presenting the work rather than turning the entity into a social-media post.
-
-**Example:**
-
-> **My E-Commerce Platform**
-> A modern e-commerce platform built with ASP.NET Core and React.
->
-> [Image]
-> [Image]
-> [Image]
->
-> Live Project | GitHub
-
-## 7. Post Images
-
-A post can contain multiple images. Each image contains:
-
-- Image URL or storage key
-- Display order
-- Post reference
-
-The display order allows users to control how their work is presented.
-
-**Example:**
+Pority provides:
 
 ```text
-Post
-    │
-    ├── Image 1
-    ├── Image 2
-    └── Image 3
+Person
+   ↓
+Create Pority Profile
+   ↓
+Add Works + Career + About
+   ↓
+Share Profile
+   ↓
+Keep Updating It
 ```
 
-## 8. Explore
+Pority is therefore not simply a portfolio builder and not primarily a social network.
 
-The platform provides a simple Explore experience. Visitors can browse publicly available posts.
+It is a **personal web presence platform centered around the person**.
 
-The initial Explore functionality focuses on:
+---
 
-- Recently published work
-- Pagination
-- Basic search
-- Opening post details
-- Opening the creator's profile
+# 2. Product Vision
 
-The Explore system is intentionally simple. It does not use a social-media recommendation algorithm.
+Pority gives every person a simple and structured place on the web to represent:
 
-## 9. Public Post
+* Who they are
+* What they have created
+* What they have done
+* What they know
+* What they have achieved
+* How people can learn more about them
 
-Every published post has a public page. A post page displays:
+The product combines personal identity, work, and career information into one public profile.
 
-- Post images
-- Title
-- Description
-- Creator
-- External links
-- Publication information
+The profile remains under the user's control and can evolve as their career and work evolve.
 
-Visitors can navigate from a post to the creator's public profile.
+The fundamental idea is:
 
-## 10. Public Profile
+> **One person. One profile. One place for their identity, work, and career.**
 
-Every user has a public profile. The profile displays:
+---
 
-- Avatar
-- Name
-- Bio
-- Social links
-- Published posts
+# 3. The Core Product
 
-Private or unpublished content should not be visible to public visitors.
+The core of Pority is the **Public Profile**.
 
-## 11. Post Lifecycle
+Every user has a public profile that can be accessed through a personal username URL.
 
-A post should support a simple publishing lifecycle.
+For example:
+
+```text
+pority.com/u/username
+```
+
+The profile is publicly accessible.
+
+A visitor does not need a Pority account to view it.
+
+The profile represents the person through three primary areas:
+
+```text
+Profile
+   │
+   ├── Works
+   ├── Career
+   └── About
+```
+
+These three areas form the fundamental structure of a Pority profile.
+
+---
+
+# 4. Public Profile
+
+The public profile begins with the person's identity.
+
+It can contain:
+
+* Profile image
+* Name
+* Username
+* Specialization
+
+The visitor can then navigate between:
+
+### Works
+
+The person's published work.
+
+### Career
+
+The person's professional and educational history.
+
+### About
+
+Personal information, biography, and external links.
+
+The goal is not to create one extremely long portfolio page filled with every possible section.
+
+Instead, Pority provides a clear structure that allows visitors to quickly understand:
+
+> Who is this person?
+
+> What have they made?
+
+> What is their background?
+
+---
+
+# 5. Works
+
+Works represent what the person has created.
+
+A user can continuously publish work throughout their career.
+
+A Work can contain information such as:
+
+* Images
+* Title
+* Description
+* External link
+* Tags
+* Publication state
+
+The visual presentation of work is important.
+
+Works should allow the creator to present projects, designs, photography, artwork, software, architecture, branding, or other professional/creative output.
+
+The system is intentionally flexible regarding the type of work.
+
+Pority is not limited to programmers or designers.
+
+---
+
+# 6. Studio
+
+The **Studio** is the private workspace where a user manages their Works.
+
+It is not the public portfolio.
+
+The Studio allows users to:
+
+* Create a Work
+* Edit a Work
+* Save drafts
+* Publish Works
+* Unpublish Works
+* Archive Works
+* Delete Works
+* Search Works
+* Filter Works
+* Sort Works
+
+A typical lifecycle is:
 
 ```text
 Draft
@@ -207,334 +188,581 @@ Draft
   ▼
 Published
   │
-  ▼
-Unpublished
+  ├── Unpublished
+  │
+  └── Archived
 ```
 
-Users can prepare their work before making it publicly visible. Deleted content should not be exposed through public endpoints.
+The Studio makes the portfolio a continuously maintained system rather than a website that is created once and forgotten.
 
-## 12. Image Storage
+---
 
-The application uses Cloudflare R2 as the object storage layer for user-uploaded images. R2 is used for:
+# 7. Career
 
-- Profile avatars
-- Post images
+Career represents the person's broader professional and educational record.
 
-The application database should not store image binary data. Instead:
+It goes beyond simply listing projects.
+
+Career can contain areas such as:
+
+* Experience
+* Academics
+* Skills
+* Credentials
+* Languages
+* Achievements
+
+The purpose is to allow someone to build a complete representation of their professional journey inside Pority.
+
+For example, a person could have:
 
 ```text
-React
-   │
-   │ Upload
-   ▼
-Cloudflare R2
-   │
-   │ Object URL / Key
-   ▼
-Database
+Career
+│
+├── Experience
+├── Academics
+├── Skills
+├── Credentials
+├── Languages
+└── Achievements
 ```
 
-The database stores only the information required to reference the stored object.
+The exact career information depends on the person.
+
+Pority provides the structure without forcing everyone to have the same career.
+
+---
+
+# 8. Career Visibility
+
+Users control which Career areas are visible on their public profile.
+
 For example:
 
-- **Profile:** `AvatarKey`
-- **PostImage:** `StorageKey`, `DisplayOrder`
-
-The actual image files remain in Cloudflare R2. The backend is responsible for controlling access, generating upload information when needed, validating ownership, and managing stored objects.
-
-## 13. Domain Entities
-
-The initial Domain model intentionally contains only four core entities:
-
-1. `Profile`
-2. `SocialLink`
-3. `Post`
-4. `PostImage`
-
-### Profile
-
-Represents the public portfolio profile of a user.
-
-- **Responsibilities:** Personal profile information, Biography, Avatar reference, User ownership.
-- **Relationship:**
-  - Profile 1 ──── \* SocialLink
-  - Profile 1 ──── \* Post
-
-### SocialLink
-
-Represents an external link belonging to a profile.
-
-- **Responsibilities:** Platform, URL, Display order, Profile ownership.
-- **Relationship:** Profile 1 ──── \* SocialLink
-
-### Post
-
-Represents a piece of work published by a user.
-
-- **Responsibilities:** Title, Description, Publication state, External links, Ownership, Post images.
-- **Relationship:**
-  - Profile 1 ──── \* Post
-  - Post 1 ──── \* PostImage
-
-### PostImage
-
-Represents an image belonging to a post.
-
-- **Responsibilities:** Storage key, Display order, Post ownership.
-- **Relationship:** Post 1 ──── \* PostImage
-
-## 14. Domain Boundary
-
-ASP.NET Core Identity should not be part of the Domain layer. The Identity implementation belongs to Infrastructure.
-
-**Domain Layer:**
-
 ```text
-Domain
-│
-├── Profile
-├── SocialLink
-├── Post
-└── PostImage
+Experience     → Visible
+Academics      → Visible
+Skills         → Visible
+Credentials    → Visible
+Languages      → Hidden
+Achievements   → Visible
 ```
 
-**Infrastructure Layer:**
+This means Pority provides the available building blocks while the user decides how much of their career they want to present publicly.
+
+The public profile should therefore reflect the individual rather than forcing every person into an identical template.
+
+---
+
+# 9. About
+
+The About section represents the personal side of the profile.
+
+It can contain:
+
+* Biography
+* Personal information
+* Social links
+* Other information the user chooses to share
+
+The About section complements Works and Career.
+
+Together:
 
 ```text
-Infrastructure
-│
-├── Identity
-│   └── ApplicationUser
-│
-├── Authentication
-│   ├── JWT
-│   └── Refresh Tokens
-│
-├── Persistence
-│   └── EF Core
-│
-└── Storage
-    └── Cloudflare R2
+Works
+→ What I have created
+
+Career
+→ What I have done
+
+About
+→ Who I am
 ```
 
-The Domain remains independent from ASP.NET Core Identity, EF Core, PostgreSQL, Cloudflare R2, JWT, and HTTP.
+---
 
-## 15. Technology Stack
+# 10. Personal Identity
 
-**Backend:**
+Every Pority profile has a recognizable personal identity.
 
-- ASP.NET Core
-- Minimal APIs
-- ASP.NET Core Identity
-- JWT Authentication (Access Tokens, Refresh Tokens)
-- Authorization
-- Entity Framework Core
-- PostgreSQL
-- CQRS & MediatR
-- Clean Architecture
+This includes information such as:
 
-**Storage:**
+* Profile image
+* Name
+* Username
+* Specialization
+* Bio
+* Social links
 
-- Cloudflare R2 for uploaded images and avatars
+The username also provides the user's public URL.
 
-**Frontend:**
-
-- React
-- TypeScript
-- Axios
-- TanStack Query
-- Zustand
-- Tailwind CSS
-- React Router
-
-## 16. Architecture
-
-The backend follows Clean Architecture with CQRS and feature-oriented organization.
+For example:
 
 ```text
-API
- │
- ├── Application
- │      │
- │      └── Domain
- │
- └── Infrastructure
-        │
-        ├── Application
-        └── Domain
+pority.com/u/john
 ```
 
-- **Domain:** Has no dependency on other layers.
-- **Application:** Contains the business use cases (Commands, Queries, Handlers, Validators, DTOs, Behaviors).
-- **Infrastructure:** Contains technical implementations (EF Core, PostgreSQL, Identity, JWT, Refresh Tokens, Cloudflare R2, Authentication services).
-- **API:** Contains Minimal API endpoints, HTTP configuration, Endpoint authorization, Request/response handling.
+This URL can be shared directly with:
 
-## 17. Frontend Architecture
+* Employers
+* Clients
+* Recruiters
+* Friends
+* Collaborators
+* Anyone interested in the person's work
 
-The React frontend communicates with the backend through Axios. TanStack Query manages server state. Zustand manages client-side state that does not belong to the server cache.
+---
+
+# 11. Public by Design
+
+A Pority profile is intended to exist on the public web.
+
+The visitor does not need to be logged in.
+
+The owner can share their profile URL anywhere.
+
+For example:
 
 ```text
-React
- │
- ├── Pages
- ├── Features
- ├── Components
- │
- ├── TanStack Query
- │      │
- │      └── Axios
- │             │
- │             ▼
- │         ASP.NET API
- │
- └── Zustand
-       │
-       └── Client State
+"Check out my Pority profile."
+
+pority.com/u/john
 ```
 
-The frontend should keep API communication, server state, client state, UI components, and feature logic separated.
+The visitor can then view the information that the user has chosen to make public.
 
-## 18. Explicitly Out of Scope
+This is fundamental to the product.
 
-The first complete version of the platform does not include social-network interactions. The following are intentionally excluded:
+Pority is not a closed community where profiles only exist for registered users.
 
-- Likes
-- Comments
-- Followers
-- Following
-- Saved posts
-- Direct messages
-- Chat
-- Social notifications
-- Recommendation algorithms
-- Complex feed ranking
-
-The platform is a showcase and discovery platform, not a social network.
-
-## 19. Final Product Definition
-
-Showcase Portfolio is a visual portfolio platform where people can create a profile, present their work through image-based posts, add social links, and make their work discoverable through a simple Explore experience.
-
-The system focuses on four core domain concepts: `Profile`, `SocialLink`, `Post`, and `PostImage`.
-
-User authentication is handled through ASP.NET Core Identity and JWT authentication, PostgreSQL is used as the relational database, and Cloudflare R2 is used for image and avatar storage. The goal is to build a clean, focused, and production-oriented portfolio platform without unnecessary social-network complexity.
-
-## 20. Backend Technical Implementation Plan
-
-### 20.1 Architectural Strategy
-
-The backend adheres strictly to the 4-layer Clean Architecture (.NET 10, C# 14) defined in `README.md` and governed by the `.gemini/skills`:
-
-- **Domain (`Showcase.Domain`)**: Pure C# domain model with zero external dependencies and zero identity packages. Encapsulates business logic through **Aggregates** (`ProfileAggregate`, `PostAggregate`), **Value Objects** (`Username`, `Bio`, `Url`, `StorageKey`), and typed domain `Error` objects using the Result pattern.
-- **Application (`Showcase.Application`)**: CQRS vertical slices using MediatR and FluentValidation. Defines service abstractions (`IApplicationDbContext`, `ITokenService`, `ICurrentUserService`, `IStorageService`) and orchestrates aggregate behaviors.
-- **Infrastructure (`Showcase.Infrastructure`)**: Technical persistence and external integrations. Contains ASP.NET Core Identity in `Identity/ApplicationUser.cs`, linked via EF Core 1-to-1 relationship to `Profile`. Configured for PostgreSQL (`Npgsql.EntityFrameworkCore.PostgreSQL`), Cloudflare R2 storage via AWS S3 SDK (`AWSSDK.S3`), and JWT Bearer authentication with token rotation.
-- **API (`Showcase.Api`)**: Minimal API endpoints implementing `IEndpoint` with auto-discovery (`MapEndpoints()`), standardized RFC 7807 ProblemDetails mapping via `ResultExtensions.ToResponse()`, and global exception handling.
+It provides a **public personal presence on the web**.
 
 ---
 
-### 20.2 Domain Layer (`Showcase.Domain`)
+# 12. Discovery
 
-#### Value Objects (`ValueObjects/`):
+Pority also provides a way for users to discover other people on the platform.
 
-- **`Username`**: Immutable record enforcing validated lowercase slug (3–30 characters, alphanumeric + hyphens/underscores).
-- **`Bio`**: Immutable record encapsulating bio text (max 500 characters).
-- **`Url`**: Immutable record validating absolute HTTP/HTTPS web addresses.
-- **`StorageKey`**: Immutable record validating non-empty Cloudflare R2 object keys.
+The discovery experience is centered around **people**, not simply content.
 
-#### Enums (`Enums/`):
+Users can:
 
-- **`PostStatus`**: `Draft = 0`, `Published = 1`, `Unpublished = 2`.
+* Search for people
+* Discover profiles
+* Open public profiles
+* View their Works
+* View their Career
+* View their About information
 
-#### Aggregates (`Aggregates/`):
+Search can use information such as:
 
-1. **`ProfileAggregate`**:
-   - **`Profile` (Aggregate Root)**:
-     - `Guid Id` (BaseEntity), `string UserId` (Identity user link), `Username Username`, `string FirstName`, `string LastName`, `Bio? Bio`, `StorageKey? AvatarKey`, `DateTime CreatedAt`, `DateTime? UpdatedAt`.
-     - Encapsulated collection: `IReadOnlyCollection<SocialLink> SocialLinks`.
-     - Methods: `UpdateDetails(...)`, `SetUsername(...)`, `SetAvatar(...)`, `RemoveAvatar()`, `AddSocialLink(...)`, `UpdateSocialLink(...)`, `RemoveSocialLink(...)`, `ReorderSocialLinks(...)`.
-     - Errors: `ProfileErrors` (`NotFound`, `UsernameTaken`, `InvalidUsername`).
-   - **`SocialLink` (Child Entity)**:
-     - `Guid Id` (BaseEntity), `Guid ProfileId`, `string Platform`, `Url Url`, `int DisplayOrder`.
-     - Errors: `SocialLinkErrors` (`NotFound`, `InvalidUrl`).
+* Name
+* Username
+* Description
+* Specialization
 
-2. **`PostAggregate`**:
-   - **`Post` (Aggregate Root)**:
-     - `Guid Id` (BaseEntity), `Guid ProfileId`, `string Title`, `string Description`, `Url? ExternalUrl`, `PostStatus Status`, `DateTime CreatedAt`, `DateTime? PublishedAt`, `DateTime? UpdatedAt`.
-     - Encapsulated collection: `IReadOnlyCollection<PostImage> Images`.
-     - Methods: `UpdateDetails(...)`, `Publish()` (enforces invariant: requires `>= 1` image), `Unpublish()`, `AddImage(...)`, `RemoveImage(...)`, `ReorderImages(...)`.
-     - Errors: `PostErrors` (`NotFound`, `CannotPublishEmptyPost`, `UnauthorizedAccess`).
-   - **`PostImage` (Child Entity)**:
-     - `Guid Id` (BaseEntity), `Guid PostId`, `StorageKey StorageKey`, `int DisplayOrder`, `DateTime CreatedAt`.
-     - Errors: `PostImageErrors` (`NotFound`).
+Discovery exists to make the people and their work on Pority accessible without turning the product into a traditional social network.
 
 ---
 
-### 20.3 Infrastructure Layer (`Showcase.Infrastructure`)
+# 13. Social Layer
 
-#### Identity (`Identity/`):
+Pority contains a lightweight social layer around the personal portfolio.
 
-- **`ApplicationUser`**: Extends `IdentityUser`.
-  - Properties: `FirstName`, `LastName`, `RefreshToken`, `RefreshTokenExpiryTime`.
-  - **1-to-1 Connection**: `Guid ProfileId`, navigation property `Profile Profile`.
-- **`TokenService`**: Implements `ITokenService` for JWT generation and refresh token rotation.
-- **`CurrentUserService`**: Implements `ICurrentUserService` via `IHttpContextAccessor`.
-- **`JwtSettings`**: Configuration options for secret, issuer, audience, and expiration.
+Users can interact with other people's Works.
 
-#### Storage (`Storage/`):
+For example:
 
-- **`R2Settings`**: Section `CloudflareR2` (`AccountId`, `AccessKeyId`, `SecretAccessKey`, `BucketName`, `PublicUrlPrefix`).
-- **`CloudflareR2StorageService`**: Implements `IStorageService` using `AWSSDK.S3` for presigned PUT URLs, public URLs, and object deletions.
+* Like a Work
+* Visit another person's Profile
+* Receive activity notifications
 
-#### Data & Configurations (`Data/`):
+However, social interaction is not the primary purpose of the product.
 
-- **`ApplicationDbContext`**: Extends `IdentityDbContext<ApplicationUser>`, implements `IApplicationDbContext`.
-  - `DbSet<Profile> Profiles => Set<Profile>();`
-  - `DbSet<SocialLink> SocialLinks => Set<SocialLink>();`
-  - `DbSet<Post> Posts => Set<Post>();`
-  - `DbSet<PostImage> PostImages => Set<PostImage>();`
-- **Configurations (`Data/Configurations/`)**:
-  - `ApplicationUserConfiguration`: Configures 1-to-1 relationship between `ApplicationUser` and `Profile` (`HasForeignKey<Profile>(p => p.UserId)` with Cascade delete).
-  - `ProfileConfiguration`: ComplexProperty mapping for `Username`, `Bio`, `AvatarKey`, unique index on `Username` and `UserId`.
-  - `SocialLinkConfiguration`: FK to `Profile`, ComplexProperty for `Url`.
-  - `PostConfiguration`: FK to `Profile`, ComplexProperty for `ExternalUrl`, indexes on `Status` and `PublishedAt`.
-  - `PostImageConfiguration`: FK to `Post`, ComplexProperty for `StorageKey`.
-- **DependencyInjection**: Registers Npgsql PostgreSQL connection, Identity stores, JWT Bearer authentication, and infrastructure services.
+The hierarchy is:
 
----
+```text
+Personal Presence
+       ↓
+Profile
+       ↓
+Works + Career + About
+       ↓
+Discovery
+       ↓
+Light Social Interaction
+```
 
-### 20.4 Application Layer (`Showcase.Application`)
+Not:
 
-Organized in vertical slices using MediatR:
+```text
+Social Network
+       ↓
+Users
+       ↓
+Posts
+```
 
-- **`Features/Auth/`**:
-  - `Register`: Creates `ApplicationUser` and initializes `Profile` aggregate; returns `AuthResponse`.
-  - `Login`: Authenticates user, returns tokens.
-  - `RefreshToken`: Rotates refresh token.
-  - `GetCurrentUser`: Context and Profile ID.
-- **`Features/Profiles/`**:
-  - `UpdateProfile`, `GetAvatarUploadUrl`, `UpdateAvatar`, `GetMyProfile`, `GetPublicProfile`.
-- **`Features/SocialLinks/`**:
-  - `AddSocialLink`, `UpdateSocialLink`, `DeleteSocialLink`, `ReorderSocialLinks` (dispatched through `Profile` aggregate root).
-- **`Features/Posts/`**:
-  - `CreatePost`, `UpdatePost`, `PublishPost`, `UnpublishPost`, `DeletePost`.
-  - `GetPostImageUploadUrl`, `AddPostImage`, `RemovePostImage`, `ReorderPostImages` (dispatched through `Post` aggregate root).
-  - `GetPostById`, `GetMyPosts`, `GetExplorePosts`, `GetProfilePosts`.
+This distinction is important to the product identity.
 
 ---
 
-### 20.5 API Layer (`Showcase.Api`)
+# 14. Likes
 
-Minimal API endpoints implementing `IEndpoint` with auto-discovery:
+Users can like Works published by other users.
 
-- `/api/auth/register`, `/api/auth/login`, `/api/auth/refresh`, `/api/auth/me`
-- `/api/profiles/me`, `/api/profiles/me/avatar/upload-url`, `/api/profiles/me/avatar`, `/api/profiles/{username}`, `/api/profiles/{username}/posts`
-- `/api/profiles/me/social-links`, `/api/profiles/me/social-links/{id:guid}`, `/api/profiles/me/social-links/reorder`
-- `/api/posts`, `/api/posts/{id:guid}`, `/api/posts/{id:guid}/publish`, `/api/posts/{id:guid}/unpublish`, `/api/posts/{id:guid}/images/upload-url`, `/api/posts/{id:guid}/images`, `/api/posts/{id:guid}/images/reorder`, `/api/posts/mine`, `/api/posts/explore`
+A like represents interaction with the work itself rather than a general social relationship between users.
+
+For example:
+
+```text
+User A
+   ↓
+Views User B's Work
+   ↓
+Likes Work
+   ↓
+User B receives notification
+```
 
 ---
 
-### 20.6 Verification & Testing Strategy
+# 15. Profile Visits
 
-1. **Compilation**: `dotnet build Showcase.slnx --configuration Release`.
-2. **Migrations**: `dotnet ef migrations add InitialShowcasePostgreSqlSchema --project Showcase.Infrastructure --startup-project Showcase.Api`.
-3. **End-to-End Scenarios**: Verification via `.http` tests covering user registration, 1-to-1 profile binding, aggregate invariant enforcement (publishing validation), presigned R2 image upload, and public explore feed retrieval.
+Pority can record profile visits.
+
+When someone visits a user's public profile, the owner can receive a notification indicating that their profile was visited.
+
+For example:
+
+> Someone visited your profile.
+
+The system can also provide the time associated with the activity.
+
+This gives users visibility into activity around their public presence.
+
+---
+
+# 16. Notifications
+
+Notifications provide feedback about activity involving the user's Pority profile.
+
+They can include:
+
+* Profile visits
+* Likes on Works
+* System notifications
+* Administrative announcements or warnings
+
+Notifications are therefore an activity layer around the personal profile.
+
+---
+
+# 17. Verification
+
+Pority can provide account verification.
+
+A user can submit a verification request.
+
+The administrative system can:
+
+* Review the request
+* Approve it
+* Reject it
+* Add a review note
+
+Approved accounts can display a verification status on their profile.
+
+Verification is intended to provide an additional layer of trust around identities on the platform.
+
+---
+
+# 18. Admin Platform
+
+Pority is also a platform that needs operational management.
+
+The administrative side can provide functionality for:
+
+* User management
+* Verification management
+* Reports
+* Featured profiles
+* Storage monitoring
+* Audit logs
+* System broadcasts
+* Platform moderation
+
+The Admin system exists to operate and moderate Pority.
+
+It is not part of the core public-profile experience.
+
+The product hierarchy is:
+
+```text
+Pority
+│
+├── User Experience
+│   ├── Public Profile
+│   ├── Works
+│   ├── Career
+│   ├── About
+│   ├── Studio
+│   ├── Discovery
+│   ├── Notifications
+│   └── Account
+│
+└── Platform Administration
+    ├── Users
+    ├── Verification
+    ├── Reports
+    ├── Storage
+    ├── Audit
+    └── Broadcasts
+```
+
+---
+
+# 19. Desktop and Mobile
+
+Pority is designed as one product with two intentionally different experiences.
+
+Desktop and Mobile should not simply be the same interface scaled down.
+
+Instead:
+
+```text
+              PORITY PRODUCT
+                    │
+          ┌─────────┴─────────┐
+          │                   │
+       Desktop             Mobile
+       Experience          Experience
+          │                   │
+       Different            Different
+       Layout               Layout
+       Interaction          Interaction
+       Navigation           Navigation
+```
+
+Both experiences use the same product concepts and data, but their layouts and interactions can be designed specifically for the device.
+
+The Mobile experience should feel like a genuine mobile product rather than a compressed desktop website.
+
+This also keeps the product architecture suitable for a potential future React Native implementation of the mobile experience.
+
+---
+
+# 20. What Pority Is Not
+
+Pority is not primarily:
+
+* A social network
+* A traditional CV builder
+* A LinkedIn replacement
+* A Behance clone
+* A generic website builder
+* A blog platform
+* A content management system
+* A page builder requiring users to design their own website
+
+It may contain functionality found in some of these products, but its central purpose is different.
+
+Pority is centered around:
+
+> **A person's identity, work, and career existing together in one ready-made public presence.**
+
+---
+
+# 21. The Problem Pority Solves
+
+The problem can be summarized as:
+
+> **"I want to have a professional presence on the internet that represents who I am, what I have done, and what I have created, without having to build and maintain a website myself."**
+
+Today, a person may need to combine several different places:
+
+```text
+LinkedIn
+→ Career
+
+GitHub
+→ Code
+
+Behance
+→ Design
+
+Personal Website
+→ Portfolio
+
+Google Drive / Documents
+→ Certificates / CV
+
+Social Media
+→ Personal Presence
+```
+
+Pority aims to provide a single personal destination.
+
+```text
+                    PORITY
+                       │
+        ┌──────────────┼──────────────┐
+        │              │              │
+     Identity         Works         Career
+        │              │              │
+      About         Projects      Experience
+      Profile        Images       Academics
+      Links          Details      Skills
+      Username       Tags         Credentials
+                                   Languages
+                                   Achievements
+```
+
+The user can then share one URL.
+
+---
+
+# 22. The Core User Journey
+
+The fundamental journey is:
+
+```text
+Create Account
+      ↓
+Build Identity
+      ↓
+Complete Profile
+      ↓
+Add Career
+      ↓
+Create Works
+      ↓
+Publish
+      ↓
+Receive Public Profile
+      ↓
+Share Profile
+      ↓
+Continue Updating
+```
+
+The important part is the last step.
+
+Pority is not finished when the user creates their profile.
+
+It is designed to grow with the person.
+
+```text
+Person
+   ↓
+Career changes
+   ↓
+New experience
+   ↓
+New skills
+   ↓
+New credentials
+   ↓
+New work
+   ↓
+Update Pority
+```
+
+---
+
+# 23. Product Structure
+
+At the highest level, Pority can be understood as:
+
+```text
+                         PORITY
+                           │
+                    Personal Presence
+                           │
+             ┌─────────────┼─────────────┐
+             │             │             │
+           WORKS         CAREER        ABOUT
+             │             │             │
+         Projects      Experience       Bio
+         Images        Academics        Identity
+         Details       Skills           Links
+         Tags          Credentials
+         Links         Languages
+                       Achievements
+                           │
+                           ▼
+                    Public Profile
+                           │
+             ┌─────────────┴─────────────┐
+             │                           │
+        Anyone can view             Pority Users
+                                         │
+                              ┌──────────┼──────────┐
+                              │          │          │
+                           Search      Likes      Visits
+                              │          │          │
+                              └──────────┼──────────┘
+                                         │
+                                    Notifications
+```
+
+Alongside the public experience:
+
+```text
+Studio
+  ↓
+Manage Works
+
+Admin
+  ↓
+Manage Platform
+```
+
+---
+
+# 24. Product Principle
+
+Pority should remain simple despite having many capabilities.
+
+The product should not grow by continuously adding sections, pages, or social features simply because they are possible.
+
+Every feature should answer a question related to the core purpose:
+
+> **Does this help the person represent themselves, their work, or their career on the web?**
+
+The public profile should remain the center of the product.
+
+The goal is not to create the largest platform possible.
+
+The goal is to create a **clear, useful, distinctive personal presence platform**.
+
+---
+
+# 25. Final Product Definition
+
+**Pority is a personal web presence platform that gives every person a ready-made public profile where they can represent who they are, showcase what they have created, and present their professional and educational journey.**
+
+It combines:
+
+```text
+Identity
+   +
+Works
+   +
+Career
+   +
+About
+```
+
+into one continuously updated public presence.
+
+Users do not need to build a website from scratch.
+
+They create their profile, add their information and work, control what they want to show, and share one public URL.
+
+Pority then provides the infrastructure around that profile for managing Works, building a Career, discovering other people, and enabling lightweight interaction.
+
+The central idea is:
+
+> **Pority gives people a place on the web that represents them.**
