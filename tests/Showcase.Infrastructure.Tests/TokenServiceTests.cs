@@ -40,7 +40,7 @@ public class TokenServiceTests
         var roles = new List<string> { "Admin", "User" };
 
         // Act
-        var tokenString = _tokenService.GenerateAccessToken(userId, email, roles);
+        var tokenString = _tokenService.GenerateAccessToken(userId, "testuser", email, roles);
 
         // Assert
         Assert.NotNull(tokenString);
@@ -75,7 +75,7 @@ public class TokenServiceTests
         var email = "noroles@example.com";
 
         // Act
-        var tokenString = _tokenService.GenerateAccessToken(userId, email);
+        var tokenString = _tokenService.GenerateAccessToken(userId, "noroles", email);
 
         // Assert
         Assert.NotEmpty(tokenString);
@@ -85,13 +85,13 @@ public class TokenServiceTests
     }
 
     [Theory]
-    [InlineData("", "test@example.com")]
-    [InlineData("   ", "test@example.com")]
-    [InlineData("user-1", "")]
-    [InlineData("user-1", "   ")]
-    public void GenerateAccessToken_WithInvalidArguments_ShouldThrowArgumentException(string userId, string email)
+    [InlineData("", "user-1", "test@example.com")]
+    [InlineData("   ", "user-1", "test@example.com")]
+    [InlineData("user-1", "", "test@example.com")]
+    [InlineData("user-1", "   ", "test@example.com")]
+    public void GenerateAccessToken_WithInvalidArguments_ShouldThrowArgumentException(string userId, string username, string email)
     {
-        Assert.Throws<ArgumentException>(() => _tokenService.GenerateAccessToken(userId, email));
+        Assert.Throws<ArgumentException>(() => _tokenService.GenerateAccessToken(userId, username, email));
     }
 
     [Fact]
@@ -150,7 +150,7 @@ public class TokenServiceTests
     public void GetPrincipalFromExpiredToken_WithTamperedToken_ShouldReturnNull()
     {
         // Arrange
-        var validToken = _tokenService.GenerateAccessToken("user1", "user1@example.com");
+        var validToken = _tokenService.GenerateAccessToken("user1", "user1", "user1@example.com");
         var tamperedToken = validToken.Substring(0, validToken.Length - 5) + "abcde";
 
         // Act
@@ -197,7 +197,7 @@ public class TokenServiceTests
         var emptySecretSettings = new JwtSettings { Secret = "" };
         var service = new TokenService(Options.Create(emptySecretSettings));
 
-        var tokenString = service.GenerateAccessToken("user-fallback", "fallback@example.com");
+        var tokenString = service.GenerateAccessToken("user-fallback", "user-fallback", "fallback@example.com");
 
         Assert.NotEmpty(tokenString);
         var principal = service.GetPrincipalFromExpiredToken(tokenString);
@@ -214,7 +214,7 @@ public class TokenServiceTests
             Audience = ""
         };
         var service = new TokenService(Options.Create(minimalSettings));
-        var tokenString = service.GenerateAccessToken("user-minimal", "minimal@example.com");
+        var tokenString = service.GenerateAccessToken("user-minimal", "user-minimal", "minimal@example.com");
 
         var principal = service.GetPrincipalFromExpiredToken(tokenString);
 
@@ -232,7 +232,7 @@ public class TokenServiceTests
         var settings = _jwtSettings with { ExpiryMinutes = nonPositiveExpiry };
         var service = new TokenService(Options.Create(settings));
 
-        var tokenString = service.GenerateAccessToken("user-expiry", "expiry@example.com");
+        var tokenString = service.GenerateAccessToken("user-expiry", "user-expiry", "expiry@example.com");
 
         Assert.NotEmpty(tokenString);
         var handler = new JwtSecurityTokenHandler();
@@ -250,7 +250,7 @@ public class TokenServiceTests
     public void GenerateAccessToken_WithNullOrWhitespaceRoles_ShouldFilterThemOut()
     {
         var roles = new List<string> { "Admin", "", "   ", "Editor" };
-        var tokenString = _tokenService.GenerateAccessToken("user-roles", "roles@example.com", roles);
+        var tokenString = _tokenService.GenerateAccessToken("user-roles", "user-roles", "roles@example.com", roles);
 
         var handler = new JwtSecurityTokenHandler();
         var jwt = handler.ReadJwtToken(tokenString);
@@ -265,7 +265,7 @@ public class TokenServiceTests
     public void GenerateAccessToken_WithDuplicateRoles_ShouldDeduplicateRoles()
     {
         var roles = new List<string> { "Admin", "admin", "Admin", "User", "user" };
-        var tokenString = _tokenService.GenerateAccessToken("user-roles", "roles@example.com", roles);
+        var tokenString = _tokenService.GenerateAccessToken("user-roles", "user-roles", "roles@example.com", roles);
 
         var handler = new JwtSecurityTokenHandler();
         var jwt = handler.ReadJwtToken(tokenString);
@@ -282,7 +282,7 @@ public class TokenServiceTests
         var shortSecretSettings = new JwtSettings { Secret = "TooShort" };
         var service = new TokenService(Options.Create(shortSecretSettings));
 
-        var tokenString = service.GenerateAccessToken("user-short-secret", "short@example.com");
+        var tokenString = service.GenerateAccessToken("user-short-secret", "user-short-secret", "short@example.com");
 
         Assert.NotEmpty(tokenString);
         var principal = service.GetPrincipalFromExpiredToken(tokenString);
@@ -292,7 +292,7 @@ public class TokenServiceTests
     [Fact]
     public void GenerateAccessToken_ClockSkewZeroCompatibility_ShouldBeImmediatelyValid()
     {
-        var tokenString = _tokenService.GenerateAccessToken("user-clock", "clock@example.com");
+        var tokenString = _tokenService.GenerateAccessToken("user-clock", "user-clock", "clock@example.com");
 
         var tokenValidationParameters = new TokenValidationParameters
         {

@@ -37,7 +37,7 @@ public class AuthFeatureTests
     public void RegisterCommandValidator_Should_Pass_For_Valid_Data()
     {
         var validator = new RegisterCommandValidator();
-        var command = new RegisterCommand("user@test.com", "valid_user-1", "SecurePass123!", "John", "Doe");
+        var command = new RegisterCommand("valid_user-1", "SecurePass123!", "John Doe", "user@test.com");
 
         var result = validator.TestValidate(command);
 
@@ -45,12 +45,12 @@ public class AuthFeatureTests
     }
 
     [Theory]
-    [InlineData("", "Email is required.")]
     [InlineData("not-an-email", "Email must be a valid email address.")]
+    [InlineData("invalid@char", "Email must be a valid email address.")]
     public void RegisterCommandValidator_Should_Fail_For_Invalid_Email(string email, string expectedError)
     {
         var validator = new RegisterCommandValidator();
-        var command = new RegisterCommand(email, "valid_user", "SecurePass123!", "John", "Doe");
+        var command = new RegisterCommand("valid_user", "SecurePass123!", "John Doe", email);
 
         var result = validator.TestValidate(command);
 
@@ -65,7 +65,7 @@ public class AuthFeatureTests
     public void RegisterCommandValidator_Should_Fail_For_Invalid_Username(string username, string expectedError)
     {
         var validator = new RegisterCommandValidator();
-        var command = new RegisterCommand("test@email.com", username, "SecurePass123!", "John", "Doe");
+        var command = new RegisterCommand(username, "SecurePass123!", "John Doe", "test@email.com");
 
         var result = validator.TestValidate(command);
 
@@ -114,10 +114,10 @@ public class AuthFeatureTests
         const string refreshToken = "valid-refresh-token";
 
         mockIdentity.Setup(i => i.RegisterUserAsync(
-                It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Success(userId));
 
-        mockTokenService.Setup(t => t.GenerateAccessToken(userId, "test@test.com", It.IsAny<IList<string>>()))
+        mockTokenService.Setup(t => t.GenerateAccessToken(userId, "testuser", "test@test.com", It.IsAny<IList<string>>()))
             .Returns(accessToken);
 
         mockTokenService.Setup(t => t.GenerateRefreshToken())
@@ -128,7 +128,7 @@ public class AuthFeatureTests
             .ReturnsAsync(Result.Success());
 
         var handler = new RegisterCommandHandler(mockIdentity.Object, context, mockTokenService.Object);
-        var command = new RegisterCommand("test@test.com", "testuser", "Password123!", "John", "Doe");
+        var command = new RegisterCommand("testuser", "Password123!", "John Doe", "test@test.com");
 
         // Act
         var result = await handler.Handle(command, CancellationToken.None);
@@ -140,8 +140,7 @@ public class AuthFeatureTests
 
         var profile = await context.Set<Profile>().FirstOrDefaultAsync(p => p.UserId == userId);
         Assert.NotNull(profile);
-        Assert.Equal("John", profile.FirstName);
-        Assert.Equal("Doe", profile.LastName);
+        Assert.Equal("John Doe", profile.Name);
     }
 
     [Fact]
@@ -153,11 +152,11 @@ public class AuthFeatureTests
         var mockTokenService = new Mock<ITokenService>();
 
         mockIdentity.Setup(i => i.RegisterUserAsync(
-                It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Error.Conflict("Auth.EmailTaken", "Email is already registered."));
 
         var handler = new RegisterCommandHandler(mockIdentity.Object, context, mockTokenService.Object);
-        var command = new RegisterCommand("duplicate@test.com", "testuser", "Password123!", "John", "Doe");
+        var command = new RegisterCommand("testuser", "Password123!", "John Doe", "duplicate@test.com");
 
         // Act
         var result = await handler.Handle(command, CancellationToken.None);
@@ -184,7 +183,7 @@ public class AuthFeatureTests
         mockIdentity.Setup(i => i.AuthenticateAsync("test@test.com", "Password123!", It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Success(userDetails));
 
-        mockTokenService.Setup(t => t.GenerateAccessToken(userId, "test@test.com", It.IsAny<IList<string>>()))
+        mockTokenService.Setup(t => t.GenerateAccessToken(userId, "testuser", "test@test.com", It.IsAny<IList<string>>()))
             .Returns("access-token-123");
 
         mockTokenService.Setup(t => t.GenerateRefreshToken())
@@ -251,7 +250,7 @@ public class AuthFeatureTests
         mockIdentity.Setup(i => i.ValidateRefreshTokenAsync(userId, "valid-refresh-token", It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Success(userDetails));
 
-        mockTokenService.Setup(t => t.GenerateAccessToken(userId, "test@test.com", It.IsAny<IList<string>>()))
+        mockTokenService.Setup(t => t.GenerateAccessToken(userId, "testuser", "test@test.com", It.IsAny<IList<string>>()))
             .Returns("new-access-token");
 
         mockTokenService.Setup(t => t.GenerateRefreshToken())
@@ -314,7 +313,7 @@ public class AuthFeatureTests
         mockIdentity.Setup(i => i.GetUserByIdAsync(userId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Success(userDetails));
 
-        var profile = new Profile(userId, "Jane", "Doe");
+        var profile = new Profile(userId, "Jane Doe");
         context.Set<Profile>().Add(profile);
         await context.SaveChangesAsync();
 
@@ -332,8 +331,7 @@ public class AuthFeatureTests
         Assert.Equal(userId, result.Value.Id);
         Assert.Equal("test@test.com", result.Value.Email);
         Assert.Equal("creator_one", result.Value.Username);
-        Assert.Equal("Jane", result.Value.FirstName);
-        Assert.Equal("Doe", result.Value.LastName);
+        Assert.Equal("Jane Doe", result.Value.Name);
         Assert.Equal(profile.Id, result.Value.ProfileId);
     }
 

@@ -42,28 +42,27 @@ public class ProfileFeatureTests
     public void UpdateProfileValidator_Should_Pass_For_Valid_Data()
     {
         var validator = new UpdateProfileCommandValidator();
-        var command = new UpdateProfileCommand("John", "Doe", "Passionate software engineer.");
+        var command = new UpdateProfileCommand("John Doe", "Architect", "Jordan", "Passionate software engineer.");
 
         var result = validator.TestValidate(command);
         result.ShouldNotHaveAnyValidationErrors();
     }
 
     [Fact]
-    public void UpdateProfileValidator_Should_Fail_When_FirstName_Or_LastName_Empty()
+    public void UpdateProfileValidator_Should_Fail_When_Name_Empty()
     {
         var validator = new UpdateProfileCommandValidator();
-        var command = new UpdateProfileCommand("", "", null);
+        var command = new UpdateProfileCommand("", null, null, null);
 
         var result = validator.TestValidate(command);
-        result.ShouldHaveValidationErrorFor(x => x.FirstName);
-        result.ShouldHaveValidationErrorFor(x => x.LastName);
+        result.ShouldHaveValidationErrorFor(x => x.Name);
     }
 
     [Fact]
     public void UpdateProfileValidator_Should_Fail_When_Bio_Exceeds_MaxLength()
     {
         var validator = new UpdateProfileCommandValidator();
-        var command = new UpdateProfileCommand("John", "Doe", new string('a', 501));
+        var command = new UpdateProfileCommand("John Doe", null, null, new string('a', 1001));
 
         var result = validator.TestValidate(command);
         result.ShouldHaveValidationErrorFor(x => x.Bio);
@@ -76,7 +75,7 @@ public class ProfileFeatureTests
         _currentUserServiceMock.Setup(x => x.UserId).Returns((string?)null);
 
         var handler = new UpdateProfileCommandHandler(context, _currentUserServiceMock.Object);
-        var result = await handler.Handle(new UpdateProfileCommand("John", "Doe", "Bio"), CancellationToken.None);
+        var result = await handler.Handle(new UpdateProfileCommand("John Doe", null, null, "Bio"), CancellationToken.None);
 
         Assert.True(result.IsFailure);
         Assert.Equal("Auth.Unauthorized", result.Error.Code);
@@ -89,7 +88,7 @@ public class ProfileFeatureTests
         _currentUserServiceMock.Setup(x => x.UserId).Returns("non-existing-user");
 
         var handler = new UpdateProfileCommandHandler(context, _currentUserServiceMock.Object);
-        var result = await handler.Handle(new UpdateProfileCommand("John", "Doe", "Bio"), CancellationToken.None);
+        var result = await handler.Handle(new UpdateProfileCommand("John Doe", null, null, "Bio"), CancellationToken.None);
 
         Assert.True(result.IsFailure);
         Assert.Equal("Profile.NotFoundForUser", result.Error.Code);
@@ -99,19 +98,20 @@ public class ProfileFeatureTests
     public async Task UpdateProfileHandler_Should_Succeed_And_Update_Details()
     {
         using var context = CreateInMemoryDbContext();
-        var profile = new Profile("user-1", "OldFirst", "OldLast");
+        var profile = new Profile("user-1", "Old Name");
         context.Profiles.Add(profile);
         await context.SaveChangesAsync();
 
         _currentUserServiceMock.Setup(x => x.UserId).Returns("user-1");
 
         var handler = new UpdateProfileCommandHandler(context, _currentUserServiceMock.Object);
-        var result = await handler.Handle(new UpdateProfileCommand("NewFirst", "NewLast", "Updated Bio"), CancellationToken.None);
+        var result = await handler.Handle(
+            new UpdateProfileCommand("New Name", null, null, "Updated Bio"),
+            CancellationToken.None);
 
         Assert.True(result.IsSuccess);
         var updated = await context.Profiles.FirstAsync(p => p.UserId == "user-1");
-        Assert.Equal("NewFirst", updated.FirstName);
-        Assert.Equal("NewLast", updated.LastName);
+        Assert.Equal("New Name", updated.Name);
         Assert.Equal("Updated Bio", updated.Bio?.Value);
         Assert.NotNull(updated.UpdatedAt);
     }
@@ -159,7 +159,7 @@ public class ProfileFeatureTests
     {
         using var context = CreateInMemoryDbContext();
         var oldKey = StorageKey.Create("avatars/user-1/old.png").Value;
-        var profile = new Profile("user-1", "John", "Doe", avatarKey: oldKey);
+        var profile = new Profile("user-1", "John Doe", avatarKey: oldKey);
         context.Profiles.Add(profile);
         await context.SaveChangesAsync();
 
@@ -183,7 +183,7 @@ public class ProfileFeatureTests
     {
         using var context = CreateInMemoryDbContext();
         var oldKey = StorageKey.Create("avatars/user-1/avatar.png").Value;
-        var profile = new Profile("user-1", "John", "Doe", avatarKey: oldKey);
+        var profile = new Profile("user-1", "John Doe", avatarKey: oldKey);
         context.Profiles.Add(profile);
         await context.SaveChangesAsync();
 
@@ -211,7 +211,7 @@ public class ProfileFeatureTests
     {
         using var context = CreateInMemoryDbContext();
         var avatarKey = StorageKey.Create("avatars/user-1/pic.jpg").Value;
-        var profile = new Profile("user-1", "John", "Doe", Bio.Create("My Bio").Value, avatarKey);
+        var profile = new Profile("user-1", "John Doe", bio: Bio.Create("My Bio").Value, avatarKey: avatarKey);
         var url1 = Url.Create("https://github.com/john").Value;
         var url2 = Url.Create("https://linkedin.com/in/john").Value;
         profile.AddSocialLink("GitHub", url1, 1);
@@ -234,8 +234,7 @@ public class ProfileFeatureTests
         var resp = result.Value;
         Assert.Equal("johndoe", resp.UserName);
         Assert.Equal("john@test.com", resp.Email);
-        Assert.Equal("John", resp.FirstName);
-        Assert.Equal("Doe", resp.LastName);
+        Assert.Equal("John Doe", resp.Name);
         Assert.Equal("My Bio", resp.Bio);
         Assert.Equal("https://cdn.example.com/avatars/user-1/pic.jpg", resp.AvatarUrl);
         Assert.Equal(2, resp.SocialLinks.Count);
@@ -249,7 +248,7 @@ public class ProfileFeatureTests
     {
         using var context = CreateInMemoryDbContext();
         var avatarKey = StorageKey.Create("avatars/creator-1/pic.jpg").Value;
-        var profile = new Profile("creator-1", "Jane", "Smith", Bio.Create("Public creator").Value, avatarKey);
+        var profile = new Profile("creator-1", "Jane Smith", bio: Bio.Create("Public creator").Value, avatarKey: avatarKey);
         var url = Url.Create("https://x.com/janesmith").Value;
         profile.AddSocialLink("X", url, 0);
         context.Profiles.Add(profile);
@@ -268,8 +267,7 @@ public class ProfileFeatureTests
         Assert.True(result.IsSuccess);
         var resp = result.Value;
         Assert.Equal("janesmith", resp.UserName);
-        Assert.Equal("Jane", resp.FirstName);
-        Assert.Equal("Smith", resp.LastName);
+        Assert.Equal("Jane Smith", resp.Name);
         Assert.Equal("Public creator", resp.Bio);
         Assert.Equal("https://cdn.example.com/avatars/creator-1/pic.jpg", resp.AvatarUrl);
         Assert.Single(resp.SocialLinks);
