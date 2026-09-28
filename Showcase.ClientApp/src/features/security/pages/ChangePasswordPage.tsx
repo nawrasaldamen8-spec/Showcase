@@ -95,7 +95,7 @@ export const ChangePasswordPage: React.FC = () => {
             <button
               type="button"
               onClick={() => setShowCurrentPassword((prev) => !prev)}
-              className="hover:text-[#141413] transition-colors p-1"
+              className="hover:text-slate-dark transition-colors p-1"
               aria-label={showCurrentPassword ? "Hide current password" : "Show current password"}
             >
               {showCurrentPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -116,7 +116,7 @@ export const ChangePasswordPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setShowNewPassword((prev) => !prev)}
-                className="hover:text-[#141413] transition-colors p-1"
+                className="hover:text-slate-dark transition-colors p-1"
                 aria-label={showNewPassword ? "Hide new password" : "Show new password"}
               >
                 {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}

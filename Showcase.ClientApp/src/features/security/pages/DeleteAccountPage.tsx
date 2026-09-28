@@ -50,13 +50,13 @@ export const DeleteAccountPage: React.FC = () => {
     >
       <form onSubmit={handleDelete} className="space-y-6">
         {/* Warning Callout Box */}
-        <div className="p-4 sm:p-5 rounded-2xl bg-[#d97757]/10 border border-[#d97757]/30 space-y-2.5 text-[#141413]">
-          <div className="flex items-center gap-2 text-[#d97757]">
+        <div className="p-4 sm:p-5 rounded-2xl bg-clay/10 border border-clay/30 space-y-2.5 text-slate-dark">
+          <div className="flex items-center gap-2 text-clay">
             <AlertTriangle className="h-5 w-5 shrink-0" />
             <span className="font-gothic text-xs font-bold uppercase tracking-wider">Warning: Irreversible Action</span>
           </div>
 
-          <p className="font-serif text-xs sm:text-sm leading-relaxed text-[#141413]/85">
+          <p className="font-serif text-xs sm:text-sm leading-relaxed text-slate-dark/85">
             Deleting your account will permanently remove your profile, published works, career records, and account data. This action cannot be undone.
           </p>
         </div>
@@ -74,7 +74,7 @@ export const DeleteAccountPage: React.FC = () => {
             <button
               type="button"
               onClick={() => setShowPassword((prev) => !prev)}
-              className="hover:text-[#141413] transition-colors p-1"
+              className="hover:text-slate-dark transition-colors p-1"
               aria-label={showPassword ? "Hide password" : "Show password"}
             >
               {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -95,7 +95,7 @@ export const DeleteAccountPage: React.FC = () => {
         />
 
         {error && (
-          <div className="p-3 rounded-lg bg-[#d97757]/10 border border-[#d97757]/30 text-xs font-serif text-[#d97757]">
+          <div className="p-3 rounded-lg bg-clay/10 border border-clay/30 text-xs font-serif text-clay">
             {error}
           </div>
         )}
@@ -110,7 +110,7 @@ export const DeleteAccountPage: React.FC = () => {
             isLoading={isDeleting}
             disabled={!password || confirmText.trim().toUpperCase() !== "DELETE"}
             leftIcon={<Trash2 className="h-4 w-4" />}
-            className="justify-center font-gothic uppercase tracking-wider text-xs bg-[#d97757] hover:bg-[#c46142] text-[#faf9f5] border-transparent shadow-none"
+            className="justify-center font-gothic uppercase tracking-wider text-xs bg-clay hover:bg-[#c46142] text-ivory-light border-transparent shadow-none"
           >
             Permanently Delete Account
           </Button>

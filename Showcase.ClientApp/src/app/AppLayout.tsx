@@ -1,11 +1,11 @@
 import React from "react";
-import { useLocation } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "@shared/context/index.ts";
 import { Footer, MobileBottomNav, MobileTopBar, Sidebar } from "@shared/layout/index.ts";
 import { ScrollToTop } from "./ScrollToTop.tsx";
 
-interface AppLayoutProps {
-  children: React.ReactNode;
+export interface AppLayoutProps {
+  children?: React.ReactNode;
 }
 
 export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
@@ -25,25 +25,26 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   const layoutUser = currentUser
     ? {
         username: currentUser.username,
-        firstName: currentUser.firstName,
-        lastName: currentUser.lastName,
+        name: currentUser.name,
         avatarUrl: currentUser.avatarUrl || undefined,
         isVerified: currentUser.isVerified,
         roles: currentUser.roles,
       }
     : null;
 
+  const content = children ?? <Outlet />;
+
   if (isStandaloneRoute) {
     return (
-      <div className="min-h-screen bg-[#f0eee6] text-[#141413] antialiased selection:bg-[#d97757] selection:text-[#faf9f5]">
+      <div className="min-h-screen bg-ivory-medium text-slate-dark antialiased selection:bg-clay selection:text-ivory-light">
         <ScrollToTop />
-        <main className="min-h-screen">{children}</main>
+        <main className="min-h-screen">{content}</main>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex bg-[#f0eee6] text-[#141413] antialiased selection:bg-[#d97757] selection:text-[#faf9f5]">
+    <div className="min-h-screen flex bg-ivory-medium text-slate-dark antialiased selection:bg-clay selection:text-ivory-light">
       <ScrollToTop />
       <Sidebar
         user={layoutUser}
@@ -53,7 +54,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
       />
       <div className="flex-1 flex flex-col min-w-0 md:pl-60 lg:pl-64 transition-all">
         <MobileTopBar />
-        <main className={`flex-1 ${isEditorRoute ? "" : "pb-16 md:pb-0"}`}>{children}</main>
+        <main className={`flex-1 ${isEditorRoute ? "" : "pb-16 md:pb-0"}`}>{content}</main>
         <Footer />
       </div>
       {!isEditorRoute && <MobileBottomNav user={layoutUser} />}

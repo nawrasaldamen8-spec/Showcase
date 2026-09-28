@@ -1,14 +1,16 @@
+import type { VerificationStatus } from "./common.ts";
+
 export interface UserAccount {
   id: string;
-  email: string;
+  email?: string | null;
   username: string;
-  passwordHash: string;
+  name?: string;
   profileId: string;
   roles: string[];
   phoneNumber?: string | null;
   accountNumber?: string | null;
   isVerified?: boolean;
-  verificationStatus?: "none" | "pending" | "verified" | "rejected";
+  verificationStatus?: VerificationStatus;
   featuredStatus?: "none" | "pending" | "featured" | "rejected";
   isBanned?: boolean;
   banReason?: string | null;
@@ -16,24 +18,23 @@ export interface UserAccount {
 
 export interface UserIdentityDetails {
   id: string;
-  email: string;
-  userName: string;
+  email?: string | null;
+  username: string;
   roles: string[];
 }
 
 export interface CurrentUserResponse {
   id: string;
-  email: string;
+  email?: string | null;
   username: string;
-  firstName: string;
-  lastName: string;
+  name: string;
   profileId: string;
   bio?: string | null;
   avatarUrl?: string | null;
   phoneNumber?: string | null;
   accountNumber?: string | null;
   isVerified?: boolean;
-  verificationStatus?: "none" | "pending" | "verified" | "rejected";
+  verificationStatus?: VerificationStatus;
   featuredStatus?: "none" | "pending" | "featured" | "rejected";
   isBanned?: boolean;
   banReason?: string | null;
@@ -47,11 +48,10 @@ export interface AuthResponse {
 }
 
 export interface RegisterRequest {
-  email: string;
   username: string;
   password: string;
-  firstName: string;
-  lastName: string;
+  name: string;
+  email?: string | null;
   bio?: string;
   avatarUrl?: string;
 }

@@ -13,14 +13,9 @@ import {
 import { Button } from "@shared/components/Button.tsx";
 import { useAsyncData } from "@shared/hooks/index.ts";
 import { apiClient } from "@shared/api/index.ts";
+import { formatBytes } from "@shared/utils/format.ts";
 import { AdminKpiCard } from "../components/AdminKpiCard.tsx";
 import { AdminLayout } from "../components/AdminLayout.tsx";
-
-function formatBytes(bytes: number): string {
-  if (!bytes) return "0 GB";
-  const gb = bytes / (1024 * 1024 * 1024);
-  return `${gb.toFixed(1)} GB`;
-}
 
 export const AdminDashboardPage: React.FC = () => {
   const navigate = useNavigate();
@@ -95,17 +90,17 @@ export const AdminDashboardPage: React.FC = () => {
       {/* 2. Middle Section: Recent Security Audit Trail & Active Broadcasts */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 pt-4">
         {/* Left 7 cols: Audit Trail */}
-        <div className="lg:col-span-7 bg-[#faf9f5] border border-[#cccbc8] rounded-2xl p-6 space-y-4">
-          <div className="flex items-center justify-between border-b border-[#cccbc8]/60 pb-3">
+        <div className="lg:col-span-7 bg-ivory-light border border-stone rounded-2xl p-6 space-y-4">
+          <div className="flex items-center justify-between border-b border-stone/60 pb-3">
             <div className="flex items-center gap-2">
-              <History className="w-4 h-4 text-[#d97757]" />
-              <h3 className="font-gothic text-xs font-bold uppercase tracking-wider text-[#141413]">
+              <History className="w-4 h-4 text-clay" />
+              <h3 className="font-gothic text-xs font-bold uppercase tracking-wider text-slate-dark">
                 Recent Administrative Decisions
               </h3>
             </div>
             <Link
               to="/admin/audit-logs"
-              className="font-gothic text-[11px] font-bold uppercase tracking-wider text-[#d97757] hover:underline flex items-center gap-1 text-decoration-none"
+              className="font-gothic text-[11px] font-bold uppercase tracking-wider text-clay hover:underline flex items-center gap-1 text-decoration-none"
             >
               <span>View All</span>
               <ArrowRight className="w-3 h-3" />
@@ -117,27 +112,27 @@ export const AdminDashboardPage: React.FC = () => {
               metrics.recentAuditLogs.map((log) => (
                 <div
                   key={log.id}
-                  className="p-3 rounded-xl bg-[#f0eee6] border border-[#cccbc8]/60 flex items-start justify-between gap-3 text-xs"
+                  className="p-3 rounded-xl bg-ivory-medium border border-stone/60 flex items-start justify-between gap-3 text-xs"
                 >
                   <div className="space-y-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className="font-gothic font-bold uppercase tracking-wider text-[#141413]">
+                      <span className="font-gothic font-bold uppercase tracking-wider text-slate-dark">
                         {log.action.replace(/_/g, " ")}
                       </span>
-                      <span className="text-[#87867f]">&bull;</span>
-                      <span className="text-[#d97757] font-medium">{log.targetLabel}</span>
+                      <span className="text-cloud-dark">&bull;</span>
+                      <span className="text-clay font-medium">{log.targetLabel}</span>
                     </div>
                     {log.reason && (
-                      <p className="font-serif text-[#141413]/75 text-[11px] truncate">{log.reason}</p>
+                      <p className="font-serif text-slate-dark/75 text-[11px] truncate">{log.reason}</p>
                     )}
                   </div>
-                  <span className="font-serif text-[10px] text-[#87867f] shrink-0">
+                  <span className="font-serif text-[10px] text-cloud-dark shrink-0">
                     {new Date(log.timestamp).toLocaleDateString()}
                   </span>
                 </div>
               ))
             ) : (
-              <p className="font-serif text-xs text-[#87867f] py-4 text-center">
+              <p className="font-serif text-xs text-cloud-dark py-4 text-center">
                 No recent administrative actions recorded.
               </p>
             )}
@@ -147,17 +142,17 @@ export const AdminDashboardPage: React.FC = () => {
         {/* Right 5 cols: Active Broadcasts & Quick Links */}
         <div className="lg:col-span-5 space-y-6">
           {/* Active Broadcasts */}
-          <div className="bg-[#faf9f5] border border-[#cccbc8] rounded-2xl p-6 space-y-4">
-            <div className="flex items-center justify-between border-b border-[#cccbc8]/60 pb-3">
+          <div className="bg-ivory-light border border-stone rounded-2xl p-6 space-y-4">
+            <div className="flex items-center justify-between border-b border-stone/60 pb-3">
               <div className="flex items-center gap-2">
-                <Megaphone className="w-4 h-4 text-[#141413]" />
-                <h3 className="font-gothic text-xs font-bold uppercase tracking-wider text-[#141413]">
+                <Megaphone className="w-4 h-4 text-slate-dark" />
+                <h3 className="font-gothic text-xs font-bold uppercase tracking-wider text-slate-dark">
                   Platform Broadcasts
                 </h3>
               </div>
               <Link
                 to="/admin/broadcasts"
-                className="font-gothic text-[11px] font-bold uppercase tracking-wider text-[#d97757] hover:underline text-decoration-none"
+                className="font-gothic text-[11px] font-bold uppercase tracking-wider text-clay hover:underline text-decoration-none"
               >
                 Manage
               </Link>
@@ -168,21 +163,21 @@ export const AdminDashboardPage: React.FC = () => {
                 metrics.recentBroadcasts.map((b) => (
                   <div
                     key={b.id}
-                    className="p-3.5 rounded-xl bg-[#f0eee6] border border-[#cccbc8]/60 space-y-1.5"
+                    className="p-3.5 rounded-xl bg-ivory-medium border border-stone/60 space-y-1.5"
                   >
                     <div className="flex items-center justify-between">
-                      <span className="font-gothic text-xs font-bold uppercase tracking-tight text-[#141413]">
+                      <span className="font-gothic text-xs font-bold uppercase tracking-tight text-slate-dark">
                         {b.title}
                       </span>
-                      <span className="px-2 py-0.2 rounded-full font-gothic text-[9px] font-extrabold uppercase bg-[#faf9f5] border border-[#cccbc8] text-[#87867f]">
+                      <span className="px-2 py-0.2 rounded-full font-gothic text-[9px] font-extrabold uppercase bg-ivory-light border border-stone text-cloud-dark">
                         {b.severity}
                       </span>
                     </div>
-                    <p className="font-serif text-xs text-[#141413]/70 line-clamp-2">{b.message}</p>
+                    <p className="font-serif text-xs text-slate-dark/70 line-clamp-2">{b.message}</p>
                   </div>
                 ))
               ) : (
-                <p className="font-serif text-xs text-[#87867f] py-4 text-center">
+                <p className="font-serif text-xs text-cloud-dark py-4 text-center">
                   No active broadcasts dispatched.
                 </p>
               )}
@@ -190,11 +185,11 @@ export const AdminDashboardPage: React.FC = () => {
           </div>
 
           {/* Quick Shortcuts */}
-          <div className="p-5 rounded-2xl bg-[#141413] text-[#faf9f5] space-y-3">
-            <h4 className="font-gothic text-xs font-bold uppercase tracking-wider text-[#d97757]">
+          <div className="p-5 rounded-2xl bg-slate-dark text-ivory-light space-y-3">
+            <h4 className="font-gothic text-xs font-bold uppercase tracking-wider text-clay">
               Curated Showcase Promotion
             </h4>
-            <p className="font-serif text-xs text-[#faf9f5]/80 leading-relaxed">
+            <p className="font-serif text-xs text-ivory-light/80 leading-relaxed">
               Curate exceptional architectural projects to be spotlighted across the global discovery feed.
             </p>
             <Link to="/admin/featured" className="inline-block text-decoration-none pt-1">

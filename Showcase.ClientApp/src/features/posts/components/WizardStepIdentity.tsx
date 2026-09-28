@@ -26,7 +26,7 @@ export const WizardStepIdentity: React.FC<WizardStepIdentityProps> = ({
   setIsDirty,
 }) => {
   return (
-    <div className="bg-[#faf9f5] border border-[#cccbc8] rounded-[24px] p-6 sm:p-8 space-y-6">
+    <div className="bg-ivory-light border border-stone rounded-card p-6 sm:p-8 space-y-6">
       <div>
         <Input
           label="Project Title *"

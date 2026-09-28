@@ -1,7 +1,6 @@
 import React from "react";
 import { Textarea } from "@shared/components/Textarea.tsx";
-
-const SUGGESTED_TAGS = ["UI/UX", "Photography", "Architecture", "Branding", "Engineering", "Editorial"];
+import { SUGGESTED_TAGS } from "../constants.ts";
 
 export interface WizardStepEditorialProps {
   description: string;
@@ -31,7 +30,7 @@ export const WizardStepEditorial: React.FC<WizardStepEditorialProps> = ({
   setIsDirty,
 }) => {
   return (
-    <div className="bg-[#faf9f5] border border-[#cccbc8] rounded-[24px] p-6 sm:p-8 space-y-6">
+    <div className="bg-ivory-light border border-stone rounded-card p-6 sm:p-8 space-y-6">
       <div>
         <Textarea
           label="Project Description *"
@@ -50,22 +49,22 @@ export const WizardStepEditorial: React.FC<WizardStepEditorialProps> = ({
         />
       </div>
 
-      <div className="space-y-2 pt-2 border-t border-[#cccbc8]/50">
-        <label className="font-gothic text-xs font-semibold uppercase tracking-[0.10em] text-[#141413] flex items-center justify-between">
+      <div className="space-y-2 pt-2 border-t border-stone/50">
+        <label className="font-gothic text-xs font-semibold uppercase tracking-[0.10em] text-slate-dark flex items-center justify-between">
           <span>Tags</span>
-          <span className="text-[#87867f] font-normal lowercase">{tags.length}/10 tags</span>
+          <span className="text-cloud-dark font-normal lowercase">{tags.length}/10 tags</span>
         </label>
-        <div className="min-h-[46px] p-2 bg-[#f0eee6]/60 border border-[#cccbc8] rounded-xl flex flex-wrap items-center gap-1.5 focus-within:border-[#141413] focus-within:bg-[#faf9f5] transition-all">
+        <div className="min-h-[46px] p-2 bg-ivory-medium/60 border border-stone rounded-xl flex flex-wrap items-center gap-1.5 focus-within:border-slate-dark focus-within:bg-ivory-light transition-all">
           {tags.map((tag) => (
             <span
               key={tag}
-              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#141413] text-[#faf9f5] font-gothic text-xs font-medium tracking-wide"
+              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-dark text-ivory-light font-gothic text-xs font-medium tracking-wide"
             >
               #{tag}
               <button
                 type="button"
                 onClick={() => onRemoveTag(tag)}
-                className="hover:text-[#d97757] focus:outline-none transition-colors cursor-pointer leading-none"
+                className="hover:text-clay focus:outline-none transition-colors cursor-pointer leading-none"
                 aria-label={`Remove tag ${tag}`}
               >
                 &times;
@@ -82,13 +81,13 @@ export const WizardStepEditorial: React.FC<WizardStepEditorialProps> = ({
               onBlur={() => {
                 if (tagDraft.trim()) onAddTag(tagDraft);
               }}
-              className="flex-1 min-w-[140px] bg-transparent border-none text-xs font-gothic text-[#141413] placeholder-[#87867f] focus:outline-none px-2 py-1"
+              className="flex-1 min-w-[140px] bg-transparent border-none text-xs font-gothic text-slate-dark placeholder-cloud-dark focus:outline-none px-2 py-1"
             />
           )}
         </div>
 
         <div className="flex flex-wrap items-center gap-1.5 pt-1">
-          <span className="font-gothic text-[11px] text-[#87867f] mr-1">Suggestions:</span>
+          <span className="font-gothic text-[11px] text-cloud-dark mr-1">Suggestions:</span>
           {SUGGESTED_TAGS.map((sug) => {
             const isSelected = tags.includes(sug);
             return (
@@ -99,8 +98,8 @@ export const WizardStepEditorial: React.FC<WizardStepEditorialProps> = ({
                 onClick={() => onAddTag(sug)}
                 className={`font-gothic text-[11px] px-2.5 py-0.5 rounded-full border transition-all cursor-pointer ${
                   isSelected
-                    ? "opacity-40 border-[#cccbc8] bg-transparent text-[#87867f] cursor-default"
-                    : "border-[#cccbc8] bg-[#faf9f5] text-[#141413] hover:border-[#141413] hover:bg-[#f0eee6]"
+                    ? "opacity-40 border-stone bg-transparent text-cloud-dark cursor-default"
+                    : "border-stone bg-ivory-light text-slate-dark hover:border-slate-dark hover:bg-ivory-medium"
                 }`}
               >
                 +{sug}

@@ -1,12 +1,10 @@
-import { ArrowLeft, ExternalLink, User as UserIcon } from "lucide-react";
+import { ArrowRight, User as UserIcon } from "lucide-react";
 import React, { useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { Badge } from "@shared/components/Badge.tsx";
-import { Button } from "@shared/components/Button.tsx";
 import { VerifiedBadge } from "@shared/components/VerifiedBadge.tsx";
 import { useAdaptiveImageDimensions, useResponsiveViewport } from "@shared/hooks/index.ts";
 import type { PostDetailsResponse } from "@shared/types/index.ts";
-import { PostLikeButton } from "./PostLikeButton.tsx";
+import { PostCuratorialMeta } from "./PostCuratorialMeta.tsx";
 
 export interface PostDetailMobileProps {
   post: PostDetailsResponse;
@@ -51,38 +49,38 @@ export const PostDetailMobile: React.FC<PostDetailMobileProps> = ({
   };
 
   return (
-    <div className="block lg:hidden space-y-5 max-w-3xl mx-auto">
-      {/* 1. Creator Header Row (Cleanly above the image, no white overlay box) */}
+    <div className="space-y-5 max-w-3xl mx-auto">
+      {/* 1. Creator Header Row */}
       <div className="flex items-center justify-between py-1">
         <Link to={`/u/${creatorUsername}`} className="flex items-center gap-2.5 min-w-0 text-decoration-none group">
           {creatorAvatar ? (
             <img
               src={creatorAvatar}
               alt={creatorName}
-              className="h-9 w-9 rounded-full object-cover border border-[#cccbc8]/70 shrink-0"
+              className="h-9 w-9 rounded-full object-cover border border-stone/70 shrink-0"
             />
           ) : (
-            <div className="h-9 w-9 rounded-full bg-[#141413] text-[#faf9f5] flex items-center justify-center font-gothic text-xs font-bold uppercase shrink-0">
-              {post.creator?.firstName?.[0] || <UserIcon className="h-4 w-4" />}
+            <div className="h-9 w-9 rounded-full bg-slate-dark text-ivory-light flex items-center justify-center font-gothic text-xs font-bold uppercase shrink-0">
+              {post.creator?.name?.[0] || <UserIcon className="h-4 w-4" />}
             </div>
           )}
           <div className="min-w-0">
             <div className="flex items-center gap-1 min-w-0">
-              <span className="font-gothic text-xs sm:text-sm font-bold uppercase tracking-tight text-[#141413] truncate block group-hover:text-[#d97757] transition-colors leading-tight">
+              <span className="font-gothic text-xs sm:text-sm font-bold uppercase tracking-tight text-slate-dark truncate block group-hover:text-clay transition-colors leading-tight">
                 {creatorName}
               </span>
               {post.creator?.isVerified && <VerifiedBadge size="xs" className="shrink-0" />}
             </div>
-            <span className="font-serif text-xs text-[#87867f] truncate block leading-none mt-0.5">
+            <span className="font-serif text-xs text-cloud-dark truncate block leading-none mt-0.5">
               @{creatorUsername}
             </span>
           </div>
         </Link>
 
         <Link to={`/u/${creatorUsername}`} className="text-decoration-none shrink-0">
-          <span className="font-gothic text-[11px] font-semibold uppercase tracking-wider text-[#141413] hover:text-[#d97757] transition-colors inline-flex items-center gap-1 bg-[#141413]/5 hover:bg-[#141413]/10 px-2.5 py-1 rounded-full">
+          <span className="font-gothic text-[11px] font-semibold uppercase tracking-wider text-slate-dark hover:text-clay transition-colors inline-flex items-center gap-1 bg-slate-dark/5 hover:bg-slate-dark/10 px-2.5 py-1 rounded-full">
             <span>Profile</span>
-            <ArrowLeft className="h-3 w-3 rotate-180" />
+            <ArrowRight className="h-3 w-3" />
           </span>
         </Link>
       </div>
@@ -93,11 +91,11 @@ export const PostDetailMobile: React.FC<PostDetailMobileProps> = ({
           height: `${calculatedHeight}px`,
           transition: "height 300ms cubic-bezier(0.4, 0, 0.2, 1)",
         }}
-        className="w-full relative rounded-2xl overflow-hidden bg-[#e6e3da]/70 border border-[#cccbc8]/60 shadow-none select-none"
+        className="w-full relative rounded-2xl overflow-hidden bg-[#e6e3da]/70 border border-stone/60 shadow-none select-none"
       >
         {/* Counter Badge: Top Right Corner */}
         {images.length > 1 && (
-          <div className="absolute top-3 right-3 z-10 bg-[#141413]/70 backdrop-blur-xs text-[#faf9f5] font-gothic text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full border border-white/15 select-none">
+          <div className="absolute top-3 right-3 z-10 bg-slate-dark/70 backdrop-blur-xs text-ivory-light font-gothic text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full border border-white/15 select-none">
             {activeSlideIndex + 1} / {images.length}
           </div>
         )}
@@ -136,7 +134,7 @@ export const PostDetailMobile: React.FC<PostDetailMobileProps> = ({
             <span
               key={idx}
               className={`transition-all rounded-full ${
-                activeSlideIndex === idx ? "w-4 h-1.5 bg-[#141413]" : "w-1.5 h-1.5 bg-[#cccbc8]"
+                activeSlideIndex === idx ? "w-4 h-1.5 bg-slate-dark" : "w-1.5 h-1.5 bg-stone"
               }`}
             />
           ))}
@@ -144,70 +142,14 @@ export const PostDetailMobile: React.FC<PostDetailMobileProps> = ({
       )}
 
       {/* 4. Post Details & Curatorial Typography */}
-      <div className="space-y-4 pt-1 px-1">
-        {/* Interaction Action Row (Like Button) */}
-        <div className="flex items-center">
-          <PostLikeButton
-            postId={post.id}
-            initialLiked={post.isLiked}
-            initialCount={post.likeCount}
-            size="md"
-            variant="pill"
-          />
-        </div>
-
-        {/* Title */}
-        <h1 className="font-gothic font-extrabold text-xl sm:text-2xl text-[#141413] tracking-tight leading-snug">
-          {post.title}
-        </h1>
-
-        {/* Tags */}
-        {post.tags && post.tags.length > 0 && (
-          <div className="flex flex-wrap gap-1.5">
-            {post.tags.map((tag) => (
-              <Badge key={tag} variant="stone" size="sm">
-                {tag}
-              </Badge>
-            ))}
-          </div>
-        )}
-
-        {/* Curatorial Description */}
-        {post.description && (
-          <p className="font-serif text-[15px] sm:text-[16px] leading-relaxed text-[#141413]/85 whitespace-pre-line">
-            {post.description}
-          </p>
-        )}
-
-        {/* External Reference Link */}
-        {post.externalUrl && (
-          <div className="pt-1">
-            <a
-              href={post.externalUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 font-gothic text-xs font-semibold uppercase tracking-[0.12em] text-[#141413] hover:text-[#d97757] transition-colors border-b border-[#141413] hover:border-[#d97757] pb-0.5"
-            >
-              <span>Live Project Link</span>
-              <ExternalLink className="h-3 w-3" />
-            </a>
-          </div>
-        )}
-
-        {/* View Profile Action */}
-        <div className="pt-3 border-t border-[#cccbc8]/40">
-          <Link to={`/u/${creatorUsername}`} className="inline-block text-decoration-none w-full sm:w-auto">
-            <Button
-              variant="slate"
-              size="md"
-              className="w-full sm:w-auto justify-center"
-              rightIcon={<ArrowLeft className="h-3.5 w-3.5 rotate-180" />}
-            >
-              View Profile
-            </Button>
-          </Link>
-        </div>
-      </div>
+      <PostCuratorialMeta
+        post={post}
+        creatorName={creatorName}
+        creatorUsername={creatorUsername}
+        creatorAvatar={creatorAvatar}
+        layout="inline"
+        showCreator={false}
+      />
     </div>
   );
 };

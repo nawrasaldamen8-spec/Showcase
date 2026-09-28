@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowUpRight, BookOpen, Edit3, Plus } from "lucide-react";
+import { ArrowUpRight, BookOpen, Edit3, MapPin, Plus } from "lucide-react";
 import { Button } from "@shared/components/Button.tsx";
 import { Modal } from "@shared/components/Modal.tsx";
 import type { SocialLinkDto } from "@shared/types/index.ts";
@@ -9,6 +9,7 @@ import { PlatformIcon } from "./PlatformIcon.tsx";
 export interface ProfileAboutTabProps {
   bio?: string | null;
   socialLinks?: SocialLinkDto[];
+  country?: string | null;
   isOwnProfile?: boolean;
   creatorName?: string;
   username?: string;
@@ -17,6 +18,7 @@ export interface ProfileAboutTabProps {
 export const ProfileAboutTab: React.FC<ProfileAboutTabProps> = ({
   bio,
   socialLinks = [],
+  country,
   isOwnProfile = false,
   creatorName,
   username,
@@ -27,9 +29,9 @@ export const ProfileAboutTab: React.FC<ProfileAboutTabProps> = ({
   return (
     <section aria-label="About" className="space-y-3.5 sm:space-y-5 max-w-3xl">
       {/* 1. Biography Card (Compact for Mobile) */}
-      <div className="bg-[#faf9f5] rounded-2xl sm:rounded-[24px] border border-[#cccbc8]/60 p-5 sm:p-6 lg:p-7 shadow-none">
+      <div className="bg-ivory-light rounded-2xl sm:rounded-card border border-stone/60 p-5 sm:p-6 lg:p-7 shadow-none">
         <div className="flex items-center justify-between mb-2.5 sm:mb-3">
-          <h2 className="font-gothic text-[11px] sm:text-xs font-bold uppercase tracking-[0.16em] text-[#87867f]">
+          <h2 className="font-gothic text-[11px] sm:text-xs font-bold uppercase tracking-[0.16em] text-cloud-dark">
             Biography
           </h2>
           {isOwnProfile && (
@@ -38,7 +40,7 @@ export const ProfileAboutTab: React.FC<ProfileAboutTabProps> = ({
                 variant="ghost"
                 size="sm"
                 leftIcon={<Edit3 className="h-3 w-3" />}
-                className="text-[#87867f] hover:text-[#141413] text-xs h-8 px-2.5"
+                className="text-cloud-dark hover:text-slate-dark text-xs h-8 px-2.5"
               >
                 Edit
               </Button>
@@ -50,7 +52,7 @@ export const ProfileAboutTab: React.FC<ProfileAboutTabProps> = ({
           <div>
             <p
               onClick={() => setIsBioModalOpen(true)}
-              className="font-serif text-sm sm:text-base leading-relaxed text-[#141413]/85 line-clamp-3 sm:line-clamp-4 cursor-pointer hover:text-[#141413] transition-colors"
+              className="font-serif text-sm sm:text-base leading-relaxed text-slate-dark/85 line-clamp-3 sm:line-clamp-4 cursor-pointer hover:text-slate-dark transition-colors"
               title="Click to view full biography"
             >
               {bio}
@@ -59,14 +61,14 @@ export const ProfileAboutTab: React.FC<ProfileAboutTabProps> = ({
             <button
               type="button"
               onClick={() => setIsBioModalOpen(true)}
-              className="mt-2.5 inline-flex items-center gap-1.5 font-gothic text-[11px] sm:text-xs font-bold uppercase tracking-wider text-[#d97757] hover:underline cursor-pointer"
+              className="mt-2.5 inline-flex items-center gap-1.5 font-gothic text-[11px] sm:text-xs font-bold uppercase tracking-wider text-clay hover:underline cursor-pointer"
             >
               <BookOpen className="w-3.5 h-3.5" />
               <span>Read More</span>
             </button>
           </div>
         ) : (
-          <p className="font-serif text-sm italic text-[#87867f]">
+          <p className="font-serif text-sm italic text-cloud-dark">
             No biography provided yet.
           </p>
         )}
@@ -74,9 +76,9 @@ export const ProfileAboutTab: React.FC<ProfileAboutTabProps> = ({
 
       {/* 2. Connect & External Archives Card (Compact for Mobile) */}
       {sortedSocialLinks.length > 0 ? (
-        <div className="bg-[#faf9f5] rounded-2xl sm:rounded-[24px] border border-[#cccbc8]/60 p-5 sm:p-6 lg:p-7 shadow-none">
+        <div className="bg-ivory-light rounded-2xl sm:rounded-card border border-stone/60 p-5 sm:p-6 lg:p-7 shadow-none">
           <div className="flex items-center justify-between mb-3 sm:mb-4">
-            <h2 className="font-gothic text-[11px] sm:text-xs font-bold uppercase tracking-[0.16em] text-[#87867f]">
+            <h2 className="font-gothic text-[11px] sm:text-xs font-bold uppercase tracking-[0.16em] text-cloud-dark">
               Links &amp; Socials
             </h2>
             {isOwnProfile && (
@@ -100,7 +102,7 @@ export const ProfileAboutTab: React.FC<ProfileAboutTabProps> = ({
                 href={link.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl border border-[#cccbc8] hover:border-[#141413] bg-[#faf9f5] hover:bg-[#141413] text-[#141413] hover:text-[#faf9f5] transition-all font-gothic text-xs font-semibold uppercase tracking-[0.08em] group shadow-none min-h-[38px]"
+                className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl border border-stone hover:border-slate-dark bg-ivory-light hover:bg-slate-dark text-slate-dark hover:text-ivory-light transition-all font-gothic text-xs font-semibold uppercase tracking-[0.08em] group shadow-none min-h-[38px]"
               >
                 <PlatformIcon platform={link.platform} className="h-3.5 w-3.5 shrink-0 transition-colors" />
                 <span>{link.platform}</span>
@@ -110,13 +112,13 @@ export const ProfileAboutTab: React.FC<ProfileAboutTabProps> = ({
           </div>
         </div>
       ) : isOwnProfile ? (
-        <div className="bg-[#faf9f5] rounded-2xl sm:rounded-[24px] border border-[#cccbc8]/60 p-5 sm:p-6 lg:p-7 shadow-none">
+        <div className="bg-ivory-light rounded-2xl sm:rounded-card border border-stone/60 p-5 sm:p-6 lg:p-7 shadow-none">
           <div className="flex items-center justify-between mb-2">
-            <h2 className="font-gothic text-[11px] sm:text-xs font-bold uppercase tracking-[0.16em] text-[#87867f]">
+            <h2 className="font-gothic text-[11px] sm:text-xs font-bold uppercase tracking-[0.16em] text-cloud-dark">
               Links &amp; Socials
             </h2>
           </div>
-          <p className="font-serif text-xs sm:text-sm text-[#87867f] mb-3">
+          <p className="font-serif text-xs sm:text-sm text-cloud-dark mb-3">
             No links added yet.
           </p>
           <Link to="/profile/social-links" className="text-decoration-none inline-block">
@@ -127,7 +129,38 @@ export const ProfileAboutTab: React.FC<ProfileAboutTabProps> = ({
         </div>
       ) : null}
 
-      {/* 3. Full Biography Alert / Modal */}
+      {/* 3. Location / Country Card (Bottom of About Tab, Mobile-Optimized) */}
+      {country && (
+        <div className="bg-ivory-light rounded-2xl sm:rounded-card border border-stone/60 p-4 sm:p-5 lg:p-6 shadow-none flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="p-2 sm:p-2.5 rounded-xl bg-ivory-medium text-clay border border-stone/60 shrink-0">
+              <MapPin className="w-4 h-4 sm:w-4.5 sm:h-4.5" />
+            </div>
+            <div className="min-w-0">
+              <span className="font-gothic text-[10px] sm:text-[11px] font-bold uppercase tracking-[0.14em] text-cloud-dark block">
+                Location / Country
+              </span>
+              <p className="font-serif text-xs sm:text-sm font-semibold text-slate-dark truncate mt-0.5">
+                {country}
+              </p>
+            </div>
+          </div>
+          {isOwnProfile && (
+            <Link to="/profile/edit" className="text-decoration-none shrink-0">
+              <Button
+                variant="ghost"
+                size="sm"
+                leftIcon={<Edit3 className="h-3 w-3" />}
+                className="text-cloud-dark hover:text-slate-dark text-xs h-7 px-2"
+              >
+                Change
+              </Button>
+            </Link>
+          )}
+        </div>
+      )}
+
+      {/* 4. Full Biography Alert / Modal */}
       {bio && (
         <Modal
           isOpen={isBioModalOpen}
@@ -137,8 +170,8 @@ export const ProfileAboutTab: React.FC<ProfileAboutTabProps> = ({
           size="md"
         >
           <div className="space-y-4 pt-2">
-            <div className="p-4 sm:p-5 rounded-2xl bg-[#f0eee6]/50 border border-[#cccbc8]/60 max-h-80 overflow-y-auto pr-2">
-              <p className="font-serif text-base sm:text-lg leading-relaxed text-[#141413] whitespace-pre-line">
+            <div className="p-4 sm:p-5 rounded-2xl bg-ivory-medium/50 border border-stone/60 max-h-80 overflow-y-auto pr-2">
+              <p className="font-serif text-base sm:text-lg leading-relaxed text-slate-dark whitespace-pre-line">
                 {bio}
               </p>
             </div>

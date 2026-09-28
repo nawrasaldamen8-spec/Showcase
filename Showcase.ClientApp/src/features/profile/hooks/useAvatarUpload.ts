@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { apiClient } from "@shared/api/apiClient.ts";
 import { useAuth } from "@shared/context/useAuth.ts";
 
@@ -39,7 +39,6 @@ export function useAvatarUpload({ avatarUrl, onAvatarUpdated, onNotify }: UseAva
   const { refreshUser } = useAuth();
 
   const [currentUrl, setCurrentUrl] = useState<string | null>(avatarUrl || null);
-  const [prevAvatarUrl, setPrevAvatarUrl] = useState(avatarUrl);
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -48,11 +47,15 @@ export function useAvatarUpload({ avatarUrl, onAvatarUpdated, onNotify }: UseAva
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const createdObjectUrlRef = useRef<string | null>(null);
 
-  if (avatarUrl !== prevAvatarUrl) {
-    setPrevAvatarUrl(avatarUrl);
-    setCurrentUrl(avatarUrl || null);
-  }
+  useEffect(() => {
+    return () => {
+      if (createdObjectUrlRef.current) {
+        URL.revokeObjectURL(createdObjectUrlRef.current);
+      }
+    };
+  }, []);
 
   const handleFileProcess = useCallback(
     async (file: File) => {
@@ -66,7 +69,12 @@ export function useAvatarUpload({ avatarUrl, onAvatarUpdated, onNotify }: UseAva
         return;
       }
 
+      if (createdObjectUrlRef.current) {
+        URL.revokeObjectURL(createdObjectUrlRef.current);
+      }
       const objectUrl = URL.createObjectURL(file);
+      createdObjectUrlRef.current = objectUrl;
+
       setCurrentUrl(objectUrl);
       setIsUploading(true);
       setUploadProgress(15);
@@ -145,6 +153,10 @@ export function useAvatarUpload({ avatarUrl, onAvatarUpdated, onNotify }: UseAva
 
     try {
       await apiClient.removeAvatar();
+      if (createdObjectUrlRef.current) {
+        URL.revokeObjectURL(createdObjectUrlRef.current);
+        createdObjectUrlRef.current = null;
+      }
       setCurrentUrl(null);
       await refreshUser();
       onAvatarUpdated?.(null);

@@ -37,11 +37,35 @@ function normalizeStatus(status: PostStatusType | number | string): {
   return { key: 'draft', label: 'Draft' };
 }
 
+// Warm Gallery palette mapping
+const BADGE_STYLES: Record<
+  'draft' | 'published' | 'unpublished',
+  { container: string; dot: string }
+> = {
+  draft: {
+    container: 'bg-amber/15 text-slate-dark border border-amber/40',
+    dot: 'bg-amber',
+  },
+  published: {
+    container: 'bg-clay text-ivory-light border border-transparent',
+    dot: 'bg-ivory-light',
+  },
+  unpublished: {
+    container: 'bg-stone/30 text-cloud-dark border border-stone',
+    dot: 'bg-cloud-dark',
+  },
+};
+
+const SIZE_CLASSES = {
+  sm: 'px-2.5 py-0.5 text-[10px] gap-1.5',
+  md: 'px-3 py-1 text-[11px] gap-2',
+};
+
 /**
  * Warm Gallery Post Status Badge
- * - Amber for Draft (#f1a900)
- * - Clay for Published (#d97757)
- * - Stone for Unpublished (#cccbc8)
+ * - Amber for Draft
+ * - Clay for Published
+ * - Stone for Unpublished
  */
 export const PostStatusBadge: React.FC<PostStatusBadgeProps> = ({
   status,
@@ -50,36 +74,11 @@ export const PostStatusBadge: React.FC<PostStatusBadgeProps> = ({
   className = '',
 }) => {
   const { key, label } = normalizeStatus(status);
-
-  // Warm Gallery palette mapping
-  const styles: Record<
-    'draft' | 'published' | 'unpublished',
-    { container: string; dot: string }
-  > = {
-    draft: {
-      container: 'bg-[#f1a900]/15 text-[#141413] border border-[#f1a900]/40',
-      dot: 'bg-[#f1a900]',
-    },
-    published: {
-      container: 'bg-[#d97757] text-[#faf9f5] border border-transparent',
-      dot: 'bg-[#faf9f5]',
-    },
-    unpublished: {
-      container: 'bg-[#cccbc8]/30 text-[#87867f] border border-[#cccbc8]',
-      dot: 'bg-[#87867f]',
-    },
-  };
-
-  const sizeClasses = {
-    sm: 'px-2.5 py-0.5 text-[10px] gap-1.5',
-    md: 'px-3 py-1 text-[11px] gap-2',
-  };
-
-  const currentStyle = styles[key];
+  const currentStyle = BADGE_STYLES[key];
 
   return (
     <span
-      className={`inline-flex items-center justify-center font-gothic font-semibold uppercase tracking-[0.12em] rounded-full select-none leading-none transition-colors ${sizeClasses[size]} ${currentStyle.container} ${className}`.trim()}
+      className={`inline-flex items-center justify-center font-gothic font-semibold uppercase tracking-[0.12em] rounded-full select-none leading-none transition-colors ${SIZE_CLASSES[size]} ${currentStyle.container} ${className}`.trim()}
       role="status"
       aria-label={`Status: ${label}`}
     >

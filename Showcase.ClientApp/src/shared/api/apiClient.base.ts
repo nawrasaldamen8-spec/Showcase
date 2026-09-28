@@ -1,6 +1,6 @@
-import { mockService } from "./mockService.ts";
+import { tokenStorage } from "./tokenStorage.ts";
 
-export const USE_MOCK_API = true;
+export const USE_MOCK_API = false;
 
 export const API_BASE_URL = typeof window !== "undefined" ? import.meta.env.VITE_API_URL || "" : "";
 
@@ -15,9 +15,9 @@ export async function httpFetch<T>(endpoint: string, options: FetchOptions = {})
   }
 
   if (options.requiresAuth !== false) {
-    const auth = mockService.getStoredAuth();
-    if (auth?.accessToken) {
-      headers.set("Authorization", `Bearer ${auth.accessToken}`);
+    const token = tokenStorage.getToken();
+    if (token) {
+      headers.set("Authorization", `Bearer ${token}`);
     }
   }
 

@@ -36,40 +36,40 @@ export const SidebarUserMenu: React.FC<SidebarUserMenuProps> = ({ user, onPerson
               className="h-8 w-8 rounded-full object-cover shrink-0 border border-[#262624]"
             />
           ) : (
-            <div className="h-8 w-8 rounded-full bg-[#262624] text-[#faf9f5] flex items-center justify-center font-gothic text-xs font-bold uppercase shrink-0 border border-[#faf9f5]/20">
-              {user?.firstName?.[0] || user?.username?.[0] || <UserIcon className="h-4 w-4" />}
+            <div className="h-8 w-8 rounded-full bg-[#262624] text-ivory-light flex items-center justify-center font-gothic text-xs font-bold uppercase shrink-0 border border-ivory-light/20">
+              {user?.name?.[0] || user?.username?.[0] || <UserIcon className="h-4 w-4" />}
             </div>
           )}
           <div className="min-w-0">
             <div className="flex items-center gap-1.5 min-w-0">
-              <p className="font-gothic text-xs font-bold uppercase tracking-wider text-[#faf9f5] truncate">
-                {user ? (user.firstName ? `${user.firstName} ${user.lastName || ""}` : user.username) : "Visitor"}
+              <p className="font-gothic text-xs font-bold uppercase tracking-wider text-ivory-light truncate">
+                {user ? (user.name || user.username) : "Visitor"}
               </p>
               {user?.isVerified && <VerifiedBadge size="xs" className="shrink-0" />}
             </div>
-            <p className="font-serif text-[11px] text-[#87867f] truncate">
+            <p className="font-serif text-[11px] text-cloud-dark truncate">
               {user ? `@${user.username}` : "Public Gallery"}
             </p>
           </div>
         </div>
-        <SettingsIcon className="h-4 w-4 text-[#87867f] shrink-0 ml-1" />
+        <SettingsIcon className="h-4 w-4 text-cloud-dark shrink-0 ml-1" />
       </button>
 
       {userMenuOpen && (
         <div
           role="menu"
-          className="absolute bottom-full left-0 right-0 mb-2 bg-[#1a1a19] border border-[#262624] rounded-xl py-2 z-50 animate-in fade-in zoom-in-95 duration-100 shadow-none text-[#faf9f5]"
+          className="absolute bottom-full left-0 right-0 mb-2 bg-[#1a1a19] border border-[#262624] rounded-xl py-2 z-50 animate-in fade-in zoom-in-95 duration-100 shadow-none text-ivory-light"
         >
           {user ? (
             <>
               <div className="px-4 py-2 border-b border-[#262624]">
                 <div className="flex items-center gap-1.5 min-w-0">
-                  <p className="font-gothic text-xs font-bold uppercase tracking-wider text-[#faf9f5] truncate">
-                    {user.firstName ? `${user.firstName} ${user.lastName || ""}` : user.username}
+                  <p className="font-gothic text-xs font-bold uppercase tracking-wider text-ivory-light truncate">
+                    {user.name || user.username}
                   </p>
                   {user.isVerified && <VerifiedBadge size="xs" className="shrink-0" />}
                 </div>
-                <p className="font-serif text-xs text-[#87867f] truncate">@{user.username}</p>
+                <p className="font-serif text-xs text-cloud-dark truncate">@{user.username}</p>
               </div>
 
               <div className="py-1">
@@ -77,10 +77,10 @@ export const SidebarUserMenu: React.FC<SidebarUserMenuProps> = ({ user, onPerson
                   <Link
                     to="/admin"
                     onClick={() => setUserMenuOpen(false)}
-                    className="flex items-center gap-2.5 px-4 py-2 text-xs font-gothic uppercase tracking-wider text-[#d97757] hover:bg-[#262624] transition-colors"
+                    className="flex items-center gap-2.5 px-4 py-2 text-xs font-gothic uppercase tracking-wider text-clay hover:bg-[#262624] transition-colors"
                     role="menuitem"
                   >
-                    <Shield className="h-3.5 w-3.5 text-[#d97757]" />
+                    <Shield className="h-3.5 w-3.5 text-clay" />
                     <span>Admin Console</span>
                   </Link>
                 )}
@@ -88,10 +88,10 @@ export const SidebarUserMenu: React.FC<SidebarUserMenuProps> = ({ user, onPerson
                 <Link
                   to="/settings"
                   onClick={() => setUserMenuOpen(false)}
-                  className="flex items-center gap-2.5 px-4 py-2 text-xs font-gothic uppercase tracking-wider text-[#faf9f5] hover:bg-[#262624] transition-colors"
+                  className="flex items-center gap-2.5 px-4 py-2 text-xs font-gothic uppercase tracking-wider text-ivory-light hover:bg-[#262624] transition-colors"
                   role="menuitem"
                 >
-                  <SettingsIcon className="h-3.5 w-3.5 text-[#87867f]" />
+                  <SettingsIcon className="h-3.5 w-3.5 text-cloud-dark" />
                   <span>Account Settings</span>
                 </Link>
               </div>
@@ -104,7 +104,7 @@ export const SidebarUserMenu: React.FC<SidebarUserMenuProps> = ({ user, onPerson
                       setUserMenuOpen(false);
                       onLogout();
                     }}
-                    className="w-full flex items-center gap-2.5 px-4 py-2 text-xs font-gothic uppercase tracking-wider text-[#d97757] hover:bg-[#262624] transition-colors text-left cursor-pointer"
+                    className="w-full flex items-center gap-2.5 px-4 py-2 text-xs font-gothic uppercase tracking-wider text-clay hover:bg-[#262624] transition-colors text-left cursor-pointer"
                     role="menuitem"
                   >
                     <LogOut className="h-3.5 w-3.5" />
@@ -121,10 +121,10 @@ export const SidebarUserMenu: React.FC<SidebarUserMenuProps> = ({ user, onPerson
                   setUserMenuOpen(false);
                   onPersonaChange?.("creator");
                 }}
-                className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-gothic uppercase tracking-wider text-[#faf9f5] hover:bg-[#262624] rounded-lg transition-colors text-left cursor-pointer"
+                className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-gothic uppercase tracking-wider text-ivory-light hover:bg-[#262624] rounded-lg transition-colors text-left cursor-pointer"
                 role="menuitem"
               >
-                <Sparkles className="h-3.5 w-3.5 text-[#d97757]" />
+                <Sparkles className="h-3.5 w-3.5 text-clay" />
                 <span>Switch to Creator</span>
               </button>
             </div>

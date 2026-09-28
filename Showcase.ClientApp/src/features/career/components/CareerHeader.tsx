@@ -32,38 +32,38 @@ export const CareerHeader: React.FC<CareerHeaderProps> = ({
   isTogglingVisibility = false,
 }) => {
   return (
-    <div className="mb-8 pb-6 border-b border-[#cccbc8]/60">
+    <div className="mb-8 pb-6 border-b border-stone/60">
       {/* Editorial Breadcrumb */}
       <div className="flex items-center gap-2 mb-3">
         <Link
           to={backTo}
-          className="inline-flex items-center gap-1.5 text-xs font-gothic font-bold uppercase tracking-[0.14em] text-[#87867f] hover:text-[#141413] transition-colors"
+          className="inline-flex items-center gap-1.5 text-xs font-gothic font-bold uppercase tracking-[0.14em] text-cloud-dark hover:text-slate-dark transition-colors"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
           <span>{backLabel}</span>
         </Link>
-        <span className="text-[#87867f] text-xs">/</span>
-        <span className="text-xs font-gothic font-bold uppercase tracking-[0.14em] text-[#d97757]">
+        <span className="text-cloud-dark text-xs">/</span>
+        <span className="text-xs font-gothic font-bold uppercase tracking-[0.14em] text-clay">
           {sectionTitle}
         </span>
       </div>
 
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-5">
         <div className="max-w-2xl">
-          <span className="font-gothic text-[11px] font-bold uppercase tracking-[0.18em] text-[#87867f] block mb-1">
+          <span className="font-gothic text-[11px] font-bold uppercase tracking-[0.18em] text-cloud-dark block mb-1">
             {badge}
           </span>
-          <h1 className="font-gothic text-2xl sm:text-3xl lg:text-4xl font-extrabold uppercase tracking-tight text-[#141413]">
+          <h1 className="font-gothic text-2xl sm:text-3xl lg:text-4xl font-extrabold uppercase tracking-tight text-slate-dark">
             {sectionTitle}
           </h1>
-          <p className="font-serif text-[15px] sm:text-[16px] text-[#141413]/70 mt-1.5 leading-relaxed">
+          <p className="font-serif text-[15px] sm:text-[16px] text-slate-dark/70 mt-1.5 leading-relaxed">
             {description}
           </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-2.5 sm:gap-4 w-full md:w-auto justify-start md:justify-end shrink-0">
           {showVisibilityToggle && onToggleVisibility && (
-            <div className="flex items-center gap-2.5 px-3 sm:px-3.5 py-1.5 sm:py-2 rounded-full bg-[#faf9f5] border border-[#cccbc8]/60">
+            <div className="flex items-center gap-2.5 px-3 sm:px-3.5 py-1.5 sm:py-2 rounded-full bg-ivory-light border border-stone/60">
               <Toggle
                 size="sm"
                 checked={isVisibleInProfile}
@@ -74,8 +74,8 @@ export const CareerHeader: React.FC<CareerHeaderProps> = ({
               <span
                 className={`font-gothic text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border ${
                   isVisibleInProfile
-                    ? "bg-[#141413]/5 text-[#141413] border-[#141413]/20"
-                    : "bg-[#87867f]/10 text-[#87867f] border-[#cccbc8]/40"
+                    ? "bg-slate-dark/5 text-slate-dark border-slate-dark/20"
+                    : "bg-cloud-dark/10 text-cloud-dark border-stone/40"
                 }`}
               >
                 {isVisibleInProfile ? "Visible" : "Hidden"}

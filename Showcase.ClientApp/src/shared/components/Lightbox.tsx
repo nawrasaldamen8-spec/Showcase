@@ -17,7 +17,16 @@ export interface LightboxProps {
   onIndexChange?: (index: number) => void;
 }
 
-export const Lightbox: React.FC<LightboxProps> = ({
+const FOCUSABLE_ELEMENTS_SELECTOR = [
+  'a[href]',
+  'button:not([disabled])',
+  'textarea:not([disabled])',
+  'input:not([disabled])',
+  'select:not([disabled])',
+  '[tabindex]:not([tabindex="-1"])',
+].join(', ');
+
+const LightboxDialog: React.FC<LightboxProps> = ({
   imageUrl,
   images,
   initialIndex = 0,
@@ -38,9 +47,8 @@ export const Lightbox: React.FC<LightboxProps> = ({
   }, [images, imageUrl, alt]);
 
   const total = normalizedImages.length;
-  const isOpen = total > 0;
 
-  const getTargetInitialIndex = useCallback(() => {
+  const initialIdx = useMemo(() => {
     if (imageUrl && normalizedImages.length > 0) {
       const foundIdx = normalizedImages.findIndex((img) => img.url === imageUrl);
       if (foundIdx >= 0) return foundIdx;
@@ -51,19 +59,15 @@ export const Lightbox: React.FC<LightboxProps> = ({
     return 0;
   }, [imageUrl, normalizedImages, initialIndex]);
 
-  const [currentIndex, setCurrentIndex] = useState(getTargetInitialIndex);
-  const [prevTracked, setPrevTracked] = useState({ initialIndex, imageUrl });
-
-  if (prevTracked.initialIndex !== initialIndex || prevTracked.imageUrl !== imageUrl) {
-    setPrevTracked({ initialIndex, imageUrl });
-    setCurrentIndex(getTargetInitialIndex());
-  }
+  const [currentIndex, setCurrentIndex] = useState(initialIdx);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const previousActiveElement = useRef<HTMLElement | null>(null);
 
   const touchStartXRef = useRef<number | null>(null);
   const touchStartYRef = useRef<number | null>(null);
 
-  useEscapeKey(onClose, isOpen);
-  useScrollLock(isOpen);
+  useEscapeKey(onClose, true);
+  useScrollLock(true);
 
   const goToPrev = useCallback(() => {
     if (total <= 1) return;
@@ -83,9 +87,13 @@ export const Lightbox: React.FC<LightboxProps> = ({
     });
   }, [total, onIndexChange]);
 
-  // Keyboard navigation for Left/Right arrows
+  // Focus management and keyboard navigation
   useEffect(() => {
-    if (!isOpen || total <= 1) return;
+    previousActiveElement.current = document.activeElement as HTMLElement;
+
+    const timer = setTimeout(() => {
+      containerRef.current?.focus();
+    }, 50);
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "ArrowLeft") {
@@ -94,25 +102,54 @@ export const Lightbox: React.FC<LightboxProps> = ({
       } else if (e.key === "ArrowRight") {
         e.preventDefault();
         goToNext();
+      } else if (e.key === "Tab" && containerRef.current) {
+        const focusables = Array.from(
+          containerRef.current.querySelectorAll<HTMLElement>(FOCUSABLE_ELEMENTS_SELECTOR)
+        );
+        if (focusables.length === 0) {
+          e.preventDefault();
+          return;
+        }
+        const first = focusables[0];
+        const last = focusables[focusables.length - 1];
+
+        if (e.shiftKey) {
+          if (document.activeElement === first && last) {
+            e.preventDefault();
+            last.focus();
+          }
+        } else {
+          if (document.activeElement === last && first) {
+            e.preventDefault();
+            first.focus();
+          }
+        }
       }
     };
 
     window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isOpen, total, goToPrev, goToNext]);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener("keydown", handleKeyDown);
+      previousActiveElement.current?.focus?.();
+    };
+  }, [goToPrev, goToNext]);
 
   // Touch swipe handling
   const handleTouchStart = (e: React.TouchEvent) => {
-    touchStartXRef.current = e.touches[0].clientX;
-    touchStartYRef.current = e.touches[0].clientY;
+    const touch = e.touches[0];
+    if (!touch) return;
+    touchStartXRef.current = touch.clientX;
+    touchStartYRef.current = touch.clientY;
   };
 
   const handleTouchEnd = (e: React.TouchEvent) => {
     if (touchStartXRef.current === null || touchStartYRef.current === null) return;
-    const deltaX = e.changedTouches[0].clientX - touchStartXRef.current;
-    const deltaY = e.changedTouches[0].clientY - touchStartYRef.current;
+    const touch = e.changedTouches[0];
+    if (!touch) return;
+    const deltaX = touch.clientX - touchStartXRef.current;
+    const deltaY = touch.clientY - touchStartYRef.current;
 
-    // Minimum horizontal threshold and ensure gesture is mostly horizontal
     if (Math.abs(deltaX) > 40 && Math.abs(deltaX) > Math.abs(deltaY) * 1.5) {
       if (deltaX < 0) {
         goToNext();
@@ -125,17 +162,18 @@ export const Lightbox: React.FC<LightboxProps> = ({
     touchStartYRef.current = null;
   };
 
-  if (!isOpen || !normalizedImages[currentIndex]) return null;
+  if (total === 0 || !normalizedImages[currentIndex]) return null;
 
   const currentImage = normalizedImages[currentIndex];
 
   return createPortal(
     <div
+      ref={containerRef}
       role="dialog"
       aria-modal="true"
       aria-label="Image inspection viewer"
       tabIndex={-1}
-      className="fixed inset-0 z-50 bg-[#141413]/95 backdrop-blur-md flex items-center justify-center p-2 sm:p-6 md:p-8 animate-in fade-in duration-200 outline-none select-none"
+      className="fixed inset-0 z-50 bg-slate-dark/95 backdrop-blur-md flex items-center justify-center p-2 sm:p-6 md:p-8 animate-in fade-in duration-200 outline-none select-none"
       onClick={onClose}
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
@@ -143,7 +181,7 @@ export const Lightbox: React.FC<LightboxProps> = ({
       {/* Top Header / Bar */}
       <div className="absolute top-4 inset-x-4 sm:top-6 sm:inset-x-6 z-10 flex items-center justify-between pointer-events-none">
         {total > 1 ? (
-          <div className="bg-[#faf9f5]/15 backdrop-blur-md text-[#faf9f5] border border-white/10 px-3.5 py-1.5 rounded-full font-gothic text-xs font-semibold uppercase tracking-wider shadow-sm">
+          <div className="bg-ivory-light/15 backdrop-blur-md text-ivory-light border border-white/10 px-3.5 py-1.5 rounded-full font-gothic text-xs font-semibold uppercase tracking-wider shadow-sm">
             <span>Image {currentIndex + 1} of {total}</span>
           </div>
         ) : (
@@ -157,7 +195,7 @@ export const Lightbox: React.FC<LightboxProps> = ({
             onClose();
           }}
           aria-label="Close image inspector"
-          className="pointer-events-auto p-2.5 rounded-full bg-[#faf9f5]/10 text-[#faf9f5] hover:bg-[#faf9f5]/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#faf9f5] transition-colors cursor-pointer"
+          className="pointer-events-auto p-2.5 rounded-full bg-ivory-light/10 text-ivory-light hover:bg-ivory-light/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ivory-light transition-colors cursor-pointer"
         >
           <X className="h-5 w-5 sm:h-6 sm:w-6" />
         </button>
@@ -172,7 +210,7 @@ export const Lightbox: React.FC<LightboxProps> = ({
             goToPrev();
           }}
           aria-label="Previous plate"
-          className="absolute left-3 sm:left-6 z-10 p-2.5 sm:p-3 rounded-full bg-[#faf9f5]/10 text-[#faf9f5] hover:bg-[#faf9f5]/25 focus-visible:outline-2 focus-visible:outline-[#faf9f5] transition-colors cursor-pointer"
+          className="absolute left-3 sm:left-6 z-10 p-2.5 sm:p-3 rounded-full bg-ivory-light/10 text-ivory-light hover:bg-ivory-light/25 focus-visible:outline-2 focus-visible:outline-ivory-light transition-colors cursor-pointer"
         >
           <ChevronLeft className="h-6 w-6 sm:h-7 sm:w-7" />
         </button>
@@ -201,7 +239,7 @@ export const Lightbox: React.FC<LightboxProps> = ({
             goToNext();
           }}
           aria-label="Next plate"
-          className="absolute right-3 sm:right-6 z-10 p-2.5 sm:p-3 rounded-full bg-[#faf9f5]/10 text-[#faf9f5] hover:bg-[#faf9f5]/25 focus-visible:outline-2 focus-visible:outline-[#faf9f5] transition-colors cursor-pointer"
+          className="absolute right-3 sm:right-6 z-10 p-2.5 sm:p-3 rounded-full bg-ivory-light/10 text-ivory-light hover:bg-ivory-light/25 focus-visible:outline-2 focus-visible:outline-ivory-light transition-colors cursor-pointer"
         >
           <ChevronRight className="h-6 w-6 sm:h-7 sm:w-7" />
         </button>
@@ -210,12 +248,12 @@ export const Lightbox: React.FC<LightboxProps> = ({
       {/* Bottom dots indicator for mobile/quick reference */}
       {total > 1 && (
         <div className="absolute bottom-4 inset-x-0 flex items-center justify-center gap-1.5 pointer-events-none z-10">
-          <div className="bg-[#141413]/70 backdrop-blur-xs px-3 py-1.5 rounded-full flex items-center gap-1.5 border border-white/10">
+          <div className="bg-slate-dark/70 backdrop-blur-xs px-3 py-1.5 rounded-full flex items-center gap-1.5 border border-white/10">
             {normalizedImages.map((_, idx) => (
               <span
                 key={idx}
                 className={`transition-all rounded-full ${
-                  currentIndex === idx ? "w-4 h-1.5 bg-[#faf9f5]" : "w-1.5 h-1.5 bg-[#faf9f5]/40"
+                  currentIndex === idx ? "w-4 h-1.5 bg-ivory-light" : "w-1.5 h-1.5 bg-ivory-light/40"
                 }`}
               />
             ))}
@@ -224,5 +262,19 @@ export const Lightbox: React.FC<LightboxProps> = ({
       )}
     </div>,
     document.body
+  );
+};
+
+export const Lightbox: React.FC<LightboxProps> = (props) => {
+  const { images, imageUrl, initialIndex } = props;
+  const hasContent = (images && images.length > 0) || Boolean(imageUrl);
+
+  if (!hasContent) return null;
+
+  return (
+    <LightboxDialog
+      key={`${imageUrl ?? ''}_${initialIndex ?? 0}_${Array.isArray(images) ? images.length : 0}`}
+      {...props}
+    />
   );
 };

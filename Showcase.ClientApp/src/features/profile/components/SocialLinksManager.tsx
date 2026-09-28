@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { apiClient } from "@shared/api/apiClient.ts";
 import type { SocialLinkDto } from "@shared/types/index.ts";
 import { SUPPORTED_PLATFORMS, type SupportedPlatform } from "../constants.ts";
+import { validateUrl } from "../utils.ts";
 import { AddSocialLinkForm } from "./AddSocialLinkForm.tsx";
 import { SocialLinkRow } from "./SocialLinkRow.tsx";
 
@@ -12,25 +13,10 @@ export interface SocialLinksManagerProps {
   onNotify?: (message: string, type?: "success" | "error") => void;
 }
 
-const validateUrl = (urlToTest: string): string | null => {
-  const trimmed = urlToTest.trim();
-  if (!trimmed) return "URL address is required.";
-  if (!trimmed.startsWith("http://") && !trimmed.startsWith("https://")) {
-    return "URL must begin with http:// or https://";
-  }
-  try {
-    new URL(trimmed);
-    return null;
-  } catch {
-    return "Please enter a valid, well-formed web address.";
-  }
-};
-
 export const SocialLinksManager: React.FC<SocialLinksManagerProps> = ({ initialLinks, onLinksChanged, onNotify }) => {
   const [links, setLinks] = useState<SocialLinkDto[]>(() =>
     [...(initialLinks || [])].sort((a, b) => a.displayOrder - b.displayOrder),
   );
-  const [prevInitialLinks, setPrevInitialLinks] = useState(initialLinks);
   const [isProcessing, setIsProcessing] = useState(false);
 
   // Inline Edit Form State
@@ -38,11 +24,6 @@ export const SocialLinksManager: React.FC<SocialLinksManagerProps> = ({ initialL
   const [editPlatform, setEditPlatform] = useState<SupportedPlatform>("GitHub");
   const [editUrl, setEditUrl] = useState("");
   const [editError, setEditError] = useState<string | null>(null);
-
-  if (initialLinks !== prevInitialLinks) {
-    setPrevInitialLinks(initialLinks);
-    setLinks([...(initialLinks || [])].sort((a, b) => a.displayOrder - b.displayOrder));
-  }
 
   const handleAddLink = async (platform: SupportedPlatform, url: string): Promise<boolean> => {
     setIsProcessing(true);
@@ -149,6 +130,7 @@ export const SocialLinksManager: React.FC<SocialLinksManagerProps> = ({ initialL
 
     const newOrder = [...links];
     const [movedItem] = newOrder.splice(index, 1);
+    if (!movedItem) return;
     newOrder.splice(targetIndex, 0, movedItem);
 
     const updatedLinks = newOrder.map((item, idx) => ({ ...item, displayOrder: idx }));
@@ -170,16 +152,16 @@ export const SocialLinksManager: React.FC<SocialLinksManagerProps> = ({ initialL
   return (
     <section
       aria-labelledby="social-links-heading"
-      className="bg-[#faf9f5] rounded-[24px] border border-[#cccbc8]/60 p-6 sm:p-8"
+      className="bg-ivory-light rounded-card border border-stone/60 p-6 sm:p-8"
     >
-      <div className="border-b border-[#cccbc8]/50 pb-5 mb-6">
+      <div className="border-b border-stone/50 pb-5 mb-6">
         <h2
           id="social-links-heading"
-          className="font-gothic text-xl sm:text-2xl font-bold uppercase tracking-tight text-[#141413]"
+          className="font-gothic text-xl sm:text-2xl font-bold uppercase tracking-tight text-slate-dark"
         >
           Social &amp; Web Links
         </h2>
-        <p className="font-serif text-sm sm:text-base text-[#87867f] mt-1 leading-relaxed">
+        <p className="font-serif text-sm sm:text-base text-cloud-dark mt-1 leading-relaxed">
           Manage external websites and social profiles shown on your public profile.
         </p>
       </div>
@@ -188,21 +170,21 @@ export const SocialLinksManager: React.FC<SocialLinksManagerProps> = ({ initialL
 
       <div>
         <div className="flex items-center justify-between mb-4">
-          <h3 className="font-gothic text-xs font-bold uppercase tracking-[0.14em] text-[#87867f]">
+          <h3 className="font-gothic text-xs font-bold uppercase tracking-[0.14em] text-cloud-dark">
             Links ({links.length})
           </h3>
           {links.length > 1 && (
-            <span className="font-serif text-xs text-[#87867f]">Use arrows to reorder links</span>
+            <span className="font-serif text-xs text-cloud-dark">Use arrows to reorder links</span>
           )}
         </div>
 
         {links.length === 0 ? (
-          <div className="text-center py-10 px-4 rounded-2xl border border-dashed border-[#cccbc8] bg-[#f0eee6]/30">
-            <Globe className="h-8 w-8 text-[#87867f] mx-auto mb-2 opacity-60" />
-            <p className="font-gothic text-xs font-semibold uppercase tracking-wider text-[#141413]">
+          <div className="text-center py-10 px-4 rounded-2xl border border-dashed border-stone bg-ivory-medium/30">
+            <Globe className="h-8 w-8 text-cloud-dark mx-auto mb-2 opacity-60" />
+            <p className="font-gothic text-xs font-semibold uppercase tracking-wider text-slate-dark">
               No Links Added
             </p>
-            <p className="font-serif text-sm text-[#87867f] max-w-md mx-auto mt-1">
+            <p className="font-serif text-sm text-cloud-dark max-w-md mx-auto mt-1">
               Add your portfolio, GitHub, LinkedIn, or social profiles so visitors can connect with you.
             </p>
           </div>

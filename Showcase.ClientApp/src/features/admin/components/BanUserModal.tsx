@@ -46,14 +46,14 @@ export const BanUserModal: React.FC<BanUserModalProps> = ({
       isOpen={isOpen}
       onClose={onClose}
       title={isBanned ? "Reinstate Account" : "Suspend / Ban User Account"}
-      description={`Target creator: @${user.username} (${user.firstName} ${user.lastName})`}
+      description={`Target creator: @${user.username} (${user.name})`}
       size="md"
     >
       <div className="space-y-4 pt-2">
         {isBanned ? (
           <div className="p-4 rounded-xl bg-[#2e7d32]/10 border border-[#2e7d32]/30 flex items-start gap-3">
             <ShieldCheck className="w-5 h-5 text-[#2e7d32] shrink-0 mt-0.5" />
-            <div className="text-xs font-serif text-[#141413]/80 leading-relaxed">
+            <div className="text-xs font-serif text-slate-dark/80 leading-relaxed">
               This account is currently suspended. Reinstating will restore creator posting privileges and public showcase visibility.
             </div>
           </div>
@@ -69,9 +69,9 @@ export const BanUserModal: React.FC<BanUserModalProps> = ({
             <div className="space-y-1.5">
               <label
                 htmlFor="ban-reason"
-                className="font-gothic text-xs font-bold uppercase tracking-wider text-[#141413] block"
+                className="font-gothic text-xs font-bold uppercase tracking-wider text-slate-dark block"
               >
-                Administrative Reason / Violation Note <span className="text-[#d97757]">*</span>
+                Administrative Reason / Violation Note <span className="text-clay">*</span>
               </label>
               <Textarea
                 id="ban-reason"

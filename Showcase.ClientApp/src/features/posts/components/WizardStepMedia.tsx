@@ -35,7 +35,7 @@ export const WizardStepMedia: React.FC<WizardStepMediaProps> = ({
       {imageInvariantError && (
         <div
           role="alert"
-          className="flex items-start gap-3 p-4 rounded-xl bg-[#d97757]/10 border border-[#d97757]/40 text-[#d97757] animate-in fade-in"
+          className="flex items-start gap-3 p-4 rounded-xl bg-clay/10 border border-clay/40 text-clay animate-in fade-in"
         >
           <AlertCircle className="h-5 w-5 shrink-0 mt-0.5" />
           <div className="flex-1 font-serif text-xs leading-relaxed">
@@ -48,7 +48,7 @@ export const WizardStepMedia: React.FC<WizardStepMediaProps> = ({
       )}
 
       {images.length === 0 ? (
-        <div className="bg-[#faf9f5] border border-[#cccbc8] rounded-[24px] p-6 sm:p-8 space-y-4">
+        <div className="bg-ivory-light border border-stone rounded-card p-6 sm:p-8 space-y-4">
           <ImageDropzone
             variant="full"
             postId={postId}

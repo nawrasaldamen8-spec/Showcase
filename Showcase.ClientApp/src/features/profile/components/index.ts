@@ -1,16 +1,13 @@
 export * from "./AddSocialLinkForm.tsx";
 export * from "./AvatarUploader.tsx";
 export * from "./BioEditor.tsx";
-export * from "./EmailSecuritySection.tsx";
-export * from "./PasswordSecuritySection.tsx";
 export * from "./PlatformIcon.tsx";
 export * from "./PostMasonryGrid.tsx";
 export * from "./ProfileAboutTab.tsx";
+export * from "./ProfileCareerTab.tsx";
 export * from "./ProfileHeader.tsx";
 export * from "./ProfileSkeleton.tsx";
 export * from "./ReportProfileModal.tsx";
 export * from "./SocialLinkRow.tsx";
 export * from "./SocialLinksManager.tsx";
 export * from "./SpecialtyPickerModal.tsx";
-export * from "./UsernameSecuritySection.tsx";
-

@@ -37,14 +37,14 @@ export const Toggle: React.FC<ToggleProps> = ({
         aria-checked={checked}
         disabled={disabled}
         onClick={() => !disabled && onChange(!checked)}
-        className={`relative inline-flex items-center shrink-0 ${trackWidth} rounded-full transition-colors duration-200 ease-in-out cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#141413] focus-visible:ring-offset-2 border border-[#cccbc8]/60 ${
-          checked ? "bg-[#141413] border-[#141413]" : "bg-[#dedcd5]"
+        className={`relative inline-flex items-center shrink-0 ${trackWidth} rounded-full transition-colors duration-200 ease-in-out cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-dark focus-visible:ring-offset-2 border border-stone/60 ${
+          checked ? "bg-slate-dark border-slate-dark" : "bg-[#dedcd5]"
         }`}
       >
         <span className="sr-only">{typeof label === "string" ? label : "Toggle"}</span>
         <span
           aria-hidden="true"
-          className={`pointer-events-none inline-block ${knobSize} rounded-full bg-[#faf9f5] transform transition duration-200 ease-in-out ml-0.5 ${
+          className={`pointer-events-none inline-block ${knobSize} rounded-full bg-ivory-light transform transition duration-200 ease-in-out ml-0.5 ${
             checked ? translateDistance : "translate-x-0"
           }`}
         />
@@ -56,12 +56,12 @@ export const Toggle: React.FC<ToggleProps> = ({
           className={`select-none ${disabled ? "" : "cursor-pointer"}`}
         >
           {label && (
-            <span className="font-gothic text-xs font-bold uppercase tracking-[0.12em] text-[#141413] block">
+            <span className="font-gothic text-xs font-bold uppercase tracking-[0.12em] text-slate-dark block">
               {label}
             </span>
           )}
           {description && (
-            <span className="font-serif text-[13px] text-[#141413]/65 block mt-0.5 leading-snug">
+            <span className="font-serif text-[13px] text-slate-dark/65 block mt-0.5 leading-snug">
               {description}
             </span>
           )}

@@ -7,12 +7,14 @@ import { Lightbox } from "@shared/components/Lightbox.tsx";
 import { NotFoundView } from "@shared/components/NotFoundView.tsx";
 import { Skeleton } from "@shared/components/Skeleton.tsx";
 import { useAuth } from "@shared/context/index.ts";
+import { useMediaQuery } from "@shared/hooks/index.ts";
 import type { PostDetailsResponse, PublicProfileResponse } from "@shared/types/index.ts";
 import { PostDetailDesktop, PostDetailMobile } from "../components/index.ts";
 
 export const PostDetailsPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const { currentUser } = useAuth();
+  const isDesktop = useMediaQuery("(min-width: 1024px)");
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -75,7 +77,7 @@ export const PostDetailsPage: React.FC = () => {
         <Skeleton variant="text" width={100} height={20} className="mb-8" />
         <div className="grid grid-cols-1 md:grid-cols-12 gap-8 lg:gap-12 xl:gap-16 items-start">
           <div className="md:col-span-7 xl:col-span-7">
-            <Skeleton variant="rectangular" className="w-full h-[55vh] max-h-[600px] rounded-[24px]" />
+            <Skeleton variant="rectangular" className="w-full h-[55vh] max-h-[600px] rounded-card" />
           </div>
           <div className="md:col-span-5 xl:col-span-5 space-y-6">
             <div className="flex items-center gap-3">
@@ -96,9 +98,9 @@ export const PostDetailsPage: React.FC = () => {
             <Skeleton variant="rectangular" width={140} height={40} className="rounded-full mt-4" />
           </div>
         </div>
-        <div className="mt-12 pt-10 border-t border-[#cccbc8]/50 grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
-          <Skeleton variant="rectangular" className="w-full h-64 rounded-[24px]" />
-          <Skeleton variant="rectangular" className="w-full h-64 rounded-[24px]" />
+        <div className="mt-12 pt-10 border-t border-stone/50 grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
+          <Skeleton variant="rectangular" className="w-full h-64 rounded-card" />
+          <Skeleton variant="rectangular" className="w-full h-64 rounded-card" />
         </div>
       </div>
     );
@@ -119,8 +121,8 @@ export const PostDetailsPage: React.FC = () => {
   if (error) {
     return (
       <div className="max-w-2xl mx-auto px-4 py-16 text-center">
-        <div className="bg-[#faf9f5] border border-[#d97757]/40 rounded-[24px] p-8">
-          <p className="font-serif text-lg text-[#141413]">{error}</p>
+        <div className="bg-ivory-light border border-clay/40 rounded-card p-8">
+          <p className="font-serif text-lg text-slate-dark">{error}</p>
           <div className="mt-6 flex justify-center gap-4">
             <Link to="/studio">
               <Button variant="outline" size="sm">
@@ -136,7 +138,7 @@ export const PostDetailsPage: React.FC = () => {
     );
   }
 
-  const creatorName = post.creator ? `${post.creator.firstName} ${post.creator.lastName}` : "Creator";
+  const creatorName = post.creator?.name || "Creator";
   const creatorUsername = post.creator?.username || "user";
   const creatorAvatar = (creatorProfile?.avatarUrl || post.creator?.avatarUrl) ?? undefined;
 
@@ -165,7 +167,7 @@ export const PostDetailsPage: React.FC = () => {
         <button
           type="button"
           onClick={handleBack}
-          className="inline-flex items-center gap-2 text-[#87867f] hover:text-[#141413] transition-colors group shrink-0 font-medium cursor-pointer bg-transparent border-none p-0"
+          className="inline-flex items-center gap-2 text-cloud-dark hover:text-slate-dark transition-colors group shrink-0 font-medium cursor-pointer bg-transparent border-none p-0"
         >
           <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
           <span>{backLabel}</span>
@@ -183,21 +185,23 @@ export const PostDetailsPage: React.FC = () => {
         )}
       </nav>
 
-      <PostDetailMobile
-        post={post}
-        creatorName={creatorName}
-        creatorUsername={creatorUsername}
-        creatorAvatar={creatorAvatar}
-        onInspectImage={setLightboxIndex}
-      />
-
-      <PostDetailDesktop
-        post={post}
-        creatorName={creatorName}
-        creatorUsername={creatorUsername}
-        creatorAvatar={creatorAvatar}
-        onInspectImage={setLightboxIndex}
-      />
+      {isDesktop ? (
+        <PostDetailDesktop
+          post={post}
+          creatorName={creatorName}
+          creatorUsername={creatorUsername}
+          creatorAvatar={creatorAvatar}
+          onInspectImage={setLightboxIndex}
+        />
+      ) : (
+        <PostDetailMobile
+          post={post}
+          creatorName={creatorName}
+          creatorUsername={creatorUsername}
+          creatorAvatar={creatorAvatar}
+          onInspectImage={setLightboxIndex}
+        />
+      )}
 
       {lightboxIndex !== null && (
         <Lightbox

@@ -1,11 +1,19 @@
 import { useCallback, useEffect, useState } from "react";
 import { apiClient } from "@shared/api/apiClient.ts";
-import { initialCareerVisibility } from "@shared/api/careerMockData.ts";
 import { useToast } from "@shared/context/index.ts";
 import type { CareerVisibilitySettings } from "@shared/types/index.ts";
 
+const defaultCareerVisibility: CareerVisibilitySettings = {
+  experience: true,
+  academics: true,
+  skills: true,
+  credentials: true,
+  languages: true,
+  achievements: true,
+};
+
 export function useCareerVisibility() {
-  const [visibility, setVisibility] = useState<CareerVisibilitySettings>(initialCareerVisibility);
+  const [visibility, setVisibility] = useState<CareerVisibilitySettings>(defaultCareerVisibility);
   const [loading, setLoading] = useState<boolean>(true);
   const [isToggling, setIsToggling] = useState<boolean>(false);
   const { showToast } = useToast();

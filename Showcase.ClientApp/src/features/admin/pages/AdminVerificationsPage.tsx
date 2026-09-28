@@ -42,23 +42,23 @@ export const AdminVerificationsPage: React.FC = () => {
       {/* 1. Pending Queue */}
       <section className="space-y-4">
         <div className="flex items-center gap-2">
-          <Clock className="w-4 h-4 text-[#d97757]" />
-          <h2 className="font-gothic text-xs font-bold uppercase tracking-[0.14em] text-[#141413]">
+          <Clock className="w-4 h-4 text-clay" />
+          <h2 className="font-gothic text-xs font-bold uppercase tracking-[0.14em] text-slate-dark">
             Pending Queue ({pendingRequests.length})
           </h2>
         </div>
 
         {isLoading ? (
-          <div className="p-8 bg-[#faf9f5] rounded-2xl border border-[#cccbc8] text-center text-xs font-serif text-[#87867f]">
+          <div className="p-8 bg-ivory-light rounded-2xl border border-stone text-center text-xs font-serif text-cloud-dark">
             Loading verification queue...
           </div>
         ) : pendingRequests.length === 0 ? (
-          <div className="p-8 bg-[#faf9f5] rounded-2xl border border-[#cccbc8] text-center space-y-2">
+          <div className="p-8 bg-ivory-light rounded-2xl border border-stone text-center space-y-2">
             <CheckCircle2 className="w-8 h-8 text-[#2e7d32] mx-auto opacity-70" />
-            <h3 className="font-gothic text-sm font-bold uppercase tracking-wider text-[#141413]">
+            <h3 className="font-gothic text-sm font-bold uppercase tracking-wider text-slate-dark">
               All Applications Cleared
             </h3>
-            <p className="font-serif text-xs text-[#87867f]">
+            <p className="font-serif text-xs text-cloud-dark">
               There are no pending verification requests requiring review at this time.
             </p>
           </div>
@@ -67,7 +67,7 @@ export const AdminVerificationsPage: React.FC = () => {
             {pendingRequests.map((req) => (
               <div
                 key={req.id}
-                className="bg-[#faf9f5] border border-[#cccbc8] rounded-2xl p-5 space-y-4 flex flex-col justify-between"
+                className="bg-ivory-light border border-stone rounded-2xl p-5 space-y-4 flex flex-col justify-between"
               >
                 <div className="space-y-3">
                   <div className="flex items-center justify-between gap-3">
@@ -76,18 +76,18 @@ export const AdminVerificationsPage: React.FC = () => {
                         <img
                           src={req.avatarUrl}
                           alt={req.fullName}
-                          className="w-10 h-10 rounded-full object-cover border border-[#cccbc8]"
+                          className="w-10 h-10 rounded-full object-cover border border-stone"
                         />
                       ) : (
-                        <div className="w-10 h-10 rounded-full bg-[#141413] text-[#faf9f5] flex items-center justify-center font-gothic text-xs font-bold uppercase">
+                        <div className="w-10 h-10 rounded-full bg-slate-dark text-ivory-light flex items-center justify-center font-gothic text-xs font-bold uppercase">
                           {req.fullName[0]}
                         </div>
                       )}
                       <div>
-                        <span className="font-gothic font-bold uppercase tracking-wider text-sm text-[#141413]">
+                        <span className="font-gothic font-bold uppercase tracking-wider text-sm text-slate-dark">
                           {req.fullName}
                         </span>
-                        <span className="font-serif text-xs text-[#87867f] block">
+                        <span className="font-serif text-xs text-cloud-dark block">
                           @{req.username} &bull; {req.postsCount} Works
                         </span>
                       </div>
@@ -97,20 +97,20 @@ export const AdminVerificationsPage: React.FC = () => {
                       href={`/u/${req.username}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="p-1.5 rounded-lg text-[#87867f] hover:text-[#141413] hover:bg-[#e8e5dc] transition-colors"
+                      className="p-1.5 rounded-lg text-cloud-dark hover:text-slate-dark hover:bg-[#e8e5dc] transition-colors"
                       title="View Public Profile"
                     >
                       <ExternalLink className="w-4 h-4" />
                     </a>
                   </div>
 
-                  <div className="p-3 bg-[#f0eee6] rounded-xl font-serif text-xs text-[#141413]/85 leading-relaxed">
+                  <div className="p-3 bg-ivory-medium rounded-xl font-serif text-xs text-slate-dark/85 leading-relaxed">
                     &ldquo;{req.message}&rdquo;
                   </div>
 
                   {req.notes && (
-                    <div className="text-[11px] font-serif text-[#87867f]">
-                      <strong className="font-gothic font-bold uppercase text-[#141413] text-[10px]">
+                    <div className="text-[11px] font-serif text-cloud-dark">
+                      <strong className="font-gothic font-bold uppercase text-slate-dark text-[10px]">
                         Credentials:{" "}
                       </strong>
                       {req.notes}
@@ -118,8 +118,8 @@ export const AdminVerificationsPage: React.FC = () => {
                   )}
                 </div>
 
-                <div className="pt-2 border-t border-[#cccbc8]/50 flex items-center justify-between gap-2">
-                  <span className="font-serif text-[11px] text-[#87867f]">
+                <div className="pt-2 border-t border-stone/50 flex items-center justify-between gap-2">
+                  <span className="font-serif text-[11px] text-cloud-dark">
                     Submitted {new Date(req.submittedAt).toLocaleDateString()}
                   </span>
 
@@ -141,16 +141,16 @@ export const AdminVerificationsPage: React.FC = () => {
 
       {/* 2. Processed History */}
       {processedRequests.length > 0 && (
-        <section className="space-y-4 pt-6 border-t border-[#cccbc8]">
+        <section className="space-y-4 pt-6 border-t border-stone">
           <div className="flex items-center gap-2">
-            <ShieldCheck className="w-4 h-4 text-[#87867f]" />
-            <h2 className="font-gothic text-xs font-bold uppercase tracking-[0.14em] text-[#87867f]">
+            <ShieldCheck className="w-4 h-4 text-cloud-dark" />
+            <h2 className="font-gothic text-xs font-bold uppercase tracking-[0.14em] text-cloud-dark">
               Processed Decisions ({processedRequests.length})
             </h2>
           </div>
 
-          <div className="bg-[#faf9f5] rounded-2xl border border-[#cccbc8] overflow-hidden">
-            <div className="divide-y divide-[#cccbc8]/60">
+          <div className="bg-ivory-light rounded-2xl border border-stone overflow-hidden">
+            <div className="divide-y divide-stone/60">
               {processedRequests.map((req) => (
                 <div
                   key={req.id}
@@ -165,16 +165,16 @@ export const AdminVerificationsPage: React.FC = () => {
                       </div>
                     )}
                     <div>
-                      <span className="font-gothic font-bold uppercase tracking-wider text-[#141413]">
+                      <span className="font-gothic font-bold uppercase tracking-wider text-slate-dark">
                         {req.fullName} (@{req.username})
                       </span>
                       {req.decisionNote && (
-                        <p className="font-serif text-[#87867f] text-[11px]">{req.decisionNote}</p>
+                        <p className="font-serif text-cloud-dark text-[11px]">{req.decisionNote}</p>
                       )}
                     </div>
                   </div>
 
-                  <span className="font-gothic text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border self-start sm:self-auto bg-[#e8e5dc] text-[#141413] border-[#cccbc8]">
+                  <span className="font-gothic text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border self-start sm:self-auto bg-[#e8e5dc] text-slate-dark border-stone">
                     {req.status}
                   </span>
                 </div>

@@ -22,12 +22,12 @@ export const WizardStepper: React.FC<WizardStepperProps> = ({
   onJumpToStep,
 }) => {
   return (
-    <div className="pb-6 border-b border-[#cccbc8]">
+    <div className="pb-6 border-b border-stone">
       <div className="flex items-center justify-between gap-4 mb-4">
         <button
           type="button"
           onClick={onCancelClick}
-          className="inline-flex items-center gap-2 font-gothic text-xs font-semibold uppercase tracking-[0.10em] text-[#87867f] hover:text-[#141413] transition-colors cursor-pointer"
+          className="inline-flex items-center gap-2 font-gothic text-xs font-semibold uppercase tracking-[0.10em] text-cloud-dark hover:text-slate-dark transition-colors cursor-pointer"
         >
           <ArrowLeft className="h-4 w-4" />
           <span>Return to Studio</span>
@@ -35,7 +35,7 @@ export const WizardStepper: React.FC<WizardStepperProps> = ({
 
         <div className="flex items-center gap-3">
           {isEditing && <PostStatusBadge status={postStatus} size="sm" />}
-          <span className="font-gothic text-[11px] font-bold uppercase tracking-wider text-[#87867f]">
+          <span className="font-gothic text-[11px] font-bold uppercase tracking-wider text-cloud-dark">
             Step {currentStep} of 4
           </span>
         </div>
@@ -61,10 +61,10 @@ export const WizardStepper: React.FC<WizardStepperProps> = ({
                 <span
                   className={`h-5 w-5 sm:h-6 sm:w-6 rounded-full flex items-center justify-center font-gothic text-[10px] sm:text-xs font-bold transition-all shrink-0 ${
                     isCurrent
-                      ? "bg-[#141413] text-[#faf9f5]"
+                      ? "bg-slate-dark text-ivory-light"
                       : isCompleted
-                        ? "bg-[#cccbc8] text-[#141413]"
-                        : "bg-[#e8e5dc] text-[#87867f]"
+                        ? "bg-stone text-slate-dark"
+                        : "bg-[#e8e5dc] text-cloud-dark"
                   }`}
                 >
                   {isCompleted ? <Check className="h-3 w-3 sm:h-3.5 sm:w-3.5" /> : s.step}
@@ -72,10 +72,10 @@ export const WizardStepper: React.FC<WizardStepperProps> = ({
                 <span
                   className={`font-gothic text-[10px] sm:text-[11px] font-semibold uppercase tracking-[0.08em] sm:tracking-[0.12em] truncate transition-colors ${
                     isCurrent
-                      ? "text-[#141413]"
+                      ? "text-slate-dark"
                       : isCompleted
-                        ? "text-[#141413]/70 group-hover:text-[#141413]"
-                        : "text-[#87867f]"
+                        ? "text-slate-dark/70 group-hover:text-slate-dark"
+                        : "text-cloud-dark"
                   }`}
                 >
                   {s.label}
@@ -83,7 +83,7 @@ export const WizardStepper: React.FC<WizardStepperProps> = ({
               </div>
               <div
                 className={`h-1 w-full rounded-full transition-all duration-300 ${
-                  isCurrent ? "bg-[#141413]" : isCompleted ? "bg-[#cccbc8]" : "bg-[#cccbc8]/30"
+                  isCurrent ? "bg-slate-dark" : isCompleted ? "bg-stone" : "bg-stone/30"
                 }`}
               />
             </button>

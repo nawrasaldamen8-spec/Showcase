@@ -29,7 +29,7 @@ export const WizardBottomBar: React.FC<WizardBottomBarProps> = ({
   onPublishWork,
 }) => {
   return (
-    <div className="sticky bottom-4 z-30 mt-8 sm:mt-10 bg-[#faf9f5]/95 backdrop-blur-md border border-[#cccbc8] rounded-2xl sm:rounded-[24px] p-3.5 sm:p-5 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-4 shadow-none">
+    <div className="sticky bottom-4 z-30 mt-8 sm:mt-10 bg-ivory-light/95 backdrop-blur-md border border-stone rounded-2xl sm:rounded-card p-3.5 sm:p-5 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-4 shadow-none">
       <div className="order-2 sm:order-1 flex items-center">
         {currentStep > 1 ? (
           <Button

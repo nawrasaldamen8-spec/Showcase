@@ -14,7 +14,7 @@ export interface StepIndicatorProps {
 
 export const StepIndicator: React.FC<StepIndicatorProps> = ({ currentStep, steps }) => {
   return (
-    <div className="w-full pb-4 border-b border-[#cccbc8]/60">
+    <div className="w-full pb-4 border-b border-stone/60">
       <div
         className="grid gap-2"
         style={{ gridTemplateColumns: `repeat(${steps.length}, minmax(0, 1fr))` }}
@@ -29,10 +29,10 @@ export const StepIndicator: React.FC<StepIndicatorProps> = ({ currentStep, steps
                 <div
                   className={`h-7 w-7 mx-auto rounded-full flex items-center justify-center font-gothic text-xs font-bold transition-all duration-200 ${
                     isCompleted
-                      ? "bg-[#2e7d32] text-[#faf9f5]"
+                      ? "bg-[#2e7d32] text-ivory-light"
                       : isCurrent
-                      ? "bg-[#d97757] text-[#faf9f5] ring-4 ring-[#d97757]/20"
-                      : "bg-[#e8e5dc] text-[#87867f]"
+                      ? "bg-clay text-ivory-light ring-4 ring-clay/20"
+                      : "bg-[#e8e5dc] text-cloud-dark"
                   }`}
                 >
                   {isCompleted ? <Check className="w-3.5 h-3.5 stroke-[2.5]" /> : step.number}
@@ -41,7 +41,7 @@ export const StepIndicator: React.FC<StepIndicatorProps> = ({ currentStep, steps
               <div className="mt-1.5 hidden sm:block">
                 <p
                   className={`font-gothic text-[10px] font-bold uppercase tracking-wider ${
-                    isCurrent ? "text-[#141413]" : "text-[#87867f]"
+                    isCurrent ? "text-slate-dark" : "text-cloud-dark"
                   }`}
                 >
                   {step.label}

@@ -3,74 +3,74 @@ import { apiClient } from '@shared/api/apiClient.ts';
 import { useAuth } from '@shared/context/useAuth.ts';
 
 export interface UseBioEditorProps {
-  initialFirstName: string;
-  initialLastName: string;
+  initialName: string;
   initialSpecialty?: string | null;
+  initialCountry?: string | null;
   initialBio?: string | null;
-  onProfileUpdated?: (updated: { firstName: string; lastName: string; specialty: string | null; bio: string }) => void;
+  onProfileUpdated?: (updated: { name: string; specialty: string | null; country: string | null; bio: string }) => void;
   onNotify?: (message: string, type?: 'success' | 'error') => void;
 }
 
 export function useBioEditor({
-  initialFirstName,
-  initialLastName,
+  initialName,
   initialSpecialty = null,
+  initialCountry = null,
   initialBio = '',
   onProfileUpdated,
   onNotify,
 }: UseBioEditorProps) {
   const { refreshUser } = useAuth();
 
-  const [firstName, setFirstName] = useState(initialFirstName);
-  const [lastName, setLastName] = useState(initialLastName);
+  const [name, setName] = useState(initialName);
   const [specialty, setSpecialty] = useState<string | null>(initialSpecialty || null);
+  const [country, setCountry] = useState<string | null>(initialCountry || null);
   const [bio, setBio] = useState(initialBio || '');
 
   const [prevProps, setPrevProps] = useState({
-    firstName: initialFirstName,
-    lastName: initialLastName,
+    name: initialName,
     specialty: initialSpecialty || null,
+    country: initialCountry || null,
     bio: initialBio || '',
   });
 
   const [isSaving, setIsSaving] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<{
-    firstName?: string;
-    lastName?: string;
+    name?: string;
     specialty?: string;
+    country?: string;
     bio?: string;
   }>({});
   const [generalError, setGeneralError] = useState<string | null>(null);
   const [saveSuccess, setSaveSuccess] = useState(false);
 
   if (
-    initialFirstName !== prevProps.firstName ||
-    initialLastName !== prevProps.lastName ||
+    initialName !== prevProps.name ||
     (initialSpecialty || null) !== prevProps.specialty ||
+    (initialCountry || null) !== prevProps.country ||
     (initialBio || '') !== prevProps.bio
   ) {
     setPrevProps({
-      firstName: initialFirstName,
-      lastName: initialLastName,
+      name: initialName,
       specialty: initialSpecialty || null,
+      country: initialCountry || null,
       bio: initialBio || '',
     });
-    setFirstName(initialFirstName);
-    setLastName(initialLastName);
+    setName(initialName);
     setSpecialty(initialSpecialty || null);
+    setCountry(initialCountry || null);
     setBio(initialBio || '');
   }
 
   const hasChanges =
-    firstName.trim() !== initialFirstName.trim() ||
-    lastName.trim() !== initialLastName.trim() ||
+    name.trim() !== initialName.trim() ||
     (specialty || null) !== (initialSpecialty || null) ||
+    (country?.trim() || null) !== (initialCountry?.trim() || null) ||
     (bio.trim() || '') !== (initialBio?.trim() || '');
 
   const handleReset = () => {
-    setFirstName(initialFirstName);
-    setLastName(initialLastName);
+    setName(initialName);
     setSpecialty(initialSpecialty || null);
+    setCountry(initialCountry || null);
     setBio(initialBio || '');
     setFieldErrors({});
     setGeneralError(null);
@@ -80,16 +80,13 @@ export function useBioEditor({
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const errors: { firstName?: string; lastName?: string; specialty?: string; bio?: string } = {};
+    const errors: { name?: string; specialty?: string; country?: string; bio?: string } = {};
 
-    if (!firstName.trim()) {
-      errors.firstName = 'First name is required.';
+    if (!name.trim()) {
+      errors.name = 'Full name is required.';
     }
-    if (!lastName.trim()) {
-      errors.lastName = 'Last name is required.';
-    }
-    if (bio.length > 500) {
-      errors.bio = 'Biography cannot exceed 500 characters.';
+    if (bio.length > 1000) {
+      errors.bio = 'Biography cannot exceed 1000 characters.';
     }
 
     if (Object.keys(errors).length > 0) {
@@ -104,9 +101,9 @@ export function useBioEditor({
 
     try {
       await apiClient.updateProfile({
-        firstName: firstName.trim(),
-        lastName: lastName.trim(),
+        name: name.trim(),
         specialty: specialty || null,
+        country: country?.trim() || null,
         bio: bio.trim() || null,
       });
 
@@ -114,9 +111,9 @@ export function useBioEditor({
 
       setSaveSuccess(true);
       onProfileUpdated?.({
-        firstName: firstName.trim(),
-        lastName: lastName.trim(),
+        name: name.trim(),
         specialty: specialty || null,
+        country: country?.trim() || null,
         bio: bio.trim(),
       });
       onNotify?.('Profile details updated successfully.', 'success');
@@ -136,12 +133,12 @@ export function useBioEditor({
   };
 
   return {
-    firstName,
-    setFirstName,
-    lastName,
-    setLastName,
+    name,
+    setName,
     specialty,
     setSpecialty,
+    country,
+    setCountry,
     bio,
     setBio,
     fieldErrors,

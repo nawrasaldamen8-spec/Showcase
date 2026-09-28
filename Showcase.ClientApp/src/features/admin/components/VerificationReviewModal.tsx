@@ -49,24 +49,24 @@ export const VerificationReviewModal: React.FC<VerificationReviewModalProps> = (
     >
       <div className="space-y-5 pt-2">
         {/* Creator Info Card */}
-        <div className="p-4 rounded-2xl bg-[#f0eee6] border border-[#cccbc8] flex items-center justify-between gap-4">
+        <div className="p-4 rounded-2xl bg-ivory-medium border border-stone flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             {request.avatarUrl ? (
               <img
                 src={request.avatarUrl}
                 alt={request.fullName}
-                className="w-12 h-12 rounded-full object-cover border border-[#cccbc8]"
+                className="w-12 h-12 rounded-full object-cover border border-stone"
               />
             ) : (
-              <div className="w-12 h-12 rounded-full bg-[#141413] text-[#faf9f5] flex items-center justify-center font-gothic text-base font-bold">
+              <div className="w-12 h-12 rounded-full bg-slate-dark text-ivory-light flex items-center justify-center font-gothic text-base font-bold">
                 {request.fullName[0]}
               </div>
             )}
             <div>
-              <h4 className="font-gothic text-sm font-bold uppercase tracking-wider text-[#141413]">
+              <h4 className="font-gothic text-sm font-bold uppercase tracking-wider text-slate-dark">
                 {request.fullName}
               </h4>
-              <p className="font-serif text-xs text-[#87867f]">
+              <p className="font-serif text-xs text-cloud-dark">
                 @{request.username} &bull; {request.postsCount} Published Works
               </p>
             </div>
@@ -76,7 +76,7 @@ export const VerificationReviewModal: React.FC<VerificationReviewModalProps> = (
             href={`/u/${request.username}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[#cccbc8] bg-[#faf9f5] hover:bg-[#e8e5dc] text-[#141413] font-gothic text-[11px] font-bold uppercase tracking-wider transition-colors text-decoration-none"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-stone bg-ivory-light hover:bg-[#e8e5dc] text-slate-dark font-gothic text-[11px] font-bold uppercase tracking-wider transition-colors text-decoration-none"
           >
             <span>View Profile</span>
             <ExternalLink className="w-3.5 h-3.5" />
@@ -85,20 +85,20 @@ export const VerificationReviewModal: React.FC<VerificationReviewModalProps> = (
 
         {/* Application Message */}
         <div className="space-y-1.5">
-          <span className="font-gothic text-[11px] font-bold uppercase tracking-wider text-[#87867f] block">
+          <span className="font-gothic text-[11px] font-bold uppercase tracking-wider text-cloud-dark block">
             Applicant Statement / Context
           </span>
-          <div className="p-3.5 rounded-xl bg-[#faf9f5] border border-[#cccbc8] font-serif text-xs text-[#141413] leading-relaxed whitespace-pre-wrap">
+          <div className="p-3.5 rounded-xl bg-ivory-light border border-stone font-serif text-xs text-slate-dark leading-relaxed whitespace-pre-wrap">
             {request.message}
           </div>
         </div>
 
         {request.notes && (
           <div className="space-y-1.5">
-            <span className="font-gothic text-[11px] font-bold uppercase tracking-wider text-[#87867f] block">
+            <span className="font-gothic text-[11px] font-bold uppercase tracking-wider text-cloud-dark block">
               Professional Credentials / External References
             </span>
-            <div className="p-3 rounded-xl bg-[#faf9f5] border border-[#cccbc8] font-serif text-xs text-[#141413]/80 leading-relaxed">
+            <div className="p-3 rounded-xl bg-ivory-light border border-stone font-serif text-xs text-slate-dark/80 leading-relaxed">
               {request.notes}
             </div>
           </div>
@@ -108,7 +108,7 @@ export const VerificationReviewModal: React.FC<VerificationReviewModalProps> = (
         <div className="space-y-1.5">
           <label
             htmlFor="decision-note"
-            className="font-gothic text-xs font-bold uppercase tracking-wider text-[#141413] block"
+            className="font-gothic text-xs font-bold uppercase tracking-wider text-slate-dark block"
           >
             Decision Note / Internal Log
           </label>

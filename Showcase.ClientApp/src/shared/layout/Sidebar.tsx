@@ -20,7 +20,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ user, currentPersona = "creato
   return (
     <aside
       aria-label="Main Sidebar Navigation"
-      className="hidden md:flex flex-col fixed inset-y-0 left-0 w-60 lg:w-64 bg-[#141413] text-[#faf9f5] z-40 border-r border-[#262624] shadow-none select-none"
+      className="hidden md:flex flex-col fixed inset-y-0 left-0 w-60 lg:w-64 bg-slate-dark text-ivory-light z-40 border-r border-[#262624] shadow-none select-none"
     >
       {/* 1. Header / Platform Branding */}
       <div className="h-18 lg:h-20 px-6 flex items-center justify-between border-b border-[#262624]">
@@ -30,7 +30,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ user, currentPersona = "creato
             theme="dark"
             size="md"
             className="group-hover:opacity-90 transition-opacity"
-            textClassName="text-xl tracking-tight text-[#faf9f5] font-serif"
+            textClassName="text-xl tracking-tight text-ivory-light font-serif"
           />
         </Link>
       </div>
@@ -39,7 +39,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ user, currentPersona = "creato
       <SidebarNavLinks user={user} />
 
       {/* 3. Bottom Section: CTA, Persona, Profile Menu */}
-      <div className="p-4 border-t border-[#262624] space-y-3 bg-[#141413]">
+      <div className="p-4 border-t border-[#262624] space-y-3 bg-slate-dark">
         <Link to="/posts/new" className="block text-decoration-none">
           <Button
             variant="clay"
@@ -56,7 +56,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ user, currentPersona = "creato
           <DemoSwitcher
             currentPersona={currentPersona}
             onPersonaChange={onPersonaChange}
-            className="w-full justify-between bg-[#262624]/60 border border-[#262624] text-[#faf9f5]"
+            className="w-full justify-between bg-[#262624]/60 border border-[#262624] text-ivory-light"
           />
         </div>
 

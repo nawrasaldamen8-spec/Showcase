@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, type ReactNode } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, type ReactNode } from 'react';
 import type {
   CurrentUserResponse,
   LoginRequest,
@@ -90,6 +90,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const switchPersona = useCallback((persona: ActivePersona) => {
     setActivePersonaState(persona);
     if (typeof window !== 'undefined') {
+      localStorage.getItem(PERSONA_STORAGE_KEY);
       localStorage.setItem(PERSONA_STORAGE_KEY, persona);
       window.dispatchEvent(new CustomEvent('showcase:persona-change', { detail: persona }));
     }
@@ -152,17 +153,20 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const currentUser = activePersona === 'visitor' ? null : creatorUser;
   const isAuthenticated = activePersona !== 'visitor' && currentUser !== null;
 
-  const value: AuthContextValue = {
-    currentUser,
-    activePersona,
-    isAuthenticated,
-    isLoading,
-    switchPersona,
-    login,
-    register,
-    logout,
-    refreshUser,
-  };
+  const value: AuthContextValue = useMemo(
+    () => ({
+      currentUser,
+      activePersona,
+      isAuthenticated,
+      isLoading,
+      switchPersona,
+      login,
+      register,
+      logout,
+      refreshUser,
+    }),
+    [currentUser, activePersona, isAuthenticated, isLoading, switchPersona, login, register, logout, refreshUser]
+  );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

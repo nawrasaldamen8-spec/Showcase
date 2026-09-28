@@ -36,9 +36,9 @@ export const StudioPostCard: React.FC<StudioPostCardProps> = ({
   const hasImages = (post.imageCount || 0) > 0;
 
   return (
-    <div className="bg-[#faf9f5] border border-[#cccbc8] rounded-[24px] p-5 sm:p-6 transition-all duration-200 hover:border-[#141413]/70 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-5 sm:gap-6 shadow-none">
+    <div className="bg-ivory-light border border-stone rounded-card p-5 sm:p-6 transition-all duration-200 hover:border-slate-dark/70 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-5 sm:gap-6 shadow-none">
       <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5 w-full lg:w-auto flex-1">
-        <div className="relative w-full sm:w-40 sm:h-28 h-48 bg-[#f0eee6] rounded-xl overflow-hidden shrink-0 border border-[#cccbc8]/60">
+        <div className="relative w-full sm:w-40 sm:h-28 h-48 bg-ivory-medium rounded-xl overflow-hidden shrink-0 border border-stone/60">
           {post.thumbnailUrl ? (
             <img
               src={post.thumbnailUrl}
@@ -50,13 +50,13 @@ export const StudioPostCard: React.FC<StudioPostCardProps> = ({
               }}
             />
           ) : (
-            <div className="w-full h-full flex flex-col items-center justify-center text-[#87867f] gap-1 p-2">
+            <div className="w-full h-full flex flex-col items-center justify-center text-cloud-dark gap-1 p-2">
               <ImageIcon className="h-6 w-6 stroke-[1.5]" />
               <span className="font-gothic text-[10px] uppercase tracking-wider">No images</span>
             </div>
           )}
 
-          <div className="absolute bottom-2 right-2 bg-[#141413]/85 text-[#faf9f5] font-gothic text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full backdrop-blur-xs select-none">
+          <div className="absolute bottom-2 right-2 bg-slate-dark/85 text-ivory-light font-gothic text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full backdrop-blur-xs select-none">
             {post.imageCount} {post.imageCount === 1 ? "Image" : "Images"}
           </div>
         </div>
@@ -64,18 +64,18 @@ export const StudioPostCard: React.FC<StudioPostCardProps> = ({
         <div className="flex-1 space-y-2">
           <div className="flex flex-wrap items-center gap-2.5">
             <PostStatusBadge status={post.status} size="sm" />
-            <span className="font-serif text-xs text-[#87867f]">
+            <span className="font-serif text-xs text-cloud-dark">
               {isPublished
                 ? `Published ${formatDate(post.publishedAt || post.createdAt)}`
                 : `Updated ${formatDate(post.createdAt)}`}
             </span>
           </div>
 
-          <h3 className="font-gothic text-xl sm:text-2xl font-bold tracking-tight text-[#141413]">
+          <h3 className="font-gothic text-xl sm:text-2xl font-bold tracking-tight text-slate-dark">
             {post.title}
           </h3>
 
-          <p className="font-serif text-sm text-[#141413]/70 line-clamp-2 leading-relaxed">
+          <p className="font-serif text-sm text-slate-dark/70 line-clamp-2 leading-relaxed">
             {post.description || "No description provided."}
           </p>
 
@@ -85,7 +85,7 @@ export const StudioPostCard: React.FC<StudioPostCardProps> = ({
                 href={post.externalUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 font-gothic text-[11px] font-semibold uppercase tracking-wider text-[#d97757] hover:underline"
+                className="inline-flex items-center gap-1.5 font-gothic text-[11px] font-semibold uppercase tracking-wider text-clay hover:underline"
               >
                 <span>Live Link</span>
                 <ExternalLink className="h-3 w-3" />
@@ -95,7 +95,7 @@ export const StudioPostCard: React.FC<StudioPostCardProps> = ({
         </div>
       </div>
 
-      <div className="flex flex-wrap items-center gap-2 sm:gap-2.5 w-full lg:w-auto justify-end pt-3 lg:pt-0 border-t lg:border-t-0 border-[#cccbc8]/50">
+      <div className="flex flex-wrap items-center gap-2 sm:gap-2.5 w-full lg:w-auto justify-end pt-3 lg:pt-0 border-t lg:border-t-0 border-stone/50">
         <Link to={`/posts/${post.id}`} state={{ from: "/studio", fromLabel: "Studio" }}>
           <Button
             variant="ghost"
@@ -134,7 +134,7 @@ export const StudioPostCard: React.FC<StudioPostCardProps> = ({
           variant="ghost"
           size="sm"
           onClick={() => onDeleteClick(post)}
-          className="text-[#d97757] hover:bg-[#d97757]/10"
+          className="text-clay hover:bg-clay/10"
           aria-label={`Delete ${post.title}`}
           title="Delete post"
         >

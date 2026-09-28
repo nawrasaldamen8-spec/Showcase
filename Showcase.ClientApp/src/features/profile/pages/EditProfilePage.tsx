@@ -52,7 +52,7 @@ export const EditProfilePage: React.FC = () => {
       <nav className="mb-6" aria-label="Breadcrumb navigation">
         <Link
           to={backUrl}
-          className="inline-flex items-center gap-2 font-gothic text-xs font-semibold uppercase tracking-[0.14em] text-[#87867f] hover:text-[#141413] transition-colors group text-decoration-none"
+          className="inline-flex items-center gap-2 font-gothic text-xs font-semibold uppercase tracking-[0.14em] text-cloud-dark hover:text-slate-dark transition-colors group text-decoration-none"
         >
           <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
           <span>Back to Profile</span>
@@ -60,22 +60,22 @@ export const EditProfilePage: React.FC = () => {
       </nav>
 
       {/* Page Header */}
-      <header className="border-b border-[#cccbc8] pb-6 mb-8 space-y-2">
+      <header className="border-b border-stone pb-6 mb-8 space-y-2">
         <div className="flex items-center gap-2">
-          <span className="font-gothic text-xs font-bold uppercase tracking-[0.16em] text-[#d97757]">
+          <span className="font-gothic text-xs font-bold uppercase tracking-[0.16em] text-clay">
             Account Settings
           </span>
-          <span className="text-[#cccbc8]">&bull;</span>
-          <span className="font-gothic text-xs font-semibold uppercase tracking-[0.10em] text-[#87867f]">
+          <span className="text-stone">&bull;</span>
+          <span className="font-gothic text-xs font-semibold uppercase tracking-[0.10em] text-cloud-dark">
             Profile
           </span>
         </div>
 
-        <h1 className="font-gothic font-extrabold text-3xl sm:text-4xl uppercase tracking-tight text-[#141413]">
+        <h1 className="font-gothic font-extrabold text-3xl sm:text-4xl uppercase tracking-tight text-slate-dark">
           Edit Profile
         </h1>
 
-        <p className="font-serif text-sm sm:text-base text-[#141413]/75 leading-relaxed">
+        <p className="font-serif text-sm sm:text-base text-slate-dark/75 leading-relaxed">
           Update your photo, name, specialty, and bio shown across Showcase.
         </p>
       </header>
@@ -83,7 +83,7 @@ export const EditProfilePage: React.FC = () => {
       {/* Main Content */}
       {isLoading ? (
         <div className="space-y-8" aria-busy="true">
-          <div className="bg-[#faf9f5] rounded-[24px] border border-[#cccbc8]/60 p-8">
+          <div className="bg-ivory-light rounded-card border border-stone/60 p-8">
             <div className="flex items-center gap-6">
               <Skeleton variant="circular" width={112} height={112} />
               <div className="flex-1 space-y-3">
@@ -94,7 +94,7 @@ export const EditProfilePage: React.FC = () => {
             </div>
           </div>
 
-          <div className="bg-[#faf9f5] rounded-[24px] border border-[#cccbc8]/60 p-8 space-y-6">
+          <div className="bg-ivory-light rounded-card border border-stone/60 p-8 space-y-6">
             <Skeleton variant="text" width="30%" height={24} />
             <div className="grid grid-cols-2 gap-4">
               <Skeleton variant="rectangular" height={44} />
@@ -104,12 +104,12 @@ export const EditProfilePage: React.FC = () => {
           </div>
         </div>
       ) : error ? (
-        <div className="bg-[#faf9f5] rounded-[24px] border border-[#d97757]/40 p-8 text-center max-w-xl mx-auto my-12">
-          <AlertCircle className="h-10 w-10 text-[#d97757] mx-auto mb-3" />
-          <h2 className="font-gothic text-xl font-bold uppercase tracking-tight text-[#141413]">
+        <div className="bg-ivory-light rounded-card border border-clay/40 p-8 text-center max-w-xl mx-auto my-12">
+          <AlertCircle className="h-10 w-10 text-clay mx-auto mb-3" />
+          <h2 className="font-gothic text-xl font-bold uppercase tracking-tight text-slate-dark">
             Unable to Load Profile
           </h2>
-          <p className="font-serif text-sm text-[#141413]/80 mt-2">{error}</p>
+          <p className="font-serif text-sm text-slate-dark/80 mt-2">{error}</p>
           <div className="mt-6">
             <Button variant="slate" size="sm" onClick={() => setRetryCount((c) => c + 1)}>
               Retry Loading
@@ -120,8 +120,7 @@ export const EditProfilePage: React.FC = () => {
         <div className="space-y-8">
           <AvatarUploader
             avatarUrl={profile.avatarUrl}
-            firstName={profile.firstName}
-            lastName={profile.lastName}
+            name={profile.name}
             username={profile.username}
             onAvatarUpdated={(newUrl) => {
               setProfile((prev) => (prev ? { ...prev, avatarUrl: newUrl } : null));
@@ -130,18 +129,18 @@ export const EditProfilePage: React.FC = () => {
           />
 
           <BioEditor
-            initialFirstName={profile.firstName}
-            initialLastName={profile.lastName}
+            initialName={profile.name}
             initialSpecialty={profile.specialty}
+            initialCountry={profile.country}
             initialBio={profile.bio}
             onProfileUpdated={(updated) => {
               setProfile((prev) =>
                 prev
                   ? {
                       ...prev,
-                      firstName: updated.firstName,
-                      lastName: updated.lastName,
+                      name: updated.name,
                       specialty: updated.specialty,
+                      country: updated.country,
                       bio: updated.bio,
                     }
                   : null,
@@ -150,9 +149,9 @@ export const EditProfilePage: React.FC = () => {
             onNotify={handleNotify}
           />
 
-          <div className="pt-6 border-t border-[#cccbc8]/50 flex flex-col sm:flex-row items-center justify-between gap-4 font-serif text-xs text-[#87867f]">
+          <div className="pt-6 border-t border-stone/50 flex flex-col sm:flex-row items-center justify-between gap-4 font-serif text-xs text-cloud-dark">
             <div className="flex items-center gap-2">
-              <UserCheck className="h-4 w-4 text-[#87867f]" />
+              <UserCheck className="h-4 w-4 text-cloud-dark" />
               <span>Signed in as: @{profile.username}</span>
             </div>
             <span>Changes persist immediately</span>

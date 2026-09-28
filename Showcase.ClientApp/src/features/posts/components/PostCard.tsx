@@ -71,7 +71,7 @@ export const PostCard: React.FC<PostCardProps> = ({ post, spanType = "square", c
       tabIndex={0}
       role="button"
       aria-label={`View project: ${post.title} by @${creatorUsername}`}
-      className={`group relative w-full overflow-hidden bg-[#e6e3da] cursor-pointer focus-visible:outline-2 focus-visible:outline-[#141413] shadow-none ${aspectClass} ${spanClass} ${className}`}
+      className={`group relative w-full overflow-hidden bg-[#e6e3da] cursor-pointer focus-visible:outline-2 focus-visible:outline-slate-dark shadow-none ${aspectClass} ${spanClass} ${className}`}
     >
       {/* Photography Preview */}
       {post.thumbnailUrl ? (
@@ -82,7 +82,7 @@ export const PostCard: React.FC<PostCardProps> = ({ post, spanType = "square", c
           className={`w-full ${imgHeightClass} object-cover transition-transform duration-500 ease-out group-hover:scale-105`}
         />
       ) : (
-        <div className="w-full aspect-[4/3] flex flex-col items-center justify-center text-[#87867f] gap-2">
+        <div className="w-full aspect-[4/3] flex flex-col items-center justify-center text-cloud-dark gap-2">
           <ImageIcon className="h-6 w-6 stroke-[1.5]" />
           <span className="font-gothic text-[10px] uppercase tracking-widest">Image</span>
         </div>
@@ -99,16 +99,16 @@ export const PostCard: React.FC<PostCardProps> = ({ post, spanType = "square", c
       )}
 
       {/* Hover / Focus Overlay */}
-      <div className="absolute inset-0 bg-[#141413]/55 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100 transition-opacity duration-200 flex flex-col justify-end p-3 sm:p-4 text-[#faf9f5]">
-        <h3 className="font-gothic text-xs sm:text-sm font-bold uppercase tracking-tight line-clamp-2 text-[#faf9f5] leading-snug">
+      <div className="absolute inset-0 bg-slate-dark/55 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100 transition-opacity duration-200 flex flex-col justify-end p-3 sm:p-4 text-ivory-light">
+        <h3 className="font-gothic text-xs sm:text-sm font-bold uppercase tracking-tight line-clamp-2 text-ivory-light leading-snug">
           {post.title}
         </h3>
-        <div className="flex items-center gap-1.5 mt-1 sm:mt-1.5 text-[11px] sm:text-xs text-[#faf9f5]/80 font-serif">
+        <div className="flex items-center gap-1.5 mt-1 sm:mt-1.5 text-[11px] sm:text-xs text-ivory-light/80 font-serif">
           <span className="truncate">@{creatorUsername}</span>
           {post.creator?.isVerified && <VerifiedBadge size="xs" className="shrink-0" />}
           {post.imageCount > 1 && (
             <>
-              <span className="text-[#faf9f5]/50">•</span>
+              <span className="text-ivory-light/50">•</span>
               <span>{post.imageCount} images</span>
             </>
           )}

@@ -13,6 +13,23 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
   fullWidth?: boolean;
 }
 
+const baseClasses =
+  'inline-flex items-center justify-center font-gothic font-medium uppercase tracking-[0.10em] select-none transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-dark disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none rounded-pill';
+
+const variantClasses: Record<ButtonVariant, string> = {
+  clay: 'bg-clay text-ivory-light hover:bg-[#c8694a] active:bg-[#b75d3f]',
+  slate: 'bg-slate-dark text-ivory-light hover:bg-[#282725] active:bg-black',
+  outline:
+    'bg-transparent text-slate-dark border border-stone hover:border-slate-dark hover:bg-slate-dark/5 active:bg-slate-dark/10',
+  ghost: 'bg-transparent text-slate-dark hover:bg-stone/25 active:bg-stone/40',
+};
+
+const sizeClasses: Record<ButtonSize, string> = {
+  sm: 'px-4 py-1.5 text-[11px] gap-1.5',
+  md: 'px-6 py-2.5 text-[13px] gap-2',
+  lg: 'px-8 py-3.5 text-sm gap-2.5',
+};
+
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   (
     {
@@ -30,23 +47,6 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     },
     ref
   ) => {
-    const baseClasses =
-      'inline-flex items-center justify-center font-gothic font-medium uppercase tracking-[0.10em] select-none transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#141413] disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none rounded-[999px]';
-
-    const variantClasses: Record<ButtonVariant, string> = {
-      clay: 'bg-[#d97757] text-[#faf9f5] hover:bg-[#c8694a] active:bg-[#b75d3f]',
-      slate: 'bg-[#141413] text-[#faf9f5] hover:bg-[#282725] active:bg-black',
-      outline:
-        'bg-transparent text-[#141413] border border-[#cccbc8] hover:border-[#141413] hover:bg-[#141413]/5 active:bg-[#141413]/10',
-      ghost: 'bg-transparent text-[#141413] hover:bg-[#cccbc8]/25 active:bg-[#cccbc8]/40',
-    };
-
-    const sizeClasses: Record<ButtonSize, string> = {
-      sm: 'px-4 py-1.5 text-[11px] gap-1.5',
-      md: 'px-6 py-2.5 text-[13px] gap-2',
-      lg: 'px-8 py-3.5 text-sm gap-2.5',
-    };
-
     const widthClass = fullWidth ? 'w-full' : '';
 
     return (

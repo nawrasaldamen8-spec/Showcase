@@ -72,15 +72,15 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
 
     const hasError = Boolean(errorMessage);
     const borderClass = hasError
-      ? 'border-[#d97757] focus:border-[#d97757]'
-      : 'border-[#cccbc8] focus:border-[#141413]';
+      ? 'border-clay focus:border-clay'
+      : 'border-stone focus:border-slate-dark';
 
     return (
       <div className={`${fullWidth ? 'w-full' : 'inline-block'} flex flex-col`}>
         {label && (
           <label
             htmlFor={textareaId}
-            className="text-label text-[#87867f] mb-1.5 cursor-pointer font-gothic text-[12px] font-semibold uppercase tracking-[0.10em]"
+            className="text-label text-cloud-dark mb-1.5 cursor-pointer font-gothic text-[12px] font-semibold uppercase tracking-[0.10em]"
           >
             {label}
           </label>
@@ -97,7 +97,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
           disabled={disabled}
           aria-invalid={hasError ? 'true' : undefined}
           aria-describedby={hasError ? errorId : helperText ? helperId : undefined}
-          className={`w-full bg-[#faf9f5] text-[#141413] text-body-sm font-serif border ${borderClass} rounded-lg p-3.5 outline-none transition-colors duration-150 resize-y placeholder:text-[#87867f]/70 placeholder:font-serif disabled:opacity-50 disabled:bg-[#f0eee6] disabled:cursor-not-allowed ${
+          className={`w-full bg-ivory-light text-slate-dark text-body-sm font-serif border ${borderClass} rounded-lg p-3.5 outline-none transition-colors duration-150 resize-y placeholder:text-cloud-dark/70 placeholder:font-serif disabled:opacity-50 disabled:bg-ivory-medium disabled:cursor-not-allowed ${
             autoResize ? 'resize-none overflow-hidden' : ''
           } ${className}`.trim()}
           {...props}
@@ -106,12 +106,12 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
         <div className="flex items-center justify-between mt-1 text-xs">
           <div>
             {hasError && (
-              <p id={errorId} role="alert" className="text-[#d97757] font-gothic tracking-wide">
+              <p id={errorId} role="alert" className="text-clay font-gothic tracking-wide">
                 {errorMessage}
               </p>
             )}
             {!hasError && helperText && (
-              <p id={helperId} className="text-[#87867f] font-serif">
+              <p id={helperId} className="text-cloud-dark font-serif">
                 {helperText}
               </p>
             )}
@@ -121,8 +121,8 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
             <span
               className={`font-gothic text-[11px] uppercase tracking-wider ml-auto select-none ${
                 maxLength && currentLength >= maxLength
-                  ? 'text-[#d97757] font-semibold'
-                  : 'text-[#87867f]'
+                  ? 'text-clay font-semibold'
+                  : 'text-cloud-dark'
               }`}
             >
               {currentLength}

@@ -57,9 +57,9 @@ export const BroadcastComposeModal: React.FC<BroadcastComposeModalProps> = ({
         <div className="space-y-1.5">
           <label
             htmlFor="broadcast-title"
-            className="font-gothic text-xs font-bold uppercase tracking-wider text-[#141413] block"
+            className="font-gothic text-xs font-bold uppercase tracking-wider text-slate-dark block"
           >
-            Announcement Title <span className="text-[#d97757]">*</span>
+            Announcement Title <span className="text-clay">*</span>
           </label>
           <Input
             id="broadcast-title"
@@ -75,7 +75,7 @@ export const BroadcastComposeModal: React.FC<BroadcastComposeModalProps> = ({
           <div className="space-y-1.5">
             <label
               htmlFor="broadcast-scope"
-              className="font-gothic text-xs font-bold uppercase tracking-wider text-[#141413] block"
+              className="font-gothic text-xs font-bold uppercase tracking-wider text-slate-dark block"
             >
               Audience Scope
             </label>
@@ -83,7 +83,7 @@ export const BroadcastComposeModal: React.FC<BroadcastComposeModalProps> = ({
               id="broadcast-scope"
               value={scope}
               onChange={(e) => setScope(e.target.value as BroadcastAnnouncementItem["scope"])}
-              className="w-full px-3.5 py-2.5 rounded-xl border border-[#cccbc8] bg-[#faf9f5] font-serif text-xs text-[#141413] focus:outline-none focus:ring-1 focus:ring-[#141413]"
+              className="w-full px-3.5 py-2.5 rounded-xl border border-stone bg-ivory-light font-serif text-xs text-slate-dark focus:outline-none focus:ring-1 focus:ring-slate-dark"
             >
               <option value="all_users">All Registered Users</option>
               <option value="creators_only">Verified &amp; Active Creators</option>
@@ -94,7 +94,7 @@ export const BroadcastComposeModal: React.FC<BroadcastComposeModalProps> = ({
           <div className="space-y-1.5">
             <label
               htmlFor="broadcast-severity"
-              className="font-gothic text-xs font-bold uppercase tracking-wider text-[#141413] block"
+              className="font-gothic text-xs font-bold uppercase tracking-wider text-slate-dark block"
             >
               Category / Severity
             </label>
@@ -102,7 +102,7 @@ export const BroadcastComposeModal: React.FC<BroadcastComposeModalProps> = ({
               id="broadcast-severity"
               value={severity}
               onChange={(e) => setSeverity(e.target.value as BroadcastAnnouncementItem["severity"])}
-              className="w-full px-3.5 py-2.5 rounded-xl border border-[#cccbc8] bg-[#faf9f5] font-serif text-xs text-[#141413] focus:outline-none focus:ring-1 focus:ring-[#141413]"
+              className="w-full px-3.5 py-2.5 rounded-xl border border-stone bg-ivory-light font-serif text-xs text-slate-dark focus:outline-none focus:ring-1 focus:ring-slate-dark"
             >
               <option value="update">Platform Update / Feature Release</option>
               <option value="contest">Curated Contest / Editorial Spotlight</option>
@@ -116,9 +116,9 @@ export const BroadcastComposeModal: React.FC<BroadcastComposeModalProps> = ({
           <div className="space-y-1.5">
             <label
               htmlFor="target-user-id"
-              className="font-gothic text-xs font-bold uppercase tracking-wider text-[#141413] block"
+              className="font-gothic text-xs font-bold uppercase tracking-wider text-slate-dark block"
             >
-              Target User Handle or ID <span className="text-[#d97757]">*</span>
+              Target User Handle or ID <span className="text-clay">*</span>
             </label>
             <Input
               id="target-user-id"
@@ -133,9 +133,9 @@ export const BroadcastComposeModal: React.FC<BroadcastComposeModalProps> = ({
         <div className="space-y-1.5">
           <label
             htmlFor="broadcast-msg"
-            className="font-gothic text-xs font-bold uppercase tracking-wider text-[#141413] block"
+            className="font-gothic text-xs font-bold uppercase tracking-wider text-slate-dark block"
           >
-            Announcement Message Body <span className="text-[#d97757]">*</span>
+            Announcement Message Body <span className="text-clay">*</span>
           </label>
           <Textarea
             id="broadcast-msg"

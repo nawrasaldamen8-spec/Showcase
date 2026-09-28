@@ -3,8 +3,7 @@ import { Camera, Sparkles } from "lucide-react";
 import { Button } from "@shared/components/Button.tsx";
 
 export interface AvatarUploadStepProps {
-  firstName: string;
-  lastName: string;
+  name: string;
   username: string;
   avatarUrl: string;
   onAvatarChange: (url: string) => void;
@@ -15,8 +14,7 @@ export interface AvatarUploadStepProps {
 }
 
 export const AvatarUploadStep: React.FC<AvatarUploadStepProps> = ({
-  firstName,
-  lastName,
+  name,
   username,
   avatarUrl,
   onAvatarChange,
@@ -27,7 +25,7 @@ export const AvatarUploadStep: React.FC<AvatarUploadStepProps> = ({
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const initialLetter = (firstName?.[0] || username?.[0] || "P").toUpperCase();
+  const initialLetter = (name?.[0] || username?.[0] || "P").toUpperCase();
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -45,10 +43,10 @@ export const AvatarUploadStep: React.FC<AvatarUploadStepProps> = ({
   return (
     <div className="space-y-6 text-center">
       <div className="space-y-1">
-        <h3 className="font-gothic text-base font-bold uppercase tracking-tight text-[#141413]">
+        <h3 className="font-gothic text-base font-bold uppercase tracking-tight text-slate-dark">
           Profile Avatar (Optional)
         </h3>
-        <p className="font-serif text-xs text-[#87867f]">
+        <p className="font-serif text-xs text-cloud-dark">
           Upload a portrait photo or use your default initial monogram.
         </p>
       </div>
@@ -60,10 +58,10 @@ export const AvatarUploadStep: React.FC<AvatarUploadStepProps> = ({
             <img
               src={avatarUrl}
               alt="Avatar preview"
-              className="w-24 h-24 sm:w-28 sm:h-28 rounded-full object-cover border-2 border-[#141413] shadow-none"
+              className="w-24 h-24 sm:w-28 sm:h-28 rounded-full object-cover border-2 border-slate-dark shadow-none"
             />
           ) : (
-            <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-[#141413] text-[#faf9f5] flex items-center justify-center font-gothic text-3xl font-extrabold uppercase border-2 border-[#cccbc8]">
+            <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-slate-dark text-ivory-light flex items-center justify-center font-gothic text-3xl font-extrabold uppercase border-2 border-stone">
               {initialLetter}
             </div>
           )}
@@ -71,7 +69,7 @@ export const AvatarUploadStep: React.FC<AvatarUploadStepProps> = ({
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
-            className="absolute bottom-0 right-0 p-2.5 rounded-full bg-[#d97757] text-[#faf9f5] hover:bg-[#c26243] transition-colors cursor-pointer shadow-none"
+            className="absolute bottom-0 right-0 p-2.5 rounded-full bg-clay text-ivory-light hover:bg-[#c26243] transition-colors cursor-pointer shadow-none"
             title="Upload portrait photo"
             aria-label="Upload portrait photo"
           >
@@ -87,8 +85,8 @@ export const AvatarUploadStep: React.FC<AvatarUploadStepProps> = ({
           onChange={handleFileChange}
         />
 
-        <div className="font-serif text-xs text-[#141413]/70">
-          {firstName ? `${firstName} ${lastName}` : `@${username}`}
+        <div className="font-serif text-xs text-slate-dark/70">
+          {name || `@${username}`}
         </div>
       </div>
 
@@ -123,7 +121,7 @@ export const AvatarUploadStep: React.FC<AvatarUploadStepProps> = ({
           type="button"
           onClick={onSkip}
           disabled={isLoading}
-          className="w-full py-2 font-serif text-xs text-[#87867f] hover:text-[#141413] transition-colors cursor-pointer"
+          className="w-full py-2 font-serif text-xs text-cloud-dark hover:text-slate-dark transition-colors cursor-pointer"
         >
           Skip for now
         </button>

@@ -36,34 +36,34 @@ export const DeleteConfirmModal: React.FC<DeleteConfirmModalProps> = ({
       role="dialog"
       aria-modal="true"
       aria-labelledby="delete-modal-title"
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#141413]/60 backdrop-blur-sm animate-in fade-in duration-150"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-dark/60 backdrop-blur-sm animate-in fade-in duration-150"
     >
-      <div className="relative w-full max-w-md rounded-[24px] bg-[#faf9f5] border border-[#cccbc8] p-6 sm:p-7 shadow-none text-[#141413]">
+      <div className="relative w-full max-w-md rounded-card bg-ivory-light border border-stone p-6 sm:p-7 shadow-none text-slate-dark">
         <button
           type="button"
           onClick={onClose}
           disabled={isDeleting}
-          className="absolute top-5 right-5 text-[#87867f] hover:text-[#141413] transition-colors cursor-pointer"
+          className="absolute top-5 right-5 text-cloud-dark hover:text-slate-dark transition-colors cursor-pointer"
           aria-label="Close dialog"
         >
           <X className="w-5 h-5" />
         </button>
 
-        <div className="w-12 h-12 rounded-2xl bg-[#d97757]/10 border border-[#d97757]/30 text-[#d97757] flex items-center justify-center mb-4">
+        <div className="w-12 h-12 rounded-2xl bg-clay/10 border border-clay/30 text-clay flex items-center justify-center mb-4">
           <AlertTriangle className="w-6 h-6 stroke-[1.75]" />
         </div>
 
-        <span className="font-gothic text-[10px] font-bold uppercase tracking-[0.2em] text-[#d97757] block mb-1">
+        <span className="font-gothic text-[10px] font-bold uppercase tracking-[0.2em] text-clay block mb-1">
           Confirm Delete
         </span>
-        <h3 id="delete-modal-title" className="font-gothic text-xl font-bold uppercase tracking-tight text-[#141413] mb-2">
+        <h3 id="delete-modal-title" className="font-gothic text-xl font-bold uppercase tracking-tight text-slate-dark mb-2">
           {title}
         </h3>
-        <p className="font-serif text-[15px] text-[#141413]/70 mb-6 leading-relaxed">
-          Are you sure you want to delete <strong className="text-[#141413] font-sans font-semibold">"{itemName}"</strong>? This action cannot be undone.
+        <p className="font-serif text-[15px] text-slate-dark/70 mb-6 leading-relaxed">
+          Are you sure you want to delete <strong className="text-slate-dark font-sans font-semibold">"{itemName}"</strong>? This action cannot be undone.
         </p>
 
-        <div className="flex items-center justify-end gap-3 pt-4 border-t border-[#cccbc8]/40">
+        <div className="flex items-center justify-end gap-3 pt-4 border-t border-stone/40">
           <Button
             variant="outline"
             size="md"

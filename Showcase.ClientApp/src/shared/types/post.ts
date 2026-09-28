@@ -1,4 +1,4 @@
-import type { UploadUrlResponse } from "./common.ts";
+import type { ReorderItem, UploadUrlResponse } from "./common.ts";
 
 export const PostStatus = {
   Draft: 0,
@@ -51,8 +51,7 @@ export interface PostImageDto {
 export interface PostCreatorDto {
   profileId: string;
   username: string;
-  firstName: string;
-  lastName: string;
+  name: string;
   avatarUrl?: string | null;
   bio?: string | null;
   isVerified?: boolean;
@@ -64,7 +63,7 @@ export interface PostDetailsResponse {
   title: string;
   description: string;
   externalUrl?: string | null;
-  status: PostStatus | string;
+  status: PostStatus;
   tags?: string[];
   likeCount?: number;
   isLiked?: boolean;
@@ -83,7 +82,7 @@ export interface PostSummaryResponse {
   title: string;
   description: string;
   externalUrl?: string | null;
-  status: PostStatus | string;
+  status: PostStatus;
   tags?: string[];
   likeCount?: number;
   isLiked?: boolean;
@@ -96,24 +95,17 @@ export interface PostSummaryResponse {
 
 export type ExplorePostResponse = PostSummaryResponse;
 
-export interface CreatePostRequest {
+export interface PostPayload {
   title: string;
   description?: string;
   externalUrl?: string | null;
   tags?: string[];
 }
 
-export interface UpdatePostRequest {
-  title: string;
-  description?: string;
-  externalUrl?: string | null;
-  tags?: string[];
-}
+export type CreatePostRequest = PostPayload;
+export type UpdatePostRequest = PostPayload;
 
-export interface ReorderPostImageItem {
-  id: string;
-  displayOrder: number;
-}
+export type ReorderPostImageItem = ReorderItem;
 
 export interface ReorderPostImagesRequest {
   items?: ReorderPostImageItem[];

@@ -102,14 +102,14 @@ export const UpdateEmailPage: React.FC = () => {
     >
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Current Email Info Box */}
-        <div className="p-4 rounded-xl bg-[#f0eee6] border border-[#cccbc8]/60 flex items-center justify-between gap-4">
+        <div className="p-4 rounded-xl bg-ivory-medium border border-stone/60 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3 min-w-0">
-            <Mail className="h-5 w-5 text-[#87867f] shrink-0" />
+            <Mail className="h-5 w-5 text-cloud-dark shrink-0" />
             <div className="min-w-0">
-              <span className="font-gothic text-[11px] font-bold uppercase tracking-wider text-[#87867f] block">
+              <span className="font-gothic text-[11px] font-bold uppercase tracking-wider text-cloud-dark block">
                 Current Registered Address
               </span>
-              <p className="font-serif text-sm font-semibold text-[#141413] truncate">
+              <p className="font-serif text-sm font-semibold text-slate-dark truncate">
                 {currentEmail || currentUser?.email || "Loading current address..."}
               </p>
             </div>
@@ -145,7 +145,7 @@ export const UpdateEmailPage: React.FC = () => {
             <button
               type="button"
               onClick={() => setShowPassword((prev) => !prev)}
-              className="hover:text-[#141413] transition-colors p-1"
+              className="hover:text-slate-dark transition-colors p-1"
               aria-label={showPassword ? "Hide password" : "Show password"}
             >
               {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}

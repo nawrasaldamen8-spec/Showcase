@@ -1,6 +1,7 @@
 export * from "./components/ProblemAlert.tsx";
 export * from "./components/SecurityActionLayout.tsx";
 export * from "./components/SecurityNavRow.tsx";
+export * from "./components/StatusRequestPage.tsx";
 export * from "./pages/ChangePasswordPage.tsx";
 export * from "./pages/ChangeUsernamePage.tsx";
 export * from "./pages/DeleteAccountPage.tsx";

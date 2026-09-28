@@ -57,7 +57,7 @@ export const ReportProfileModal: React.FC<ReportProfileModalProps> = ({
       <form onSubmit={handleSubmit} className="space-y-5 pt-2">
         {/* Reasons Radio List */}
         <div>
-          <label className="block font-gothic text-xs font-bold uppercase tracking-[0.12em] text-[#141413] mb-2.5">
+          <label className="block font-gothic text-xs font-bold uppercase tracking-[0.12em] text-slate-dark mb-2.5">
             Reason for Report
           </label>
           <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
@@ -68,8 +68,8 @@ export const ReportProfileModal: React.FC<ReportProfileModalProps> = ({
                   key={reason.id}
                   className={`flex items-start gap-3 p-3 rounded-xl border transition-all cursor-pointer ${
                     isSelected
-                      ? "bg-[#faf9f5] border-[#d97757] shadow-none"
-                      : "bg-[#f0eee6]/40 border-[#cccbc8]/60 hover:bg-[#faf9f5]"
+                      ? "bg-ivory-light border-clay shadow-none"
+                      : "bg-ivory-medium/40 border-stone/60 hover:bg-ivory-light"
                   }`}
                 >
                   <input
@@ -78,13 +78,13 @@ export const ReportProfileModal: React.FC<ReportProfileModalProps> = ({
                     value={reason.id}
                     checked={isSelected}
                     onChange={() => setSelectedReason(reason.id)}
-                    className="mt-0.5 accent-[#d97757] cursor-pointer"
+                    className="mt-0.5 accent-clay cursor-pointer"
                   />
                   <div className="min-w-0 flex-1">
-                    <p className={`font-serif text-sm font-semibold ${isSelected ? "text-[#141413]" : "text-[#141413]/90"}`}>
+                    <p className={`font-serif text-sm font-semibold ${isSelected ? "text-slate-dark" : "text-slate-dark/90"}`}>
                       {reason.label}
                     </p>
-                    <p className="font-serif text-xs text-[#87867f] mt-0.5">
+                    <p className="font-serif text-xs text-cloud-dark mt-0.5">
                       {reason.desc}
                     </p>
                   </div>
@@ -108,15 +108,15 @@ export const ReportProfileModal: React.FC<ReportProfileModalProps> = ({
         </div>
 
         {/* Informational notice */}
-        <div className="flex items-start gap-2.5 p-3 rounded-xl bg-[#faf9f5] border border-[#cccbc8]/60 text-xs font-serif text-[#87867f]">
-          <ShieldAlert className="w-4 h-4 text-[#d97757] shrink-0 mt-0.5" />
+        <div className="flex items-start gap-2.5 p-3 rounded-xl bg-ivory-light border border-stone/60 text-xs font-serif text-cloud-dark">
+          <ShieldAlert className="w-4 h-4 text-clay shrink-0 mt-0.5" />
           <span>
             Reports are confidential. The account owner will not be notified of who submitted the report.
           </span>
         </div>
 
         {/* Footer Actions */}
-        <div className="pt-3 border-t border-[#cccbc8]/50 flex items-center justify-end gap-3">
+        <div className="pt-3 border-t border-stone/50 flex items-center justify-end gap-3">
           <Button type="button" variant="ghost" size="sm" onClick={onClose} disabled={isSubmitting}>
             Cancel
           </Button>

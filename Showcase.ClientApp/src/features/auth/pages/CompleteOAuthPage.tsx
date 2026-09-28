@@ -25,12 +25,14 @@ export const CompleteOAuthPage: React.FC = () => {
     setIsLoading(true);
 
     try {
+      // Mock OAuth stub: generate a secure random password until full OAuth provider flow is wired to backend
+      const mockPassword = `oauth_${crypto.randomUUID()}`;
+
       await register({
         username: handle,
         email: `${handle}@google.user`,
-        password: "OAuthUser123!",
-        firstName: handle,
-        lastName: "",
+        password: mockPassword,
+        name: handle,
       });
       switchPersona("creator");
       showToast("success", "Google account connected successfully.");
@@ -52,10 +54,10 @@ export const CompleteOAuthPage: React.FC = () => {
         <div className="space-y-1.5">
           <label
             htmlFor="oauth-username"
-            className="flex items-center gap-2 font-gothic text-xs font-bold uppercase tracking-wider text-[#141413]"
+            className="flex items-center gap-2 font-gothic text-xs font-bold uppercase tracking-wider text-slate-dark"
           >
-            <AtSign className="w-3.5 h-3.5 text-[#87867f]" />
-            <span>Username Handle <span className="text-[#d97757]">*</span></span>
+            <AtSign className="w-3.5 h-3.5 text-cloud-dark" />
+            <span>Username Handle <span className="text-clay">*</span></span>
           </label>
           <Input
             id="oauth-username"
@@ -66,7 +68,7 @@ export const CompleteOAuthPage: React.FC = () => {
             required
             autoFocus
           />
-          <p className="font-serif text-[11px] text-[#87867f]">
+          <p className="font-serif text-[11px] text-cloud-dark">
             Your permanent portfolio URL will be: pority.design/u/{username || "handle"}
           </p>
         </div>

@@ -4,13 +4,13 @@ import { ArrowLeft, Lock } from "lucide-react";
 
 export const PrivacyPolicyPage: React.FC = () => {
   return (
-    <div className="min-h-screen bg-[#f0eee6] py-10 sm:py-16 px-4 sm:px-6 lg:px-8 pb-28">
+    <div className="min-h-screen bg-ivory-medium py-10 sm:py-16 px-4 sm:px-6 lg:px-8 pb-28">
       <div className="max-w-3xl mx-auto space-y-8">
         {/* Navigation Breadcrumb */}
         <div>
           <Link
             to="/studio"
-            className="inline-flex items-center gap-2 font-gothic text-xs font-semibold uppercase tracking-[0.14em] text-[#87867f] hover:text-[#141413] transition-colors group text-decoration-none"
+            className="inline-flex items-center gap-2 font-gothic text-xs font-semibold uppercase tracking-[0.14em] text-cloud-dark hover:text-slate-dark transition-colors group text-decoration-none"
           >
             <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
             <span>Return to Studio</span>
@@ -18,26 +18,26 @@ export const PrivacyPolicyPage: React.FC = () => {
         </div>
 
         {/* Header */}
-        <div className="border-b border-[#cccbc8] pb-6 space-y-2">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#e8e5dc] border border-[#cccbc8] font-gothic text-[11px] font-bold uppercase tracking-[0.14em] text-[#d97757]">
+        <div className="border-b border-stone pb-6 space-y-2">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#e8e5dc] border border-stone font-gothic text-[11px] font-bold uppercase tracking-[0.14em] text-clay">
             <Lock className="w-3.5 h-3.5" />
             <span>Data Protection</span>
           </div>
 
-          <h1 className="font-gothic font-extrabold text-3xl sm:text-4xl uppercase tracking-tight text-[#141413]">
+          <h1 className="font-gothic font-extrabold text-3xl sm:text-4xl uppercase tracking-tight text-slate-dark">
             Privacy Policy
           </h1>
 
-          <p className="font-serif text-sm text-[#87867f]">
+          <p className="font-serif text-sm text-cloud-dark">
             Last updated: September 2026 &bull; Clear standards for privacy and data stewardship.
           </p>
         </div>
 
         {/* Editorial Body Content */}
-        <div className="bg-[#faf9f5] border border-[#cccbc8] rounded-3xl p-6 sm:p-10 space-y-8 font-serif text-sm text-[#141413]/85 leading-relaxed">
+        <div className="bg-ivory-light border border-stone rounded-3xl p-6 sm:p-10 space-y-8 font-serif text-sm text-slate-dark/85 leading-relaxed">
           {/* Section 1 */}
           <section className="space-y-2">
-            <h2 className="font-gothic text-base font-bold uppercase tracking-wider text-[#141413]">
+            <h2 className="font-gothic text-base font-bold uppercase tracking-wider text-slate-dark">
               1. Principles of Data Stewardship
             </h2>
             <p>
@@ -47,7 +47,7 @@ export const PrivacyPolicyPage: React.FC = () => {
 
           {/* Section 2 */}
           <section className="space-y-2">
-            <h2 className="font-gothic text-base font-bold uppercase tracking-wider text-[#141413]">
+            <h2 className="font-gothic text-base font-bold uppercase tracking-wider text-slate-dark">
               2. Information We Collect
             </h2>
             <ul className="list-disc pl-5 space-y-1">
@@ -65,7 +65,7 @@ export const PrivacyPolicyPage: React.FC = () => {
 
           {/* Section 3 */}
           <section className="space-y-2">
-            <h2 className="font-gothic text-base font-bold uppercase tracking-wider text-[#141413]">
+            <h2 className="font-gothic text-base font-bold uppercase tracking-wider text-slate-dark">
               3. Cloud Infrastructure &amp; Encryption
             </h2>
             <p>
@@ -75,7 +75,7 @@ export const PrivacyPolicyPage: React.FC = () => {
 
           {/* Section 4 */}
           <section className="space-y-2">
-            <h2 className="font-gothic text-base font-bold uppercase tracking-wider text-[#141413]">
+            <h2 className="font-gothic text-base font-bold uppercase tracking-wider text-slate-dark">
               4. Your Rights &amp; Account Erasure
             </h2>
             <p>

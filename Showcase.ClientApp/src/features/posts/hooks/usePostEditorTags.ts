@@ -24,7 +24,10 @@ export function usePostEditorTags(setIsDirty: (dirty: boolean) => void) {
       e.preventDefault();
       handleAddTag(tagDraft);
     } else if (e.key === "Backspace" && !tagDraft && tags.length > 0) {
-      handleRemoveTag(tags[tags.length - 1]);
+      const lastTag = tags[tags.length - 1];
+      if (lastTag) {
+        handleRemoveTag(lastTag);
+      }
     }
   };
 

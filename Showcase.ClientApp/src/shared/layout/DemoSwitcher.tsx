@@ -69,17 +69,17 @@ export const DemoSwitcher: React.FC<DemoSwitcherProps> = ({
     <div
       role="radiogroup"
       aria-label="Demo persona switcher"
-      className={`inline-flex items-center p-0.5 sm:p-1 bg-[#e8e5dc] rounded-[999px] border border-[#cccbc8] select-none ${className}`.trim()}
+      className={`inline-flex items-center p-0.5 sm:p-1 bg-[#e8e5dc] rounded-pill border border-stone select-none ${className}`.trim()}
     >
       <button
         type="button"
         role="radio"
         aria-checked={activePersona === 'visitor'}
         onClick={() => handleSelect('visitor')}
-        className={`inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-[999px] font-gothic text-[10px] sm:text-[11px] font-semibold uppercase tracking-[0.08em] transition-all duration-150 cursor-pointer ${
+        className={`inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-pill font-gothic text-[10px] sm:text-[11px] font-semibold uppercase tracking-[0.08em] transition-all duration-150 cursor-pointer ${
           activePersona === 'visitor'
-            ? 'bg-[#141413] text-[#faf9f5]'
-            : 'text-[#87867f] hover:text-[#141413]'
+            ? 'bg-slate-dark text-ivory-light'
+            : 'text-cloud-dark hover:text-slate-dark'
         }`}
       >
         <Eye className="h-3 w-3 shrink-0" aria-hidden="true" />
@@ -91,10 +91,10 @@ export const DemoSwitcher: React.FC<DemoSwitcherProps> = ({
         role="radio"
         aria-checked={activePersona === 'creator'}
         onClick={() => handleSelect('creator')}
-        className={`inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-[999px] font-gothic text-[10px] sm:text-[11px] font-semibold uppercase tracking-[0.08em] transition-all duration-150 cursor-pointer ${
+        className={`inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-pill font-gothic text-[10px] sm:text-[11px] font-semibold uppercase tracking-[0.08em] transition-all duration-150 cursor-pointer ${
           activePersona === 'creator'
-            ? 'bg-[#d97757] text-[#faf9f5]'
-            : 'text-[#87867f] hover:text-[#141413]'
+            ? 'bg-clay text-ivory-light'
+            : 'text-cloud-dark hover:text-slate-dark'
         }`}
       >
         <Sparkles className="h-3 w-3 shrink-0" aria-hidden="true" />
@@ -106,10 +106,10 @@ export const DemoSwitcher: React.FC<DemoSwitcherProps> = ({
         role="radio"
         aria-checked={activePersona === 'admin'}
         onClick={() => handleSelect('admin')}
-        className={`inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-[999px] font-gothic text-[10px] sm:text-[11px] font-semibold uppercase tracking-[0.08em] transition-all duration-150 cursor-pointer ${
+        className={`inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-pill font-gothic text-[10px] sm:text-[11px] font-semibold uppercase tracking-[0.08em] transition-all duration-150 cursor-pointer ${
           activePersona === 'admin'
-            ? 'bg-[#2e7d32] text-[#faf9f5]'
-            : 'text-[#87867f] hover:text-[#141413]'
+            ? 'bg-[#2e7d32] text-ivory-light'
+            : 'text-cloud-dark hover:text-slate-dark'
         }`}
       >
         <Shield className="h-3 w-3 shrink-0" aria-hidden="true" />

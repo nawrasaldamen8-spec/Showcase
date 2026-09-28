@@ -1,4 +1,4 @@
-import type { UploadUrlResponse } from "./common.ts";
+import type { ReorderItem, UploadUrlResponse, VerificationStatus } from "./common.ts";
 
 export interface SocialLink {
   id: string;
@@ -12,17 +12,17 @@ export interface Profile {
   id: string;
   userId: string;
   username: string;
-  email: string;
-  firstName: string;
-  lastName: string;
+  email?: string | null;
+  name: string;
   specialty?: string | null;
+  country?: string | null;
   bio?: string | null;
   avatarKey?: string | null;
   avatarUrl?: string | null;
   phoneNumber?: string | null;
   accountNumber?: string | null;
   isVerified?: boolean;
-  verificationStatus?: "none" | "pending" | "verified" | "rejected";
+  verificationStatus?: VerificationStatus;
   featuredStatus?: "none" | "pending" | "featured" | "rejected";
   createdAt: string;
   updatedAt?: string | null;
@@ -39,19 +39,18 @@ export interface SocialLinkDto {
 export interface ProfileDetailsResponse {
   id: string;
   userId: string;
-  email: string;
+  email?: string | null;
   username: string;
-  userName?: string;
-  firstName: string;
-  lastName: string;
+  name: string;
   specialty?: string | null;
+  country?: string | null;
   bio?: string | null;
   avatarKey?: string | null;
   avatarUrl?: string | null;
   phoneNumber?: string | null;
   accountNumber?: string | null;
   isVerified?: boolean;
-  verificationStatus?: "none" | "pending" | "verified" | "rejected";
+  verificationStatus?: VerificationStatus;
   featuredStatus?: "none" | "pending" | "featured" | "rejected";
   socialLinks: SocialLinkDto[];
   createdAt: string;
@@ -63,24 +62,23 @@ export type MyProfileResponse = ProfileDetailsResponse;
 export interface PublicProfileResponse {
   id: string;
   username: string;
-  userName?: string;
-  firstName: string;
-  lastName: string;
+  name: string;
   specialty?: string | null;
+  country?: string | null;
   bio?: string | null;
   avatarUrl?: string | null;
   phoneNumber?: string | null;
   accountNumber?: string | null;
   isVerified?: boolean;
-  verificationStatus?: "none" | "pending" | "verified" | "rejected";
+  verificationStatus?: VerificationStatus;
   featuredStatus?: "none" | "pending" | "featured" | "rejected";
   socialLinks: SocialLinkDto[];
 }
 
 export interface UpdateProfileRequest {
-  firstName: string;
-  lastName: string;
+  name: string;
   specialty?: string | null;
+  country?: string | null;
   bio?: string | null;
   phoneNumber?: string | null;
   accountNumber?: string | null;
@@ -117,10 +115,7 @@ export interface UpdateSocialLinkRequest {
   url: string;
 }
 
-export interface ReorderSocialLinkItem {
-  id: string;
-  displayOrder: number;
-}
+export type ReorderSocialLinkItem = ReorderItem;
 
 export interface ReorderSocialLinksRequest {
   items?: ReorderSocialLinkItem[];

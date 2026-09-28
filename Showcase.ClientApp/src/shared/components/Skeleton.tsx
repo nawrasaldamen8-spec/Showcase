@@ -8,6 +8,13 @@ export interface SkeletonProps extends React.HTMLAttributes<HTMLDivElement> {
   height?: string | number;
 }
 
+const variantClasses: Record<SkeletonVariant, string> = {
+  text: 'h-4 w-full rounded',
+  circular: 'rounded-full shrink-0',
+  rectangular: 'rounded-lg w-full',
+  card: 'rounded-card w-full border border-stone/40',
+};
+
 export const Skeleton: React.FC<SkeletonProps> = ({
   variant = 'text',
   width,
@@ -16,13 +23,6 @@ export const Skeleton: React.FC<SkeletonProps> = ({
   style,
   ...props
 }) => {
-  const variantClasses: Record<SkeletonVariant, string> = {
-    text: 'h-4 w-full rounded',
-    circular: 'rounded-full shrink-0',
-    rectangular: 'rounded-lg w-full',
-    card: 'rounded-[24px] w-full border border-[#cccbc8]/40',
-  };
-
   const styleOverrides: React.CSSProperties = {
     ...style,
     ...(width !== undefined ? { width: typeof width === 'number' ? `${width}px` : width } : {}),

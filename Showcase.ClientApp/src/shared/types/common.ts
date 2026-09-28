@@ -18,6 +18,13 @@ export interface ProblemDetails {
   [key: string]: unknown;
 }
 
+export type VerificationStatus = "none" | "pending" | "verified" | "rejected";
+
+export interface ReorderItem {
+  id: string;
+  displayOrder: number;
+}
+
 export interface UploadUrlRequest {
   contentType: string;
   fileSizeBytes: number;

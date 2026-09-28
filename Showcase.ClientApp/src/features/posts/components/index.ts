@@ -1,6 +1,7 @@
 export * from "./ImageDropzone.tsx";
 export * from "./ImageReorderGrid.tsx";
 export * from "./PostLikeButton.tsx";
+export * from "./PostCuratorialMeta.tsx";
 export * from "./PostDetailDesktop.tsx";
 export * from "./PostDetailMobile.tsx";
 export * from "./PostStatusBadge.tsx";

@@ -45,21 +45,21 @@ export const AdminFeaturedPage: React.FC = () => {
     >
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
         {isLoading ? (
-          <div className="col-span-full p-8 bg-[#faf9f5] rounded-2xl border border-[#cccbc8] text-center text-xs font-serif text-[#87867f]">
+          <div className="col-span-full p-8 bg-ivory-light rounded-2xl border border-stone text-center text-xs font-serif text-cloud-dark">
             Loading curated items...
           </div>
         ) : !recommendations || recommendations.length === 0 ? (
-          <div className="col-span-full p-8 bg-[#faf9f5] rounded-2xl border border-[#cccbc8] text-center text-xs font-serif text-[#87867f]">
+          <div className="col-span-full p-8 bg-ivory-light rounded-2xl border border-stone text-center text-xs font-serif text-cloud-dark">
             No candidates in the featured recommendations pool.
           </div>
         ) : (
           recommendations.map((item) => (
             <div
               key={item.id}
-              className={`bg-[#faf9f5] rounded-2xl border p-5 space-y-4 flex flex-col justify-between transition-all ${
+              className={`bg-ivory-light rounded-2xl border p-5 space-y-4 flex flex-col justify-between transition-all ${
                 item.isCuratedPinned
-                  ? "border-[#d97757] ring-1 ring-[#d97757]/30"
-                  : "border-[#cccbc8]"
+                  ? "border-clay ring-1 ring-clay/30"
+                  : "border-stone"
               }`}
             >
               <div className="space-y-3">
@@ -69,41 +69,41 @@ export const AdminFeaturedPage: React.FC = () => {
                       <img
                         src={item.avatarUrl}
                         alt={item.fullName}
-                        className="w-10 h-10 rounded-full object-cover border border-[#cccbc8]"
+                        className="w-10 h-10 rounded-full object-cover border border-stone"
                       />
                     ) : (
-                      <div className="w-10 h-10 rounded-full bg-[#141413] text-[#faf9f5] flex items-center justify-center font-gothic text-xs font-bold uppercase">
+                      <div className="w-10 h-10 rounded-full bg-slate-dark text-ivory-light flex items-center justify-center font-gothic text-xs font-bold uppercase">
                         {item.fullName[0]}
                       </div>
                     )}
                     <div>
-                      <h4 className="font-gothic text-sm font-bold uppercase tracking-wider text-[#141413]">
+                      <h4 className="font-gothic text-sm font-bold uppercase tracking-wider text-slate-dark">
                         {item.fullName}
                       </h4>
-                      <span className="font-serif text-xs text-[#87867f] block">
+                      <span className="font-serif text-xs text-cloud-dark block">
                         @{item.username}
                       </span>
                     </div>
                   </div>
 
                   {item.isCuratedPinned && (
-                    <span className="px-2 py-0.5 rounded-full bg-[#d97757]/15 text-[#d97757] font-gothic text-[10px] font-bold uppercase tracking-wider border border-[#d97757]/30 flex items-center gap-1">
+                    <span className="px-2 py-0.5 rounded-full bg-clay/15 text-clay font-gothic text-[10px] font-bold uppercase tracking-wider border border-clay/30 flex items-center gap-1">
                       <Sparkles className="w-3 h-3" /> Pinned
                     </span>
                   )}
                 </div>
 
                 <div>
-                  <h5 className="font-gothic text-xs font-bold uppercase text-[#141413] mb-1">
+                  <h5 className="font-gothic text-xs font-bold uppercase text-slate-dark mb-1">
                     {item.headline}
                   </h5>
-                  <p className="font-serif text-xs text-[#141413]/75 leading-relaxed bg-[#f0eee6] p-3 rounded-xl">
+                  <p className="font-serif text-xs text-slate-dark/75 leading-relaxed bg-ivory-medium p-3 rounded-xl">
                     &ldquo;{item.message}&rdquo;
                   </p>
                 </div>
               </div>
 
-              <div className="pt-3 border-t border-[#cccbc8]/50 flex items-center justify-between gap-2">
+              <div className="pt-3 border-t border-stone/50 flex items-center justify-between gap-2">
                 <Button
                   type="button"
                   variant={item.isCuratedPinned ? "outline" : "clay"}

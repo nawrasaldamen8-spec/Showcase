@@ -18,7 +18,7 @@ export const ErrorBanner: React.FC<ErrorBannerProps> = ({
   return (
     <div
       role="alert"
-      className={`flex items-center justify-between gap-3 p-4 rounded-xl bg-[#d97757]/10 border border-[#d97757]/30 text-[#d97757] font-serif text-sm ${className}`}
+      className={`flex items-center justify-between gap-3 p-4 rounded-xl bg-clay/10 border border-clay/30 text-clay font-serif text-sm ${className}`}
     >
       <div className="flex items-start gap-3">
         <AlertCircle className="h-5 w-5 shrink-0 mt-0.5" />

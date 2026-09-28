@@ -94,7 +94,7 @@ export const CareerHubPage: React.FC = () => {
       <nav className="mb-6" aria-label="Breadcrumb navigation">
         <Link
           to="/studio"
-          className="inline-flex items-center gap-2 font-gothic text-xs font-semibold uppercase tracking-[0.14em] text-[#87867f] hover:text-[#141413] transition-colors group text-decoration-none"
+          className="inline-flex items-center gap-2 font-gothic text-xs font-semibold uppercase tracking-[0.14em] text-cloud-dark hover:text-slate-dark transition-colors group text-decoration-none"
         >
           <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
           <span>Studio</span>
@@ -102,14 +102,14 @@ export const CareerHubPage: React.FC = () => {
       </nav>
 
       {/* Overview Header */}
-      <div className="mb-10 sm:mb-12 border-b border-[#cccbc8]/60 pb-8">
-        <span className="font-gothic text-[11px] font-bold uppercase tracking-[0.2em] text-[#87867f] block mb-2">
+      <div className="mb-10 sm:mb-12 border-b border-stone/60 pb-8">
+        <span className="font-gothic text-[11px] font-bold uppercase tracking-[0.2em] text-cloud-dark block mb-2">
           Professional Profile &bull; Overview
         </span>
-        <h1 className="font-gothic text-3xl sm:text-4xl lg:text-5xl font-extrabold uppercase tracking-tight text-[#141413]">
+        <h1 className="font-gothic text-3xl sm:text-4xl lg:text-5xl font-extrabold uppercase tracking-tight text-slate-dark">
           Career Hub
         </h1>
-        <p className="font-serif text-[16px] sm:text-[18px] text-[#141413]/70 mt-3 max-w-2xl leading-relaxed">
+        <p className="font-serif text-[16px] sm:text-[18px] text-slate-dark/70 mt-3 max-w-2xl leading-relaxed">
           Manage your work history, education, skills, certifications, and achievements.
         </p>
       </div>

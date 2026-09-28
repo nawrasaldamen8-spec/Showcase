@@ -93,7 +93,7 @@ export const ChangeUsernamePage: React.FC = () => {
             type="text"
             value={currentUser?.username ? `@${currentUser.username}` : "Not loaded"}
             disabled
-            className="bg-[#e8e5dc]/50 text-[#87867f] cursor-not-allowed"
+            className="bg-[#e8e5dc]/50 text-cloud-dark cursor-not-allowed"
           />
 
           <Input
@@ -105,7 +105,7 @@ export const ChangeUsernamePage: React.FC = () => {
             onChange={(e) => setNewUsername(e.target.value)}
             required
             autoComplete="username"
-            leftIcon={<AtSign className="h-4 w-4 text-[#87867f]" />}
+            leftIcon={<AtSign className="h-4 w-4 text-cloud-dark" />}
             helperText="3 to 30 characters: letters, numbers, underscores, hyphens"
           />
 
@@ -118,7 +118,7 @@ export const ChangeUsernamePage: React.FC = () => {
             onChange={(e) => setCurrentPassword(e.target.value)}
             required
             autoComplete="current-password"
-            leftIcon={<Lock className="h-4 w-4 text-[#87867f]" />}
+            leftIcon={<Lock className="h-4 w-4 text-cloud-dark" />}
             helperText="Required to verify your identity"
           />
         </div>

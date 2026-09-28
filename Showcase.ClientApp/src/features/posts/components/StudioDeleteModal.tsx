@@ -35,11 +35,11 @@ export const StudioDeleteModal: React.FC<StudioDeleteModalProps> = ({
       }
     >
       <div className="space-y-4">
-        <p className="font-serif text-base text-[#141413]">
+        <p className="font-serif text-base text-slate-dark">
           Are you sure you want to permanently delete{" "}
-          <strong className="font-gothic font-bold text-[#141413]">&ldquo;{post?.title}&rdquo;</strong>?
+          <strong className="font-gothic font-bold text-slate-dark">&ldquo;{post?.title}&rdquo;</strong>?
         </p>
-        <div className="p-3.5 rounded-xl bg-[#d97757]/10 border border-[#d97757]/30 text-xs font-serif text-[#141413]/85 leading-relaxed">
+        <div className="p-3.5 rounded-xl bg-clay/10 border border-clay/30 text-xs font-serif text-slate-dark/85 leading-relaxed">
           All associated images and project details will be permanently removed.
         </div>
       </div>

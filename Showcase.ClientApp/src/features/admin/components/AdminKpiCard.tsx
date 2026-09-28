@@ -21,30 +21,30 @@ export const AdminKpiCard: React.FC<AdminKpiCardProps> = ({
   onClick,
 }) => {
   const badgeClasses = {
-    default: "bg-[#e8e5dc] text-[#87867f] border-[#cccbc8]",
+    default: "bg-[#e8e5dc] text-cloud-dark border-stone",
     success: "bg-[#2e7d32]/10 text-[#2e7d32] border-[#2e7d32]/30",
-    warning: "bg-[#d97757]/15 text-[#d97757] border-[#d97757]/30",
+    warning: "bg-clay/15 text-clay border-clay/30",
     danger: "bg-red-500/10 text-red-700 border-red-500/30",
   }[badgeVariant];
 
   return (
     <div
       onClick={onClick}
-      className={`p-5 rounded-2xl bg-[#faf9f5] border border-[#cccbc8] transition-all duration-150 ${
-        onClick ? "cursor-pointer hover:border-[#141413] hover:bg-[#f0eee6]/50" : ""
+      className={`p-5 rounded-2xl bg-ivory-light border border-stone transition-all duration-150 ${
+        onClick ? "cursor-pointer hover:border-slate-dark hover:bg-ivory-medium/50" : ""
       }`}
     >
       <div className="flex items-center justify-between gap-3">
-        <span className="font-gothic text-[11px] font-bold uppercase tracking-[0.14em] text-[#87867f]">
+        <span className="font-gothic text-[11px] font-bold uppercase tracking-[0.14em] text-cloud-dark">
           {title}
         </span>
-        <div className="h-8 w-8 rounded-xl bg-[#f0eee6] border border-[#cccbc8]/60 flex items-center justify-center shrink-0">
-          <Icon className="h-4 w-4 text-[#141413]" />
+        <div className="h-8 w-8 rounded-xl bg-ivory-medium border border-stone/60 flex items-center justify-center shrink-0">
+          <Icon className="h-4 w-4 text-slate-dark" />
         </div>
       </div>
 
       <div className="mt-3 flex items-baseline gap-2">
-        <span className="font-gothic font-extrabold text-2xl sm:text-3xl text-[#141413]">
+        <span className="font-gothic font-extrabold text-2xl sm:text-3xl text-slate-dark">
           {value}
         </span>
         {badge && (
@@ -55,7 +55,7 @@ export const AdminKpiCard: React.FC<AdminKpiCardProps> = ({
       </div>
 
       {subtitle && (
-        <p className="mt-1 font-serif text-xs text-[#87867f] truncate">{subtitle}</p>
+        <p className="mt-1 font-serif text-xs text-cloud-dark truncate">{subtitle}</p>
       )}
     </div>
   );

@@ -14,7 +14,7 @@ export const PasswordStrengthMeter: React.FC<PasswordStrengthMeterProps> = ({ pa
   const criteriaCount = [hasMinLength, hasNumber, hasLetter, hasSpecial].filter(Boolean).length;
 
   let strengthLabel = "Too Short";
-  let barColor = "bg-[#cccbc8]";
+  let barColor = "bg-stone";
   let widthPercent = "w-1/4";
 
   if (password.length > 0) {
@@ -24,7 +24,7 @@ export const PasswordStrengthMeter: React.FC<PasswordStrengthMeterProps> = ({ pa
       widthPercent = "w-1/4";
     } else if (criteriaCount === 2) {
       strengthLabel = "Fair";
-      barColor = "bg-[#d97757]";
+      barColor = "bg-clay";
       widthPercent = "w-2/4";
     } else if (criteriaCount === 3) {
       strengthLabel = "Good";
@@ -43,7 +43,7 @@ export const PasswordStrengthMeter: React.FC<PasswordStrengthMeterProps> = ({ pa
     <div className="space-y-2 pt-1">
       {/* Strength Bar */}
       <div className="flex items-center justify-between">
-        <span className="font-gothic text-[10px] font-bold uppercase tracking-wider text-[#87867f]">
+        <span className="font-gothic text-[10px] font-bold uppercase tracking-wider text-cloud-dark">
           Password Strength
         </span>
         <span
@@ -51,7 +51,7 @@ export const PasswordStrengthMeter: React.FC<PasswordStrengthMeterProps> = ({ pa
             criteriaCount === 4
               ? "text-[#2e7d32]"
               : criteriaCount >= 2
-              ? "text-[#d97757]"
+              ? "text-clay"
               : "text-red-500"
           }`}
         >
@@ -64,38 +64,38 @@ export const PasswordStrengthMeter: React.FC<PasswordStrengthMeterProps> = ({ pa
       </div>
 
       {/* Checklist */}
-      <div className="grid grid-cols-2 gap-1.5 pt-1 text-[11px] font-serif text-[#87867f]">
+      <div className="grid grid-cols-2 gap-1.5 pt-1 text-[11px] font-serif text-cloud-dark">
         <div className="flex items-center gap-1.5">
           {hasMinLength ? (
             <Check className="w-3 h-3 text-[#2e7d32]" />
           ) : (
-            <X className="w-3 h-3 text-[#cccbc8]" />
+            <X className="w-3 h-3 text-stone" />
           )}
-          <span className={hasMinLength ? "text-[#141413]" : ""}>8+ characters</span>
+          <span className={hasMinLength ? "text-slate-dark" : ""}>8+ characters</span>
         </div>
         <div className="flex items-center gap-1.5">
           {hasNumber ? (
             <Check className="w-3 h-3 text-[#2e7d32]" />
           ) : (
-            <X className="w-3 h-3 text-[#cccbc8]" />
+            <X className="w-3 h-3 text-stone" />
           )}
-          <span className={hasNumber ? "text-[#141413]" : ""}>Contains number</span>
+          <span className={hasNumber ? "text-slate-dark" : ""}>Contains number</span>
         </div>
         <div className="flex items-center gap-1.5">
           {hasLetter ? (
             <Check className="w-3 h-3 text-[#2e7d32]" />
           ) : (
-            <X className="w-3 h-3 text-[#cccbc8]" />
+            <X className="w-3 h-3 text-stone" />
           )}
-          <span className={hasLetter ? "text-[#141413]" : ""}>Contains letters</span>
+          <span className={hasLetter ? "text-slate-dark" : ""}>Contains letters</span>
         </div>
         <div className="flex items-center gap-1.5">
           {hasSpecial ? (
             <Check className="w-3 h-3 text-[#2e7d32]" />
           ) : (
-            <X className="w-3 h-3 text-[#cccbc8]" />
+            <X className="w-3 h-3 text-stone" />
           )}
-          <span className={hasSpecial ? "text-[#141413]" : ""}>Special symbol</span>
+          <span className={hasSpecial ? "text-slate-dark" : ""}>Special symbol</span>
         </div>
       </div>
     </div>

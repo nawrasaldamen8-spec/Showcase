@@ -57,7 +57,7 @@ export const PostEditorPage: React.FC = () => {
   const isCurrentlyPublished = editor.postStatus === PostStatus.Published;
 
   return (
-    <div className="min-h-screen bg-[#f0eee6] pb-32">
+    <div className="min-h-screen bg-ivory-medium pb-32">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 sm:pt-12">
         <WizardStepper
           currentStep={editor.currentStep}
@@ -69,17 +69,14 @@ export const PostEditorPage: React.FC = () => {
         />
 
         <div className="py-6 sm:py-8 space-y-1.5">
-          <span className="font-gothic text-[11px] font-bold uppercase tracking-[0.16em] text-[#d97757]">
-            Step {editor.currentStep} of 4 &bull; {WIZARD_STEPS[editor.currentStep - 1].title}
+          <span className="font-gothic text-[11px] font-bold uppercase tracking-[0.16em] text-clay">
+            Step {editor.currentStep} of 4 &bull; {WIZARD_STEPS[editor.currentStep - 1]?.title}
           </span>
-          <h1 className="font-gothic text-2xl sm:text-3xl lg:text-4xl font-extrabold uppercase tracking-tight text-[#141413]">
-            {editor.currentStep === 1 && "Project Images"}
-            {editor.currentStep === 2 && "Project Identity"}
-            {editor.currentStep === 3 && "Project Description & Tags"}
-            {editor.currentStep === 4 && "Review & Publish"}
+          <h1 className="font-gothic text-2xl sm:text-3xl lg:text-4xl font-extrabold uppercase tracking-tight text-slate-dark">
+            {WIZARD_STEPS[editor.currentStep - 1]?.title}
           </h1>
-          <p className="font-serif text-base text-[#141413]/70 leading-relaxed max-w-2xl">
-            {WIZARD_STEPS[editor.currentStep - 1].description}
+          <p className="font-serif text-base text-slate-dark/70 leading-relaxed max-w-2xl">
+            {WIZARD_STEPS[editor.currentStep - 1]?.description}
           </p>
         </div>
 
@@ -171,7 +168,7 @@ export const PostEditorPage: React.FC = () => {
         title="Discard Unsaved Changes?"
       >
         <div className="space-y-4">
-          <p className="font-serif text-sm text-[#141413]/80 leading-relaxed">
+          <p className="font-serif text-sm text-slate-dark/80 leading-relaxed">
             You have unsaved changes in this project. Are you sure you want to discard them and return to your
             studio?
           </p>

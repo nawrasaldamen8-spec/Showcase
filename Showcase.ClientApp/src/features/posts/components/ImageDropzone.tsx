@@ -52,7 +52,7 @@ export const ImageDropzone: React.FC<ImageDropzoneProps> = ({
 
   if (variant === 'tile') {
     return (
-      <div className={`group relative flex flex-col bg-[#faf9f5] border border-[#cccbc8] rounded-[20px] overflow-hidden transition-all duration-200 hover:border-[#141413]/60 ${className}`}>
+      <div className={`group relative flex flex-col bg-ivory-light border border-stone rounded-[20px] overflow-hidden transition-all duration-200 hover:border-slate-dark/60 ${className}`}>
         <div
           role="button"
           tabIndex={disabled || isUploading ? -1 : 0}
@@ -70,8 +70,8 @@ export const ImageDropzone: React.FC<ImageDropzoneProps> = ({
           }}
           className={`relative aspect-[4/3] w-full flex flex-col items-center justify-center p-4 text-center cursor-pointer transition-all duration-200 select-none outline-none border-2 border-dashed ${
             isDragOver
-              ? 'border-[#d97757] bg-[#d97757]/10 scale-[1.01]'
-              : 'border-[#cccbc8] bg-[#faf9f5]/70 hover:bg-[#faf9f5] hover:border-[#87867f]'
+              ? 'border-clay bg-clay/10 scale-[1.01]'
+              : 'border-stone bg-ivory-light/70 hover:bg-ivory-light hover:border-cloud-dark'
           } ${disabled ? 'opacity-50 cursor-not-allowed' : ''} ${
             isUploading ? 'cursor-wait pointer-events-none' : ''
           }`}
@@ -89,12 +89,12 @@ export const ImageDropzone: React.FC<ImageDropzoneProps> = ({
 
           {isUploading ? (
             <div className="flex flex-col items-center gap-2 animate-in fade-in">
-              <Loader2 className="h-6 w-6 text-[#d97757] animate-spin stroke-[2]" />
+              <Loader2 className="h-6 w-6 text-clay animate-spin stroke-[2]" />
               <div className="space-y-0.5">
-                <span className="font-gothic text-[11px] font-bold uppercase tracking-wider text-[#141413] block">
+                <span className="font-gothic text-[11px] font-bold uppercase tracking-wider text-slate-dark block">
                   Uploading...
                 </span>
-                <span className="font-serif text-[10px] text-[#87867f]">
+                <span className="font-serif text-[10px] text-cloud-dark">
                   {uploadProgress?.percent || 0}%
                 </span>
               </div>
@@ -104,17 +104,17 @@ export const ImageDropzone: React.FC<ImageDropzoneProps> = ({
               <div
                 className={`p-3 rounded-full transition-all duration-200 ${
                   isDragOver
-                    ? 'bg-[#d97757] text-[#faf9f5]'
-                    : 'bg-[#f0eee6] text-[#87867f] group-hover:bg-[#141413] group-hover:text-[#faf9f5]'
+                    ? 'bg-clay text-ivory-light'
+                    : 'bg-ivory-medium text-cloud-dark group-hover:bg-slate-dark group-hover:text-ivory-light'
                 }`}
               >
                 <Plus className="h-5 w-5 stroke-[2]" />
               </div>
               <div className="space-y-0.5">
-                <p className="font-gothic text-[11px] font-bold uppercase tracking-wider text-[#141413]">
+                <p className="font-gothic text-[11px] font-bold uppercase tracking-wider text-slate-dark">
                   {isDragOver ? 'Drop Image' : 'Add Image'}
                 </p>
-                <p className="font-serif text-[10px] text-[#87867f]">
+                <p className="font-serif text-[10px] text-cloud-dark">
                   Drop or browse
                 </p>
               </div>
@@ -123,7 +123,7 @@ export const ImageDropzone: React.FC<ImageDropzoneProps> = ({
         </div>
 
         {/* Card Footer matching sibling plates */}
-        <div className="flex items-center justify-center px-3.5 py-2.5 bg-[#faf9f5] border-t border-[#cccbc8]/60 text-[#87867f] font-gothic text-[10px] uppercase tracking-wider">
+        <div className="flex items-center justify-center px-3.5 py-2.5 bg-ivory-light border-t border-stone/60 text-cloud-dark font-gothic text-[10px] uppercase tracking-wider">
           <span>+ Add Image</span>
         </div>
       </div>
@@ -150,8 +150,8 @@ export const ImageDropzone: React.FC<ImageDropzoneProps> = ({
         }}
         className={`relative w-full rounded-[20px] border-2 border-dashed p-8 sm:p-10 transition-all duration-200 cursor-pointer flex flex-col items-center justify-center text-center outline-none select-none ${
           isDragOver
-            ? 'border-[#d97757] bg-[#faf9f5] scale-[1.005]'
-            : 'border-[#cccbc8] bg-[#faf9f5]/60 hover:bg-[#faf9f5] hover:border-[#87867f]'
+            ? 'border-clay bg-ivory-light scale-[1.005]'
+            : 'border-stone bg-ivory-light/60 hover:bg-ivory-light hover:border-cloud-dark'
         } ${disabled ? 'opacity-50 cursor-not-allowed' : ''} ${
           isUploading ? 'cursor-wait pointer-events-none' : ''
         }`}
@@ -171,29 +171,29 @@ export const ImageDropzone: React.FC<ImageDropzoneProps> = ({
         {isUploading ? (
           <div className="flex flex-col items-center gap-3 py-4 max-w-sm w-full animate-in fade-in">
             <div className="relative flex items-center justify-center">
-              <Loader2 className="h-10 w-10 text-[#d97757] animate-spin stroke-[1.75]" />
-              <ImageIcon className="h-4 w-4 text-[#d97757] absolute" />
+              <Loader2 className="h-10 w-10 text-clay animate-spin stroke-[1.75]" />
+              <ImageIcon className="h-4 w-4 text-clay absolute" />
             </div>
 
             <div className="space-y-1 w-full">
-              <p className="font-gothic text-[13px] font-bold uppercase tracking-wider text-[#141413]">
+              <p className="font-gothic text-[13px] font-bold uppercase tracking-wider text-slate-dark">
                 Uploading images...
               </p>
               {uploadProgress && (
-                <p className="font-serif text-xs text-[#87867f] truncate">
+                <p className="font-serif text-xs text-cloud-dark truncate">
                   Image {uploadProgress.current} of {uploadProgress.total}: {uploadProgress.filename}
                 </p>
               )}
             </div>
 
             {/* Progress Bar */}
-            <div className="w-full bg-[#cccbc8]/40 rounded-full h-1.5 overflow-hidden mt-1">
+            <div className="w-full bg-stone/40 rounded-full h-1.5 overflow-hidden mt-1">
               <div
-                className="bg-[#d97757] h-full transition-all duration-300 rounded-full"
+                className="bg-clay h-full transition-all duration-300 rounded-full"
                 style={{ width: `${uploadProgress?.percent || 0}%` }}
               />
             </div>
-            <span className="font-gothic text-[10px] font-semibold tracking-widest uppercase text-[#87867f]">
+            <span className="font-gothic text-[10px] font-semibold tracking-widest uppercase text-cloud-dark">
               {uploadProgress?.percent || 0}%
             </span>
           </div>
@@ -203,23 +203,23 @@ export const ImageDropzone: React.FC<ImageDropzoneProps> = ({
             <div
               className={`p-4 rounded-full transition-colors ${
                 isDragOver
-                  ? 'bg-[#d97757]/10 text-[#d97757]'
-                  : 'bg-[#f0eee6] text-[#87867f] group-hover:text-[#141413]'
+                  ? 'bg-clay/10 text-clay'
+                  : 'bg-ivory-medium text-cloud-dark group-hover:text-slate-dark'
               }`}
             >
               <UploadCloud className="h-8 w-8 stroke-[1.5]" />
             </div>
 
             <div className="space-y-1">
-              <p className="font-gothic text-[14px] font-bold uppercase tracking-wider text-[#141413]">
+              <p className="font-gothic text-[14px] font-bold uppercase tracking-wider text-slate-dark">
                 {isDragOver ? 'Drop images here' : 'Drag & drop images or browse'}
               </p>
-              <p className="font-serif text-xs text-[#87867f]">
+              <p className="font-serif text-xs text-cloud-dark">
                 Supports JPEG, PNG, and WebP &bull; Max 10MB each
               </p>
             </div>
 
-            <div className="mt-2 inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full border border-[#cccbc8] bg-[#faf9f5] font-gothic text-[11px] font-semibold uppercase tracking-[0.10em] text-[#141413] hover:border-[#141413] transition-colors">
+            <div className="mt-2 inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full border border-stone bg-ivory-light font-gothic text-[11px] font-semibold uppercase tracking-[0.10em] text-slate-dark hover:border-slate-dark transition-colors">
               <span>Browse Files</span>
             </div>
           </div>
@@ -230,7 +230,7 @@ export const ImageDropzone: React.FC<ImageDropzoneProps> = ({
       {validationError && (
         <div
           role="alert"
-          className="flex items-center gap-2 p-3 rounded-xl bg-[#d97757]/10 border border-[#d97757]/30 text-[#d97757] font-serif text-xs"
+          className="flex items-center gap-2 p-3 rounded-xl bg-clay/10 border border-clay/30 text-clay font-serif text-xs"
         >
           <AlertCircle className="h-4 w-4 shrink-0" />
           <span>{validationError}</span>

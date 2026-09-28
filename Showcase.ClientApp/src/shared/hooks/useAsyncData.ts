@@ -20,28 +20,34 @@ export function useAsyncData<T>(
     fetchFnRef.current = fetchFn;
   });
 
+  const cancelledRef = useRef(false);
+
   const reload = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     try {
       const result = await fetchFnRef.current();
+      if (cancelledRef.current) return;
       setData(result);
     } catch (err) {
+      if (cancelledRef.current) return;
       const message = err instanceof Error ? err.message : "Failed to load data";
       setError(message);
     } finally {
-      setIsLoading(false);
+      if (!cancelledRef.current) {
+        setIsLoading(false);
+      }
     }
   }, []);
 
   useEffect(() => {
-    let cancelled = false;
+    cancelledRef.current = false;
     void Promise.resolve().then(async () => {
-      if (cancelled) return;
+      if (cancelledRef.current) return;
       await reload();
     });
     return () => {
-      cancelled = true;
+      cancelledRef.current = true;
     };
   }, [reload]);
 

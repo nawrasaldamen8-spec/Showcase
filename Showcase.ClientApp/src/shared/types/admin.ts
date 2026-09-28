@@ -3,10 +3,9 @@ export type UserStatus = "active" | "suspended" | "pending_review";
 
 export interface AdminUserListItem {
   id: string;
-  email: string;
+  email?: string | null;
   username: string;
-  firstName: string;
-  lastName: string;
+  name: string;
   avatarUrl?: string | null;
   roles: UserRole[];
   status: UserStatus;

@@ -1,5 +1,6 @@
 export * from "./components/AdminLayout.tsx";
 export * from "./components/AdminRouteGuard.tsx";
+export * from "./components/AdminTable.tsx";
 export * from "./components/AdminKpiCard.tsx";
 export * from "./components/BanUserModal.tsx";
 export * from "./components/VerificationReviewModal.tsx";

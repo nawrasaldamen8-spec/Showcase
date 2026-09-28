@@ -13,20 +13,20 @@ export const ProblemAlert: React.FC<ProblemAlertProps> = ({ problem, className =
   return (
     <div
       role="alert"
-      className={`p-4 rounded-xl bg-[#d97757]/10 border border-[#d97757]/40 text-[#141413] animate-in fade-in shadow-none ${className}`}
+      className={`p-4 rounded-xl bg-clay/10 border border-clay/40 text-slate-dark animate-in fade-in shadow-none ${className}`}
     >
       <div className="flex items-start gap-3">
-        <AlertCircle className="h-5 w-5 text-[#d97757] shrink-0 mt-0.5" />
+        <AlertCircle className="h-5 w-5 text-clay shrink-0 mt-0.5" />
         <div className="flex-1 text-sm font-serif">
-          <p className="font-gothic font-bold uppercase tracking-wider text-xs text-[#d97757]">
+          <p className="font-gothic font-bold uppercase tracking-wider text-xs text-clay">
             {problem.title || "Security Action Error"}
             {problem.status ? ` (HTTP ${problem.status})` : ""}
           </p>
-          {problem.detail && <p className="mt-1 text-[#141413]/90">{problem.detail}</p>}
+          {problem.detail && <p className="mt-1 text-slate-dark/90">{problem.detail}</p>}
 
           {/* Validation errors dictionary */}
           {problem.errors && Object.keys(problem.errors).length > 0 && (
-            <ul className="mt-2 space-y-1 list-disc list-inside text-xs text-[#141413]/85 font-mono">
+            <ul className="mt-2 space-y-1 list-disc list-inside text-xs text-slate-dark/85 font-mono">
               {Object.entries(problem.errors).flatMap(([field, msgs]) =>
                 msgs.map((msg, i) => (
                   <li key={`${field}-${i}`}>

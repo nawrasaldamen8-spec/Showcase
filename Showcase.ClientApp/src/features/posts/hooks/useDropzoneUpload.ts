@@ -1,5 +1,5 @@
-import React, { useState, useRef, useCallback } from 'react';
-import { apiClient } from '@shared/api/apiClient.ts';
+import React, { useState, useRef, useCallback, useEffect } from "react";
+import { apiClient } from "@shared/api/apiClient.ts";
 
 export interface UploadedImageData {
   id?: string;
@@ -18,7 +18,7 @@ export interface UseDropzoneUploadOptions {
 }
 
 const DEFAULT_MAX_SIZE = 10 * 1024 * 1024; // 10MB
-const DEFAULT_ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+const DEFAULT_ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
 
 async function uploadToR2(
   postId: string,
@@ -26,7 +26,7 @@ async function uploadToR2(
   onProgress: (percent: number) => void
 ): Promise<UploadedImageData> {
   const { uploadUrl, storageKey } = await apiClient.getPostImageUploadUrl(postId, {
-    contentType: file.type || 'image/jpeg',
+    contentType: file.type || "image/jpeg",
     fileSizeBytes: file.size,
   });
 
@@ -44,21 +44,11 @@ async function uploadToR2(
   };
 }
 
-function readFileAsDataUrl(file: File | Blob): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result as string);
-    reader.onerror = (err) => reject(err);
-    reader.readAsDataURL(file);
-  });
-}
-
-async function stageLocalFile(file: File, index: number): Promise<UploadedImageData> {
-  const previewUrl = await readFileAsDataUrl(file);
-  const ext = file.type.split('/')[1] || 'jpg';
+function stageLocalFile(file: File, index: number, objectUrlsRef: React.MutableRefObject<string[]>): UploadedImageData {
+  const previewUrl = URL.createObjectURL(file);
+  objectUrlsRef.current.push(previewUrl);
+  const ext = file.type.split("/")[1] || "jpg";
   const storageKey = `posts/staged/${Date.now()}-${Math.random().toString(36).substring(2, 8)}.${ext}`;
-
-  await new Promise((resolve) => setTimeout(resolve, 200));
 
   return {
     id: `local_${Date.now()}_${index}`,
@@ -88,6 +78,16 @@ export function useDropzoneUpload({
   const [recentSuccess, setRecentSuccess] = useState<string | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const objectUrls = useRef<string[]>([]);
+
+  useEffect(() => {
+    const urls = objectUrls.current;
+    return () => {
+      urls.forEach((url) => {
+        URL.revokeObjectURL(url);
+      });
+    };
+  }, []);
 
   const validateFiles = useCallback(
     (files: File[]): { valid: File[]; error?: string } => {
@@ -137,7 +137,7 @@ export function useDropzoneUpload({
 
       try {
         for (let i = 0; i < valid.length; i++) {
-          const file = valid[i];
+          const file = valid[i]!;
           const progressBase = Math.round((i / valid.length) * 100);
 
           setUploadProgress({
@@ -156,7 +156,7 @@ export function useDropzoneUpload({
                   filename: file.name,
                 });
               })
-            : await stageLocalFile(file, i);
+            : stageLocalFile(file, i, objectUrls);
 
           uploadedResults.push(result);
         }
@@ -165,26 +165,26 @@ export function useDropzoneUpload({
           current: valid.length,
           total: valid.length,
           percent: 100,
-          filename: 'Complete',
+          filename: "Complete",
         });
 
         setRecentSuccess(
           valid.length === 1
-            ? 'Image uploaded successfully.'
+            ? "Image uploaded successfully."
             : `${valid.length} images uploaded successfully.`
         );
 
         onImagesUploaded?.(uploadedResults);
       } catch (err) {
-        console.error('Direct upload error:', err);
-        const errMsg = err instanceof Error ? err.message : 'Failed to upload image.';
+        console.error("Direct upload error:", err);
+        const errMsg = err instanceof Error ? err.message : "Failed to upload image.";
         setValidationError(errMsg);
         onError?.(errMsg);
       } finally {
         setIsUploading(false);
         setUploadProgress(null);
         if (fileInputRef.current) {
-          fileInputRef.current.value = '';
+          fileInputRef.current.value = "";
         }
       }
     },

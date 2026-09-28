@@ -52,8 +52,7 @@ export const PostMasonryGrid: React.FC<PostMasonryGridProps> = ({
                   creator: {
                     profileId: creator.id,
                     username: creator.username,
-                    firstName: creator.firstName,
-                    lastName: creator.lastName,
+                    name: creator.name,
                     avatarUrl: creator.avatarUrl,
                   },
                 } as ExplorePostResponse

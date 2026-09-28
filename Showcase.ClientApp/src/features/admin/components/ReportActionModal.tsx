@@ -49,21 +49,21 @@ export const ReportActionModal: React.FC<ReportActionModalProps> = ({
     >
       <div className="space-y-4 pt-2">
         {/* Incident Summary Card */}
-        <div className="p-4 rounded-2xl bg-[#f0eee6] border border-[#cccbc8] space-y-2">
+        <div className="p-4 rounded-2xl bg-ivory-medium border border-stone space-y-2">
           <div className="flex items-center justify-between">
             <span className="px-2.5 py-0.5 rounded-full bg-red-500/15 text-red-700 font-gothic text-[10px] font-bold uppercase tracking-wider border border-red-500/30">
               {report.reason}
             </span>
-            <span className="font-serif text-xs text-[#87867f]">
+            <span className="font-serif text-xs text-cloud-dark">
               Reported by @{report.reporterUsername}
             </span>
           </div>
 
           <div className="pt-1">
-            <h4 className="font-gothic text-sm font-bold uppercase tracking-wider text-[#141413]">
+            <h4 className="font-gothic text-sm font-bold uppercase tracking-wider text-slate-dark">
               {report.targetTitle}
             </h4>
-            <p className="font-serif text-xs text-[#87867f]">
+            <p className="font-serif text-xs text-cloud-dark">
               Target Account: @{report.targetAuthorUsername}
             </p>
           </div>
@@ -71,10 +71,10 @@ export const ReportActionModal: React.FC<ReportActionModalProps> = ({
 
         {/* Reporter Claim Details */}
         <div className="space-y-1.5">
-          <span className="font-gothic text-[11px] font-bold uppercase tracking-wider text-[#87867f] block">
+          <span className="font-gothic text-[11px] font-bold uppercase tracking-wider text-cloud-dark block">
             Report Statement &amp; Evidence
           </span>
-          <div className="p-3 rounded-xl bg-[#faf9f5] border border-[#cccbc8] font-serif text-xs text-[#141413] leading-relaxed">
+          <div className="p-3 rounded-xl bg-ivory-light border border-stone font-serif text-xs text-slate-dark leading-relaxed">
             {report.details}
           </div>
         </div>
@@ -83,7 +83,7 @@ export const ReportActionModal: React.FC<ReportActionModalProps> = ({
         <div className="space-y-1.5">
           <label
             htmlFor="report-action-note"
-            className="font-gothic text-xs font-bold uppercase tracking-wider text-[#141413] block"
+            className="font-gothic text-xs font-bold uppercase tracking-wider text-slate-dark block"
           >
             Resolution Summary / Action Rationale
           </label>

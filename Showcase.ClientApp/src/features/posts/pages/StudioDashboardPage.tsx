@@ -136,7 +136,7 @@ export const StudioDashboardPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#f0eee6] pb-24">
+    <div className="min-h-screen bg-ivory-medium pb-24">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6">
         <StudioFilterBar
           activeTab={activeTab}
@@ -161,7 +161,7 @@ export const StudioDashboardPage: React.FC = () => {
             {[1, 2, 3].map((n) => (
               <div
                 key={n}
-                className="bg-[#faf9f5] border border-[#cccbc8] rounded-[24px] p-6 flex flex-col md:flex-row items-center gap-6 shadow-none"
+                className="bg-ivory-light border border-stone rounded-card p-6 flex flex-col md:flex-row items-center gap-6 shadow-none"
               >
                 <Skeleton className="w-full md:w-44 h-32 rounded-xl shrink-0" />
                 <div className="flex-1 w-full space-y-3">

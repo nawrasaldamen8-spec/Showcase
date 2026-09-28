@@ -1,5 +1,5 @@
 import { AlertCircle, AlertTriangle, CheckCircle2, Info, X } from "lucide-react";
-import React, { useCallback, useState, type ReactNode } from "react";
+import React, { useCallback, useMemo, useState, type ReactNode } from "react";
 import { ToastContext, type ToastItem, type ToastType } from "./toastContextDef.ts";
 
 export const ToastProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
@@ -18,17 +18,19 @@ export const ToastProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     }, 4500);
   }, []);
 
+  const contextValue = useMemo(() => ({ showToast, dismissToast }), [showToast, dismissToast]);
+
   const getBorderAndBg = (type: ToastType) => {
     switch (type) {
       case "success":
-        return "border-[#2e7d32]/40 bg-[#faf9f5] text-[#141413]";
+        return "border-[#2e7d32]/40 bg-ivory-light text-slate-dark";
       case "error":
-        return "border-[#d97757]/60 bg-[#faf9f5] text-[#141413]";
+        return "border-clay/60 bg-ivory-light text-slate-dark";
       case "warning":
-        return "border-[#f1a900]/60 bg-[#faf9f5] text-[#141413]";
+        return "border-amber/60 bg-ivory-light text-slate-dark";
       case "info":
       default:
-        return "border-[#cccbc8] bg-[#faf9f5] text-[#141413]";
+        return "border-stone bg-ivory-light text-slate-dark";
     }
   };
 
@@ -37,17 +39,17 @@ export const ToastProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       case "success":
         return <CheckCircle2 className="h-4 w-4 text-[#2e7d32] shrink-0" />;
       case "error":
-        return <AlertCircle className="h-4 w-4 text-[#d97757] shrink-0" />;
+        return <AlertCircle className="h-4 w-4 text-clay shrink-0" />;
       case "warning":
-        return <AlertTriangle className="h-4 w-4 text-[#f1a900] shrink-0" />;
+        return <AlertTriangle className="h-4 w-4 text-amber shrink-0" />;
       case "info":
       default:
-        return <Info className="h-4 w-4 text-[#87867f] shrink-0" />;
+        return <Info className="h-4 w-4 text-cloud-dark shrink-0" />;
     }
   };
 
   return (
-    <ToastContext.Provider value={{ showToast, dismissToast }}>
+    <ToastContext.Provider value={contextValue}>
       {children}
 
       {/* Global Toast Container */}
@@ -71,7 +73,7 @@ export const ToastProvider: React.FC<{ children: ReactNode }> = ({ children }) =
             <button
               type="button"
               onClick={() => dismissToast(toast.id)}
-              className="text-[#87867f] hover:text-[#141413] transition-colors p-1 rounded-full cursor-pointer"
+              className="text-cloud-dark hover:text-slate-dark transition-colors p-1 rounded-full cursor-pointer"
               aria-label="Dismiss notification"
             >
               <X className="h-3.5 w-3.5" />

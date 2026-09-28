@@ -100,7 +100,7 @@ export const ManagePhonePage: React.FC = () => {
             value={phoneNumber}
             onChange={(e) => setPhoneNumber(e.target.value)}
             disabled={isFetching}
-            leftIcon={<Phone className="h-4 w-4 text-[#87867f]" />}
+            leftIcon={<Phone className="h-4 w-4 text-cloud-dark" />}
             helperText="Used for account recovery and security alerts"
           />
         </div>

@@ -16,7 +16,7 @@ export const ProfileSkeleton: React.FC = () => {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10 animate-pulse">
       <Skeleton variant="text" width={140} height={18} className="mb-6" />
-      <div className="bg-[#faf9f5] rounded-[24px] border border-[#cccbc8]/50 p-6 sm:p-8 mb-8">
+      <div className="bg-ivory-light rounded-card border border-stone/50 p-6 sm:p-8 mb-8">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-4 sm:gap-6">
             <Skeleton variant="circular" width={72} height={72} />
@@ -31,7 +31,7 @@ export const ProfileSkeleton: React.FC = () => {
           </div>
         </div>
       </div>
-      <div className="flex gap-6 border-b border-[#cccbc8] pb-3 mb-8">
+      <div className="flex gap-6 border-b border-stone pb-3 mb-8">
         <Skeleton variant="text" width={60} height={18} />
         <Skeleton variant="text" width={60} height={18} />
       </div>

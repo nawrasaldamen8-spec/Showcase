@@ -73,8 +73,8 @@ export const CareerSkillsPage: React.FC = () => {
               onClick={() => setActiveCategory(cat)}
               className={`px-3.5 py-1.5 rounded-full font-gothic text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer border ${
                 isSelected
-                  ? "bg-[#141413] text-[#faf9f5] border-[#141413]"
-                  : "bg-[#faf9f5] text-[#87867f] border-[#cccbc8]/60 hover:text-[#141413] hover:border-[#141413]"
+                  ? "bg-slate-dark text-ivory-light border-slate-dark"
+                  : "bg-ivory-light text-cloud-dark border-stone/60 hover:text-slate-dark hover:border-slate-dark"
               }`}
             >
               {cat}
@@ -84,7 +84,7 @@ export const CareerSkillsPage: React.FC = () => {
       </div>
 
       {loading ? (
-        <div className="py-20 text-center text-[#87867f] font-serif">
+        <div className="py-20 text-center text-cloud-dark font-serif">
           Loading skills...
         </div>
       ) : filteredSkills.length === 0 ? (

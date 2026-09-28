@@ -12,6 +12,28 @@ export interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
   onRemove?: () => void;
 }
 
+const baseClasses =
+  'inline-flex items-center justify-center font-gothic font-semibold uppercase tracking-[0.10em] rounded-pill select-none transition-colors duration-150 leading-none';
+
+const variantClasses: Record<BadgeVariant, string> = {
+  slate: 'bg-slate-dark text-ivory-light',
+  clay: 'bg-clay text-ivory-light',
+  stone: 'bg-stone/30 text-slate-dark border border-stone',
+  amber: 'bg-amber text-slate-dark',
+};
+
+const sizeClasses: Record<BadgeSize, string> = {
+  sm: 'px-2.5 py-1 text-[10px] gap-1',
+  md: 'px-3.5 py-1.5 text-[11px] gap-1.5',
+};
+
+const dotClasses: Record<BadgeVariant, string> = {
+  slate: 'bg-ivory-light',
+  clay: 'bg-ivory-light',
+  stone: 'bg-slate-dark',
+  amber: 'bg-slate-dark',
+};
+
 export const Badge: React.FC<BadgeProps> = ({
   children,
   variant = 'stone',
@@ -22,28 +44,6 @@ export const Badge: React.FC<BadgeProps> = ({
   className = '',
   ...props
 }) => {
-  const baseClasses =
-    'inline-flex items-center justify-center font-gothic font-semibold uppercase tracking-[0.10em] rounded-[999px] select-none transition-colors duration-150 leading-none';
-
-  const variantClasses: Record<BadgeVariant, string> = {
-    slate: 'bg-[#141413] text-[#faf9f5]',
-    clay: 'bg-[#d97757] text-[#faf9f5]',
-    stone: 'bg-[#cccbc8]/30 text-[#141413] border border-[#cccbc8]',
-    amber: 'bg-[#f1a900] text-[#141413]',
-  };
-
-  const sizeClasses: Record<BadgeSize, string> = {
-    sm: 'px-2.5 py-1 text-[10px] gap-1',
-    md: 'px-3.5 py-1.5 text-[11px] gap-1.5',
-  };
-
-  const dotClasses: Record<BadgeVariant, string> = {
-    slate: 'bg-[#faf9f5]',
-    clay: 'bg-[#faf9f5]',
-    stone: 'bg-[#141413]',
-    amber: 'bg-[#141413]',
-  };
-
   return (
     <span
       className={`${baseClasses} ${variantClasses[variant]} ${sizeClasses[size]} ${className}`.trim()}

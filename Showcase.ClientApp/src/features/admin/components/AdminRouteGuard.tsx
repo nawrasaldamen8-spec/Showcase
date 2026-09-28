@@ -17,17 +17,17 @@ export const AdminRouteGuard: React.FC<AdminRouteGuardProps> = ({ children }) =>
 
   if (!isAdmin) {
     return (
-      <div className="min-h-screen bg-[#f0eee6] flex flex-col items-center justify-center p-6 text-center">
-        <div className="max-w-md w-full p-8 rounded-3xl bg-[#faf9f5] border border-[#cccbc8] space-y-4">
-          <div className="w-12 h-12 rounded-2xl bg-[#d97757]/15 border border-[#d97757]/30 flex items-center justify-center mx-auto text-[#d97757]">
+      <div className="min-h-screen bg-ivory-medium flex flex-col items-center justify-center p-6 text-center">
+        <div className="max-w-md w-full p-8 rounded-3xl bg-ivory-light border border-stone space-y-4">
+          <div className="w-12 h-12 rounded-2xl bg-clay/15 border border-clay/30 flex items-center justify-center mx-auto text-clay">
             <ShieldAlert className="w-6 h-6" />
           </div>
 
-          <h2 className="font-gothic font-extrabold text-2xl uppercase tracking-tight text-[#141413]">
+          <h2 className="font-gothic font-extrabold text-2xl uppercase tracking-tight text-slate-dark">
             Admin Privileges Required
           </h2>
 
-          <p className="font-serif text-sm text-[#141413]/70 leading-relaxed">
+          <p className="font-serif text-sm text-slate-dark/70 leading-relaxed">
             This area of the Pority console is reserved for system administrators, curators, and platform moderators.
           </p>
 
