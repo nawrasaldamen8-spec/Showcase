@@ -16,5 +16,7 @@
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
 
-
+  <ItemGroup>
+    <EmbeddedResource Include="Data\Seed\*.json" />
+  </ItemGroup>
 </Project>

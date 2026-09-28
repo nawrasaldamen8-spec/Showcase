@@ -19,18 +19,21 @@ public class IdentityService : IIdentityService
     }
 
     public async Task<Result<string>> RegisterUserAsync(
-        string email,
         string username,
         string password,
+        string? email = null,
         CancellationToken ct = default)
     {
-        var normalizedEmail = email.Trim();
         var normalizedUsername = username.Trim().ToLowerInvariant();
+        var normalizedEmail = string.IsNullOrWhiteSpace(email) ? null : email.Trim();
 
-        var existingEmail = await _userManager.FindByEmailAsync(normalizedEmail);
-        if (existingEmail is not null)
+        if (normalizedEmail is not null)
         {
-            return Error.Conflict("Auth.EmailTaken", "Email is already registered.");
+            var existingEmail = await _userManager.FindByEmailAsync(normalizedEmail);
+            if (existingEmail is not null)
+            {
+                return Error.Conflict("Auth.EmailTaken", "Email is already registered.");
+            }
         }
 
         var existingUsername = await _userManager.FindByNameAsync(normalizedUsername);
@@ -62,8 +65,13 @@ public class IdentityService : IIdentityService
     {
         var normalizedInput = emailOrUsername.Trim();
 
-        var user = await _userManager.FindByEmailAsync(normalizedInput)
-            ?? await _userManager.FindByNameAsync(normalizedInput.ToLowerInvariant());
+        // Email is optional, so a null Email column is the norm for many accounts. Guarding on the '@' keeps
+        // FindByEmailAsync from matching an arbitrary account whose Email is null.
+        var user = LooksLikeEmail(normalizedInput)
+            ? await _userManager.FindByEmailAsync(normalizedInput)
+            : null;
+
+        user ??= await _userManager.FindByNameAsync(normalizedInput.ToLowerInvariant());
 
         if (user is null)
         {
@@ -76,8 +84,18 @@ public class IdentityService : IIdentityService
             return Error.Unauthorized("Auth.InvalidCredentials", "Invalid credentials.");
         }
 
+        if (user.IsBanned)
+        {
+            return Error.Forbidden("Auth.AccountBanned", user.BanReason ?? "This account has been suspended.");
+        }
+
+        if (user.IsDeleted)
+        {
+            return Error.Forbidden("Auth.AccountDeleted", "This account has been deleted.");
+        }
+
         var roles = await _userManager.GetRolesAsync(user);
-        return new UserIdentityDetails(user.Id, user.Email ?? string.Empty, user.UserName ?? string.Empty, roles);
+        return ToDetails(user, roles);
     }
 
     public async Task<Result<UserIdentityDetails>> ValidateRefreshTokenAsync(
@@ -99,8 +117,18 @@ public class IdentityService : IIdentityService
             return Error.Unauthorized("Auth.InvalidRefreshToken", "Invalid or expired refresh token.");
         }
 
+        if (user.IsBanned)
+        {
+            return Error.Forbidden("Auth.AccountBanned", user.BanReason ?? "This account has been suspended.");
+        }
+
+        if (user.IsDeleted)
+        {
+            return Error.Forbidden("Auth.AccountDeleted", "This account has been deleted.");
+        }
+
         var roles = await _userManager.GetRolesAsync(user);
-        return new UserIdentityDetails(user.Id, user.Email ?? string.Empty, user.UserName ?? string.Empty, roles);
+        return ToDetails(user, roles);
     }
 
     public async Task<Result> UpdateRefreshTokenAsync(
@@ -162,7 +190,7 @@ public class IdentityService : IIdentityService
         }
 
         var roles = await _userManager.GetRolesAsync(user);
-        return new UserIdentityDetails(user.Id, user.Email ?? string.Empty, user.UserName ?? string.Empty, roles);
+        return ToDetails(user, roles);
     }
 
     public async Task<Result<UserIdentityDetails>> GetUserByUsernameAsync(
@@ -177,7 +205,7 @@ public class IdentityService : IIdentityService
         }
 
         var roles = await _userManager.GetRolesAsync(user);
-        return new UserIdentityDetails(user.Id, user.Email ?? string.Empty, user.UserName ?? string.Empty, roles);
+        return ToDetails(user, roles);
     }
 
     public async Task<Result> ChangePasswordAsync(
@@ -282,4 +310,11 @@ public class IdentityService : IIdentityService
 
         return Result.Success();
     }
+
+    /// <summary>Keeps the null email intact instead of coercing it to an empty string, which lost the distinction.</summary>
+    private static UserIdentityDetails ToDetails(ApplicationUser user, IList<string> roles) =>
+        new(user.Id, user.Email, user.UserName ?? string.Empty, roles);
+
+    private static bool LooksLikeEmail(string value) =>
+        value.Contains('@', StringComparison.Ordinal) && value.Contains('.', StringComparison.Ordinal);
 }

@@ -32,6 +32,10 @@ public class PostConfiguration : IEntityTypeConfiguration<Post>
             .IsRequired()
             .HasConversion<int>();
 
+        builder.Property(p => p.LikesCount)
+            .IsRequired()
+            .HasDefaultValue(0);
+
         builder.Property(p => p.CreatedAt)
             .IsRequired();
 
@@ -54,6 +58,9 @@ public class PostConfiguration : IEntityTypeConfiguration<Post>
             .OnDelete(DeleteBehavior.Cascade);
 
         builder.Navigation(p => p.Images)
+            .UsePropertyAccessMode(PropertyAccessMode.Field);
+
+        builder.Navigation(p => p.PostTags)
             .UsePropertyAccessMode(PropertyAccessMode.Field);
     }
 }

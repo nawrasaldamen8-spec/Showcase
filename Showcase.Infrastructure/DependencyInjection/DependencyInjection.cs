@@ -41,7 +41,8 @@ public static class DependencyInjection
             options.Password.RequireLowercase = true;
             options.Password.RequireUppercase = true;
             options.Password.RequiredLength = 6;
-            options.User.RequireUniqueEmail = true;
+            // Email is optional; uniqueness is enforced in IdentityService.RegisterUserAsync when one is supplied.
+            options.User.RequireUniqueEmail = false;
         })
         .AddRoles<IdentityRole>()
         .AddEntityFrameworkStores<ApplicationDbContext>()
@@ -80,9 +81,23 @@ public static class DependencyInjection
                 ClockSkew = TimeSpan.Zero,
                 ValidAlgorithms = new[] { SecurityAlgorithms.HmacSha256 }
             };
+            options.Events = new JwtBearerEvents
+            {
+                OnMessageReceived = context =>
+                {
+                    var accessToken = context.Request.Query["access_token"];
+                    var path = context.HttpContext.Request.Path;
+                    if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/hubs"))
+                    {
+                        context.Token = accessToken;
+                    }
+                    return Task.CompletedTask;
+                }
+            };
         });
 
         services.AddAuthorization();
+        services.AddSignalR();
 
         // Application service registrations
         services.AddHttpContextAccessor();
@@ -114,7 +129,21 @@ public static class DependencyInjection
             return new AmazonS3Client(accessKey, secretKey, config);
         });
 
-        services.AddScoped<IStorageService, CloudflareR2StorageService>();
+        var r2Config = configuration.GetSection(R2Settings.SectionName).Get<R2Settings>();
+        var isR2Configured = r2Config is not null
+            && !string.IsNullOrWhiteSpace(r2Config.AccountId)
+            && r2Config.AccountId != R2Settings.DefaultDummyAccountId
+            && !string.IsNullOrWhiteSpace(r2Config.AccessKeyId)
+            && r2Config.AccessKeyId != R2Settings.DefaultDummyAccessKey;
+
+        if (isR2Configured)
+        {
+            services.AddScoped<IStorageService, CloudflareR2StorageService>();
+        }
+        else
+        {
+            services.AddScoped<IStorageService, LocalStorageService>();
+        }
 
         // Health Checks
         services.AddHealthChecks()

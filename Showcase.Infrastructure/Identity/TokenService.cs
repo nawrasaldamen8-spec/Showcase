@@ -20,19 +20,26 @@ public class TokenService : ITokenService
         _jwtSettings = jwtOptions.Value ?? new JwtSettings();
     }
 
-    public string GenerateAccessToken(string userId, string email, IList<string>? roles = null)
+    public string GenerateAccessToken(string userId, string username, string? email, IList<string>? roles = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(userId);
-        ArgumentException.ThrowIfNullOrWhiteSpace(email);
+        ArgumentException.ThrowIfNullOrWhiteSpace(username);
 
         var claims = new List<Claim>
         {
             new(JwtRegisteredClaimNames.Sub, userId),
             new(ClaimTypes.NameIdentifier, userId),
-            new(JwtRegisteredClaimNames.Email, email),
-            new(ClaimTypes.Email, email),
+            new(JwtRegisteredClaimNames.UniqueName, username),
+            new("preferred_username", username),
             new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
         };
+
+        // Email is optional on this platform, so the claim is emitted only when the account actually has one.
+        if (!string.IsNullOrWhiteSpace(email))
+        {
+            claims.Add(new Claim(JwtRegisteredClaimNames.Email, email.Trim()));
+            claims.Add(new Claim(ClaimTypes.Email, email.Trim()));
+        }
 
         if (roles is not null)
         {
