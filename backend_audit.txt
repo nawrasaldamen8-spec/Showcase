@@ -1,0 +1,4138 @@
+--- D:\Projects\AspFiles\Showcase\Showcase.Api\Endpoints\Auth\ChangeEmail.cs ---
+using System.Threading;
+using MediatR;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
+using Showcase.Api.Common.Results;
+using Showcase.Application.Features.Auth.Commands.ChangeEmail;
+
+namespace Showcase.Api.Endpoints.Auth;
+
+public class ChangeEmail : IEndpoint
+{
+    public void MapEndpoint(IEndpointRouteBuilder app)
+    {
+        app.MapPut("api/auth/change-email", async (
+            ChangeEmailCommand command,
+            ISender sender,
+            CancellationToken ct) =>
+        {
+            var result = await sender.Send(command, ct);
+            return result.ToResponse();
+        })
+        .WithTags("Auth")
+        .WithName(nameof(ChangeEmail))
+        .Produces(StatusCodes.Status200OK)
+        .ProducesProblem(StatusCodes.Status400BadRequest)
+        .ProducesProblem(StatusCodes.Status401Unauthorized)
+        .ProducesProblem(StatusCodes.Status409Conflict)
+        .ProducesProblem(StatusCodes.Status429TooManyRequests)
+        .RequireAuthorization()
+        .RequireRateLimiting("auth-policy");
+    }
+}
+--- D:\Projects\AspFiles\Showcase\Showcase.Api\Endpoints\Auth\ChangePassword.cs ---
+using System.Threading;
+using MediatR;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
+using Showcase.Api.Common.Results;
+using Showcase.Application.Features.Auth.Commands.ChangePassword;
+
+namespace Showcase.Api.Endpoints.Auth;
+
+public class ChangePassword : IEndpoint
+{
+    public void MapEndpoint(IEndpointRouteBuilder app)
+    {
+        app.MapPost("api/auth/change-password", async (
+            ChangePasswordCommand command,
+            ISender sender,
+            CancellationToken ct) =>
+        {
+            var result = await sender.Send(command, ct);
+            return result.ToResponse();
+        })
+        .WithTags("Auth")
+        .WithName(nameof(ChangePassword))
+        .Produces(StatusCodes.Status200OK)
+        .ProducesProblem(StatusCodes.Status400BadRequest)
+        .ProducesProblem(StatusCodes.Status401Unauthorized)
+        .ProducesProblem(StatusCodes.Status429TooManyRequests)
+        .RequireAuthorization()
+        .RequireRateLimiting("auth-policy");
+    }
+}
+--- D:\Projects\AspFiles\Showcase\Showcase.Api\Endpoints\Auth\ChangeUsername.cs ---
+using System.Threading;
+using MediatR;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
+using Showcase.Api.Common.Results;
+using Showcase.Application.Features.Auth.Commands.ChangeUsername;
+
+namespace Showcase.Api.Endpoints.Auth;
+
+public class ChangeUsername : IEndpoint
+{
+    public void MapEndpoint(IEndpointRouteBuilder app)
+    {
+        app.MapPut("api/auth/change-username", async (
+            ChangeUsernameCommand command,
+            ISender sender,
+            CancellationToken ct) =>
+        {
+            var result = await sender.Send(command, ct);
+            return result.ToResponse();
+        })
+        .WithTags("Auth")
+        .WithName(nameof(ChangeUsername))
+        .Produces(StatusCodes.Status200OK)
+        .ProducesProblem(StatusCodes.Status400BadRequest)
+        .ProducesProblem(StatusCodes.Status401Unauthorized)
+        .ProducesProblem(StatusCodes.Status409Conflict)
+        .ProducesProblem(StatusCodes.Status429TooManyRequests)
+        .RequireAuthorization()
+        .RequireRateLimiting("auth-policy");
+    }
+}
+--- D:\Projects\AspFiles\Showcase\Showcase.Api\Endpoints\Auth\CheckUsername.cs ---
+using System.Threading;
+using MediatR;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
+using Showcase.Api.Common.Results;
+using Showcase.Application.Features.Auth.Queries.CheckUsername;
+
+namespace Showcase.Api.Endpoints.Auth;
+
+public class CheckUsername : IEndpoint
+{
+    public void MapEndpoint(IEndpointRouteBuilder app)
+    {
+        app.MapGet("api/auth/check-username", async (
+            string username,
+            ISender sender,
+            CancellationToken ct) =>
+        {
+            var query = new CheckUsernameQuery(username);
+            var result = await sender.Send(query, ct);
+            return result.ToResponse();
+        })
+        .WithTags("Auth")
+        .WithName(nameof(CheckUsername))
+        .Produces<CheckUsernameResponse>(StatusCodes.Status200OK)
+        .ProducesProblem(StatusCodes.Status400BadRequest)
+        .AllowAnonymous()
+        .RequireRateLimiting("auth-policy");
+    }
+}
+--- D:\Projects\AspFiles\Showcase\Showcase.Api\Endpoints\Auth\GetCurrentUser.cs ---
+using System.Threading;
+using MediatR;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
+using Showcase.Api.Common.Results;
+using Showcase.Application.Features.Auth.Queries.GetCurrentUser;
+
+namespace Showcase.Api.Endpoints.Auth;
+
+public class GetCurrentUser : IEndpoint
+{
+    public void MapEndpoint(IEndpointRouteBuilder app)
+    {
+        app.MapGet("api/auth/me", async (
+            ISender sender,
+            CancellationToken ct) =>
+        {
+            var result = await sender.Send(new GetCurrentUserQuery(), ct);
+            return result.ToResponse();
+        })
+        .WithTags("Auth")
+        .WithName(nameof(GetCurrentUser))
+        .Produces<CurrentUserResponse>(StatusCodes.Status200OK)
+        .ProducesProblem(StatusCodes.Status401Unauthorized)
+        .ProducesProblem(StatusCodes.Status404NotFound)
+        .RequireAuthorization();
+    }
+}
+--- D:\Projects\AspFiles\Showcase\Showcase.Api\Endpoints\Auth\Login.cs ---
+using System.Threading;
+using MediatR;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
+using Showcase.Api.Common.Results;
+using Showcase.Application.Features.Auth.Commands.Login;
+using Showcase.Application.Features.Auth.Common;
+
+namespace Showcase.Api.Endpoints.Auth;
+
+public class Login : IEndpoint
+{
+    public void MapEndpoint(IEndpointRouteBuilder app)
+    {
+        app.MapPost("api/auth/login", async (
+            LoginCommand command,
+            ISender sender,
+            CancellationToken ct) =>
+        {
+            var result = await sender.Send(command, ct);
+            return result.ToResponse();
+        })
+        .WithTags("Auth")
+        .WithName(nameof(Login))
+        .Produces<AuthResponse>(StatusCodes.Status200OK)
+        .ProducesProblem(StatusCodes.Status400BadRequest)
+        .ProducesProblem(StatusCodes.Status401Unauthorized)
+        .ProducesProblem(StatusCodes.Status429TooManyRequests)
+        .AllowAnonymous()
+        .RequireRateLimiting("auth-policy");
+    }
+}
+--- D:\Projects\AspFiles\Showcase\Showcase.Api\Endpoints\Auth\Logout.cs ---
+using System.Threading;
+using MediatR;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
+using Showcase.Api.Common.Results;
+using Showcase.Application.Features.Auth.Commands.Logout;
+
+namespace Showcase.Api.Endpoints.Auth;
+
+public class Logout : IEndpoint
+{
+    public void MapEndpoint(IEndpointRouteBuilder app)
+    {
+        app.MapPost("api/auth/logout", async (
+            ISender sender,
+            CancellationToken ct) =>
+        {
+            var result = await sender.Send(new LogoutCommand(), ct);
+            return result.ToResponse();
+        })
+        .WithTags("Auth")
+        .WithName(nameof(Logout))
+        .WithSummary("Logout current user and revoke refresh token")
+        .WithDescription("Clears the stored refresh token and expiration for the authenticated user.")
+        .Produces(StatusCodes.Status200OK)
+        .ProducesProblem(StatusCodes.Status401Unauthorized)
+        .RequireAuthorization();
+    }
+}
+--- D:\Projects\AspFiles\Showcase\Showcase.Api\Endpoints\Auth\RefreshToken.cs ---
+using System.Threading;
+using MediatR;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
+using Showcase.Api.Common.Results;
+using Showcase.Application.Features.Auth.Commands.RefreshToken;
+using Showcase.Application.Features.Auth.Common;
+
+namespace Showcase.Api.Endpoints.Auth;
+
+public class RefreshToken : IEndpoint
+{
+    public void MapEndpoint(IEndpointRouteBuilder app)
+    {
+        app.MapPost("api/auth/refresh", async (
+            RefreshTokenCommand command,
+            ISender sender,
+            CancellationToken ct) =>
+        {
+            var result = await sender.Send(command, ct);
+            return result.ToResponse();
+        })
+        .WithTags("Auth")
+        .WithName(nameof(RefreshToken))
+        .Produces<AuthResponse>(StatusCodes.Status200OK)
+        .ProducesProblem(StatusCodes.Status400BadRequest)
+        .ProducesProblem(StatusCodes.Status401Unauthorized)
+        .ProducesProblem(StatusCodes.Status429TooManyRequests)
+        .AllowAnonymous()
+        .RequireRateLimiting("auth-policy");
+    }
+}
+--- D:\Projects\AspFiles\Showcase\Showcase.Api\Endpoints\Auth\Register.cs ---
+using System.Threading;
+using MediatR;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
+using Showcase.Api.Common.Results;
+using Showcase.Application.Features.Auth.Commands.Register;
+using Showcase.Application.Features.Auth.Common;
+
+namespace Showcase.Api.Endpoints.Auth;
+
+public class Register : IEndpoint
+{
+    public void MapEndpoint(IEndpointRouteBuilder app)
+    {
+        app.MapPost("api/auth/register", async (
+            RegisterCommand command,
+            ISender sender,
+            CancellationToken ct) =>
+        {
+            var result = await sender.Send(command, ct);
+            return result.ToResponse();
+        })
+        .WithTags("Auth")
+        .WithName(nameof(Register))
+        .Produces<AuthResponse>(StatusCodes.Status200OK)
+        .ProducesProblem(StatusCodes.Status400BadRequest)
+        .ProducesProblem(StatusCodes.Status409Conflict)
+        .ProducesProblem(StatusCodes.Status429TooManyRequests)
+        .AllowAnonymous()
+        .RequireRateLimiting("auth-policy");
+    }
+}
+--- D:\Projects\AspFiles\Showcase\Showcase.Api\Endpoints\Profiles\GetAvatarUploadUrl.cs ---
+using System.Threading;
+using MediatR;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
+using Showcase.Api.Common.Results;
+using Showcase.Application.Features.Profiles.Commands.GetAvatarUploadUrl;
+using Showcase.Application.Features.Profiles.Common;
+
+namespace Showcase.Api.Endpoints.Profiles;
+
+public class GetAvatarUploadUrl : IEndpoint
+{
+    public void MapEndpoint(IEndpointRouteBuilder app)
+    {
+        app.MapPost("api/profiles/me/avatar/upload-url", async (
+            GetAvatarUploadUrlCommand command,
+            ISender sender,
+            CancellationToken ct) =>
+        {
+            var result = await sender.Send(command, ct);
+            return result.ToResponse();
+        })
+        .WithTags("Profiles")
+        .WithName(nameof(GetAvatarUploadUrl))
+        .Produces<AvatarUploadUrlResponse>(StatusCodes.Status200OK)
+        .ProducesProblem(StatusCodes.Status400BadRequest)
+        .ProducesProblem(StatusCodes.Status401Unauthorized)
+        .ProducesProblem(StatusCodes.Status429TooManyRequests)
+        .RequireAuthorization()
+        .RequireRateLimiting("upload-policy");
+    }
+}
+--- D:\Projects\AspFiles\Showcase\Showcase.Api\Endpoints\Profiles\GetMyProfile.cs ---
+using System.Threading;
+using MediatR;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
+using Showcase.Api.Common.Results;
+using Showcase.Application.Features.Profiles.Common;
+using Showcase.Application.Features.Profiles.Queries.GetMyProfile;
+
+namespace Showcase.Api.Endpoints.Profiles;
+
+public class GetMyProfile : IEndpoint
+{
+    public void MapEndpoint(IEndpointRouteBuilder app)
+    {
+        app.MapGet("api/profiles/me", async (
+            ISender sender,
+            CancellationToken ct) =>
+        {
+            var result = await sender.Send(new GetMyProfileQuery(), ct);
+            return result.ToResponse();
+        })
+        .WithTags("Profiles")
+        .WithName(nameof(GetMyProfile))
+        .Produces<MyProfileResponse>(StatusCodes.Status200OK)
+        .ProducesProblem(StatusCodes.Status401Unauthorized)
+        .ProducesProblem(StatusCodes.Status404NotFound)
+        .RequireAuthorization();
+    }
+}
+--- D:\Projects\AspFiles\Showcase\Showcase.Api\Endpoints\Profiles\GetProfilePosts.cs ---
+using System.Threading;
+using MediatR;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
+using Showcase.Api.Common.Results;
+using Showcase.Application.Features.Posts.Common;
+using Showcase.Application.Features.Posts.Queries.GetProfilePosts;
+
+namespace Showcase.Api.Endpoints.Profiles;
+
+public class GetProfilePosts : IEndpoint
+{
+    public void MapEndpoint(IEndpointRouteBuilder app)
+    {
+        app.MapGet("api/profiles/{username}/posts", async (
+            string username,
+            int? pageNumber,
+            int? pageSize,
+            ISender sender,
+            CancellationToken ct) =>
+        {
+            var query = new GetProfilePostsQuery(username, pageNumber ?? 1, pageSize ?? 12);
+            var result = await sender.Send(query, ct);
+            return result.ToResponse();
+        })
+        .WithTags("Profiles")
+        .WithName(nameof(GetProfilePosts))
+        .Produces<PaginatedList<PostSummaryResponse>>(StatusCodes.Status200OK)
+        .ProducesProblem(StatusCodes.Status400BadRequest)
+        .ProducesProblem(StatusCodes.Status404NotFound)
+        .AllowAnonymous();
+    }
+}
+--- D:\Projects\AspFiles\Showcase\Showcase.Api\Endpoints\Profiles\GetProfiles.cs ---
+using System.Collections.Generic;
+using System.Threading;
+using MediatR;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
+using Showcase.Api.Common.Results;
+using Showcase.Application.Features.Profiles.Common;
+using Showcase.Application.Features.Profiles.Queries.GetProfiles;
+
+namespace Showcase.Api.Endpoints.Profiles;
+
+public class GetProfiles : IEndpoint
+{
+    public void MapEndpoint(IEndpointRouteBuilder app)
+    {
+        app.MapGet("api/profiles", async (
+            string? search,
+            ISender sender,
+            CancellationToken ct) =>
+        {
+            var query = new GetProfilesQuery(search);
+            var result = await sender.Send(query, ct);
+            return result.ToResponse();
+        })
+        .WithTags("Profiles")
+        .WithName(nameof(GetProfiles))
+        .Produces<IReadOnlyList<PublicProfileResponse>>(StatusCodes.Status200OK)
+        .AllowAnonymous();
+    }
+}
+--- D:\Projects\AspFiles\Showcase\Showcase.Api\Endpoints\Profiles\GetPublicProfile.cs ---
+using System.Threading;
+using MediatR;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
+using Showcase.Api.Common.Results;
+using Showcase.Application.Features.Profiles.Common;
+using Showcase.Application.Features.Profiles.Queries.GetPublicProfile;
+
+namespace Showcase.Api.Endpoints.Profiles;
+
+public class GetPublicProfile : IEndpoint
+{
+    public void MapEndpoint(IEndpointRouteBuilder app)
+    {
+        app.MapGet("api/profiles/{username}", async (
+            string username,
+            ISender sender,
+            CancellationToken ct) =>
+        {
+            var result = await sender.Send(new GetPublicProfileQuery(username), ct);
+            return result.ToResponse();
+        })
+        .WithTags("Profiles")
+        .WithName(nameof(GetPublicProfile))
+        .Produces<PublicProfileResponse>(StatusCodes.Status200OK)
+        .ProducesProblem(StatusCodes.Status400BadRequest)
+        .ProducesProblem(StatusCodes.Status404NotFound)
+        .AllowAnonymous();
+    }
+}
+--- D:\Projects\AspFiles\Showcase\Showcase.Api\Endpoints\Profiles\RemoveAvatar.cs ---
+using System.Threading;
+using MediatR;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
+using Showcase.Api.Common.Results;
+using Showcase.Application.Features.Profiles.Commands.RemoveAvatar;
+
+namespace Showcase.Api.Endpoints.Profiles;
+
+public class RemoveAvatar : IEndpoint
+{
+    public void MapEndpoint(IEndpointRouteBuilder app)
+    {
+        app.MapDelete("api/profiles/me/avatar", async (
+            ISender sender,
+            CancellationToken ct) =>
+        {
+            var result = await sender.Send(new RemoveAvatarCommand(), ct);
+            return result.ToResponse();
+        })
+        .WithTags("Profiles")
+        .WithName(nameof(RemoveAvatar))
+        .Produces(StatusCodes.Status200OK)
+        .ProducesProblem(StatusCodes.Status401Unauthorized)
+        .ProducesProblem(StatusCodes.Status404NotFound)
+        .RequireAuthorization();
+    }
+}
+--- D:\Projects\AspFiles\Showcase\Showcase.Api\Endpoints\Profiles\SubmitFeaturedRequest.cs ---
+using System.Threading;
+using MediatR;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
+using Showcase.Api.Common.Results;
+using Showcase.Application.Features.Profiles.Commands.SubmitFeaturedRequest;
+
+namespace Showcase.Api.Endpoints.Profiles;
+
+public class SubmitFeaturedRequest : IEndpoint
+{
+    public void MapEndpoint(IEndpointRouteBuilder app)
+    {
+        app.MapPost("api/profiles/me/featured", async (
+            SubmitFeaturedRequestCommand? command,
+            ISender sender,
+            CancellationToken ct) =>
+        {
+            var cmd = command ?? new SubmitFeaturedRequestCommand(null);
+            var result = await sender.Send(cmd, ct);
+            return result.ToResponse();
+        })
+        .WithTags("Profiles")
+        .WithName(nameof(SubmitFeaturedRequest))
+        .Produces(StatusCodes.Status200OK)
+        .ProducesProblem(StatusCodes.Status400BadRequest)
+        .ProducesProblem(StatusCodes.Status401Unauthorized)
+        .RequireAuthorization();
+    }
+}
+--- D:\Projects\AspFiles\Showcase\Showcase.Api\Endpoints\Profiles\SubmitVerificationRequest.cs ---
+using System.Threading;
+using MediatR;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
+using Showcase.Api.Common.Results;
+using Showcase.Application.Features.Profiles.Commands.SubmitVerificationRequest;
+
+namespace Showcase.Api.Endpoints.Profiles;
+
+public class SubmitVerificationRequest : IEndpoint
+{
+    public void MapEndpoint(IEndpointRouteBuilder app)
+    {
+        app.MapPost("api/profiles/me/verify", async (
+            SubmitVerificationRequestCommand? command,
+            ISender sender,
+            CancellationToken ct) =>
+        {
+            var cmd = command ?? new SubmitVerificationRequestCommand(null);
+            var result = await sender.Send(cmd, ct);
+            return result.ToResponse();
+        })
+        .WithTags("Profiles")
+        .WithName(nameof(SubmitVerificationRequest))
+        .Produces(StatusCodes.Status200OK)
+        .ProducesProblem(StatusCodes.Status400BadRequest)
+        .ProducesProblem(StatusCodes.Status401Unauthorized)
+        .RequireAuthorization();
+    }
+}
+--- D:\Projects\AspFiles\Showcase\Showcase.Api\Endpoints\Profiles\UpdateAvatar.cs ---
+using System.Threading;
+using MediatR;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
+using Showcase.Api.Common.Results;
+using Showcase.Application.Features.Profiles.Commands.UpdateAvatar;
+
+namespace Showcase.Api.Endpoints.Profiles;
+
+public class UpdateAvatar : IEndpoint
+{
+    public void MapEndpoint(IEndpointRouteBuilder app)
+    {
+        app.MapPut("api/profiles/me/avatar", async (
+            UpdateAvatarCommand command,
+            ISender sender,
+            CancellationToken ct) =>
+        {
+            var result = await sender.Send(command, ct);
+            return result.ToResponse();
+        })
+        .WithTags("Profiles")
+        .WithName(nameof(UpdateAvatar))
+        .Produces(StatusCodes.Status200OK)
+        .ProducesProblem(StatusCodes.Status400BadRequest)
+        .ProducesProblem(StatusCodes.Status401Unauthorized)
+        .ProducesProblem(StatusCodes.Status404NotFound)
+        .RequireAuthorization();
+    }
+}
+--- D:\Projects\AspFiles\Showcase\Showcase.Api\Endpoints\Profiles\UpdateProfile.cs ---
+using System.Threading;
+using MediatR;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
+using Showcase.Api.Common.Results;
+using Showcase.Application.Features.Profiles.Commands.UpdateProfile;
+
+namespace Showcase.Api.Endpoints.Profiles;
+
+public class UpdateProfile : IEndpoint
+{
+    public void MapEndpoint(IEndpointRouteBuilder app)
+    {
+        app.MapPut("api/profiles/me", async (
+            UpdateProfileCommand command,
+            ISender sender,
+            CancellationToken ct) =>
+        {
+            var result = await sender.Send(command, ct);
+            return result.ToResponse();
+        })
+        .WithTags("Profiles")
+        .WithName(nameof(UpdateProfile))
+        .Produces(StatusCodes.Status200OK)
+        .ProducesProblem(StatusCodes.Status400BadRequest)
+        .ProducesProblem(StatusCodes.Status401Unauthorized)
+        .ProducesProblem(StatusCodes.Status404NotFound)
+        .RequireAuthorization();
+    }
+}
+--- D:\Projects\AspFiles\Showcase\Showcase.Api\Endpoints\SocialLinks\AddSocialLink.cs ---
+using System.Threading;
+using MediatR;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
+using Showcase.Api.Common.Results;
+using Showcase.Application.Features.Profiles.Common;
+using Showcase.Application.Features.SocialLinks.Commands.AddSocialLink;
+
+namespace Showcase.Api.Endpoints.SocialLinks;
+
+public class AddSocialLink : IEndpoint
+{
+    public void MapEndpoint(IEndpointRouteBuilder app)
+    {
+        app.MapPost("api/profiles/me/social-links", async (
+            AddSocialLinkCommand command,
+            ISender sender,
+            CancellationToken ct) =>
+        {
+            var result = await sender.Send(command, ct);
+            return result.ToResponse();
+        })
+        .WithTags("SocialLinks")
+        .WithName(nameof(AddSocialLink))
+        .Produces<SocialLinkDto>(StatusCodes.Status200OK)
+        .ProducesProblem(StatusCodes.Status400BadRequest)
+        .ProducesProblem(StatusCodes.Status401Unauthorized)
+        .ProducesProblem(StatusCodes.Status404NotFound)
+        .RequireAuthorization();
+    }
+}
+--- D:\Projects\AspFiles\Showcase\Showcase.Api\Endpoints\SocialLinks\DeleteSocialLink.cs ---
+using System;
+using System.Threading;
+using MediatR;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
+using Showcase.Api.Common.Results;
+using Showcase.Application.Features.SocialLinks.Commands.DeleteSocialLink;
+
+namespace Showcase.Api.Endpoints.SocialLinks;
+
+public class DeleteSocialLink : IEndpoint
+{
+    public void MapEndpoint(IEndpointRouteBuilder app)
+    {
+        app.MapDelete("api/profiles/me/social-links/{id:guid}", async (
+            Guid id,
+            ISender sender,
+            CancellationToken ct) =>
+        {
+            var result = await sender.Send(new DeleteSocialLinkCommand(id), ct);
+            return result.ToResponse();
+        })
+        .WithTags("SocialLinks")
+        .WithName(nameof(DeleteSocialLink))
+        .Produces(StatusCodes.Status200OK)
+        .ProducesProblem(StatusCodes.Status401Unauthorized)
+        .ProducesProblem(StatusCodes.Status404NotFound)
+        .RequireAuthorization();
+    }
+}
+--- D:\Projects\AspFiles\Showcase\Showcase.Api\Endpoints\SocialLinks\GetSocialLinks.cs ---
+using System.Collections.Generic;
+using System.Threading;
+using MediatR;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
+using Showcase.Api.Common.Results;
+using Showcase.Application.Features.Profiles.Common;
+using Showcase.Application.Features.SocialLinks.Queries.GetSocialLinks;
+
+namespace Showcase.Api.Endpoints.SocialLinks;
+
+public class GetSocialLinks : IEndpoint
+{
+    public void MapEndpoint(IEndpointRouteBuilder app)
+    {
+        app.MapGet("api/profiles/me/social-links", async (
+            ISender sender,
+            CancellationToken ct) =>
+        {
+            var query = new GetSocialLinksQuery();
+            var result = await sender.Send(query, ct);
+            return result.ToResponse();
+        })
+        .WithTags("SocialLinks")
+        .WithName(nameof(GetSocialLinks))
+        .Produces<IReadOnlyList<SocialLinkDto>>(StatusCodes.Status200OK)
+        .ProducesProblem(StatusCodes.Status401Unauthorized)
+        .ProducesProblem(StatusCodes.Status404NotFound)
+        .RequireAuthorization();
+    }
+}
+--- D:\Projects\AspFiles\Showcase\Showcase.Api\Endpoints\SocialLinks\ReorderSocialLinks.cs ---
+using System.Threading;
+using MediatR;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
+using Showcase.Api.Common.Results;
+using Showcase.Application.Features.SocialLinks.Commands.ReorderSocialLinks;
+
+namespace Showcase.Api.Endpoints.SocialLinks;
+
+public class ReorderSocialLinks : IEndpoint
+{
+    public void MapEndpoint(IEndpointRouteBuilder app)
+    {
+        app.MapPut("api/profiles/me/social-links/reorder", async (
+            ReorderSocialLinksCommand command,
+            ISender sender,
+            CancellationToken ct) =>
+        {
+            var result = await sender.Send(command, ct);
+            return result.ToResponse();
+        })
+        .WithTags("SocialLinks")
+        .WithName(nameof(ReorderSocialLinks))
+        .Produces(StatusCodes.Status200OK)
+        .ProducesProblem(StatusCodes.Status400BadRequest)
+        .ProducesProblem(StatusCodes.Status401Unauthorized)
+        .ProducesProblem(StatusCodes.Status404NotFound)
+        .RequireAuthorization();
+    }
+}
+--- D:\Projects\AspFiles\Showcase\Showcase.Api\Endpoints\SocialLinks\UpdateSocialLink.cs ---
+using System;
+using System.Threading;
+using MediatR;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
+using Showcase.Api.Common.Results;
+using Showcase.Application.Features.SocialLinks.Commands.UpdateSocialLink;
+
+namespace Showcase.Api.Endpoints.SocialLinks;
+
+public record UpdateSocialLinkRequest(string Platform, string Url);
+
+public class UpdateSocialLink : IEndpoint
+{
+    public void MapEndpoint(IEndpointRouteBuilder app)
+    {
+        app.MapPut("api/profiles/me/social-links/{id:guid}", async (
+            Guid id,
+            UpdateSocialLinkRequest request,
+            ISender sender,
+            CancellationToken ct) =>
+        {
+            var command = new UpdateSocialLinkCommand(id, request.Platform, request.Url);
+            var result = await sender.Send(command, ct);
+            return result.ToResponse();
+        })
+        .WithTags("SocialLinks")
+        .WithName(nameof(UpdateSocialLink))
+        .Produces(StatusCodes.Status200OK)
+        .ProducesProblem(StatusCodes.Status400BadRequest)
+        .ProducesProblem(StatusCodes.Status401Unauthorized)
+        .ProducesProblem(StatusCodes.Status404NotFound)
+        .RequireAuthorization();
+    }
+}
+--- D:\Projects\AspFiles\Showcase\Showcase.Application\Features\Auth\Commands\ChangeEmail\ChangeEmailCommand.cs ---
+using MediatR;
+using Showcase.Domain.Common.Results;
+
+namespace Showcase.Application.Features.Auth.Commands.ChangeEmail;
+
+public record ChangeEmailCommand(
+    string NewEmail,
+    string CurrentPassword) : IRequest<Result>;
+--- D:\Projects\AspFiles\Showcase\Showcase.Application\Features\Auth\Commands\ChangeEmail\ChangeEmailCommandHandler.cs ---
+using System.Threading;
+using System.Threading.Tasks;
+using MediatR;
+using Showcase.Application.Common.Interfaces;
+using Showcase.Domain.Common.Results;
+
+namespace Showcase.Application.Features.Auth.Commands.ChangeEmail;
+
+public class ChangeEmailCommandHandler : IRequestHandler<ChangeEmailCommand, Result>
+{
+    private readonly IIdentityService _identityService;
+    private readonly ICurrentUserService _currentUserService;
+
+    public ChangeEmailCommandHandler(
+        IIdentityService identityService,
+        ICurrentUserService currentUserService)
+    {
+        _identityService = identityService;
+        _currentUserService = currentUserService;
+    }
+
+    public async Task<Result> Handle(ChangeEmailCommand request, CancellationToken ct)
+    {
+        var userId = _currentUserService.UserId;
+        if (string.IsNullOrWhiteSpace(userId))
+        {
+            return Error.Unauthorized("Auth.Unauthorized", "User is not authenticated.");
+        }
+
+        return await _identityService.ChangeEmailAsync(
+            userId,
+            request.NewEmail,
+            request.CurrentPassword,
+            ct);
+    }
+}
+--- D:\Projects\AspFiles\Showcase\Showcase.Application\Features\Auth\Commands\ChangeEmail\ChangeEmailCommandValidator.cs ---
+using FluentValidation;
+
+namespace Showcase.Application.Features.Auth.Commands.ChangeEmail;
+
+public class ChangeEmailCommandValidator : AbstractValidator<ChangeEmailCommand>
+{
+    public ChangeEmailCommandValidator()
+    {
+        RuleFor(x => x.NewEmail)
+            .NotEmpty().WithMessage("New email is required.")
+            .EmailAddress().WithMessage("New email must be a valid email address.")
+            .MaximumLength(256).WithMessage("Email cannot exceed 256 characters.");
+
+        RuleFor(x => x.CurrentPassword)
+            .NotEmpty().WithMessage("Current password is required.");
+    }
+}
+--- D:\Projects\AspFiles\Showcase\Showcase.Application\Features\Auth\Commands\ChangePassword\ChangePasswordCommand.cs ---
+using MediatR;
+using Showcase.Domain.Common.Results;
+
+namespace Showcase.Application.Features.Auth.Commands.ChangePassword;
+
+public record ChangePasswordCommand(
+    string CurrentPassword,
+    string NewPassword) : IRequest<Result>;
+--- D:\Projects\AspFiles\Showcase\Showcase.Application\Features\Auth\Commands\ChangePassword\ChangePasswordCommandHandler.cs ---
+using System.Threading;
+using System.Threading.Tasks;
+using MediatR;
+using Showcase.Application.Common.Interfaces;
+using Showcase.Domain.Common.Results;
+
+namespace Showcase.Application.Features.Auth.Commands.ChangePassword;
+
+public class ChangePasswordCommandHandler : IRequestHandler<ChangePasswordCommand, Result>
+{
+    private readonly IIdentityService _identityService;
+    private readonly ICurrentUserService _currentUserService;
+
+    public ChangePasswordCommandHandler(
+        IIdentityService identityService,
+        ICurrentUserService currentUserService)
+    {
+        _identityService = identityService;
+        _currentUserService = currentUserService;
+    }
+
+    public async Task<Result> Handle(ChangePasswordCommand request, CancellationToken ct)
+    {
+        var userId = _currentUserService.UserId;
+        if (string.IsNullOrWhiteSpace(userId))
+        {
+            return Error.Unauthorized("Auth.Unauthorized", "User is not authenticated.");
+        }
+
+        return await _identityService.ChangePasswordAsync(
+            userId,
+            request.CurrentPassword,
+            request.NewPassword,
+            ct);
+    }
+}
+--- D:\Projects\AspFiles\Showcase\Showcase.Application\Features\Auth\Commands\ChangePassword\ChangePasswordCommandValidator.cs ---
+using FluentValidation;
+
+namespace Showcase.Application.Features.Auth.Commands.ChangePassword;
+
+public class ChangePasswordCommandValidator : AbstractValidator<ChangePasswordCommand>
+{
+    public ChangePasswordCommandValidator()
+    {
+        RuleFor(x => x.CurrentPassword)
+            .NotEmpty().WithMessage("Current password is required.");
+
+        RuleFor(x => x.NewPassword)
+            .NotEmpty().WithMessage("New password is required.")
+            .MinimumLength(8).WithMessage("New password must be at least 8 characters long.")
+            .Matches(@"[A-Z]").WithMessage("New password must contain at least one uppercase letter.")
+            .Matches(@"[a-z]").WithMessage("New password must contain at least one lowercase letter.")
+            .Matches(@"[0-9]").WithMessage("New password must contain at least one digit.")
+            .Matches(@"[^a-zA-Z0-9]").WithMessage("New password must contain at least one non-alphanumeric character.")
+            .NotEqual(x => x.CurrentPassword).WithMessage("New password cannot be the same as current password.");
+    }
+}
+--- D:\Projects\AspFiles\Showcase\Showcase.Application\Features\Auth\Commands\ChangeUsername\ChangeUsernameCommand.cs ---
+using MediatR;
+using Showcase.Domain.Common.Results;
+
+namespace Showcase.Application.Features.Auth.Commands.ChangeUsername;
+
+public record ChangeUsernameCommand(
+    string NewUsername,
+    string CurrentPassword) : IRequest<Result>;
+--- D:\Projects\AspFiles\Showcase\Showcase.Application\Features\Auth\Commands\ChangeUsername\ChangeUsernameCommandHandler.cs ---
+using System.Threading;
+using System.Threading.Tasks;
+using MediatR;
+using Showcase.Application.Common.Interfaces;
+using Showcase.Domain.Common.Results;
+
+namespace Showcase.Application.Features.Auth.Commands.ChangeUsername;
+
+public class ChangeUsernameCommandHandler : IRequestHandler<ChangeUsernameCommand, Result>
+{
+    private readonly IIdentityService _identityService;
+    private readonly ICurrentUserService _currentUserService;
+
+    public ChangeUsernameCommandHandler(
+        IIdentityService identityService,
+        ICurrentUserService currentUserService)
+    {
+        _identityService = identityService;
+        _currentUserService = currentUserService;
+    }
+
+    public async Task<Result> Handle(ChangeUsernameCommand request, CancellationToken ct)
+    {
+        var userId = _currentUserService.UserId;
+        if (string.IsNullOrWhiteSpace(userId))
+        {
+            return Error.Unauthorized("Auth.Unauthorized", "User is not authenticated.");
+        }
+
+        return await _identityService.ChangeUsernameAsync(
+            userId,
+            request.NewUsername,
+            request.CurrentPassword,
+            ct);
+    }
+}
+--- D:\Projects\AspFiles\Showcase\Showcase.Application\Features\Auth\Commands\ChangeUsername\ChangeUsernameCommandValidator.cs ---
+using FluentValidation;
+
+namespace Showcase.Application.Features.Auth.Commands.ChangeUsername;
+
+public class ChangeUsernameCommandValidator : AbstractValidator<ChangeUsernameCommand>
+{
+    public ChangeUsernameCommandValidator()
+    {
+        RuleFor(x => x.NewUsername)
+            .NotEmpty().WithMessage("New username is required.")
+            .MinimumLength(3).WithMessage("New username must be at least 3 characters long.")
+            .MaximumLength(30).WithMessage("New username cannot exceed 30 characters.")
+            .Matches(@"^[a-zA-Z0-9_-]+$").WithMessage("New username can only contain letters, numbers, underscores, and dashes.");
+
+        RuleFor(x => x.CurrentPassword)
+            .NotEmpty().WithMessage("Current password is required.");
+    }
+}
+--- D:\Projects\AspFiles\Showcase\Showcase.Application\Features\Auth\Commands\Login\LoginCommand.cs ---
+using MediatR;
+using Showcase.Application.Features.Auth.Common;
+using Showcase.Domain.Common.Results;
+
+namespace Showcase.Application.Features.Auth.Commands.Login;
+
+public record LoginCommand(
+    string EmailOrUsername,
+    string Password) : IRequest<Result<AuthResponse>>;
+--- D:\Projects\AspFiles\Showcase\Showcase.Application\Features\Auth\Commands\Login\LoginCommandHandler.cs ---
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+using MediatR;
+using Showcase.Application.Common.Interfaces;
+using Showcase.Application.Features.Auth.Common;
+using Showcase.Domain.Common.Results;
+
+namespace Showcase.Application.Features.Auth.Commands.Login;
+
+public class LoginCommandHandler : IRequestHandler<LoginCommand, Result<AuthResponse>>
+{
+    private readonly IIdentityService _identityService;
+    private readonly ITokenService _tokenService;
+
+    public LoginCommandHandler(
+        IIdentityService identityService,
+        ITokenService tokenService)
+    {
+        _identityService = identityService;
+        _tokenService = tokenService;
+    }
+
+    public async Task<Result<AuthResponse>> Handle(LoginCommand request, CancellationToken ct)
+    {
+        var authResult = await _identityService.AuthenticateAsync(
+            request.EmailOrUsername,
+            request.Password,
+            ct);
+
+        if (authResult.IsFailure)
+        {
+            return Result.Failure<AuthResponse>(authResult.Error);
+        }
+
+        var user = authResult.Value;
+
+        var accessToken = _tokenService.GenerateAccessToken(user.Id, user.UserName, user.Email, user.Roles);
+        var refreshToken = _tokenService.GenerateRefreshToken();
+
+        var updateTokenResult = await _identityService.UpdateRefreshTokenAsync(
+            user.Id,
+            refreshToken,
+            DateTime.UtcNow.AddDays(7),
+            ct);
+
+        if (updateTokenResult.IsFailure)
+        {
+            return Result.Failure<AuthResponse>(updateTokenResult.Error);
+        }
+
+        return new AuthResponse(accessToken, refreshToken);
+    }
+}
+--- D:\Projects\AspFiles\Showcase\Showcase.Application\Features\Auth\Commands\Login\LoginCommandValidator.cs ---
+using FluentValidation;
+
+namespace Showcase.Application.Features.Auth.Commands.Login;
+
+public class LoginCommandValidator : AbstractValidator<LoginCommand>
+{
+    public LoginCommandValidator()
+    {
+        RuleFor(x => x.EmailOrUsername)
+            .NotEmpty().WithMessage("Email or username is required.");
+
+        RuleFor(x => x.Password)
+            .NotEmpty().WithMessage("Password is required.");
+    }
+}
+--- D:\Projects\AspFiles\Showcase\Showcase.Application\Features\Auth\Commands\Logout\LogoutCommand.cs ---
+using MediatR;
+using Showcase.Domain.Common.Results;
+
+namespace Showcase.Application.Features.Auth.Commands.Logout;
+
+public record LogoutCommand : IRequest<Result>;
+--- D:\Projects\AspFiles\Showcase\Showcase.Application\Features\Auth\Commands\Logout\LogoutCommandHandler.cs ---
+using System.Threading;
+using System.Threading.Tasks;
+using MediatR;
+using Showcase.Application.Common.Interfaces;
+using Showcase.Domain.Common.Results;
+
+namespace Showcase.Application.Features.Auth.Commands.Logout;
+
+public class LogoutCommandHandler : IRequestHandler<LogoutCommand, Result>
+{
+    private readonly IIdentityService _identityService;
+    private readonly ICurrentUserService _currentUserService;
+
+    public LogoutCommandHandler(
+        IIdentityService identityService,
+        ICurrentUserService currentUserService)
+    {
+        _identityService = identityService;
+        _currentUserService = currentUserService;
+    }
+
+    public async Task<Result> Handle(LogoutCommand request, CancellationToken ct)
+    {
+        var userId = _currentUserService.UserId;
+        if (string.IsNullOrWhiteSpace(userId))
+        {
+            return Error.Unauthorized("Auth.Unauthorized", "User is not authenticated.");
+        }
+
+        return await _identityService.RevokeRefreshTokenAsync(userId, ct);
+    }
+}
+--- D:\Projects\AspFiles\Showcase\Showcase.Application\Features\Auth\Commands\RefreshToken\RefreshTokenCommand.cs ---
+using MediatR;
+using Showcase.Application.Features.Auth.Common;
+using Showcase.Domain.Common.Results;
+
+namespace Showcase.Application.Features.Auth.Commands.RefreshToken;
+
+public record RefreshTokenCommand(
+    string AccessToken,
+    string RefreshToken) : IRequest<Result<AuthResponse>>;
+--- D:\Projects\AspFiles\Showcase\Showcase.Application\Features\Auth\Commands\RefreshToken\RefreshTokenCommandHandler.cs ---
+using System;
+using System.Security.Claims;
+using System.Threading;
+using System.Threading.Tasks;
+using MediatR;
+using Showcase.Application.Common.Interfaces;
+using Showcase.Application.Features.Auth.Common;
+using Showcase.Domain.Common.Results;
+
+namespace Showcase.Application.Features.Auth.Commands.RefreshToken;
+
+public class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCommand, Result<AuthResponse>>
+{
+    private readonly IIdentityService _identityService;
+    private readonly ITokenService _tokenService;
+
+    public RefreshTokenCommandHandler(
+        IIdentityService identityService,
+        ITokenService tokenService)
+    {
+        _identityService = identityService;
+        _tokenService = tokenService;
+    }
+
+    public async Task<Result<AuthResponse>> Handle(RefreshTokenCommand request, CancellationToken ct)
+    {
+        var principal = _tokenService.GetPrincipalFromExpiredToken(request.AccessToken);
+        if (principal is null)
+        {
+            return Error.Unauthorized("Auth.InvalidToken", "Invalid or malformed access token.");
+        }
+
+        var userId = principal.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrWhiteSpace(userId))
+        {
+            return Error.Unauthorized("Auth.InvalidToken", "Access token is missing user identifier claim.");
+        }
+
+        var validateResult = await _identityService.ValidateRefreshTokenAsync(
+            userId,
+            request.RefreshToken,
+            ct);
+
+        if (validateResult.IsFailure)
+        {
+            return Result.Failure<AuthResponse>(validateResult.Error);
+        }
+
+        var user = validateResult.Value;
+
+        var newAccessToken = _tokenService.GenerateAccessToken(user.Id, user.UserName, user.Email, user.Roles);
+        var newRefreshToken = _tokenService.GenerateRefreshToken();
+
+        var updateTokenResult = await _identityService.UpdateRefreshTokenAsync(
+            user.Id,
+            newRefreshToken,
+            DateTime.UtcNow.AddDays(7),
+            ct);
+
+        if (updateTokenResult.IsFailure)
+        {
+            return Result.Failure<AuthResponse>(updateTokenResult.Error);
+        }
+
+        return new AuthResponse(newAccessToken, newRefreshToken);
+    }
+}
+--- D:\Projects\AspFiles\Showcase\Showcase.Application\Features\Auth\Commands\RefreshToken\RefreshTokenCommandValidator.cs ---
+using FluentValidation;
+
+namespace Showcase.Application.Features.Auth.Commands.RefreshToken;
+
+public class RefreshTokenCommandValidator : AbstractValidator<RefreshTokenCommand>
+{
+    public RefreshTokenCommandValidator()
+    {
+        RuleFor(x => x.AccessToken)
+            .NotEmpty().WithMessage("Access token is required.");
+
+        RuleFor(x => x.RefreshToken)
+            .NotEmpty().WithMessage("Refresh token is required.");
+    }
+}
+--- D:\Projects\AspFiles\Showcase\Showcase.Application\Features\Auth\Commands\Register\RegisterCommand.cs ---
+using MediatR;
+using Showcase.Application.Features.Auth.Common;
+using Showcase.Domain.Common.Results;
+
+namespace Showcase.Application.Features.Auth.Commands.Register;
+
+public record RegisterCommand(
+    string Username,
+    string Password,
+    string Name,
+    string? Email = null) : IRequest<Result<AuthResponse>>;
+--- D:\Projects\AspFiles\Showcase\Showcase.Application\Features\Auth\Commands\Register\RegisterCommandHandler.cs ---
+using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+using MediatR;
+using Showcase.Application.Common.Interfaces;
+using Showcase.Application.Features.Auth.Common;
+using Showcase.Domain.Common.Results;
+using Showcase.Domain.Entities;
+
+namespace Showcase.Application.Features.Auth.Commands.Register;
+
+public class RegisterCommandHandler : IRequestHandler<RegisterCommand, Result<AuthResponse>>
+{
+    private readonly IIdentityService _identityService;
+    private readonly IApplicationDbContext _context;
+    private readonly ITokenService _tokenService;
+
+    public RegisterCommandHandler(
+        IIdentityService identityService,
+        IApplicationDbContext context,
+        ITokenService tokenService)
+    {
+        _identityService = identityService;
+        _context = context;
+        _tokenService = tokenService;
+    }
+
+    public async Task<Result<AuthResponse>> Handle(RegisterCommand request, CancellationToken ct)
+    {
+        // 1. Register User in Identity
+        var registerResult = await _identityService.RegisterUserAsync(
+            request.Username,
+            request.Password,
+            request.Email,
+            ct);
+
+        if (registerResult.IsFailure)
+        {
+            return Result.Failure<AuthResponse>(registerResult.Error);
+        }
+
+        var userId = registerResult.Value;
+
+        // 2. Provision linked Profile entity in Domain
+        var profile = new Profile(userId, request.Name);
+        _context.Set<Profile>().Add(profile);
+        await _context.SaveChangesAsync(ct);
+
+        // 3. Generate tokens
+        var roles = new List<string>();
+        var accessToken = _tokenService.GenerateAccessToken(userId, request.Username, request.Email, roles);
+        var refreshToken = _tokenService.GenerateRefreshToken();
+
+        // 4. Persist refresh token with 7-day expiration
+        var updateTokenResult = await _identityService.UpdateRefreshTokenAsync(
+            userId,
+            refreshToken,
+            DateTime.UtcNow.AddDays(7),
+            ct);
+
+        if (updateTokenResult.IsFailure)
+        {
+            return Result.Failure<AuthResponse>(updateTokenResult.Error);
+        }
+
+        return new AuthResponse(accessToken, refreshToken);
+    }
+}
+--- D:\Projects\AspFiles\Showcase\Showcase.Application\Features\Auth\Commands\Register\RegisterCommandValidator.cs ---
+using FluentValidation;
+
+namespace Showcase.Application.Features.Auth.Commands.Register;
+
+public class RegisterCommandValidator : AbstractValidator<RegisterCommand>
+{
+    public RegisterCommandValidator()
+    {
+        RuleFor(x => x.Username)
+            .NotEmpty().WithMessage("Username is required.")
+            .Length(3, 30).WithMessage("Username must be between 3 and 30 characters.")
+            .Matches("^[a-zA-Z0-9_-]+$").WithMessage("Username can only contain alphanumeric characters, underscores, and hyphens.");
+
+        RuleFor(x => x.Password)
+            .NotEmpty().WithMessage("Password is required.")
+            .MinimumLength(6).WithMessage("Password must be at least 6 characters long.");
+
+        RuleFor(x => x.Name)
+            .NotEmpty().WithMessage("Name is required.")
+            .MaximumLength(150).WithMessage("Name must not exceed 150 characters.");
+
+        // Email is optional; when supplied it must be usable for account recovery.
+#pragma warning disable CS0618
+        RuleFor(x => x.Email)
+            .MaximumLength(256).WithMessage("Email must not exceed 256 characters.")
+            .EmailAddress(FluentValidation.Validators.EmailValidationMode.Net4xRegex).WithMessage("Email must be a valid email address.")
+            .When(x => !string.IsNullOrWhiteSpace(x.Email));
+#pragma warning restore CS0618
+    }
+}
+--- D:\Projects\AspFiles\Showcase\Showcase.Application\Features\Auth\Common\AuthResponse.cs ---
+namespace Showcase.Application.Features.Auth.Common;
+
+public record AuthResponse(string AccessToken, string RefreshToken);
+--- D:\Projects\AspFiles\Showcase\Showcase.Application\Features\Auth\Queries\CheckUsername\CheckUsernameQuery.cs ---
+using MediatR;
+using Showcase.Domain.Common.Results;
+
+namespace Showcase.Application.Features.Auth.Queries.CheckUsername;
+
+public record CheckUsernameQuery(string Username) : IRequest<Result<CheckUsernameResponse>>;
+--- D:\Projects\AspFiles\Showcase\Showcase.Application\Features\Auth\Queries\CheckUsername\CheckUsernameQueryHandler.cs ---
+using System.Threading;
+using System.Threading.Tasks;
+using MediatR;
+using Showcase.Application.Common.Interfaces;
+using Showcase.Domain.Common.Results;
+
+namespace Showcase.Application.Features.Auth.Queries.CheckUsername;
+
+public class CheckUsernameQueryHandler : IRequestHandler<CheckUsernameQuery, Result<CheckUsernameResponse>>
+{
+    private readonly IIdentityService _identityService;
+
+    public CheckUsernameQueryHandler(IIdentityService identityService)
+    {
+        _identityService = identityService;
+    }
+
+    public async Task<Result<CheckUsernameResponse>> Handle(CheckUsernameQuery request, CancellationToken ct)
+    {
+        var result = await _identityService.GetUserByUsernameAsync(request.Username, ct);
+        // If user is not found, username is available
+        bool isAvailable = result.IsFailure;
+        return new CheckUsernameResponse(isAvailable);
+    }
+}
+--- D:\Projects\AspFiles\Showcase\Showcase.Application\Features\Auth\Queries\CheckUsername\CheckUsernameQueryValidator.cs ---
+using FluentValidation;
+
+namespace Showcase.Application.Features.Auth.Queries.CheckUsername;
+
+public class CheckUsernameQueryValidator : AbstractValidator<CheckUsernameQuery>
+{
+    public CheckUsernameQueryValidator()
+    {
+        RuleFor(x => x.Username)
+            .NotEmpty().WithMessage("Username is required.")
+            .MinimumLength(3).WithMessage("Username must be at least 3 characters.")
+            .MaximumLength(50).WithMessage("Username must not exceed 50 characters.")
+            .Matches(@"^[a-zA-Z0-9_]+$").WithMessage("Username can only contain alphanumeric characters and underscores.");
+    }
+}
+--- D:\Projects\AspFiles\Showcase\Showcase.Application\Features\Auth\Queries\CheckUsername\CheckUsernameResponse.cs ---
+namespace Showcase.Application.Features.Auth.Queries.CheckUsername;
+
+public record CheckUsernameResponse(bool Available);
+--- D:\Projects\AspFiles\Showcase\Showcase.Application\Features\Auth\Queries\GetCurrentUser\CurrentUserResponse.cs ---
+using System;
+using System.Collections.Generic;
+
+namespace Showcase.Application.Features.Auth.Queries.GetCurrentUser;
+
+public record CurrentUserResponse(
+    string Id,
+    string? Email,
+    string Username,
+    string Name,
+    Guid ProfileId,
+    string? Bio,
+    string? AvatarUrl,
+    bool IsVerified,
+    bool IsBanned,
+    string? BanReason,
+    IList<string> Roles);
+--- D:\Projects\AspFiles\Showcase\Showcase.Application\Features\Auth\Queries\GetCurrentUser\GetCurrentUserQuery.cs ---
+using MediatR;
+using Showcase.Domain.Common.Results;
+
+namespace Showcase.Application.Features.Auth.Queries.GetCurrentUser;
+
+public record GetCurrentUserQuery : IRequest<Result<CurrentUserResponse>>;
+--- D:\Projects\AspFiles\Showcase\Showcase.Application\Features\Auth\Queries\GetCurrentUser\GetCurrentUserQueryHandler.cs ---
+using System.Threading;
+using System.Threading.Tasks;
+using MediatR;
+using Microsoft.EntityFrameworkCore;
+using Showcase.Application.Common.Interfaces;
+using Showcase.Domain.Common.Results;
+using Showcase.Domain.Entities;
+
+namespace Showcase.Application.Features.Auth.Queries.GetCurrentUser;
+
+public class GetCurrentUserQueryHandler : IRequestHandler<GetCurrentUserQuery, Result<CurrentUserResponse>>
+{
+    private readonly ICurrentUserService _currentUserService;
+    private readonly IIdentityService _identityService;
+    private readonly IApplicationDbContext _context;
+    private readonly IStorageService _storageService;
+
+    public GetCurrentUserQueryHandler(
+        ICurrentUserService currentUserService,
+        IIdentityService identityService,
+        IApplicationDbContext context,
+        IStorageService storageService)
+    {
+        _currentUserService = currentUserService;
+        _identityService = identityService;
+        _context = context;
+        _storageService = storageService;
+    }
+
+    public async Task<Result<CurrentUserResponse>> Handle(GetCurrentUserQuery request, CancellationToken ct)
+    {
+        var currentUserId = _currentUserService.UserId;
+        if (string.IsNullOrWhiteSpace(currentUserId))
+        {
+            return Error.Unauthorized("Auth.Unauthenticated", "User is not authenticated.");
+        }
+
+        var userResult = await _identityService.GetUserByIdAsync(currentUserId, ct);
+        if (userResult.IsFailure)
+        {
+            return Result.Failure<CurrentUserResponse>(userResult.Error);
+        }
+
+        var user = userResult.Value;
+
+        var profile = await _context.Set<Profile>()
+            .AsNoTracking()
+            .FirstOrDefaultAsync(p => p.UserId == currentUserId, ct);
+
+        if (profile is null)
+        {
+            return Error.NotFound("Profile.NotFound", "User profile was not found.");
+        }
+
+        string? avatarUrl = profile.AvatarKey is not null
+            ? _storageService.GetPublicUrl(profile.AvatarKey.Value)
+            : null;
+
+        return new CurrentUserResponse(
+            user.Id,
+            user.Email,
+            user.UserName,
+            profile.Name,
+            profile.Id,
+            profile.Bio?.Value,
+            avatarUrl,
+            profile.IsVerified,
+            profile.IsBanned,
+            profile.BanReason,
+            user.Roles);
+    }
+}
+--- D:\Projects\AspFiles\Showcase\Showcase.Application\Features\Profiles\Commands\GetAvatarUploadUrl\GetAvatarUploadUrlCommand.cs ---
+using MediatR;
+using Showcase.Application.Features.Profiles.Common;
+using Showcase.Domain.Common.Results;
+
+namespace Showcase.Application.Features.Profiles.Commands.GetAvatarUploadUrl;
+
+public record GetAvatarUploadUrlCommand(
+    string ContentType,
+    long FileSizeBytes) : IRequest<Result<AvatarUploadUrlResponse>>;
+--- D:\Projects\AspFiles\Showcase\Showcase.Application\Features\Profiles\Commands\GetAvatarUploadUrl\GetAvatarUploadUrlCommandHandler.cs ---
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+using MediatR;
+using Showcase.Application.Common.Interfaces;
+using Showcase.Application.Features.Profiles.Common;
+using Showcase.Domain.Common.Results;
+
+namespace Showcase.Application.Features.Profiles.Commands.GetAvatarUploadUrl;
+
+public class GetAvatarUploadUrlCommandHandler : IRequestHandler<GetAvatarUploadUrlCommand, Result<AvatarUploadUrlResponse>>
+{
+    private readonly IStorageService _storageService;
+    private readonly ICurrentUserService _currentUserService;
+
+    public GetAvatarUploadUrlCommandHandler(
+        IStorageService storageService,
+        ICurrentUserService currentUserService)
+    {
+        _storageService = storageService;
+        _currentUserService = currentUserService;
+    }
+
+    public async Task<Result<AvatarUploadUrlResponse>> Handle(GetAvatarUploadUrlCommand request, CancellationToken ct)
+    {
+        var userId = _currentUserService.UserId;
+        if (string.IsNullOrWhiteSpace(userId))
+        {
+            return Error.Unauthorized("Auth.Unauthorized", "User is not authenticated.");
+        }
+
+        var extension = request.ContentType.Trim().ToLowerInvariant() switch
+        {
+            "image/jpeg" => "jpg",
+            "image/png" => "png",
+            "image/webp" => "webp",
+            "image/gif" => "gif",
+            _ => "jpg"
+        };
+
+        var storageKey = $"avatars/{userId}/{Guid.NewGuid():N}.{extension}";
+
+        var uploadUrl = await _storageService.GetPresignedUploadUrlAsync(
+            storageKey,
+            request.ContentType.Trim().ToLowerInvariant(),
+            TimeSpan.FromMinutes(15),
+            ct);
+
+        return new AvatarUploadUrlResponse(uploadUrl, storageKey);
+    }
+}
+--- D:\Projects\AspFiles\Showcase\Showcase.Application\Features\Profiles\Commands\GetAvatarUploadUrl\GetAvatarUploadUrlCommandValidator.cs ---
+using System;
+using System.Linq;
+using FluentValidation;
+
+namespace Showcase.Application.Features.Profiles.Commands.GetAvatarUploadUrl;
+
+public class GetAvatarUploadUrlCommandValidator : AbstractValidator<GetAvatarUploadUrlCommand>
+{
+    private static readonly string[] AllowedContentTypes =
+    [
+        "image/jpeg",
+        "image/png",
+        "image/webp",
+        "image/gif"
+    ];
+
+    public const long MaxSizeBytes = 5 * 1024 * 1024; // 5 MB
+
+    public GetAvatarUploadUrlCommandValidator()
+    {
+        RuleFor(x => x.ContentType)
+            .NotEmpty().WithMessage("Content-Type is required.")
+            .Must(type => AllowedContentTypes.Contains(type.Trim().ToLowerInvariant()))
+            .WithMessage("Unsupported image format. Allowed formats: image/jpeg, image/png, image/webp, image/gif.");
+
+        RuleFor(x => x.FileSizeBytes)
+            .GreaterThan(0).WithMessage("File size must be greater than 0.")
+            .LessThanOrEqualTo(MaxSizeBytes).WithMessage($"File size cannot exceed {MaxSizeBytes / (1024 * 1024)} MB.");
+    }
+}
+--- D:\Projects\AspFiles\Showcase\Showcase.Application\Features\Profiles\Commands\RemoveAvatar\RemoveAvatarCommand.cs ---
+using MediatR;
+using Showcase.Domain.Common.Results;
+
+namespace Showcase.Application.Features.Profiles.Commands.RemoveAvatar;
+
+public record RemoveAvatarCommand : IRequest<Result>;
+--- D:\Projects\AspFiles\Showcase\Showcase.Application\Features\Profiles\Commands\RemoveAvatar\RemoveAvatarCommandHandler.cs ---
+using System.Threading;
+using System.Threading.Tasks;
+using MediatR;
+using Microsoft.EntityFrameworkCore;
+using Showcase.Application.Common.Interfaces;
+using Showcase.Domain.Common.Results;
+using Showcase.Domain.Entities;
+
+namespace Showcase.Application.Features.Profiles.Commands.RemoveAvatar;
+
+public class RemoveAvatarCommandHandler : IRequestHandler<RemoveAvatarCommand, Result>
+{
+    private readonly IApplicationDbContext _context;
+    private readonly ICurrentUserService _currentUserService;
+    private readonly IStorageService _storageService;
+
+    public RemoveAvatarCommandHandler(
+        IApplicationDbContext context,
+        ICurrentUserService currentUserService,
+        IStorageService storageService)
+    {
+        _context = context;
+        _currentUserService = currentUserService;
+        _storageService = storageService;
+    }
+
+    public async Task<Result> Handle(RemoveAvatarCommand request, CancellationToken ct)
+    {
+        var userId = _currentUserService.UserId;
+        if (string.IsNullOrWhiteSpace(userId))
+        {
+            return Error.Unauthorized("Auth.Unauthorized", "User is not authenticated.");
+        }
+
+        var profile = await _context.Profiles.FirstOrDefaultAsync(p => p.UserId == userId, ct);
+        if (profile is null)
+        {
+            return ProfileErrors.NotFoundForUser(userId);
+        }
+
+        if (profile.AvatarKey is not null)
+        {
+            await _storageService.DeleteAsync(profile.AvatarKey.Value, ct);
+            profile.RemoveAvatar();
+            await _context.SaveChangesAsync(ct);
+        }
+
+        return Result.Success();
+    }
+}
+--- D:\Projects\AspFiles\Showcase\Showcase.Application\Features\Profiles\Commands\SubmitFeaturedRequest\SubmitFeaturedRequestCommand.cs ---
+using MediatR;
+using Showcase.Domain.Common.Results;
+
+namespace Showcase.Application.Features.Profiles.Commands.SubmitFeaturedRequest;
+
+public record SubmitFeaturedRequestCommand(string? Note = null) : IRequest<Result>;
+--- D:\Projects\AspFiles\Showcase\Showcase.Application\Features\Profiles\Commands\SubmitFeaturedRequest\SubmitFeaturedRequestCommandHandler.cs ---
+using System.Threading;
+using System.Threading.Tasks;
+using MediatR;
+using Microsoft.EntityFrameworkCore;
+using Showcase.Application.Common.Interfaces;
+using Showcase.Domain.Common.Results;
+using Showcase.Domain.Entities;
+using Showcase.Domain.Enums;
+
+namespace Showcase.Application.Features.Profiles.Commands.SubmitFeaturedRequest;
+
+public class SubmitFeaturedRequestCommandHandler : IRequestHandler<SubmitFeaturedRequestCommand, Result>
+{
+    private readonly ICurrentUserService _currentUserService;
+    private readonly IApplicationDbContext _context;
+
+    public SubmitFeaturedRequestCommandHandler(
+        ICurrentUserService currentUserService,
+        IApplicationDbContext context)
+    {
+        _currentUserService = currentUserService;
+        _context = context;
+    }
+
+    public async Task<Result> Handle(SubmitFeaturedRequestCommand request, CancellationToken ct)
+    {
+        var userId = _currentUserService.UserId;
+        if (string.IsNullOrWhiteSpace(userId))
+            return Error.Unauthorized("Auth.Unauthenticated", "User is not authenticated.");
+
+        var profile = await _context.Profiles
+            .FirstOrDefaultAsync(p => p.UserId == userId && !p.IsDeleted, ct);
+
+        if (profile is null)
+            return ProfileErrors.NotFoundForUser(userId);
+
+        var transitionResult = profile.SetFeaturedStatus(FeaturedStatus.Pending);
+        if (transitionResult.IsFailure)
+            return transitionResult;
+
+        var message = string.IsNullOrWhiteSpace(request.Note) ? "Requesting featured creator status." : request.Note.Trim();
+        var featuredRequest = new FeaturedRequest(userId, message);
+        _context.FeaturedRequests.Add(featuredRequest);
+
+        await _context.SaveChangesAsync(ct);
+        return Result.Success();
+    }
+}
+--- D:\Projects\AspFiles\Showcase\Showcase.Application\Features\Profiles\Commands\SubmitVerificationRequest\SubmitVerificationRequestCommand.cs ---
+using MediatR;
+using Showcase.Domain.Common.Results;
+
+namespace Showcase.Application.Features.Profiles.Commands.SubmitVerificationRequest;
+
+public record SubmitVerificationRequestCommand(string? Note = null) : IRequest<Result>;
+--- D:\Projects\AspFiles\Showcase\Showcase.Application\Features\Profiles\Commands\SubmitVerificationRequest\SubmitVerificationRequestCommandHandler.cs ---
+using System.Threading;
+using System.Threading.Tasks;
+using MediatR;
+using Microsoft.EntityFrameworkCore;
+using Showcase.Application.Common.Interfaces;
+using Showcase.Domain.Common.Results;
+using Showcase.Domain.Entities;
+
+namespace Showcase.Application.Features.Profiles.Commands.SubmitVerificationRequest;
+
+public class SubmitVerificationRequestCommandHandler : IRequestHandler<SubmitVerificationRequestCommand, Result>
+{
+    private readonly ICurrentUserService _currentUserService;
+    private readonly IApplicationDbContext _context;
+
+    public SubmitVerificationRequestCommandHandler(
+        ICurrentUserService currentUserService,
+        IApplicationDbContext context)
+    {
+        _currentUserService = currentUserService;
+        _context = context;
+    }
+
+    public async Task<Result> Handle(SubmitVerificationRequestCommand request, CancellationToken ct)
+    {
+        var userId = _currentUserService.UserId;
+        if (string.IsNullOrWhiteSpace(userId))
+            return Error.Unauthorized("Auth.Unauthenticated", "User is not authenticated.");
+
+        var profile = await _context.Profiles
+            .FirstOrDefaultAsync(p => p.UserId == userId && !p.IsDeleted, ct);
+
+        if (profile is null)
+            return ProfileErrors.NotFoundForUser(userId);
+
+        var requestResult = profile.RequestVerification();
+        if (requestResult.IsFailure)
+            return requestResult;
+
+        var message = string.IsNullOrWhiteSpace(request.Note) ? "Requesting account verification badge." : request.Note.Trim();
+        var verificationRequest = new VerificationRequest(userId, message);
+        _context.VerificationRequests.Add(verificationRequest);
+
+        await _context.SaveChangesAsync(ct);
+        return Result.Success();
+    }
+}
+--- D:\Projects\AspFiles\Showcase\Showcase.Application\Features\Profiles\Commands\UpdateAvatar\UpdateAvatarCommand.cs ---
+using MediatR;
+using Showcase.Domain.Common.Results;
+
+namespace Showcase.Application.Features.Profiles.Commands.UpdateAvatar;
+
+public record UpdateAvatarCommand(string StorageKey) : IRequest<Result>;
+--- D:\Projects\AspFiles\Showcase\Showcase.Application\Features\Profiles\Commands\UpdateAvatar\UpdateAvatarCommandHandler.cs ---
+using System.Threading;
+using System.Threading.Tasks;
+using MediatR;
+using Microsoft.EntityFrameworkCore;
+using Showcase.Application.Common.Interfaces;
+using Showcase.Domain.Common.Results;
+using Showcase.Domain.Entities;
+using Showcase.Domain.ValueObjects;
+
+namespace Showcase.Application.Features.Profiles.Commands.UpdateAvatar;
+
+public class UpdateAvatarCommandHandler : IRequestHandler<UpdateAvatarCommand, Result>
+{
+    private readonly IApplicationDbContext _context;
+    private readonly ICurrentUserService _currentUserService;
+    private readonly IStorageService _storageService;
+
+    public UpdateAvatarCommandHandler(
+        IApplicationDbContext context,
+        ICurrentUserService currentUserService,
+        IStorageService storageService)
+    {
+        _context = context;
+        _currentUserService = currentUserService;
+        _storageService = storageService;
+    }
+
+    public async Task<Result> Handle(UpdateAvatarCommand request, CancellationToken ct)
+    {
+        var userId = _currentUserService.UserId;
+        if (string.IsNullOrWhiteSpace(userId))
+        {
+            return Error.Unauthorized("Auth.Unauthorized", "User is not authenticated.");
+        }
+
+        var profile = await _context.Profiles.FirstOrDefaultAsync(p => p.UserId == userId, ct);
+        if (profile is null)
+        {
+            return ProfileErrors.NotFoundForUser(userId);
+        }
+
+        var storageKeyResult = StorageKey.Create(request.StorageKey);
+        if (storageKeyResult.IsFailure)
+        {
+            return Result.Failure(storageKeyResult.Error);
+        }
+
+        // Clean up previous avatar if it exists and differs
+        if (profile.AvatarKey is not null && profile.AvatarKey.Value != storageKeyResult.Value.Value)
+        {
+            await _storageService.DeleteAsync(profile.AvatarKey.Value, ct);
+        }
+
+        profile.SetAvatar(storageKeyResult.Value);
+        await _context.SaveChangesAsync(ct);
+
+        return Result.Success();
+    }
+}
+--- D:\Projects\AspFiles\Showcase\Showcase.Application\Features\Profiles\Commands\UpdateAvatar\UpdateAvatarCommandValidator.cs ---
+using FluentValidation;
+using Showcase.Domain.ValueObjects;
+
+namespace Showcase.Application.Features.Profiles.Commands.UpdateAvatar;
+
+public class UpdateAvatarCommandValidator : AbstractValidator<UpdateAvatarCommand>
+{
+    public UpdateAvatarCommandValidator()
+    {
+        RuleFor(x => x.StorageKey)
+            .NotEmpty().WithMessage("Storage key is required.")
+            .MaximumLength(StorageKey.MaxLength).WithMessage($"Storage key cannot exceed {StorageKey.MaxLength} characters.");
+    }
+}
+--- D:\Projects\AspFiles\Showcase\Showcase.Application\Features\Profiles\Commands\UpdateProfile\UpdateProfileCommand.cs ---
+using MediatR;
+using Showcase.Domain.Common.Results;
+
+namespace Showcase.Application.Features.Profiles.Commands.UpdateProfile;
+
+public record UpdateProfileCommand(
+    string Name,
+    string? Specialty,
+    string? Country,
+    string? Bio) : IRequest<Result>;
+--- D:\Projects\AspFiles\Showcase\Showcase.Application\Features\Profiles\Commands\UpdateProfile\UpdateProfileCommandHandler.cs ---
+using System.Threading;
+using System.Threading.Tasks;
+using MediatR;
+using Microsoft.EntityFrameworkCore;
+using Showcase.Application.Common.Interfaces;
+using Showcase.Domain.Common.Results;
+using Showcase.Domain.Entities;
+using Showcase.Domain.ValueObjects;
+
+namespace Showcase.Application.Features.Profiles.Commands.UpdateProfile;
+
+public class UpdateProfileCommandHandler : IRequestHandler<UpdateProfileCommand, Result>
+{
+    private readonly IApplicationDbContext _context;
+    private readonly ICurrentUserService _currentUserService;
+
+    public UpdateProfileCommandHandler(
+        IApplicationDbContext context,
+        ICurrentUserService currentUserService)
+    {
+        _context = context;
+        _currentUserService = currentUserService;
+    }
+
+    public async Task<Result> Handle(UpdateProfileCommand request, CancellationToken ct)
+    {
+        var userId = _currentUserService.UserId;
+        if (string.IsNullOrWhiteSpace(userId))
+        {
+            return Error.Unauthorized("Auth.Unauthorized", "User is not authenticated.");
+        }
+
+        var profile = await _context.Profiles.FirstOrDefaultAsync(p => p.UserId == userId, ct);
+        if (profile is null)
+        {
+            return ProfileErrors.NotFoundForUser(userId);
+        }
+
+        var bioResult = Bio.CreateOptional(request.Bio);
+        if (bioResult.IsFailure)
+        {
+            return Result.Failure(bioResult.Error);
+        }
+
+        profile.UpdateDetails(request.Name, request.Specialty, request.Country, bioResult.Value);
+        await _context.SaveChangesAsync(ct);
+
+        return Result.Success();
+    }
+}
+--- D:\Projects\AspFiles\Showcase\Showcase.Application\Features\Profiles\Commands\UpdateProfile\UpdateProfileCommandValidator.cs ---
+using FluentValidation;
+using Showcase.Domain.ValueObjects;
+
+namespace Showcase.Application.Features.Profiles.Commands.UpdateProfile;
+
+public class UpdateProfileCommandValidator : AbstractValidator<UpdateProfileCommand>
+{
+    public UpdateProfileCommandValidator()
+    {
+        RuleFor(x => x.Name)
+            .NotEmpty().WithMessage("Name is required.")
+            .MaximumLength(150).WithMessage("Name cannot exceed 150 characters.");
+
+        RuleFor(x => x.Specialty)
+            .MaximumLength(100).WithMessage("Specialty cannot exceed 100 characters.")
+            .When(x => !string.IsNullOrEmpty(x.Specialty));
+
+        RuleFor(x => x.Country)
+            .MaximumLength(100).WithMessage("Country cannot exceed 100 characters.")
+            .When(x => !string.IsNullOrEmpty(x.Country));
+
+        RuleFor(x => x.Bio)
+            .MaximumLength(Bio.MaxLength).WithMessage($"Bio cannot exceed {Bio.MaxLength} characters.")
+            .When(x => !string.IsNullOrEmpty(x.Bio));
+    }
+}
+--- D:\Projects\AspFiles\Showcase\Showcase.Application\Features\Profiles\Common\ProfileResponses.cs ---
+using System;
+using System.Collections.Generic;
+
+namespace Showcase.Application.Features.Profiles.Common;
+
+public record SocialLinkDto(
+    Guid Id,
+    string Platform,
+    string Url,
+    int DisplayOrder);
+
+public record MyProfileResponse(
+    Guid Id,
+    string UserId,
+    string? Email,
+    string UserName,
+    string Name,
+    string? Specialty,
+    string? Country,
+    string? Bio,
+    string? AvatarKey,
+    string? AvatarUrl,
+    IReadOnlyCollection<SocialLinkDto> SocialLinks,
+    DateTime CreatedAt,
+    DateTime? UpdatedAt);
+
+public record PublicProfileResponse(
+    Guid Id,
+    string UserName,
+    string Name,
+    string? Specialty,
+    string? Country,
+    string? Bio,
+    string? AvatarUrl,
+    bool IsVerified,
+    IReadOnlyCollection<SocialLinkDto> SocialLinks);
+
+public record AvatarUploadUrlResponse(
+    string UploadUrl,
+    string StorageKey);
+--- D:\Projects\AspFiles\Showcase\Showcase.Application\Features\Profiles\Queries\GetMyProfile\GetMyProfileQuery.cs ---
+using MediatR;
+using Showcase.Application.Features.Profiles.Common;
+using Showcase.Domain.Common.Results;
+
+namespace Showcase.Application.Features.Profiles.Queries.GetMyProfile;
+
+public record GetMyProfileQuery : IRequest<Result<MyProfileResponse>>;
+--- D:\Projects\AspFiles\Showcase\Showcase.Application\Features\Profiles\Queries\GetMyProfile\GetMyProfileQueryHandler.cs ---
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using MediatR;
+using Microsoft.EntityFrameworkCore;
+using Showcase.Application.Common.Interfaces;
+using Showcase.Application.Features.Profiles.Common;
+using Showcase.Domain.Common.Results;
+using Showcase.Domain.Entities;
+
+namespace Showcase.Application.Features.Profiles.Queries.GetMyProfile;
+
+public class GetMyProfileQueryHandler : IRequestHandler<GetMyProfileQuery, Result<MyProfileResponse>>
+{
+    private readonly IApplicationDbContext _context;
+    private readonly ICurrentUserService _currentUserService;
+    private readonly IIdentityService _identityService;
+    private readonly IStorageService _storageService;
+
+    public GetMyProfileQueryHandler(
+        IApplicationDbContext context,
+        ICurrentUserService currentUserService,
+        IIdentityService identityService,
+        IStorageService storageService)
+    {
+        _context = context;
+        _currentUserService = currentUserService;
+        _identityService = identityService;
+        _storageService = storageService;
+    }
+
+    public async Task<Result<MyProfileResponse>> Handle(GetMyProfileQuery request, CancellationToken ct)
+    {
+        var userId = _currentUserService.UserId;
+        if (string.IsNullOrWhiteSpace(userId))
+        {
+            return Error.Unauthorized("Auth.Unauthorized", "User is not authenticated.");
+        }
+
+        var profile = await _context.Profiles
+            .Include(p => p.SocialLinks)
+            .FirstOrDefaultAsync(p => p.UserId == userId, ct);
+
+        if (profile is null)
+        {
+            return ProfileErrors.NotFoundForUser(userId);
+        }
+
+        var userResult = await _identityService.GetUserByIdAsync(userId, ct);
+        if (userResult.IsFailure)
+        {
+            return Result.Failure<MyProfileResponse>(userResult.Error);
+        }
+
+        var user = userResult.Value;
+        var avatarUrl = profile.AvatarKey is not null
+            ? _storageService.GetPublicUrl(profile.AvatarKey.Value)
+            : null;
+
+        var socialLinks = profile.SocialLinks
+            .OrderBy(x => x.DisplayOrder)
+            .Select(x => new SocialLinkDto(x.Id, x.Platform, x.Url.Value, x.DisplayOrder))
+            .ToList();
+
+        var response = new MyProfileResponse(
+            profile.Id,
+            profile.UserId,
+            user.Email,
+            user.UserName,
+            profile.Name,
+            profile.Specialty,
+            profile.Country,
+            profile.Bio?.Value,
+            profile.AvatarKey?.Value,
+            avatarUrl,
+            socialLinks,
+            profile.CreatedAt,
+            profile.UpdatedAt);
+
+        return response;
+    }
+}
+--- D:\Projects\AspFiles\Showcase\Showcase.Application\Features\Profiles\Queries\GetProfiles\GetProfilesQuery.cs ---
+using System.Collections.Generic;
+using MediatR;
+using Showcase.Application.Features.Profiles.Common;
+using Showcase.Domain.Common.Results;
+
+namespace Showcase.Application.Features.Profiles.Queries.GetProfiles;
+
+public record GetProfilesQuery(string? Search = null) : IRequest<Result<IReadOnlyList<PublicProfileResponse>>>;
+--- D:\Projects\AspFiles\Showcase\Showcase.Application\Features\Profiles\Queries\GetProfiles\GetProfilesQueryHandler.cs ---
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using MediatR;
+using Microsoft.EntityFrameworkCore;
+using Showcase.Application.Common.Interfaces;
+using Showcase.Application.Features.Profiles.Common;
+using Showcase.Domain.Common.Results;
+
+namespace Showcase.Application.Features.Profiles.Queries.GetProfiles;
+
+public class GetProfilesQueryHandler : IRequestHandler<GetProfilesQuery, Result<IReadOnlyList<PublicProfileResponse>>>
+{
+    private readonly IApplicationDbContext _context;
+    private readonly IIdentityService _identityService;
+    private readonly IStorageService _storageService;
+
+    public GetProfilesQueryHandler(
+        IApplicationDbContext context,
+        IIdentityService identityService,
+        IStorageService storageService)
+    {
+        _context = context;
+        _identityService = identityService;
+        _storageService = storageService;
+    }
+
+    public async Task<Result<IReadOnlyList<PublicProfileResponse>>> Handle(GetProfilesQuery request, CancellationToken ct)
+    {
+        var query = _context.Profiles
+            .Include(p => p.SocialLinks)
+            .Where(p => !p.IsBanned && !p.IsDeleted)
+            .AsNoTracking();
+
+        if (!string.IsNullOrWhiteSpace(request.Search))
+        {
+            var search = request.Search.Trim().ToLower();
+            query = query.Where(p =>
+                p.Name.ToLower().Contains(search) ||
+                (p.Specialty != null && p.Specialty.ToLower().Contains(search)) ||
+                (p.Country != null && p.Country.ToLower().Contains(search)));
+        }
+
+        var profiles = await query
+            .OrderByDescending(p => p.CreatedAt)
+            .Take(50)
+            .ToListAsync(ct);
+
+        var list = new List<PublicProfileResponse>();
+
+        foreach (var profile in profiles)
+        {
+            var userResult = await _identityService.GetUserByIdAsync(profile.UserId, ct);
+            var username = userResult.IsSuccess ? userResult.Value.UserName : string.Empty;
+
+            var avatarUrl = profile.AvatarKey is not null
+                ? _storageService.GetPublicUrl(profile.AvatarKey.Value)
+                : null;
+
+            var socialLinks = profile.SocialLinks
+                .OrderBy(x => x.DisplayOrder)
+                .Select(x => new SocialLinkDto(x.Id, x.Platform, x.Url.Value, x.DisplayOrder))
+                .ToList();
+
+            list.Add(new PublicProfileResponse(
+                profile.Id,
+                username,
+                profile.Name,
+                profile.Specialty,
+                profile.Country,
+                profile.Bio?.Value,
+                avatarUrl,
+                profile.IsVerified,
+                socialLinks));
+        }
+
+        return list;
+    }
+}
+--- D:\Projects\AspFiles\Showcase\Showcase.Application\Features\Profiles\Queries\GetPublicProfile\GetPublicProfileQuery.cs ---
+using MediatR;
+using Showcase.Application.Features.Profiles.Common;
+using Showcase.Domain.Common.Results;
+
+namespace Showcase.Application.Features.Profiles.Queries.GetPublicProfile;
+
+public record GetPublicProfileQuery(string Username) : IRequest<Result<PublicProfileResponse>>;
+--- D:\Projects\AspFiles\Showcase\Showcase.Application\Features\Profiles\Queries\GetPublicProfile\GetPublicProfileQueryHandler.cs ---
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using MediatR;
+using Microsoft.EntityFrameworkCore;
+using Showcase.Application.Common.Interfaces;
+using Showcase.Application.Features.Profiles.Common;
+using Showcase.Domain.Common.Results;
+using Showcase.Domain.Entities;
+
+namespace Showcase.Application.Features.Profiles.Queries.GetPublicProfile;
+
+public class GetPublicProfileQueryHandler : IRequestHandler<GetPublicProfileQuery, Result<PublicProfileResponse>>
+{
+    private readonly IApplicationDbContext _context;
+    private readonly IIdentityService _identityService;
+    private readonly IStorageService _storageService;
+
+    public GetPublicProfileQueryHandler(
+        IApplicationDbContext context,
+        IIdentityService identityService,
+        IStorageService storageService)
+    {
+        _context = context;
+        _identityService = identityService;
+        _storageService = storageService;
+    }
+
+    public async Task<Result<PublicProfileResponse>> Handle(GetPublicProfileQuery request, CancellationToken ct)
+    {
+        var userResult = await _identityService.GetUserByUsernameAsync(request.Username, ct);
+        if (userResult.IsFailure)
+        {
+            return Result.Failure<PublicProfileResponse>(userResult.Error);
+        }
+
+        var user = userResult.Value;
+
+        // Banned and soft-deleted accounts must not leak through the public profile route. The filter is
+        // applied per query rather than globally so the owner can still reach their own profile.
+        var profile = await _context.Profiles
+            .Include(p => p.SocialLinks)
+            .FirstOrDefaultAsync(
+                p => p.UserId == user.Id && !p.IsBanned && !p.IsDeleted,
+                ct);
+
+        if (profile is null)
+        {
+            return ProfileErrors.NotFoundForUser(user.Id);
+        }
+
+        var avatarUrl = profile.AvatarKey is not null
+            ? _storageService.GetPublicUrl(profile.AvatarKey.Value)
+            : null;
+
+        var socialLinks = profile.SocialLinks
+            .OrderBy(x => x.DisplayOrder)
+            .Select(x => new SocialLinkDto(x.Id, x.Platform, x.Url.Value, x.DisplayOrder))
+            .ToList();
+
+        var response = new PublicProfileResponse(
+            profile.Id,
+            user.UserName,
+            profile.Name,
+            profile.Specialty,
+            profile.Country,
+            profile.Bio?.Value,
+            avatarUrl,
+            profile.IsVerified,
+            socialLinks);
+
+        return response;
+    }
+}
+--- D:\Projects\AspFiles\Showcase\Showcase.Application\Features\Profiles\Queries\GetPublicProfile\GetPublicProfileQueryValidator.cs ---
+using FluentValidation;
+
+namespace Showcase.Application.Features.Profiles.Queries.GetPublicProfile;
+
+public class GetPublicProfileQueryValidator : AbstractValidator<GetPublicProfileQuery>
+{
+    public GetPublicProfileQueryValidator()
+    {
+        RuleFor(x => x.Username)
+            .NotEmpty().WithMessage("Username is required.")
+            .MaximumLength(50).WithMessage("Username cannot exceed 50 characters.");
+    }
+}
+--- D:\Projects\AspFiles\Showcase\Showcase.Application\Features\SocialLinks\Commands\AddSocialLink\AddSocialLinkCommand.cs ---
+using MediatR;
+using Showcase.Application.Features.Profiles.Common;
+using Showcase.Domain.Common.Results;
+
+namespace Showcase.Application.Features.SocialLinks.Commands.AddSocialLink;
+
+public record AddSocialLinkCommand(
+    string Platform,
+    string Url,
+    int? DisplayOrder = null) : IRequest<Result<SocialLinkDto>>;
+--- D:\Projects\AspFiles\Showcase\Showcase.Application\Features\SocialLinks\Commands\AddSocialLink\AddSocialLinkCommandHandler.cs ---
+using System.Threading;
+using System.Threading.Tasks;
+using MediatR;
+using Microsoft.EntityFrameworkCore;
+using Showcase.Application.Common.Interfaces;
+using Showcase.Application.Features.Profiles.Common;
+using Showcase.Domain.Common.Results;
+using Showcase.Domain.Entities;
+using Showcase.Domain.ValueObjects;
+
+namespace Showcase.Application.Features.SocialLinks.Commands.AddSocialLink;
+
+public class AddSocialLinkCommandHandler : IRequestHandler<AddSocialLinkCommand, Result<SocialLinkDto>>
+{
+    private readonly IApplicationDbContext _context;
+    private readonly ICurrentUserService _currentUserService;
+
+    public AddSocialLinkCommandHandler(
+        IApplicationDbContext context,
+        ICurrentUserService currentUserService)
+    {
+        _context = context;
+        _currentUserService = currentUserService;
+    }
+
+    public async Task<Result<SocialLinkDto>> Handle(AddSocialLinkCommand request, CancellationToken ct)
+    {
+        var userId = _currentUserService.UserId;
+        if (string.IsNullOrWhiteSpace(userId))
+        {
+            return Error.Unauthorized("Auth.Unauthorized", "User is not authenticated.");
+        }
+
+        var profile = await _context.Profiles
+            .Include(p => p.SocialLinks)
+            .FirstOrDefaultAsync(p => p.UserId == userId, ct);
+
+        if (profile is null)
+        {
+            return ProfileErrors.NotFoundForUser(userId);
+        }
+
+        var urlResult = Url.Create(request.Url);
+        if (urlResult.IsFailure)
+        {
+            return Result.Failure<SocialLinkDto>(urlResult.Error);
+        }
+
+        var link = profile.AddSocialLink(request.Platform, urlResult.Value, request.DisplayOrder);
+        _context.SocialLinks.Add(link);
+        await _context.SaveChangesAsync(ct);
+
+        return new SocialLinkDto(link.Id, link.Platform, link.Url.Value, link.DisplayOrder);
+    }
+}
+--- D:\Projects\AspFiles\Showcase\Showcase.Application\Features\SocialLinks\Commands\AddSocialLink\AddSocialLinkCommandValidator.cs ---
+using System;
+using FluentValidation;
+using Showcase.Domain.ValueObjects;
+
+namespace Showcase.Application.Features.SocialLinks.Commands.AddSocialLink;
+
+public class AddSocialLinkCommandValidator : AbstractValidator<AddSocialLinkCommand>
+{
+    public AddSocialLinkCommandValidator()
+    {
+        RuleFor(x => x.Platform)
+            .NotEmpty().WithMessage("Platform is required.")
+            .MaximumLength(50).WithMessage("Platform cannot exceed 50 characters.");
+
+        RuleFor(x => x.Url)
+            .NotEmpty().WithMessage("URL is required.")
+            .MaximumLength(Url.MaxLength).WithMessage($"URL cannot exceed {Url.MaxLength} characters.")
+            .Must(BeAValidHttpUrl).WithMessage("URL must be a valid HTTP or HTTPS URL.");
+
+        RuleFor(x => x.DisplayOrder)
+            .GreaterThanOrEqualTo(0).WithMessage("Display order cannot be negative.")
+            .When(x => x.DisplayOrder.HasValue);
+    }
+
+    private static bool BeAValidHttpUrl(string url)
+    {
+        return Uri.TryCreate(url, UriKind.Absolute, out var uriResult) &&
+               (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps);
+    }
+}
+--- D:\Projects\AspFiles\Showcase\Showcase.Application\Features\SocialLinks\Commands\DeleteSocialLink\DeleteSocialLinkCommand.cs ---
+using System;
+using MediatR;
+using Showcase.Domain.Common.Results;
+
+namespace Showcase.Application.Features.SocialLinks.Commands.DeleteSocialLink;
+
+public record DeleteSocialLinkCommand(Guid Id) : IRequest<Result>;
+--- D:\Projects\AspFiles\Showcase\Showcase.Application\Features\SocialLinks\Commands\DeleteSocialLink\DeleteSocialLinkCommandHandler.cs ---
+using System.Threading;
+using System.Threading.Tasks;
+using MediatR;
+using Microsoft.EntityFrameworkCore;
+using Showcase.Application.Common.Interfaces;
+using Showcase.Domain.Common.Results;
+using Showcase.Domain.Entities;
+
+namespace Showcase.Application.Features.SocialLinks.Commands.DeleteSocialLink;
+
+public class DeleteSocialLinkCommandHandler : IRequestHandler<DeleteSocialLinkCommand, Result>
+{
+    private readonly IApplicationDbContext _context;
+    private readonly ICurrentUserService _currentUserService;
+
+    public DeleteSocialLinkCommandHandler(
+        IApplicationDbContext context,
+        ICurrentUserService currentUserService)
+    {
+        _context = context;
+        _currentUserService = currentUserService;
+    }
+
+    public async Task<Result> Handle(DeleteSocialLinkCommand request, CancellationToken ct)
+    {
+        var userId = _currentUserService.UserId;
+        if (string.IsNullOrWhiteSpace(userId))
+        {
+            return Error.Unauthorized("Auth.Unauthorized", "User is not authenticated.");
+        }
+
+        var profile = await _context.Profiles
+            .Include(p => p.SocialLinks)
+            .FirstOrDefaultAsync(p => p.UserId == userId, ct);
+
+        if (profile is null)
+        {
+            return ProfileErrors.NotFoundForUser(userId);
+        }
+
+        var removeResult = profile.RemoveSocialLink(request.Id);
+        if (removeResult.IsFailure)
+        {
+            return removeResult;
+        }
+
+        await _context.SaveChangesAsync(ct);
+        return Result.Success();
+    }
+}
+--- D:\Projects\AspFiles\Showcase\Showcase.Application\Features\SocialLinks\Commands\ReorderSocialLinks\ReorderSocialLinksCommand.cs ---
+using System;
+using System.Collections.Generic;
+using MediatR;
+using Showcase.Domain.Common.Results;
+
+namespace Showcase.Application.Features.SocialLinks.Commands.ReorderSocialLinks;
+
+public record ReorderSocialLinkItem(Guid Id, int DisplayOrder);
+
+public record ReorderSocialLinksCommand(IReadOnlyList<ReorderSocialLinkItem> Items) : IRequest<Result>;
+--- D:\Projects\AspFiles\Showcase\Showcase.Application\Features\SocialLinks\Commands\ReorderSocialLinks\ReorderSocialLinksCommandHandler.cs ---
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using MediatR;
+using Microsoft.EntityFrameworkCore;
+using Showcase.Application.Common.Interfaces;
+using Showcase.Domain.Common.Results;
+using Showcase.Domain.Entities;
+
+namespace Showcase.Application.Features.SocialLinks.Commands.ReorderSocialLinks;
+
+public class ReorderSocialLinksCommandHandler : IRequestHandler<ReorderSocialLinksCommand, Result>
+{
+    private readonly IApplicationDbContext _context;
+    private readonly ICurrentUserService _currentUserService;
+
+    public ReorderSocialLinksCommandHandler(
+        IApplicationDbContext context,
+        ICurrentUserService currentUserService)
+    {
+        _context = context;
+        _currentUserService = currentUserService;
+    }
+
+    public async Task<Result> Handle(ReorderSocialLinksCommand request, CancellationToken ct)
+    {
+        var userId = _currentUserService.UserId;
+        if (string.IsNullOrWhiteSpace(userId))
+        {
+            return Error.Unauthorized("Auth.Unauthorized", "User is not authenticated.");
+        }
+
+        var profile = await _context.Profiles
+            .Include(p => p.SocialLinks)
+            .FirstOrDefaultAsync(p => p.UserId == userId, ct);
+
+        if (profile is null)
+        {
+            return ProfileErrors.NotFoundForUser(userId);
+        }
+
+        var dictionary = request.Items.ToDictionary(x => x.Id, x => x.DisplayOrder);
+        profile.ReorderSocialLinks(dictionary);
+
+        await _context.SaveChangesAsync(ct);
+        return Result.Success();
+    }
+}
+--- D:\Projects\AspFiles\Showcase\Showcase.Application\Features\SocialLinks\Commands\ReorderSocialLinks\ReorderSocialLinksCommandValidator.cs ---
+using FluentValidation;
+
+namespace Showcase.Application.Features.SocialLinks.Commands.ReorderSocialLinks;
+
+public class ReorderSocialLinksCommandValidator : AbstractValidator<ReorderSocialLinksCommand>
+{
+    public ReorderSocialLinksCommandValidator()
+    {
+        RuleFor(x => x.Items)
+            .NotNull().WithMessage("Items list is required.")
+            .NotEmpty().WithMessage("At least one social link item must be provided.");
+
+        RuleForEach(x => x.Items).ChildRules(item =>
+        {
+            item.RuleFor(i => i.Id)
+                .NotEmpty().WithMessage("Social link ID is required.");
+
+            item.RuleFor(i => i.DisplayOrder)
+                .GreaterThanOrEqualTo(0).WithMessage("Display order cannot be negative.");
+        });
+    }
+}
+--- D:\Projects\AspFiles\Showcase\Showcase.Application\Features\SocialLinks\Commands\UpdateSocialLink\UpdateSocialLinkCommand.cs ---
+using System;
+using MediatR;
+using Showcase.Domain.Common.Results;
+
+namespace Showcase.Application.Features.SocialLinks.Commands.UpdateSocialLink;
+
+public record UpdateSocialLinkCommand(
+    Guid Id,
+    string Platform,
+    string Url) : IRequest<Result>;
+--- D:\Projects\AspFiles\Showcase\Showcase.Application\Features\SocialLinks\Commands\UpdateSocialLink\UpdateSocialLinkCommandHandler.cs ---
+using System.Threading;
+using System.Threading.Tasks;
+using MediatR;
+using Microsoft.EntityFrameworkCore;
+using Showcase.Application.Common.Interfaces;
+using Showcase.Domain.Common.Results;
+using Showcase.Domain.Entities;
+using Showcase.Domain.ValueObjects;
+
+namespace Showcase.Application.Features.SocialLinks.Commands.UpdateSocialLink;
+
+public class UpdateSocialLinkCommandHandler : IRequestHandler<UpdateSocialLinkCommand, Result>
+{
+    private readonly IApplicationDbContext _context;
+    private readonly ICurrentUserService _currentUserService;
+
+    public UpdateSocialLinkCommandHandler(
+        IApplicationDbContext context,
+        ICurrentUserService currentUserService)
+    {
+        _context = context;
+        _currentUserService = currentUserService;
+    }
+
+    public async Task<Result> Handle(UpdateSocialLinkCommand request, CancellationToken ct)
+    {
+        var userId = _currentUserService.UserId;
+        if (string.IsNullOrWhiteSpace(userId))
+        {
+            return Error.Unauthorized("Auth.Unauthorized", "User is not authenticated.");
+        }
+
+        var profile = await _context.Profiles
+            .Include(p => p.SocialLinks)
+            .FirstOrDefaultAsync(p => p.UserId == userId, ct);
+
+        if (profile is null)
+        {
+            return ProfileErrors.NotFoundForUser(userId);
+        }
+
+        var urlResult = Url.Create(request.Url);
+        if (urlResult.IsFailure)
+        {
+            return Result.Failure(urlResult.Error);
+        }
+
+        var updateResult = profile.UpdateSocialLink(request.Id, request.Platform, urlResult.Value);
+        if (updateResult.IsFailure)
+        {
+            return updateResult;
+        }
+
+        await _context.SaveChangesAsync(ct);
+        return Result.Success();
+    }
+}
+--- D:\Projects\AspFiles\Showcase\Showcase.Application\Features\SocialLinks\Commands\UpdateSocialLink\UpdateSocialLinkCommandValidator.cs ---
+using System;
+using FluentValidation;
+using Showcase.Domain.ValueObjects;
+
+namespace Showcase.Application.Features.SocialLinks.Commands.UpdateSocialLink;
+
+public class UpdateSocialLinkCommandValidator : AbstractValidator<UpdateSocialLinkCommand>
+{
+    public UpdateSocialLinkCommandValidator()
+    {
+        RuleFor(x => x.Id)
+            .NotEmpty().WithMessage("Social link ID is required.");
+
+        RuleFor(x => x.Platform)
+            .NotEmpty().WithMessage("Platform is required.")
+            .MaximumLength(50).WithMessage("Platform cannot exceed 50 characters.");
+
+        RuleFor(x => x.Url)
+            .NotEmpty().WithMessage("URL is required.")
+            .MaximumLength(Url.MaxLength).WithMessage($"URL cannot exceed {Url.MaxLength} characters.")
+            .Must(BeAValidHttpUrl).WithMessage("URL must be a valid HTTP or HTTPS URL.");
+    }
+
+    private static bool BeAValidHttpUrl(string url)
+    {
+        return Uri.TryCreate(url, UriKind.Absolute, out var uriResult) &&
+               (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps);
+    }
+}
+--- D:\Projects\AspFiles\Showcase\Showcase.Application\Features\SocialLinks\Queries\GetSocialLinks\GetSocialLinksQuery.cs ---
+using System.Collections.Generic;
+using MediatR;
+using Showcase.Application.Features.Profiles.Common;
+using Showcase.Domain.Common.Results;
+
+namespace Showcase.Application.Features.SocialLinks.Queries.GetSocialLinks;
+
+public record GetSocialLinksQuery : IRequest<Result<IReadOnlyList<SocialLinkDto>>>;
+--- D:\Projects\AspFiles\Showcase\Showcase.Application\Features\SocialLinks\Queries\GetSocialLinks\GetSocialLinksQueryHandler.cs ---
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using MediatR;
+using Microsoft.EntityFrameworkCore;
+using Showcase.Application.Common.Interfaces;
+using Showcase.Application.Features.Profiles.Common;
+using Showcase.Domain.Common.Results;
+using Showcase.Domain.Entities;
+
+namespace Showcase.Application.Features.SocialLinks.Queries.GetSocialLinks;
+
+public class GetSocialLinksQueryHandler : IRequestHandler<GetSocialLinksQuery, Result<IReadOnlyList<SocialLinkDto>>>
+{
+    private readonly ICurrentUserService _currentUserService;
+    private readonly IApplicationDbContext _context;
+
+    public GetSocialLinksQueryHandler(
+        ICurrentUserService currentUserService,
+        IApplicationDbContext context)
+    {
+        _currentUserService = currentUserService;
+        _context = context;
+    }
+
+    public async Task<Result<IReadOnlyList<SocialLinkDto>>> Handle(GetSocialLinksQuery request, CancellationToken ct)
+    {
+        var userId = _currentUserService.UserId;
+        if (string.IsNullOrWhiteSpace(userId))
+            return Error.Unauthorized("Auth.Unauthenticated", "User is not authenticated.");
+
+        var profile = await _context.Profiles
+            .Include(p => p.SocialLinks)
+            .FirstOrDefaultAsync(p => p.UserId == userId && !p.IsDeleted, ct);
+
+        if (profile is null)
+            return ProfileErrors.NotFoundForUser(userId);
+
+        var list = profile.SocialLinks
+            .OrderBy(x => x.DisplayOrder)
+            .Select(x => new SocialLinkDto(x.Id, x.Platform, x.Url.Value, x.DisplayOrder))
+            .ToList();
+
+        return list;
+    }
+}
+--- D:\Projects\AspFiles\Showcase\Showcase.Domain\Entities\.gitkeep ---
+# Entities folder placeholder
+--- D:\Projects\AspFiles\Showcase\Showcase.Domain\Entities\Academic\Academic.cs ---
+using System;
+using Showcase.Domain.Common.BaseEntity;
+using Showcase.Domain.ValueObjects;
+
+namespace Showcase.Domain.Entities;
+
+public class Academic : BaseEntity
+{
+    public Guid ProfileId { get; private set; }
+    public string Institution { get; private set; } = string.Empty;
+    public string Degree { get; private set; } = string.Empty;
+    public string FieldOfStudy { get; private set; } = string.Empty;
+    public DateRange Period { get; private set; } = null!;
+    public string? Gpa { get; private set; }
+    public string? Achievements { get; private set; }
+    public string? Location { get; private set; }
+    public string? Description { get; private set; }
+
+    private Academic() { } // EF Core
+
+    public Academic(
+        Guid profileId,
+        string institution,
+        string degree,
+        string fieldOfStudy,
+        DateRange period,
+        string? gpa = null,
+        string? achievements = null,
+        string? location = null,
+        string? description = null)
+    {
+        if (profileId == Guid.Empty)
+            throw new ArgumentException("ProfileId is required.", nameof(profileId));
+
+        Period = period ?? throw new ArgumentNullException(nameof(period));
+        ProfileId = profileId;
+        Update(institution, degree, fieldOfStudy, period, gpa, achievements, location, description);
+    }
+
+    public void Update(
+        string institution,
+        string degree,
+        string fieldOfStudy,
+        DateRange period,
+        string? gpa,
+        string? achievements,
+        string? location = null,
+        string? description = null)
+    {
+        if (string.IsNullOrWhiteSpace(institution))
+            throw new ArgumentException("Institution is required.", nameof(institution));
+
+        if (string.IsNullOrWhiteSpace(degree))
+            throw new ArgumentException("Degree is required.", nameof(degree));
+
+        if (string.IsNullOrWhiteSpace(fieldOfStudy))
+            throw new ArgumentException("FieldOfStudy is required.", nameof(fieldOfStudy));
+
+        Institution = institution.Trim();
+        Degree = degree.Trim();
+        FieldOfStudy = fieldOfStudy.Trim();
+        Period = period ?? throw new ArgumentNullException(nameof(period));
+        Gpa = Normalize(gpa);
+        Achievements = Normalize(achievements);
+        Location = Normalize(location);
+        Description = Normalize(description);
+    }
+
+    private static string? Normalize(string? value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+}
+--- D:\Projects\AspFiles\Showcase\Showcase.Domain\Entities\Achievement\Achievement.cs ---
+using System;
+using Showcase.Domain.Common.BaseEntity;
+using Showcase.Domain.ValueObjects;
+
+namespace Showcase.Domain.Entities;
+
+public class Achievement : BaseEntity
+{
+    public Guid ProfileId { get; private set; }
+    public string Title { get; private set; } = string.Empty;
+    public string? Type { get; private set; }
+    public string? Organization { get; private set; }
+    public string? Date { get; private set; }
+    public Url? Url { get; private set; }
+    public StorageKey? MediaUrl { get; private set; }
+    public string? Description { get; private set; }
+
+    private Achievement() { } // EF Core
+
+    public Achievement(
+        Guid profileId,
+        string title,
+        string? type = null,
+        string? organization = null,
+        string? date = null,
+        Url? url = null,
+        StorageKey? mediaUrl = null,
+        string? description = null)
+    {
+        if (profileId == Guid.Empty)
+            throw new ArgumentException("ProfileId is required.", nameof(profileId));
+
+        ProfileId = profileId;
+        Update(title, type, organization, date, url, mediaUrl, description);
+    }
+
+    public void Update(
+        string title,
+        string? type,
+        string? organization,
+        string? date,
+        Url? url,
+        StorageKey? mediaUrl,
+        string? description)
+    {
+        if (string.IsNullOrWhiteSpace(title))
+            throw new ArgumentException("Title is required.", nameof(title));
+
+        Title = title.Trim();
+        Type = Normalize(type);
+        Organization = Normalize(organization);
+        Date = Normalize(date);
+        Url = url;
+        MediaUrl = mediaUrl;
+        Description = Normalize(description);
+    }
+
+    private static string? Normalize(string? value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+}
+--- D:\Projects\AspFiles\Showcase\Showcase.Domain\Entities\CareerVisibility\CareerVisibility.cs ---
+using System;
+using Showcase.Domain.Common.BaseEntity;
+
+namespace Showcase.Domain.Entities;
+
+/// <summary>Per-section visibility switches for the public profile. Defaults to visible everywhere.</summary>
+public class CareerVisibility : BaseEntity
+{
+    public Guid ProfileId { get; private set; }
+    public bool Experience { get; private set; } = true;
+    public bool Academics { get; private set; } = true;
+    public bool Skills { get; private set; } = true;
+    public bool Credentials { get; private set; } = true;
+    public bool Languages { get; private set; } = true;
+    public bool Achievements { get; private set; } = true;
+
+    private CareerVisibility() { } // EF Core
+
+    public CareerVisibility(Guid profileId)
+    {
+        if (profileId == Guid.Empty)
+            throw new ArgumentException("ProfileId is required.", nameof(profileId));
+
+        ProfileId = profileId;
+    }
+
+    public void Update(
+        bool experience,
+        bool academics,
+        bool skills,
+        bool credentials,
+        bool languages,
+        bool achievements)
+    {
+        Experience = experience;
+        Academics = academics;
+        Skills = skills;
+        Credentials = credentials;
+        Languages = languages;
+        Achievements = achievements;
+    }
+}
+--- D:\Projects\AspFiles\Showcase\Showcase.Domain\Entities\Credential\Credential.cs ---
+using System;
+using Showcase.Domain.Common.BaseEntity;
+using Showcase.Domain.ValueObjects;
+
+namespace Showcase.Domain.Entities;
+
+public class Credential : BaseEntity
+{
+    public Guid ProfileId { get; private set; }
+    public string Name { get; private set; } = string.Empty;
+    public string IssuingOrganization { get; private set; } = string.Empty;
+
+    /// <summary>Issue date through expiry. A null end means the credential does not expire.</summary>
+    public DateRange Validity { get; private set; } = null!;
+
+    public string? CredentialId { get; private set; }
+    public Url? VerificationUrl { get; private set; }
+    public StorageKey? MediaUrl { get; private set; }
+
+    private Credential() { } // EF Core
+
+    public Credential(
+        Guid profileId,
+        string name,
+        string issuingOrganization,
+        DateRange validity,
+        string? credentialId = null,
+        Url? verificationUrl = null,
+        StorageKey? mediaUrl = null)
+    {
+        if (profileId == Guid.Empty)
+            throw new ArgumentException("ProfileId is required.", nameof(profileId));
+
+        Validity = validity ?? throw new ArgumentNullException(nameof(validity));
+        ProfileId = profileId;
+        Update(name, issuingOrganization, validity, credentialId, verificationUrl, mediaUrl);
+    }
+
+    public void Update(
+        string name,
+        string issuingOrganization,
+        DateRange validity,
+        string? credentialId,
+        Url? verificationUrl,
+        StorageKey? mediaUrl)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+            throw new ArgumentException("Name is required.", nameof(name));
+
+        if (string.IsNullOrWhiteSpace(issuingOrganization))
+            throw new ArgumentException("IssuingOrganization is required.", nameof(issuingOrganization));
+
+        Name = name.Trim();
+        IssuingOrganization = issuingOrganization.Trim();
+        Validity = validity ?? throw new ArgumentNullException(nameof(validity));
+        CredentialId = Normalize(credentialId);
+        VerificationUrl = verificationUrl;
+        MediaUrl = mediaUrl;
+    }
+
+    private static string? Normalize(string? value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+}
+--- D:\Projects\AspFiles\Showcase\Showcase.Domain\Entities\Experience\Experience.cs ---
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using Showcase.Domain.Common.BaseEntity;
+using Showcase.Domain.ValueObjects;
+
+namespace Showcase.Domain.Entities;
+
+public class Experience : BaseEntity
+{
+    public Guid ProfileId { get; private set; }
+    public string JobTitle { get; private set; } = string.Empty;
+    public string Company { get; private set; } = string.Empty;
+    public DateRange Period { get; private set; } = null!;
+    public string? Description { get; private set; }
+    public string? Achievements { get; private set; }
+    public string? EmploymentType { get; private set; }
+    public string? Location { get; private set; }
+
+    private readonly List<string> _skillsUsed = new();
+
+    public IReadOnlyCollection<string> SkillsUsed => _skillsUsed.AsReadOnly();
+
+    private Experience() { } // EF Core
+
+    public Experience(
+        Guid profileId,
+        string jobTitle,
+        string company,
+        DateRange period,
+        string? description = null,
+        string? achievements = null,
+        string? employmentType = null,
+        string? location = null)
+    {
+        if (profileId == Guid.Empty)
+            throw new ArgumentException("ProfileId is required.", nameof(profileId));
+
+        Period = period ?? throw new ArgumentNullException(nameof(period));
+        ProfileId = profileId;
+        Update(jobTitle, company, period, description, achievements, employmentType, location);
+    }
+
+    public void Update(
+        string jobTitle,
+        string company,
+        DateRange period,
+        string? description,
+        string? achievements,
+        string? employmentType = null,
+        string? location = null)
+    {
+        if (string.IsNullOrWhiteSpace(jobTitle))
+            throw new ArgumentException("JobTitle is required.", nameof(jobTitle));
+
+        if (string.IsNullOrWhiteSpace(company))
+            throw new ArgumentException("Company is required.", nameof(company));
+
+        JobTitle = jobTitle.Trim();
+        Company = company.Trim();
+        Period = period ?? throw new ArgumentNullException(nameof(period));
+        Description = Normalize(description);
+        Achievements = Normalize(achievements);
+        EmploymentType = Normalize(employmentType);
+        Location = Normalize(location);
+    }
+
+    public void SetSkillsUsed(IEnumerable<string> skillsUsed)
+    {
+        ArgumentNullException.ThrowIfNull(skillsUsed);
+
+        _skillsUsed.Clear();
+        _skillsUsed.AddRange(skillsUsed
+            .Where(skill => !string.IsNullOrWhiteSpace(skill))
+            .Select(skill => skill.Trim()));
+    }
+
+    private static string? Normalize(string? value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+}
+--- D:\Projects\AspFiles\Showcase\Showcase.Domain\Entities\FeaturedRequest\FeaturedRequest.cs ---
+using System;
+using Showcase.Domain.Common.BaseEntity;
+using Showcase.Domain.Common.Results;
+using Showcase.Domain.Enums;
+
+namespace Showcase.Domain.Entities;
+
+public class FeaturedRequest : BaseEntity
+{
+    public string UserId { get; private set; } = string.Empty;
+    public string Message { get; private set; } = string.Empty;
+    public FeaturedStatus Status { get; private set; }
+    public string? AdminNotes { get; private set; }
+    public DateTime CreatedAtUtc { get; private set; }
+    public DateTime? ReviewedAtUtc { get; private set; }
+
+    private FeaturedRequest() { } // EF Core
+
+    public FeaturedRequest(string userId, string message)
+    {
+        if (string.IsNullOrWhiteSpace(userId))
+            throw new ArgumentException("UserId is required.", nameof(userId));
+
+        if (string.IsNullOrWhiteSpace(message))
+            throw new ArgumentException("Message is required.", nameof(message));
+
+        UserId = userId.Trim();
+        Message = message.Trim();
+        Status = FeaturedStatus.Pending;
+        CreatedAtUtc = DateTime.UtcNow;
+    }
+
+    public Result Approve(string? adminNotes = null)
+    {
+        if (Status != FeaturedStatus.Pending)
+            return FeaturedRequestErrors.NotPending;
+
+        Status = FeaturedStatus.Featured;
+        AdminNotes = string.IsNullOrWhiteSpace(adminNotes) ? null : adminNotes.Trim();
+        ReviewedAtUtc = DateTime.UtcNow;
+        return Result.Success();
+    }
+
+    public Result Reject(string? adminNotes = null)
+    {
+        if (Status != FeaturedStatus.Pending)
+            return FeaturedRequestErrors.NotPending;
+
+        Status = FeaturedStatus.Rejected;
+        AdminNotes = string.IsNullOrWhiteSpace(adminNotes) ? null : adminNotes.Trim();
+        ReviewedAtUtc = DateTime.UtcNow;
+        return Result.Success();
+    }
+}
+--- D:\Projects\AspFiles\Showcase\Showcase.Domain\Entities\FeaturedRequest\FeaturedRequestErrors.cs ---
+using System;
+using Showcase.Domain.Common.Results;
+
+namespace Showcase.Domain.Entities;
+
+public static class FeaturedRequestErrors
+{
+    public static Error NotFound(Guid id) =>
+        Error.NotFound("FeaturedRequest.NotFound", $"Featured request with ID '{id}' was not found.");
+
+    public static readonly Error AlreadyPending =
+        Error.Conflict("FeaturedRequest.AlreadyPending", "You already have a pending featured request.");
+
+    public static readonly Error NotPending =
+        Error.Validation("FeaturedRequest.NotPending", "This request is not in a pending state.");
+}
+--- D:\Projects\AspFiles\Showcase\Showcase.Domain\Entities\Language\Language.cs ---
+using System;
+using Showcase.Domain.Common.BaseEntity;
+using Showcase.Domain.Enums;
+
+namespace Showcase.Domain.Entities;
+
+public class Language : BaseEntity
+{
+    public Guid ProfileId { get; private set; }
+    public string LanguageName { get; private set; } = string.Empty;
+    public LanguageProficiency Proficiency { get; private set; }
+
+    private Language() { } // EF Core
+
+    public Language(Guid profileId, string languageName, LanguageProficiency proficiency)
+    {
+        if (profileId == Guid.Empty)
+            throw new ArgumentException("ProfileId is required.", nameof(profileId));
+
+        ProfileId = profileId;
+        Update(languageName, proficiency);
+    }
+
+    public void Update(string languageName, LanguageProficiency proficiency)
+    {
+        if (string.IsNullOrWhiteSpace(languageName))
+            throw new ArgumentException("LanguageName is required.", nameof(languageName));
+
+        LanguageName = languageName.Trim();
+        Proficiency = proficiency;
+    }
+}
+--- D:\Projects\AspFiles\Showcase\Showcase.Domain\Entities\Lookup\Country.cs ---
+using System;
+
+namespace Showcase.Domain.Entities;
+
+public class Country
+{
+    public int Id { get; private set; }
+    public string Alpha2 { get; private set; } = string.Empty;
+    public string Alpha3 { get; private set; } = string.Empty;
+    public string Name { get; private set; } = string.Empty;
+
+    private Country() { } // EF Core
+
+    public Country(int id, string alpha2, string alpha3, string name)
+    {
+        if (id <= 0)
+            throw new ArgumentOutOfRangeException(nameof(id), "Country ID must be positive.");
+
+        if (string.IsNullOrWhiteSpace(alpha2) || alpha2.Trim().Length != 2)
+            throw new ArgumentException("Alpha2 code must be exactly 2 characters.", nameof(alpha2));
+
+        if (string.IsNullOrWhiteSpace(alpha3) || alpha3.Trim().Length != 3)
+            throw new ArgumentException("Alpha3 code must be exactly 3 characters.", nameof(alpha3));
+
+        if (string.IsNullOrWhiteSpace(name))
+            throw new ArgumentException("Country name is required.", nameof(name));
+
+        Id = id;
+        Alpha2 = alpha2.Trim().ToLowerInvariant();
+        Alpha3 = alpha3.Trim().ToLowerInvariant();
+        Name = name.Trim();
+    }
+}
+--- D:\Projects\AspFiles\Showcase\Showcase.Domain\Entities\Lookup\LanguageReference.cs ---
+using System;
+
+namespace Showcase.Domain.Entities;
+
+public class LanguageReference
+{
+    public string Code { get; private set; } = string.Empty;
+    public string Name { get; private set; } = string.Empty;
+
+    private LanguageReference() { } // EF Core
+
+    public LanguageReference(string code, string name)
+    {
+        if (string.IsNullOrWhiteSpace(code))
+            throw new ArgumentException("Language code is required.", nameof(code));
+
+        if (string.IsNullOrWhiteSpace(name))
+            throw new ArgumentException("Language name is required.", nameof(name));
+
+        Code = code.Trim().ToLowerInvariant();
+        Name = name.Trim();
+    }
+}
+--- D:\Projects\AspFiles\Showcase\Showcase.Domain\Entities\Notification\Notification.cs ---
+using System;
+using Showcase.Domain.Common.BaseEntity;
+using Showcase.Domain.Enums;
+
+namespace Showcase.Domain.Entities;
+
+public class Notification : BaseEntity
+{
+    public string UserId { get; private set; } = string.Empty;
+    public NotificationType Type { get; private set; }
+    public string Title { get; private set; } = string.Empty;
+    public string Message { get; private set; } = string.Empty;
+    public Guid? SourcePostId { get; private set; }
+    public string? SourceUserId { get; private set; }
+    public bool IsRead { get; private set; }
+    public DateTime CreatedAtUtc { get; private set; }
+
+    private Notification() { } // EF Core
+
+    public Notification(
+        string userId,
+        NotificationType type,
+        string title,
+        string message,
+        Guid? sourcePostId = null,
+        string? sourceUserId = null)
+    {
+        if (string.IsNullOrWhiteSpace(userId))
+            throw new ArgumentException("UserId is required.", nameof(userId));
+
+        if (string.IsNullOrWhiteSpace(title))
+            throw new ArgumentException("Title is required.", nameof(title));
+
+        if (string.IsNullOrWhiteSpace(message))
+            throw new ArgumentException("Message is required.", nameof(message));
+
+        UserId = userId.Trim();
+        Type = type;
+        Title = title.Trim();
+        Message = message.Trim();
+        SourcePostId = sourcePostId;
+        SourceUserId = string.IsNullOrWhiteSpace(sourceUserId) ? null : sourceUserId.Trim();
+        IsRead = false;
+        CreatedAtUtc = DateTime.UtcNow;
+    }
+
+    public void MarkAsRead()
+    {
+        IsRead = true;
+    }
+}
+--- D:\Projects\AspFiles\Showcase\Showcase.Domain\Entities\Notification\NotificationErrors.cs ---
+using System;
+using Showcase.Domain.Common.Results;
+
+namespace Showcase.Domain.Entities;
+
+public static class NotificationErrors
+{
+    public static Error NotFound(Guid id) =>
+        Error.NotFound("Notification.NotFound", $"Notification with ID '{id}' was not found.");
+
+    public static readonly Error UnauthorizedAccess =
+        Error.Forbidden("Notification.UnauthorizedAccess", "You are not authorized to access this notification.");
+}
+--- D:\Projects\AspFiles\Showcase\Showcase.Domain\Entities\Post\Post.cs ---
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using Showcase.Domain.Common.BaseEntity;
+using Showcase.Domain.Common.Results;
+using Showcase.Domain.Enums;
+using Showcase.Domain.ValueObjects;
+
+namespace Showcase.Domain.Entities;
+
+public class Post : BaseEntity
+{
+    private readonly List<PostImage> _images = new();
+    private readonly List<PostTag> _postTags = new();
+
+    public Guid ProfileId { get; private set; }
+    public string Title { get; private set; } = string.Empty;
+    public string Description { get; private set; } = string.Empty;
+    public Url? ExternalUrl { get; private set; }
+    public PostStatus Status { get; private set; }
+    public int LikesCount { get; private set; }
+    public DateTime CreatedAt { get; private set; }
+    public DateTime? PublishedAt { get; private set; }
+    public DateTime? UpdatedAt { get; private set; }
+
+    public IReadOnlyCollection<PostImage> Images => _images.AsReadOnly();
+    public IReadOnlyCollection<PostTag> PostTags => _postTags.AsReadOnly();
+
+    private Post() { } // EF Core
+
+    public Post(Guid profileId, string title, string description = "", Url? externalUrl = null)
+    {
+        if (profileId == Guid.Empty)
+            throw new ArgumentException("ProfileId is required.", nameof(profileId));
+
+        if (string.IsNullOrWhiteSpace(title))
+            throw new ArgumentException("Title is required.", nameof(title));
+
+        ProfileId = profileId;
+        Title = title.Trim();
+        Description = description?.Trim() ?? string.Empty;
+        ExternalUrl = externalUrl;
+        Status = PostStatus.Draft;
+        CreatedAt = DateTime.UtcNow;
+    }
+
+    public void UpdateDetails(string title, string description, Url? externalUrl)
+    {
+        if (string.IsNullOrWhiteSpace(title))
+            throw new ArgumentException("Title is required.", nameof(title));
+
+        Title = title.Trim();
+        Description = description?.Trim() ?? string.Empty;
+        ExternalUrl = externalUrl;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    public Result Publish()
+    {
+        if (_images.Count == 0)
+            return PostErrors.CannotPublishEmptyPost;
+
+        Status = PostStatus.Published;
+        PublishedAt ??= DateTime.UtcNow;
+        UpdatedAt = DateTime.UtcNow;
+        return Result.Success();
+    }
+
+    public Result Unpublish()
+    {
+        Status = PostStatus.Unpublished;
+        UpdatedAt = DateTime.UtcNow;
+        return Result.Success();
+    }
+
+    public PostImage AddImage(StorageKey storageKey, int? displayOrder = null)
+    {
+        if (storageKey is null)
+            throw new ArgumentNullException(nameof(storageKey));
+
+        var order = displayOrder ?? (_images.Count > 0 ? _images.Max(x => x.DisplayOrder) + 1 : 0);
+        var image = new PostImage(Id, storageKey, order);
+        _images.Add(image);
+        UpdatedAt = DateTime.UtcNow;
+        return image;
+    }
+
+    public Result RemoveImage(Guid imageId)
+    {
+        var image = _images.FirstOrDefault(i => i.Id == imageId);
+        if (image is null)
+            return PostImageErrors.NotFound(imageId);
+
+        if (Status == PostStatus.Published && _images.Count <= 1)
+            return PostErrors.CannotPublishEmptyPost;
+
+        _images.Remove(image);
+        UpdatedAt = DateTime.UtcNow;
+        return Result.Success();
+    }
+
+    public void ReorderImages(IReadOnlyDictionary<Guid, int> imageOrders)
+    {
+        ArgumentNullException.ThrowIfNull(imageOrders);
+
+        foreach (var (id, order) in imageOrders)
+        {
+            var image = _images.FirstOrDefault(i => i.Id == id);
+            image?.SetDisplayOrder(order);
+        }
+
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    public PostTag AddTag(Guid tagId)
+    {
+        if (tagId == Guid.Empty)
+            throw new ArgumentException("TagId is required.", nameof(tagId));
+
+        var existing = _postTags.FirstOrDefault(pt => pt.TagId == tagId);
+        if (existing is not null)
+            return existing;
+
+        var postTag = new PostTag(Id, tagId);
+        _postTags.Add(postTag);
+        UpdatedAt = DateTime.UtcNow;
+        return postTag;
+    }
+
+    public void RemoveTag(Guid tagId)
+    {
+        var postTag = _postTags.FirstOrDefault(pt => pt.TagId == tagId);
+        if (postTag is not null)
+        {
+            _postTags.Remove(postTag);
+            UpdatedAt = DateTime.UtcNow;
+        }
+    }
+
+    public void ClearTags()
+    {
+        if (_postTags.Count > 0)
+        {
+            _postTags.Clear();
+            UpdatedAt = DateTime.UtcNow;
+        }
+    }
+
+    public void IncrementLikes()
+    {
+        LikesCount++;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    public void DecrementLikes()
+    {
+        if (LikesCount > 0)
+        {
+            LikesCount--;
+            UpdatedAt = DateTime.UtcNow;
+        }
+    }
+}
+--- D:\Projects\AspFiles\Showcase\Showcase.Domain\Entities\Post\PostErrors.cs ---
+using System;
+using Showcase.Domain.Common.Results;
+
+namespace Showcase.Domain.Entities;
+
+public static class PostErrors
+{
+    public static Error NotFound(Guid id) =>
+        Error.NotFound("Post.NotFound", $"Post with ID '{id}' was not found.");
+
+    public static readonly Error NotFoundGeneral =
+        Error.NotFound("Post.NotFound", "The requested post was not found.");
+
+    public static readonly Error CannotPublishEmptyPost =
+        Error.Validation("Post.CannotPublishEmptyPost", "Cannot publish a post without at least one image.");
+
+    public static readonly Error UnauthorizedAccess =
+        Error.Forbidden("Post.UnauthorizedAccess", "You are not authorized to access or modify this post.");
+}
+--- D:\Projects\AspFiles\Showcase\Showcase.Domain\Entities\PostImage\PostImage.cs ---
+using System;
+using Showcase.Domain.Common.BaseEntity;
+using Showcase.Domain.ValueObjects;
+
+namespace Showcase.Domain.Entities;
+
+public class PostImage : BaseEntity
+{
+    public Guid PostId { get; private set; }
+    public StorageKey StorageKey { get; private set; } = null!;
+    public int DisplayOrder { get; private set; }
+    public DateTime CreatedAt { get; private set; }
+
+    private PostImage() { } // EF Core
+
+    public PostImage(Guid postId, StorageKey storageKey, int displayOrder = 0)
+    {
+        if (postId == Guid.Empty)
+            throw new ArgumentException("PostId is required.", nameof(postId));
+
+        PostId = postId;
+        StorageKey = storageKey ?? throw new ArgumentNullException(nameof(storageKey));
+        DisplayOrder = displayOrder;
+        CreatedAt = DateTime.UtcNow;
+    }
+
+    public void SetDisplayOrder(int displayOrder)
+    {
+        DisplayOrder = displayOrder;
+    }
+}
+--- D:\Projects\AspFiles\Showcase\Showcase.Domain\Entities\PostImage\PostImageErrors.cs ---
+using System;
+using Showcase.Domain.Common.Results;
+
+namespace Showcase.Domain.Entities;
+
+public static class PostImageErrors
+{
+    public static Error NotFound(Guid id) =>
+        Error.NotFound("PostImage.NotFound", $"Post image with ID '{id}' was not found.");
+
+    public static readonly Error NotFoundGeneral =
+        Error.NotFound("PostImage.NotFound", "The requested post image was not found.");
+}
+--- D:\Projects\AspFiles\Showcase\Showcase.Domain\Entities\PostLike\PostLike.cs ---
+using System;
+using Showcase.Domain.Common.BaseEntity;
+
+namespace Showcase.Domain.Entities;
+
+public class PostLike : BaseEntity
+{
+    public Guid PostId { get; private set; }
+    public string UserId { get; private set; } = string.Empty;
+    public DateTime CreatedAtUtc { get; private set; }
+
+    private PostLike() { } // EF Core
+
+    public PostLike(Guid postId, string userId)
+    {
+        if (postId == Guid.Empty)
+            throw new ArgumentException("PostId is required.", nameof(postId));
+
+        if (string.IsNullOrWhiteSpace(userId))
+            throw new ArgumentException("UserId is required.", nameof(userId));
+
+        PostId = postId;
+        UserId = userId.Trim();
+        CreatedAtUtc = DateTime.UtcNow;
+    }
+}
+--- D:\Projects\AspFiles\Showcase\Showcase.Domain\Entities\PostLike\PostLikeErrors.cs ---
+using Showcase.Domain.Common.Results;
+
+namespace Showcase.Domain.Entities;
+
+public static class PostLikeErrors
+{
+    public static readonly Error CannotLikeOwnPost =
+        Error.Validation("PostLike.CannotLikeOwnPost", "You cannot like your own post.");
+
+    public static readonly Error AlreadyLiked =
+        Error.Conflict("PostLike.AlreadyLiked", "You have already liked this post.");
+
+    public static readonly Error NotLiked =
+        Error.NotFound("PostLike.NotLiked", "You have not liked this post.");
+}
+--- D:\Projects\AspFiles\Showcase\Showcase.Domain\Entities\PostTag\PostTag.cs ---
+using System;
+using Showcase.Domain.Common.BaseEntity;
+
+namespace Showcase.Domain.Entities;
+
+public class PostTag : BaseEntity
+{
+    public Guid PostId { get; private set; }
+    public Guid TagId { get; private set; }
+    public Tag Tag { get; private set; } = null!;
+    public DateTime CreatedAt { get; private set; }
+
+    private PostTag() { } // EF Core
+
+    public PostTag(Guid postId, Guid tagId)
+    {
+        if (postId == Guid.Empty)
+            throw new ArgumentException("PostId is required.", nameof(postId));
+
+        if (tagId == Guid.Empty)
+            throw new ArgumentException("TagId is required.", nameof(tagId));
+
+        PostId = postId;
+        TagId = tagId;
+        CreatedAt = DateTime.UtcNow;
+    }
+}
+--- D:\Projects\AspFiles\Showcase\Showcase.Domain\Entities\Profile\Profile.cs ---
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using Showcase.Domain.Common.BaseEntity;
+using Showcase.Domain.Common.Results;
+using Showcase.Domain.Enums;
+using Showcase.Domain.ValueObjects;
+
+namespace Showcase.Domain.Entities;
+
+public class Profile : BaseEntity
+{
+    public const string DefaultBanReason = "Violation of platform policies";
+
+    private static readonly Dictionary<FeaturedStatus, FeaturedStatus[]> AllowedFeaturedTransitions = new()
+    {
+        [FeaturedStatus.None] = [FeaturedStatus.Pending],
+        [FeaturedStatus.Pending] = [FeaturedStatus.Featured, FeaturedStatus.Rejected, FeaturedStatus.None],
+        [FeaturedStatus.Featured] = [FeaturedStatus.None],
+        [FeaturedStatus.Rejected] = [FeaturedStatus.Pending, FeaturedStatus.None]
+    };
+
+    private readonly List<SocialLink> _socialLinks = new();
+    private readonly List<Experience> _experiences = new();
+    private readonly List<Academic> _academics = new();
+    private readonly List<Skill> _skills = new();
+    private readonly List<Credential> _credentials = new();
+    private readonly List<Language> _languages = new();
+    private readonly List<Achievement> _achievements = new();
+
+    public string UserId { get; private set; } = string.Empty;
+    public string Name { get; private set; } = string.Empty;
+    public string? Specialty { get; private set; }
+    public string? Country { get; private set; }
+    public Bio? Bio { get; private set; }
+    public StorageKey? AvatarKey { get; private set; }
+
+    public bool IsVerified { get; private set; }
+    public VerificationStatus VerificationStatus { get; private set; }
+    public FeaturedStatus FeaturedStatus { get; private set; }
+
+    public bool IsBanned { get; private set; }
+    public string? BanReason { get; private set; }
+    public DateTime? BannedAtUtc { get; private set; }
+
+    public bool IsDeleted { get; private set; }
+    public DateTime? DeletedAtUtc { get; private set; }
+
+    public DateTime CreatedAt { get; private set; }
+    public DateTime? UpdatedAt { get; private set; }
+
+    public IReadOnlyCollection<SocialLink> SocialLinks => _socialLinks.AsReadOnly();
+    public IReadOnlyCollection<Experience> Experiences => _experiences.AsReadOnly();
+    public IReadOnlyCollection<Academic> Academics => _academics.AsReadOnly();
+    public IReadOnlyCollection<Skill> Skills => _skills.AsReadOnly();
+    public IReadOnlyCollection<Credential> Credentials => _credentials.AsReadOnly();
+    public IReadOnlyCollection<Language> Languages => _languages.AsReadOnly();
+    public IReadOnlyCollection<Achievement> Achievements => _achievements.AsReadOnly();
+
+    /// <summary>Private setter so EF Core can materialize the one-to-one row it owns.</summary>
+    public CareerVisibility CareerVisibility { get; private set; } = null!;
+
+    private Profile() { } // EF Core
+
+    public Profile(
+        string userId,
+        string name,
+        string? specialty = null,
+        string? country = null,
+        Bio? bio = null,
+        StorageKey? avatarKey = null)
+    {
+        if (string.IsNullOrWhiteSpace(userId))
+            throw new ArgumentException("UserId is required.", nameof(userId));
+
+        UserId = userId;
+        SetDetails(name, specialty, country, bio);
+        AvatarKey = avatarKey;
+        CareerVisibility = new CareerVisibility(Id);
+        VerificationStatus = VerificationStatus.None;
+        FeaturedStatus = FeaturedStatus.None;
+        CreatedAt = DateTime.UtcNow;
+    }
+
+    public void UpdateDetails(string name, string? specialty, string? country, Bio? bio)
+    {
+        SetDetails(name, specialty, country, bio);
+        Touch();
+    }
+
+    public void SetAvatar(StorageKey avatarKey)
+    {
+        AvatarKey = avatarKey ?? throw new ArgumentNullException(nameof(avatarKey));
+        Touch();
+    }
+
+    public void RemoveAvatar()
+    {
+        AvatarKey = null;
+        Touch();
+    }
+
+    public void Ban(string? reason)
+    {
+        IsBanned = true;
+        BanReason = Normalize(reason) ?? DefaultBanReason;
+        BannedAtUtc = DateTime.UtcNow;
+        Touch();
+    }
+
+    public void Unban()
+    {
+        IsBanned = false;
+        BanReason = null;
+        BannedAtUtc = null;
+        Touch();
+    }
+
+    public void SoftDelete()
+    {
+        IsDeleted = true;
+        DeletedAtUtc = DateTime.UtcNow;
+        Touch();
+    }
+
+    public void Restore()
+    {
+        IsDeleted = false;
+        DeletedAtUtc = null;
+        Touch();
+    }
+
+    /// <summary>Moves a profile into the verification review queue. Idempotent while already queued or verified.</summary>
+    public Result RequestVerification()
+    {
+        if (VerificationStatus is VerificationStatus.Pending or VerificationStatus.Verified)
+            return ProfileErrors.VerificationNotRequestable(VerificationStatus);
+
+        VerificationStatus = VerificationStatus.Pending;
+        Touch();
+        return Result.Success();
+    }
+
+    public void MarkVerified(bool verified = true)
+    {
+        IsVerified = verified;
+        VerificationStatus = verified ? VerificationStatus.Verified : VerificationStatus.None;
+        Touch();
+    }
+
+    public Result RejectVerification()
+    {
+        if (VerificationStatus is not VerificationStatus.Pending)
+            return ProfileErrors.VerificationNotPending(VerificationStatus);
+
+        IsVerified = false;
+        VerificationStatus = VerificationStatus.Rejected;
+        Touch();
+        return Result.Success();
+    }
+
+    /// <summary>Guards the review queue so a profile cannot be featured without a pending request.</summary>
+    public Result SetFeaturedStatus(FeaturedStatus status)
+    {
+        if (status == FeaturedStatus)
+            return Result.Success();
+
+        if (!AllowedFeaturedTransitions[FeaturedStatus].Contains(status))
+            return ProfileErrors.InvalidFeaturedTransition(FeaturedStatus, status);
+
+        FeaturedStatus = status;
+        Touch();
+        return Result.Success();
+    }
+
+    public void UpdateVisibility(
+        bool experience,
+        bool academics,
+        bool skills,
+        bool credentials,
+        bool languages,
+        bool achievements)
+    {
+        CareerVisibility.Update(experience, academics, skills, credentials, languages, achievements);
+        Touch();
+    }
+
+    public SocialLink AddSocialLink(string platform, Url url, int? displayOrder = null)
+    {
+        var order = displayOrder ?? (_socialLinks.Count > 0 ? _socialLinks.Max(x => x.DisplayOrder) + 1 : 0);
+        var link = new SocialLink(Id, platform, url, order);
+        _socialLinks.Add(link);
+        Touch();
+        return link;
+    }
+
+    public Result UpdateSocialLink(Guid socialLinkId, string platform, Url url)
+    {
+        var link = _socialLinks.FirstOrDefault(l => l.Id == socialLinkId);
+        if (link is null)
+            return SocialLinkErrors.NotFound(socialLinkId);
+
+        link.Update(platform, url);
+        Touch();
+        return Result.Success();
+    }
+
+    public Result RemoveSocialLink(Guid socialLinkId)
+    {
+        var link = _socialLinks.FirstOrDefault(l => l.Id == socialLinkId);
+        if (link is null)
+            return SocialLinkErrors.NotFound(socialLinkId);
+
+        _socialLinks.Remove(link);
+        Touch();
+        return Result.Success();
+    }
+
+    public void ReorderSocialLinks(IReadOnlyDictionary<Guid, int> orderedSocialLinks)
+    {
+        ArgumentNullException.ThrowIfNull(orderedSocialLinks);
+
+        foreach (var (id, order) in orderedSocialLinks)
+        {
+            var link = _socialLinks.FirstOrDefault(l => l.Id == id);
+            link?.SetDisplayOrder(order);
+        }
+
+        Touch();
+    }
+
+    public Experience AddExperience(
+        string jobTitle,
+        string company,
+        DateRange period,
+        string? description = null,
+        string? achievements = null)
+    {
+        var experience = new Experience(Id, jobTitle, company, period, description, achievements);
+        _experiences.Add(experience);
+        Touch();
+        return experience;
+    }
+
+    public Academic AddAcademic(
+        string institution,
+        string degree,
+        string fieldOfStudy,
+        DateRange period,
+        string? gpa = null,
+        string? achievements = null)
+    {
+        var academic = new Academic(Id, institution, degree, fieldOfStudy, period, gpa, achievements);
+        _academics.Add(academic);
+        Touch();
+        return academic;
+    }
+
+    public Skill AddSkill(string name, string? category = null)
+    {
+        var skill = new Skill(Id, name, category);
+        _skills.Add(skill);
+        Touch();
+        return skill;
+    }
+
+    public Credential AddCredential(
+        string name,
+        string issuingOrganization,
+        DateRange validity,
+        string? credentialId = null,
+        Url? verificationUrl = null,
+        StorageKey? mediaUrl = null)
+    {
+        var credential = new Credential(Id, name, issuingOrganization, validity, credentialId, verificationUrl, mediaUrl);
+        _credentials.Add(credential);
+        Touch();
+        return credential;
+    }
+
+    public Language AddLanguage(string languageName, LanguageProficiency proficiency)
+    {
+        var language = new Language(Id, languageName, proficiency);
+        _languages.Add(language);
+        Touch();
+        return language;
+    }
+
+    public Achievement AddAchievement(
+        string title,
+        string? type = null,
+        string? organization = null,
+        string? date = null,
+        Url? url = null,
+        StorageKey? mediaUrl = null,
+        string? description = null)
+    {
+        var achievement = new Achievement(Id, title, type, organization, date, url, mediaUrl, description);
+        _achievements.Add(achievement);
+        Touch();
+        return achievement;
+    }
+
+    private void Touch() => UpdatedAt = DateTime.UtcNow;
+
+    /// <summary>Shared by the constructor and <see cref="UpdateDetails"/>; deliberately does not stamp UpdatedAt.</summary>
+    private void SetDetails(string name, string? specialty, string? country, Bio? bio)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+            throw new ArgumentException("Name is required.", nameof(name));
+
+        Name = name.Trim();
+        Specialty = Normalize(specialty);
+        Country = Normalize(country);
+        Bio = bio;
+    }
+
+    private static string? Normalize(string? value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+}
+--- D:\Projects\AspFiles\Showcase\Showcase.Domain\Entities\Profile\ProfileErrors.cs ---
+using System;
+using Showcase.Domain.Common.Results;
+using Showcase.Domain.Enums;
+
+namespace Showcase.Domain.Entities;
+
+public static class ProfileErrors
+{
+    public static readonly Error NotFound =
+        Error.NotFound("Profile.NotFound", "The profile was not found.");
+
+    public static Error NotFoundForUser(string userId) =>
+        Error.NotFound("Profile.NotFoundForUser", $"Profile for user '{userId}' was not found.");
+
+    public static Error NotFoundById(Guid id) =>
+        Error.NotFound("Profile.NotFound", $"Profile with ID '{id}' was not found.");
+
+    public static Error VerificationNotRequestable(VerificationStatus current) =>
+        Error.Conflict(
+            "Profile.VerificationNotRequestable",
+            $"Verification cannot be requested while the current status is '{current}'.");
+
+    public static Error VerificationNotPending(VerificationStatus current) =>
+        Error.Conflict(
+            "Profile.VerificationNotPending",
+            $"Verification can only be rejected while it is pending. The current status is '{current}'.");
+
+    public static Error InvalidFeaturedTransition(FeaturedStatus from, FeaturedStatus to) =>
+        Error.Conflict(
+            "Profile.InvalidFeaturedTransition",
+            $"Featured status cannot move from '{from}' to '{to}'.");
+}
+--- D:\Projects\AspFiles\Showcase\Showcase.Domain\Entities\ProfileVisit\ProfileVisit.cs ---
+using System;
+using Showcase.Domain.Common.BaseEntity;
+
+namespace Showcase.Domain.Entities;
+
+public class ProfileVisit : BaseEntity
+{
+    public Guid ProfileId { get; private set; }
+    public string? VisitorUserId { get; private set; }
+    public string? VisitorToken { get; private set; }
+    public string HashedIp { get; private set; } = string.Empty;
+    public DateTime VisitedAtUtc { get; private set; }
+
+    private ProfileVisit() { } // EF Core
+
+    public ProfileVisit(
+        Guid profileId,
+        string hashedIp,
+        string? visitorUserId = null,
+        string? visitorToken = null)
+    {
+        if (profileId == Guid.Empty)
+            throw new ArgumentException("ProfileId is required.", nameof(profileId));
+
+        if (string.IsNullOrWhiteSpace(hashedIp))
+            throw new ArgumentException("HashedIp is required.", nameof(hashedIp));
+
+        ProfileId = profileId;
+        HashedIp = hashedIp.Trim();
+        VisitorUserId = string.IsNullOrWhiteSpace(visitorUserId) ? null : visitorUserId.Trim();
+        VisitorToken = string.IsNullOrWhiteSpace(visitorToken) ? null : visitorToken.Trim();
+        VisitedAtUtc = DateTime.UtcNow;
+    }
+}
+--- D:\Projects\AspFiles\Showcase\Showcase.Domain\Entities\Skill\Skill.cs ---
+using System;
+using Showcase.Domain.Common.BaseEntity;
+
+namespace Showcase.Domain.Entities;
+
+public class Skill : BaseEntity
+{
+    public Guid ProfileId { get; private set; }
+    public string Name { get; private set; } = string.Empty;
+    public string? Category { get; private set; }
+
+    private Skill() { } // EF Core
+
+    public Skill(Guid profileId, string name, string? category = null)
+    {
+        if (profileId == Guid.Empty)
+            throw new ArgumentException("ProfileId is required.", nameof(profileId));
+
+        ProfileId = profileId;
+        Update(name, category);
+    }
+
+    public void Update(string name, string? category)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+            throw new ArgumentException("Name is required.", nameof(name));
+
+        Name = name.Trim();
+        Category = string.IsNullOrWhiteSpace(category) ? null : category.Trim();
+    }
+}
+--- D:\Projects\AspFiles\Showcase\Showcase.Domain\Entities\SocialLink\SocialLink.cs ---
+using System;
+using Showcase.Domain.Common.BaseEntity;
+using Showcase.Domain.ValueObjects;
+
+namespace Showcase.Domain.Entities;
+
+public class SocialLink : BaseEntity
+{
+    public Guid ProfileId { get; private set; }
+    public string Platform { get; private set; } = string.Empty;
+    public Url Url { get; private set; } = null!;
+    public int DisplayOrder { get; private set; }
+
+    private SocialLink() { } // EF Core
+
+    public SocialLink(Guid profileId, string platform, Url url, int displayOrder = 0)
+    {
+        if (profileId == Guid.Empty)
+            throw new ArgumentException("ProfileId is required.", nameof(profileId));
+
+        ProfileId = profileId;
+        Update(platform, url);
+        SetDisplayOrder(displayOrder);
+    }
+
+    public void Update(string platform, Url url)
+    {
+        if (string.IsNullOrWhiteSpace(platform))
+            throw new ArgumentException("Platform is required.", nameof(platform));
+
+        Platform = platform.Trim();
+        Url = url ?? throw new ArgumentNullException(nameof(url));
+    }
+
+    public void SetDisplayOrder(int displayOrder)
+    {
+        DisplayOrder = displayOrder;
+    }
+}
+--- D:\Projects\AspFiles\Showcase\Showcase.Domain\Entities\SocialLink\SocialLinkErrors.cs ---
+using System;
+using Showcase.Domain.Common.Results;
+
+namespace Showcase.Domain.Entities;
+
+public static class SocialLinkErrors
+{
+    public static Error NotFound(Guid id) =>
+        Error.NotFound("SocialLink.NotFound", $"Social link with ID '{id}' was not found.");
+
+    public static readonly Error NotFoundGeneral =
+        Error.NotFound("SocialLink.NotFound", "The requested social link was not found.");
+
+    public static readonly Error InvalidUrl =
+        Error.Validation("SocialLink.InvalidUrl", "The social link URL is invalid.");
+}
+--- D:\Projects\AspFiles\Showcase\Showcase.Domain\Entities\Tag\Tag.cs ---
+using System;
+using Showcase.Domain.Common.BaseEntity;
+
+namespace Showcase.Domain.Entities;
+
+public class Tag : BaseEntity
+{
+    public const int MaxNameLength = 50;
+
+    public string Name { get; private set; } = string.Empty;
+    public string NormalizedName { get; private set; } = string.Empty;
+    public DateTime CreatedAt { get; private set; }
+
+    private Tag() { } // EF Core
+
+    public Tag(string name)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+            throw new ArgumentException("Tag name is required.", nameof(name));
+
+        var trimmed = name.Trim();
+        if (trimmed.Length > MaxNameLength)
+            throw new ArgumentException($"Tag name cannot exceed {MaxNameLength} characters.", nameof(name));
+
+        Name = trimmed;
+        NormalizedName = NormalizeTag(trimmed);
+        CreatedAt = DateTime.UtcNow;
+    }
+
+    public static string NormalizeTag(string name)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+            return string.Empty;
+
+        return name.Trim().ToLowerInvariant().Replace(" ", "-");
+    }
+}
+--- D:\Projects\AspFiles\Showcase\Showcase.Domain\Entities\Tag\TagErrors.cs ---
+using System;
+using Showcase.Domain.Common.Results;
+
+namespace Showcase.Domain.Entities;
+
+public static class TagErrors
+{
+    public static Error NotFound(Guid id) =>
+        Error.NotFound("Tag.NotFound", $"Tag with ID '{id}' was not found.");
+
+    public static Error NotFoundByName(string name) =>
+        Error.NotFound("Tag.NotFoundByName", $"Tag '{name}' was not found.");
+
+    public static readonly Error EmptyName =
+        Error.Validation("Tag.EmptyName", "Tag name cannot be empty.");
+}
+--- D:\Projects\AspFiles\Showcase\Showcase.Domain\Entities\VerificationRequest\VerificationRequest.cs ---
+using System;
+using Showcase.Domain.Common.BaseEntity;
+using Showcase.Domain.Common.Results;
+using Showcase.Domain.Enums;
+
+namespace Showcase.Domain.Entities;
+
+public class VerificationRequest : BaseEntity
+{
+    public string UserId { get; private set; } = string.Empty;
+    public string Message { get; private set; } = string.Empty;
+    public string Category { get; private set; } = string.Empty;
+    public string? IdentificationNumber { get; private set; }
+    public string? WebsiteUrl { get; private set; }
+    public string? PortfolioUrl { get; private set; }
+    public string? DocumentUrl { get; private set; }
+    public VerificationStatus Status { get; private set; }
+    public string? AdminNotes { get; private set; }
+    public DateTime CreatedAtUtc { get; private set; }
+    public DateTime? ReviewedAtUtc { get; private set; }
+
+    private VerificationRequest() { } // EF Core
+
+    public VerificationRequest(
+        string userId,
+        string message,
+        string category = "other",
+        string? identificationNumber = null,
+        string? websiteUrl = null,
+        string? portfolioUrl = null,
+        string? documentUrl = null)
+    {
+        if (string.IsNullOrWhiteSpace(userId))
+            throw new ArgumentException("UserId is required.", nameof(userId));
+
+        if (string.IsNullOrWhiteSpace(message))
+            throw new ArgumentException("Message is required.", nameof(message));
+
+        UserId = userId.Trim();
+        Message = message.Trim();
+        Category = string.IsNullOrWhiteSpace(category) ? "other" : category.Trim().ToLowerInvariant();
+        IdentificationNumber = string.IsNullOrWhiteSpace(identificationNumber) ? null : identificationNumber.Trim();
+        WebsiteUrl = string.IsNullOrWhiteSpace(websiteUrl) ? null : websiteUrl.Trim();
+        PortfolioUrl = string.IsNullOrWhiteSpace(portfolioUrl) ? null : portfolioUrl.Trim();
+        DocumentUrl = string.IsNullOrWhiteSpace(documentUrl) ? null : documentUrl.Trim();
+        Status = VerificationStatus.Pending;
+        CreatedAtUtc = DateTime.UtcNow;
+    }
+
+    public Result Approve(string? adminNotes = null)
+    {
+        if (Status != VerificationStatus.Pending)
+            return VerificationRequestErrors.NotPending;
+
+        Status = VerificationStatus.Verified;
+        AdminNotes = string.IsNullOrWhiteSpace(adminNotes) ? null : adminNotes.Trim();
+        ReviewedAtUtc = DateTime.UtcNow;
+        return Result.Success();
+    }
+
+    public Result Reject(string? adminNotes = null)
+    {
+        if (Status != VerificationStatus.Pending)
+            return VerificationRequestErrors.NotPending;
+
+        Status = VerificationStatus.Rejected;
+        AdminNotes = string.IsNullOrWhiteSpace(adminNotes) ? null : adminNotes.Trim();
+        ReviewedAtUtc = DateTime.UtcNow;
+        return Result.Success();
+    }
+}
+--- D:\Projects\AspFiles\Showcase\Showcase.Domain\Entities\VerificationRequest\VerificationRequestErrors.cs ---
+using System;
+using Showcase.Domain.Common.Results;
+
+namespace Showcase.Domain.Entities;
+
+public static class VerificationRequestErrors
+{
+    public static Error NotFound(Guid id) =>
+        Error.NotFound("VerificationRequest.NotFound", $"Verification request with ID '{id}' was not found.");
+
+    public static readonly Error AlreadyPending =
+        Error.Conflict("VerificationRequest.AlreadyPending", "You already have a pending verification request.");
+
+    public static readonly Error NotPending =
+        Error.Validation("VerificationRequest.NotPending", "This request is not in a pending state.");
+}
+--- D:\Projects\AspFiles\Showcase\Showcase.Domain\Enums\.gitkeep ---
+# Enums folder placeholder
+--- D:\Projects\AspFiles\Showcase\Showcase.Domain\Enums\FeaturedStatus.cs ---
+namespace Showcase.Domain.Enums;
+
+public enum FeaturedStatus
+{
+    None = 0,
+    Pending = 1,
+    Featured = 2,
+    Rejected = 3
+}
+--- D:\Projects\AspFiles\Showcase\Showcase.Domain\Enums\LanguageProficiency.cs ---
+namespace Showcase.Domain.Enums;
+
+public enum LanguageProficiency
+{
+    Native = 0,
+    Fluent = 1,
+    Professional = 2,
+    Intermediate = 3,
+    Basic = 4
+}
+--- D:\Projects\AspFiles\Showcase\Showcase.Domain\Enums\NotificationType.cs ---
+namespace Showcase.Domain.Enums;
+
+public enum NotificationType
+{
+    Like = 1,
+    ProfileVisit = 2,
+    VerificationApproved = 3,
+    VerificationRejected = 4,
+    FeaturedApproved = 5,
+    FeaturedRejected = 6,
+    System = 7
+}
+--- D:\Projects\AspFiles\Showcase\Showcase.Domain\Enums\PostStatus.cs ---
+namespace Showcase.Domain.Enums;
+
+public enum PostStatus
+{
+    Draft = 0,
+    Published = 1,
+    Unpublished = 2
+}
+--- D:\Projects\AspFiles\Showcase\Showcase.Domain\Enums\VerificationStatus.cs ---
+namespace Showcase.Domain.Enums;
+
+public enum VerificationStatus
+{
+    None = 0,
+    Pending = 1,
+    Verified = 2,
+    Rejected = 3
+}

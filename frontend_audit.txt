@@ -1,0 +1,1291 @@
+--- d:\Projects\AspFiles\Showcase\Showcase.ClientApp\src\shared\api\apiClient.ts ---
+import { apiAdminClient } from "./apiClient.admin.ts";
+import { apiAuthClient } from "./apiClient.auth.ts";
+import { apiCareerClient } from "./apiClient.career.ts";
+import { apiPostsClient } from "./apiClient.posts.ts";
+import { apiProfileClient } from "./apiClient.profile.ts";
+
+export { API_BASE_URL, httpFetch, USE_MOCK_API } from "./apiClient.base.ts";
+export type { FetchOptions } from "./apiClient.base.ts";
+
+export const apiClient = {
+  ...apiAuthClient,
+  ...apiProfileClient,
+  ...apiPostsClient,
+  ...apiCareerClient,
+  ...apiAdminClient,
+};
+--- d:\Projects\AspFiles\Showcase\Showcase.ClientApp\src\shared\api\apiClient.base.ts ---
+import { tokenStorage } from "./tokenStorage.ts";
+
+export const USE_MOCK_API = false;
+
+export const API_BASE_URL = typeof window !== "undefined" ? import.meta.env.VITE_API_URL || "" : "";
+
+export interface FetchOptions extends RequestInit {
+  requiresAuth?: boolean;
+}
+
+export async function httpFetch<T>(endpoint: string, options: FetchOptions = {}): Promise<T> {
+  const headers = new Headers(options.headers || {});
+  if (!headers.has("Content-Type") && !(options.body instanceof FormData)) {
+    headers.set("Content-Type", "application/json");
+  }
+
+  if (options.requiresAuth !== false) {
+    const token = tokenStorage.getToken();
+    if (token) {
+      headers.set("Authorization", `Bearer ${token}`);
+    }
+  }
+
+  const url = `${API_BASE_URL}${endpoint.startsWith("/") ? endpoint : `/${endpoint}`}`;
+  const response = await fetch(url, { ...options, headers });
+
+  if (!response.ok) {
+    let errorBody: unknown;
+    try {
+      errorBody = await response.json();
+    } catch {
+      errorBody = { title: response.statusText, status: response.status };
+    }
+    throw errorBody;
+  }
+
+  if (response.status === 204) {
+    return {} as T;
+  }
+
+  return response.json();
+}
+--- d:\Projects\AspFiles\Showcase\Showcase.ClientApp\src\shared\api\apiClient.auth.ts ---
+import type {
+  AuthResponse,
+  ChangeEmailRequest,
+  ChangePasswordRequest,
+  ChangeUsernameRequest,
+  CurrentUserResponse,
+  LoginRequest,
+  RegisterRequest,
+} from "../types/index.ts";
+import { httpFetch } from "./apiClient.base.ts";
+import { tokenStorage } from "./tokenStorage.ts";
+
+export const apiAuthClient = {
+  async checkUsernameAvailability(username: string): Promise<boolean> {
+    const res = await httpFetch<{ available: boolean }>(
+      `/api/auth/check-username?username=${encodeURIComponent(username)}`,
+      { requiresAuth: false }
+    );
+    return res.available;
+  },
+
+  async register(data: RegisterRequest): Promise<AuthResponse> {
+    const res = await httpFetch<AuthResponse>("/api/auth/register", {
+      method: "POST",
+      body: JSON.stringify(data),
+      requiresAuth: false,
+    });
+    if (res.accessToken) {
+      tokenStorage.setTokens({ accessToken: res.accessToken, refreshToken: res.refreshToken });
+    }
+    return res;
+  },
+
+  async login(data: LoginRequest): Promise<AuthResponse> {
+    const res = await httpFetch<AuthResponse>("/api/auth/login", {
+      method: "POST",
+      body: JSON.stringify(data),
+      requiresAuth: false,
+    });
+    if (res.accessToken) {
+      tokenStorage.setTokens({ accessToken: res.accessToken, refreshToken: res.refreshToken });
+    }
+    return res;
+  },
+
+  async logout(): Promise<void> {
+    try {
+      await httpFetch<void>("/api/auth/logout", { method: "POST" });
+    } finally {
+      tokenStorage.clear();
+    }
+  },
+
+  async getCurrentUser(): Promise<CurrentUserResponse | null> {
+    try {
+      return await httpFetch<CurrentUserResponse>("/api/auth/me");
+    } catch {
+      return null;
+    }
+  },
+
+  async changePassword(data: ChangePasswordRequest): Promise<void> {
+    return httpFetch<void>("/api/auth/change-password", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  },
+
+  async changeEmail(data: ChangeEmailRequest): Promise<void> {
+    return httpFetch<void>("/api/auth/change-email", {
+      method: "PUT",
+      body: JSON.stringify(data),
+    });
+  },
+
+  async changeUsername(data: ChangeUsernameRequest): Promise<void> {
+    return httpFetch<void>("/api/auth/change-username", {
+      method: "PUT",
+      body: JSON.stringify(data),
+    });
+  },
+
+  getActivePersona(): "visitor" | "creator" | "admin" {
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem("showcase_active_persona");
+      if (stored === "visitor" || stored === "creator" || stored === "admin") {
+        return stored;
+      }
+    }
+    return "creator";
+  },
+
+  async switchPersona(persona: "visitor" | "creator" | "admin"): Promise<void> {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("showcase_active_persona", persona);
+    }
+  },
+
+  resetDatabase(): void {
+    if (typeof window !== "undefined") {
+      tokenStorage.clear();
+      localStorage.removeItem("showcase_active_persona");
+    }
+  },
+};
+--- d:\Projects\AspFiles\Showcase\Showcase.ClientApp\src\shared\api\apiClient.profile.ts ---
+import type {
+  AddSocialLinkRequest,
+  ProfileDetailsResponse,
+  PublicProfileResponse,
+  ReorderSocialLinksRequest,
+  SocialLinkIdResponse,
+  UpdatePhoneRequest,
+  UpdateProfileRequest,
+  UpdateSocialLinkRequest,
+  UploadUrlRequest,
+  UploadUrlResponse,
+  VerificationRequestDto,
+  FeaturedRequestDto,
+} from "../types/index.ts";
+import { httpFetch } from "./apiClient.base.ts";
+
+export const apiProfileClient = {
+  async getProfiles(): Promise<ProfileDetailsResponse[]> {
+    return httpFetch<ProfileDetailsResponse[]>("/api/profiles", { requiresAuth: false });
+  },
+
+  async getMyProfile(): Promise<ProfileDetailsResponse> {
+    return httpFetch<ProfileDetailsResponse>("/api/profiles/me");
+  },
+
+  async getPublicProfile(username: string): Promise<PublicProfileResponse> {
+    return httpFetch<PublicProfileResponse>(`/api/profiles/${encodeURIComponent(username)}`, {
+      requiresAuth: false,
+    });
+  },
+
+  async updateProfile(data: UpdateProfileRequest): Promise<void> {
+    return httpFetch<void>("/api/profiles/me", {
+      method: "PUT",
+      body: JSON.stringify(data),
+    });
+  },
+
+  async getAvatarUploadUrl(data: UploadUrlRequest): Promise<UploadUrlResponse> {
+    return httpFetch<UploadUrlResponse>("/api/profiles/me/avatar/upload-url", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  },
+
+  async updateAvatar(storageKey: string, _avatarUrl?: string): Promise<void> {
+    return httpFetch<void>("/api/profiles/me/avatar", {
+      method: "PUT",
+      body: JSON.stringify({ storageKey }),
+    });
+  },
+
+  async removeAvatar(): Promise<void> {
+    return httpFetch<void>("/api/profiles/me/avatar", { method: "DELETE" });
+  },
+
+  async addSocialLink(data: AddSocialLinkRequest): Promise<SocialLinkIdResponse> {
+    return httpFetch<SocialLinkIdResponse>("/api/profiles/me/social-links", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  },
+
+  async updateSocialLink(id: string, data: UpdateSocialLinkRequest): Promise<void> {
+    return httpFetch<void>(`/api/profiles/me/social-links/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    });
+  },
+
+  async deleteSocialLink(id: string): Promise<void> {
+    return httpFetch<void>(`/api/profiles/me/social-links/${id}`, { method: "DELETE" });
+  },
+
+  async reorderSocialLinks(data: ReorderSocialLinksRequest): Promise<void> {
+    return httpFetch<void>("/api/profiles/me/social-links/reorder", {
+      method: "PUT",
+      body: JSON.stringify(data),
+    });
+  },
+
+  async updatePhone(data: UpdatePhoneRequest): Promise<void> {
+    return httpFetch<void>("/api/profiles/me/phone", {
+      method: "PUT",
+      body: JSON.stringify(data),
+    });
+  },
+
+  async submitVerificationRequest(data: VerificationRequestDto): Promise<void> {
+    return httpFetch<void>("/api/profiles/me/verify", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  },
+
+  async submitFeaturedRequest(data: FeaturedRequestDto): Promise<void> {
+    return httpFetch<void>("/api/profiles/me/featured", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  },
+};
+--- d:\Projects\AspFiles\Showcase\Showcase.ClientApp\src\shared\api\tokenStorage.ts ---
+const AUTH_STORAGE_KEY = "showcase_auth_token";
+const REFRESH_TOKEN_KEY = "showcase_refresh_token";
+
+export interface StoredTokens {
+  accessToken: string;
+  refreshToken?: string;
+}
+
+export const getToken = (): string | null => {
+  if (typeof window === "undefined") return null;
+  return localStorage.getItem(AUTH_STORAGE_KEY);
+};
+
+export const getRefreshToken = (): string | null => {
+  if (typeof window === "undefined") return null;
+  return localStorage.getItem(REFRESH_TOKEN_KEY);
+};
+
+export const setToken = (token: string): void => {
+  if (typeof window === "undefined") return;
+  localStorage.setItem(AUTH_STORAGE_KEY, token);
+};
+
+export const setTokens = (tokens: StoredTokens): void => {
+  if (typeof window === "undefined") return;
+  localStorage.setItem(AUTH_STORAGE_KEY, tokens.accessToken);
+  if (tokens.refreshToken) {
+    localStorage.setItem(REFRESH_TOKEN_KEY, tokens.refreshToken);
+  }
+};
+
+export const clear = (): void => {
+  if (typeof window === "undefined") return;
+  localStorage.removeItem(AUTH_STORAGE_KEY);
+  localStorage.removeItem(REFRESH_TOKEN_KEY);
+};
+
+export const tokenStorage = {
+  getToken,
+  getRefreshToken,
+  setToken,
+  setTokens,
+  clear,
+};
+--- d:\Projects\AspFiles\Showcase\Showcase.ClientApp\src\shared\types\profile.ts ---
+import type { ReorderItem, UploadUrlResponse, VerificationStatus } from "./common.ts";
+
+export interface SocialLink {
+  id: string;
+  profileId: string;
+  platform: string;
+  url: string;
+  displayOrder: number;
+}
+
+export interface Profile {
+  id: string;
+  userId: string;
+  username: string;
+  email?: string | null;
+  name: string;
+  specialty?: string | null;
+  country?: string | null;
+  bio?: string | null;
+  avatarKey?: string | null;
+  avatarUrl?: string | null;
+  phoneNumber?: string | null;
+  accountNumber?: string | null;
+  isVerified?: boolean;
+  verificationStatus?: VerificationStatus;
+  featuredStatus?: "none" | "pending" | "featured" | "rejected";
+  createdAt: string;
+  updatedAt?: string | null;
+  socialLinks: SocialLink[];
+}
+
+export interface SocialLinkDto {
+  id: string;
+  platform: string;
+  url: string;
+  displayOrder: number;
+}
+
+export interface ProfileDetailsResponse {
+  id: string;
+  userId: string;
+  email?: string | null;
+  username: string;
+  name: string;
+  specialty?: string | null;
+  country?: string | null;
+  bio?: string | null;
+  avatarKey?: string | null;
+  avatarUrl?: string | null;
+  phoneNumber?: string | null;
+  accountNumber?: string | null;
+  isVerified?: boolean;
+  verificationStatus?: VerificationStatus;
+  featuredStatus?: "none" | "pending" | "featured" | "rejected";
+  socialLinks: SocialLinkDto[];
+  createdAt: string;
+  updatedAt?: string | null;
+}
+
+export type MyProfileResponse = ProfileDetailsResponse;
+
+export interface PublicProfileResponse {
+  id: string;
+  username: string;
+  name: string;
+  specialty?: string | null;
+  country?: string | null;
+  bio?: string | null;
+  avatarUrl?: string | null;
+  phoneNumber?: string | null;
+  accountNumber?: string | null;
+  isVerified?: boolean;
+  verificationStatus?: VerificationStatus;
+  featuredStatus?: "none" | "pending" | "featured" | "rejected";
+  socialLinks: SocialLinkDto[];
+}
+
+export interface UpdateProfileRequest {
+  name: string;
+  specialty?: string | null;
+  country?: string | null;
+  bio?: string | null;
+  phoneNumber?: string | null;
+  accountNumber?: string | null;
+}
+
+export interface UpdatePhoneRequest {
+  phoneNumber: string;
+  accountNumber?: string;
+}
+
+export interface VerificationRequestDto {
+  message?: string;
+  notes?: string;
+  category?: string;
+  identificationNumber?: string;
+  websiteUrl?: string;
+  portfolioUrl?: string;
+  documentUrl?: string;
+}
+
+export interface FeaturedRequestDto {
+  message: string;
+  notes?: string;
+}
+
+export interface AddSocialLinkRequest {
+  platform: string;
+  url: string;
+  displayOrder?: number | null;
+}
+
+export interface UpdateSocialLinkRequest {
+  platform: string;
+  url: string;
+}
+
+export type ReorderSocialLinkItem = ReorderItem;
+
+export interface ReorderSocialLinksRequest {
+  items?: ReorderSocialLinkItem[];
+  orderedIds?: string[];
+}
+
+export type AvatarUploadUrlResponse = UploadUrlResponse;
+
+export interface SocialLinkIdResponse {
+  id: string;
+}
+--- d:\Projects\AspFiles\Showcase\Showcase.ClientApp\src\shared\types\common.ts ---
+export interface PaginatedList<T> {
+  items: T[];
+  pageNumber: number;
+  pageSize: number;
+  totalCount: number;
+  totalPages: number;
+  hasPreviousPage: boolean;
+  hasNextPage: boolean;
+}
+
+export interface ProblemDetails {
+  type?: string;
+  title?: string;
+  status?: number;
+  detail?: string;
+  instance?: string;
+  errors?: Record<string, string[]>;
+  [key: string]: unknown;
+}
+
+export type VerificationStatus = "none" | "pending" | "verified" | "rejected";
+
+export interface ReorderItem {
+  id: string;
+  displayOrder: number;
+}
+
+export interface UploadUrlRequest {
+  contentType: string;
+  fileSizeBytes: number;
+}
+
+export interface UploadUrlResponse {
+  uploadUrl: string;
+  storageKey: string;
+}
+--- d:\Projects\AspFiles\Showcase\Showcase.ClientApp\src\shared\types\security.ts ---
+import type { VerificationStatus } from "./common.ts";
+
+export interface UserAccount {
+  id: string;
+  email?: string | null;
+  username: string;
+  name?: string;
+  profileId: string;
+  roles: string[];
+  phoneNumber?: string | null;
+  accountNumber?: string | null;
+  isVerified?: boolean;
+  verificationStatus?: VerificationStatus;
+  featuredStatus?: "none" | "pending" | "featured" | "rejected";
+  isBanned?: boolean;
+  banReason?: string | null;
+}
+
+export interface UserIdentityDetails {
+  id: string;
+  email?: string | null;
+  username: string;
+  roles: string[];
+}
+
+export interface CurrentUserResponse {
+  id: string;
+  email?: string | null;
+  username: string;
+  name: string;
+  profileId: string;
+  bio?: string | null;
+  avatarUrl?: string | null;
+  phoneNumber?: string | null;
+  accountNumber?: string | null;
+  isVerified?: boolean;
+  verificationStatus?: VerificationStatus;
+  featuredStatus?: "none" | "pending" | "featured" | "rejected";
+  isBanned?: boolean;
+  banReason?: string | null;
+  roles: string[];
+}
+
+export interface AuthResponse {
+  accessToken: string;
+  refreshToken: string;
+  expiry?: string;
+}
+
+export interface RegisterRequest {
+  username: string;
+  password: string;
+  name: string;
+  email?: string | null;
+  bio?: string;
+  avatarUrl?: string;
+}
+
+export interface LoginRequest {
+  emailOrUsername: string;
+  password: string;
+}
+
+export interface ChangePasswordRequest {
+  currentPassword: string;
+  newPassword: string;
+}
+
+export interface ChangeEmailRequest {
+  newEmail: string;
+  currentPassword: string;
+}
+
+export interface ChangeUsernameRequest {
+  newUsername: string;
+  currentPassword: string;
+}
+--- d:\Projects\AspFiles\Showcase\Showcase.ClientApp\src\shared\context\AuthContext.tsx ---
+import React, { useState, useEffect, useCallback, useMemo, type ReactNode } from 'react';
+import type {
+  CurrentUserResponse,
+  LoginRequest,
+  RegisterRequest,
+} from '../types/index.ts';
+import { apiClient } from '../api/index.ts';
+import {
+  AuthContext,
+  PERSONA_STORAGE_KEY,
+  type ActivePersona,
+  type AuthContextValue,
+} from './authContextDef.ts';
+
+export interface AuthProviderProps {
+  children: ReactNode;
+}
+
+export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
+  const [activePersona, setActivePersonaState] = useState<ActivePersona>(() => {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem(PERSONA_STORAGE_KEY);
+      if (stored === 'visitor' || stored === 'creator' || stored === 'admin') {
+        return stored;
+      }
+    }
+    return 'creator';
+  });
+
+  const [creatorUser, setCreatorUser] = useState<CurrentUserResponse | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+
+  // Synchronize creator/admin user details when in authenticated mode
+  useEffect(() => {
+    if (activePersona === 'visitor') {
+      return;
+    }
+
+    let isCancelled = false;
+
+    void Promise.resolve().then(async () => {
+      if (isCancelled) return;
+      setIsLoading(true);
+      try {
+        const user = await apiClient.getCurrentUser();
+        if (!isCancelled) {
+          setCreatorUser(user);
+        }
+      } catch (err) {
+        console.error('Failed to load identity:', err);
+        if (!isCancelled) {
+          setCreatorUser(null);
+        }
+      } finally {
+        if (!isCancelled) {
+          setIsLoading(false);
+        }
+      }
+    });
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [activePersona]);
+
+  // Synchronize across window events and cross-tab storage changes
+  useEffect(() => {
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key === PERSONA_STORAGE_KEY && (e.newValue === 'visitor' || e.newValue === 'creator' || e.newValue === 'admin')) {
+        setActivePersonaState(e.newValue);
+      }
+    };
+
+    const handleCustomChange = (e: Event) => {
+      const customEvent = e as CustomEvent<ActivePersona>;
+      if (customEvent.detail === 'visitor' || customEvent.detail === 'creator' || customEvent.detail === 'admin') {
+        setActivePersonaState(customEvent.detail);
+      }
+    };
+
+    window.addEventListener('storage', handleStorage);
+    window.addEventListener('showcase:persona-change', handleCustomChange);
+
+    return () => {
+      window.removeEventListener('storage', handleStorage);
+      window.removeEventListener('showcase:persona-change', handleCustomChange);
+    };
+  }, []);
+
+  const switchPersona = useCallback((persona: ActivePersona) => {
+    setActivePersonaState(persona);
+    if (typeof window !== 'undefined') {
+      localStorage.getItem(PERSONA_STORAGE_KEY);
+      localStorage.setItem(PERSONA_STORAGE_KEY, persona);
+      window.dispatchEvent(new CustomEvent('showcase:persona-change', { detail: persona }));
+    }
+    apiClient.switchPersona(persona);
+  }, []);
+
+  const refreshUser = useCallback(async () => {
+    if (activePersona !== 'visitor') {
+      setIsLoading(true);
+      try {
+        const user = await apiClient.getCurrentUser();
+        setCreatorUser(user);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+  }, [activePersona]);
+
+  const login = useCallback(
+    async (request: LoginRequest) => {
+      setIsLoading(true);
+      try {
+        await apiClient.login(request);
+        switchPersona('creator');
+        const user = await apiClient.getCurrentUser();
+        setCreatorUser(user);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [switchPersona]
+  );
+
+  const register = useCallback(
+    async (request: RegisterRequest) => {
+      setIsLoading(true);
+      try {
+        await apiClient.register(request);
+        switchPersona('creator');
+        const user = await apiClient.getCurrentUser();
+        setCreatorUser(user);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [switchPersona]
+  );
+
+  const logout = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      await apiClient.logout();
+      switchPersona('visitor');
+      setCreatorUser(null);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [switchPersona]);
+
+  const currentUser = activePersona === 'visitor' ? null : creatorUser;
+  const isAuthenticated = activePersona !== 'visitor' && currentUser !== null;
+
+  const value: AuthContextValue = useMemo(
+    () => ({
+      currentUser,
+      activePersona,
+      isAuthenticated,
+      isLoading,
+      switchPersona,
+      login,
+      register,
+      logout,
+      refreshUser,
+    }),
+    [currentUser, activePersona, isAuthenticated, isLoading, switchPersona, login, register, logout, refreshUser]
+  );
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+};
+--- d:\Projects\AspFiles\Showcase\Showcase.ClientApp\src\shared\context\authContextDef.ts ---
+import { createContext } from 'react';
+import type {
+  CurrentUserResponse,
+  LoginRequest,
+  RegisterRequest,
+} from '../types/index.ts';
+
+export type ActivePersona = 'visitor' | 'creator' | 'admin';
+
+export interface AuthContextValue {
+  currentUser: CurrentUserResponse | null;
+  activePersona: ActivePersona;
+  isAuthenticated: boolean;
+  isLoading: boolean;
+  switchPersona: (persona: ActivePersona) => void;
+  login: (request: LoginRequest) => Promise<void>;
+  register: (request: RegisterRequest) => Promise<void>;
+  logout: () => Promise<void>;
+  refreshUser: () => Promise<void>;
+}
+
+export const AuthContext = createContext<AuthContextValue | undefined>(undefined);
+export const PERSONA_STORAGE_KEY = 'showcase_active_persona';
+--- d:\Projects\AspFiles\Showcase\Showcase.ClientApp\src\shared\context\useAuth.ts ---
+import { useContext } from 'react';
+import { AuthContext, type AuthContextValue } from './authContextDef.ts';
+
+export const useAuth = (): AuthContextValue => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
+};
+--- d:\Projects\AspFiles\Showcase\Showcase.ClientApp\src\features\auth\hooks\useLoginForm.ts ---
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth, useToast } from "@shared/context/index.ts";
+
+export function useLoginForm() {
+  const [emailOrUsername, setEmailOrUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const { login } = useAuth();
+  const { showToast } = useToast();
+  const navigate = useNavigate();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+
+    const identifier = emailOrUsername.trim();
+    if (!identifier || !password) {
+      setError("Please provide both your email/username and password.");
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      await login({ emailOrUsername: identifier, password });
+      showToast("success", "Welcome back to Pority Studio.");
+      navigate("/studio");
+    } catch (err: unknown) {
+      const e = err as Error;
+      setError(e.message || "Invalid credentials. Please verify your login details.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleGoogleLogin = () => {
+    setIsGoogleLoading(true);
+    setTimeout(() => {
+      setIsGoogleLoading(false);
+      navigate("/auth/complete-oauth");
+    }, 600);
+  };
+
+  return {
+    emailOrUsername,
+    setEmailOrUsername,
+    password,
+    setPassword,
+    isLoading,
+    isGoogleLoading,
+    error,
+    handleSubmit,
+    handleGoogleLogin,
+  };
+}
+--- d:\Projects\AspFiles\Showcase\Showcase.ClientApp\src\features\auth\hooks\useRegisterWizard.ts ---
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { apiClient } from "@shared/api/apiClient.ts";
+import { useAuth, useToast } from "@shared/context/index.ts";
+
+export function useRegisterWizard() {
+  const navigate = useNavigate();
+  const { register } = useAuth();
+  const { showToast } = useToast();
+
+  const [currentStep, setCurrentStep] = useState<number>(1);
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [bio, setBio] = useState("");
+  const [avatarUrl, setAvatarUrl] = useState("");
+
+  const [usernameStatus, setUsernameStatus] = useState<"idle" | "checking" | "available" | "taken">("idle");
+  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Live username availability check via apiClient
+  useEffect(() => {
+    const trimmed = username.trim().toLowerCase();
+    if (!trimmed || trimmed.length < 3) {
+      const timer = setTimeout(() => {
+        setUsernameStatus("idle");
+      }, 0);
+      return () => clearTimeout(timer);
+    }
+
+    const timer = setTimeout(async () => {
+      setUsernameStatus("checking");
+      try {
+        const isAvailable = await apiClient.checkUsernameAvailability(trimmed);
+        setUsernameStatus(isAvailable ? "available" : "taken");
+      } catch {
+        setUsernameStatus("available");
+      }
+    }, 250);
+
+    return () => clearTimeout(timer);
+  }, [username]);
+
+  // Step 1 validation: Credentials only (Username & Passwords)
+  const handleNextFromStep1 = (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+
+    const cleanUsername = username.trim();
+
+    if (!cleanUsername || cleanUsername.length < 3) {
+      setError("Username must be at least 3 characters.");
+      return;
+    }
+    if (usernameStatus === "taken") {
+      setError("This username handle is already in use.");
+      return;
+    }
+    if (password.length < 8) {
+      setError("Password must be at least 8 characters.");
+      return;
+    }
+    if (password !== confirmPassword) {
+      setError("Passwords do not match.");
+      return;
+    }
+
+    setCurrentStep(2);
+  };
+
+  // Step 2 validation: Name (Required), Email (Optional format check)
+  const handleNextFromStep2 = (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+
+    if (!name.trim()) {
+      setError("Please enter your name or studio title.");
+      return;
+    }
+
+    const cleanEmail = email.trim();
+    if (cleanEmail && !/.+@.+\..+/.test(cleanEmail)) {
+      setError("Please enter a valid email address, or leave it blank.");
+      return;
+    }
+
+    setCurrentStep(3);
+  };
+
+  // Step 3: Complete registration
+  const handleCompleteRegistration = async (customAvatarUrl?: string) => {
+    setError(null);
+    setIsLoading(true);
+
+    try {
+      await register({
+        username: username.trim(),
+        password,
+        name: name.trim(),
+        email: email.trim() || undefined,
+        bio: bio.trim() || undefined,
+        avatarUrl: customAvatarUrl !== undefined ? customAvatarUrl : (avatarUrl || undefined),
+      });
+
+      showToast("success", `Welcome to Pority, ${name.trim()}!`);
+      navigate("/studio");
+    } catch (err: unknown) {
+      const e = err as Error;
+      setError(e.message || "Registration failed. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return {
+    currentStep,
+    setCurrentStep,
+    username,
+    setUsername,
+    password,
+    setPassword,
+    confirmPassword,
+    setConfirmPassword,
+    name,
+    setName,
+    email,
+    setEmail,
+    bio,
+    setBio,
+    avatarUrl,
+    setAvatarUrl,
+    usernameStatus,
+    error,
+    isLoading,
+    handleNextFromStep1,
+    handleNextFromStep2,
+    handleCompleteRegistration,
+  };
+}
+--- d:\Projects\AspFiles\Showcase\Showcase.ClientApp\src\features\auth\pages\LoginPage.tsx ---
+import React from "react";
+import { Link } from "react-router-dom";
+import { Lock, LogIn, User } from "lucide-react";
+import { Button } from "@shared/components/Button.tsx";
+import { Input } from "@shared/components/Input.tsx";
+import { AuthCardLayout } from "../components/AuthCardLayout.tsx";
+import { GoogleAuthButton } from "../components/GoogleAuthButton.tsx";
+import { useLoginForm } from "../hooks/useLoginForm.ts";
+
+export const LoginPage: React.FC = () => {
+  const {
+    emailOrUsername,
+    setEmailOrUsername,
+    password,
+    setPassword,
+    isLoading,
+    isGoogleLoading,
+    error,
+    handleSubmit,
+    handleGoogleLogin,
+  } = useLoginForm();
+
+  return (
+    <AuthCardLayout
+      title="Sign In to Studio"
+      subtitle="Access your architectural portfolio, curate milestones, and publish new works."
+      badge="Portfolio Access"
+      footerContent={
+        <p>
+          Don&apos;t have an account?{" "}
+          <Link
+            to="/register"
+            className="font-gothic font-bold uppercase tracking-wider text-clay hover:underline"
+          >
+            Register Portfolio
+          </Link>
+        </p>
+      }
+    >
+      <form onSubmit={handleSubmit} className="space-y-4" noValidate>
+        {error && (
+          <div className="p-3.5 bg-red-500/10 border border-red-500/30 rounded-xl font-serif text-xs text-red-700">
+            {error}
+          </div>
+        )}
+
+        {/* Username or Email */}
+        <div className="space-y-1.5">
+          <label
+            htmlFor="identifier"
+            className="flex items-center gap-2 font-gothic text-xs font-bold uppercase tracking-wider text-slate-dark"
+          >
+            <User className="w-3.5 h-3.5 text-cloud-dark" />
+            <span>Email or Username</span>
+          </label>
+          <Input
+            id="identifier"
+            type="text"
+            placeholder="elena_v or elena@studio-vance.design"
+            value={emailOrUsername}
+            onChange={(e) => setEmailOrUsername(e.target.value)}
+            required
+            autoComplete="username"
+          />
+        </div>
+
+        {/* Password */}
+        <div className="space-y-1.5">
+          <label
+            htmlFor="password"
+            className="flex items-center gap-2 font-gothic text-xs font-bold uppercase tracking-wider text-slate-dark"
+          >
+            <Lock className="w-3.5 h-3.5 text-cloud-dark" />
+            <span>Password</span>
+          </label>
+          <Input
+            id="password"
+            type="password"
+            placeholder="••••••••"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            autoComplete="current-password"
+          />
+        </div>
+
+        {/* Submit */}
+        <div className="pt-2">
+          <Button
+            type="submit"
+            variant="clay"
+            size="lg"
+            fullWidth
+            isLoading={isLoading}
+            leftIcon={<LogIn className="w-4 h-4" />}
+            className="font-gothic uppercase tracking-wider text-xs justify-center"
+          >
+            Sign In to Studio
+          </Button>
+        </div>
+
+        {/* Divider */}
+        <div className="relative my-4 flex items-center justify-center">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-stone/50" />
+          </div>
+          <span className="relative bg-ivory-light px-3 font-gothic text-[10px] font-bold uppercase tracking-wider text-cloud-dark">
+            Or continue with
+          </span>
+        </div>
+
+        {/* OAuth Buttons */}
+        <GoogleAuthButton onClick={handleGoogleLogin} isLoading={isGoogleLoading} />
+      </form>
+    </AuthCardLayout>
+  );
+};
+--- d:\Projects\AspFiles\Showcase\Showcase.ClientApp\src\features\auth\pages\RegisterWizardPage.tsx ---
+import React from "react";
+import { Link } from "react-router-dom";
+import { AuthCardLayout } from "../components/AuthCardLayout.tsx";
+import { AvatarUploadStep } from "../components/AvatarUploadStep.tsx";
+import { CredentialsStep } from "../components/CredentialsStep.tsx";
+import { PersonalInfoStep } from "../components/PersonalInfoStep.tsx";
+import { StepIndicator, type StepItem } from "../components/StepIndicator.tsx";
+import { useRegisterWizard } from "../hooks/useRegisterWizard.ts";
+
+const WIZARD_STEPS: StepItem[] = [
+  { number: 1, label: "Credentials", sublabel: "Account Access" },
+  { number: 2, label: "Personal", sublabel: "Name & Bio" },
+  { number: 3, label: "Avatar", sublabel: "Profile Image" },
+];
+
+export const RegisterWizardPage: React.FC = () => {
+  const {
+    currentStep,
+    setCurrentStep,
+    username,
+    setUsername,
+    password,
+    setPassword,
+    confirmPassword,
+    setConfirmPassword,
+    name,
+    setName,
+    email,
+    setEmail,
+    bio,
+    setBio,
+    avatarUrl,
+    setAvatarUrl,
+    usernameStatus,
+    error,
+    isLoading,
+    handleNextFromStep1,
+    handleNextFromStep2,
+    handleCompleteRegistration,
+  } = useRegisterWizard();
+
+  return (
+    <AuthCardLayout
+      title="Create Creator Account"
+      subtitle="Join the curated platform for architectural portfolios and career milestones."
+      badge="Onboarding Wizard"
+      footerContent={
+        <p>
+          Already have an account?{" "}
+          <Link
+            to="/login"
+            className="font-gothic font-bold uppercase tracking-wider text-clay hover:underline"
+          >
+            Sign In
+          </Link>
+        </p>
+      }
+    >
+      <StepIndicator currentStep={currentStep} steps={WIZARD_STEPS} />
+
+      {error && (
+        <div className="p-3.5 bg-red-500/10 border border-red-500/30 rounded-xl font-serif text-xs text-red-700">
+          {error}
+        </div>
+      )}
+
+      {/* Step 1: Account Credentials (Username & Passwords) */}
+      {currentStep === 1 && (
+        <CredentialsStep
+          username={username}
+          setUsername={setUsername}
+          password={password}
+          setPassword={setPassword}
+          confirmPassword={confirmPassword}
+          setConfirmPassword={setConfirmPassword}
+          usernameStatus={usernameStatus}
+          onSubmit={handleNextFromStep1}
+        />
+      )}
+
+      {/* Step 2: Personal Information (Name, Optional Email, Bio) */}
+      {currentStep === 2 && (
+        <PersonalInfoStep
+          name={name}
+          setName={setName}
+          email={email}
+          setEmail={setEmail}
+          bio={bio}
+          setBio={setBio}
+          onBack={() => setCurrentStep(1)}
+          onSubmit={handleNextFromStep2}
+        />
+      )}
+
+      {/* Step 3: Avatar (Optional) */}
+      {currentStep === 3 && (
+        <AvatarUploadStep
+          name={name}
+          username={username}
+          avatarUrl={avatarUrl}
+          onAvatarChange={setAvatarUrl}
+          onComplete={() => handleCompleteRegistration(avatarUrl)}
+          onSkip={() => handleCompleteRegistration("")}
+          onBack={() => setCurrentStep(2)}
+          isLoading={isLoading}
+        />
+      )}
+    </AuthCardLayout>
+  );
+};
+--- d:\Projects\AspFiles\Showcase\Showcase.ClientApp\src\features\auth\pages\CompleteOAuthPage.tsx ---
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { AtSign, Sparkles } from "lucide-react";
+import { Button } from "@shared/components/Button.tsx";
+import { Input } from "@shared/components/Input.tsx";
+import { useAuth, useToast } from "@shared/context/index.ts";
+import { AuthCardLayout } from "../components/AuthCardLayout.tsx";
+
+export const CompleteOAuthPage: React.FC = () => {
+  const navigate = useNavigate();
+  const { switchPersona, register } = useAuth();
+  const { showToast } = useToast();
+
+  const [username, setUsername] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleComplete = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const handle = username.trim();
+    if (!handle) {
+      showToast("error", "Please choose a valid username handle.");
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      // Mock OAuth stub: generate a secure random password until full OAuth provider flow is wired to backend
+      const mockPassword = `oauth_${crypto.randomUUID()}`;
+
+      await register({
+        username: handle,
+        email: `${handle}@google.user`,
+        password: mockPassword,
+        name: handle,
+      });
+      switchPersona("creator");
+      showToast("success", "Google account connected successfully.");
+      navigate("/studio");
+    } catch {
+      showToast("error", "Unable to complete Google onboarding.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <AuthCardLayout
+      title="Choose Your Handle"
+      subtitle="Complete your Pority setup by choosing your unique username handle."
+      badge="OAuth Completion"
+    >
+      <form onSubmit={handleComplete} className="space-y-4" noValidate>
+        <div className="space-y-1.5">
+          <label
+            htmlFor="oauth-username"
+            className="flex items-center gap-2 font-gothic text-xs font-bold uppercase tracking-wider text-slate-dark"
+          >
+            <AtSign className="w-3.5 h-3.5 text-cloud-dark" />
+            <span>Username Handle <span className="text-clay">*</span></span>
+          </label>
+          <Input
+            id="oauth-username"
+            type="text"
+            value={username}
+            onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ""))}
+            placeholder="e.g. username"
+            required
+            autoFocus
+          />
+          <p className="font-serif text-[11px] text-cloud-dark">
+            Your permanent portfolio URL will be: pority.design/u/{username || "handle"}
+          </p>
+        </div>
+
+        <div className="pt-3">
+          <Button
+            type="submit"
+            variant="clay"
+            size="lg"
+            fullWidth
+            isLoading={isLoading}
+            leftIcon={<Sparkles className="w-4 h-4" />}
+            className="font-gothic uppercase tracking-wider text-xs justify-center"
+          >
+            Complete Registration
+          </Button>
+        </div>
+      </form>
+    </AuthCardLayout>
+  );
+};

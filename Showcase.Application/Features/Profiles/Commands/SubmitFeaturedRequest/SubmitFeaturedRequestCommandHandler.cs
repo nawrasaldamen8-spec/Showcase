@@ -1,0 +1,48 @@
+using System.Threading;
+using System.Threading.Tasks;
+using MediatR;
+using Microsoft.EntityFrameworkCore;
+using Showcase.Application.Common.Interfaces;
+using Showcase.Domain.Common.Results;
+using Showcase.Domain.Entities;
+using Showcase.Domain.Enums;
+
+namespace Showcase.Application.Features.Profiles.Commands.SubmitFeaturedRequest;
+
+public class SubmitFeaturedRequestCommandHandler : IRequestHandler<SubmitFeaturedRequestCommand, Result>
+{
+    private readonly ICurrentUserService _currentUserService;
+    private readonly IApplicationDbContext _context;
+
+    public SubmitFeaturedRequestCommandHandler(
+        ICurrentUserService currentUserService,
+        IApplicationDbContext context)
+    {
+        _currentUserService = currentUserService;
+        _context = context;
+    }
+
+    public async Task<Result> Handle(SubmitFeaturedRequestCommand request, CancellationToken ct)
+    {
+        var userId = _currentUserService.UserId;
+        if (string.IsNullOrWhiteSpace(userId))
+            return Error.Unauthorized("Auth.Unauthenticated", "User is not authenticated.");
+
+        var profile = await _context.Profiles
+            .FirstOrDefaultAsync(p => p.UserId == userId && !p.IsDeleted, ct);
+
+        if (profile is null)
+            return ProfileErrors.NotFoundForUser(userId);
+
+        var transitionResult = profile.SetFeaturedStatus(FeaturedStatus.Pending);
+        if (transitionResult.IsFailure)
+            return transitionResult;
+
+        var message = string.IsNullOrWhiteSpace(request.Note) ? "Requesting featured creator status." : request.Note.Trim();
+        var featuredRequest = new FeaturedRequest(userId, message);
+        _context.FeaturedRequests.Add(featuredRequest);
+
+        await _context.SaveChangesAsync(ct);
+        return Result.Success();
+    }
+}
