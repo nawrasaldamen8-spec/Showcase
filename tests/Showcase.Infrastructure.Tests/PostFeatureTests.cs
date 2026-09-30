@@ -85,7 +85,7 @@ public class PostFeatureTests
         var result = await handler.Handle(new CreatePostCommand("Portfolio Project", "Desc", "https://github.com"), CancellationToken.None);
 
         Assert.True(result.IsSuccess);
-        var created = await context.Posts.FirstOrDefaultAsync(p => p.Id == result.Value);
+        var created = await context.Posts.FirstOrDefaultAsync(p => p.Id == result.Value.Id);
         Assert.NotNull(created);
         Assert.Equal("Portfolio Project", created.Title);
         Assert.Equal(PostStatus.Draft, created.Status);
@@ -438,7 +438,7 @@ public class PostFeatureTests
             .Setup(x => x.GetPublicUrl("posts/art.png"))
             .Returns("https://cdn.example.com/posts/art.png");
 
-        var handler = new GetExplorePostsQueryHandler(context, _identityServiceMock.Object, _storageServiceMock.Object);
+        var handler = new GetExplorePostsQueryHandler(context, _identityServiceMock.Object, _storageServiceMock.Object, _currentUserServiceMock.Object);
         var result = await handler.Handle(new GetExplorePostsQuery(Search: "illustration"), CancellationToken.None);
 
         Assert.True(result.IsSuccess);
@@ -466,7 +466,7 @@ public class PostFeatureTests
             .Setup(x => x.GetUserByUsernameAsync("johndoe", It.IsAny<CancellationToken>()))
             .ReturnsAsync(new UserIdentityDetails("creator-1", "john@test.com", "johndoe", new List<string>()));
 
-        var handler = new GetProfilePostsQueryHandler(context, _identityServiceMock.Object, _storageServiceMock.Object);
+        var handler = new GetProfilePostsQueryHandler(context, _identityServiceMock.Object, _storageServiceMock.Object, _currentUserServiceMock.Object);
         var result = await handler.Handle(new GetProfilePostsQuery("johndoe"), CancellationToken.None);
 
         Assert.True(result.IsSuccess);

@@ -99,7 +99,9 @@ public class AdminFeatureTests
     [Fact]
     public async Task CreateBroadcast_And_GetBroadcasts_Should_Work()
     {
-        var createHandler = new CreateBroadcastCommandHandler();
+        var dbContext = CreateInMemoryDbContext();
+        var notifier = new Mock<IRealtimeNotifier>();
+        var createHandler = new CreateBroadcastCommandHandler(dbContext, notifier.Object);
         var createResult = await createHandler.Handle(new CreateBroadcastCommand(
             Title: "Platform Maintenance",
             Message: "System maintenance tonight at 2 AM",

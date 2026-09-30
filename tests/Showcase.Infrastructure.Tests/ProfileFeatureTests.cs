@@ -232,7 +232,7 @@ public class ProfileFeatureTests
 
         Assert.True(result.IsSuccess);
         var resp = result.Value;
-        Assert.Equal("johndoe", resp.UserName);
+        Assert.Equal("johndoe", resp.Username);
         Assert.Equal("john@test.com", resp.Email);
         Assert.Equal("John Doe", resp.Name);
         Assert.Equal("My Bio", resp.Bio);
@@ -266,7 +266,7 @@ public class ProfileFeatureTests
 
         Assert.True(result.IsSuccess);
         var resp = result.Value;
-        Assert.Equal("janesmith", resp.UserName);
+        Assert.Equal("janesmith", resp.Username);
         Assert.Equal("Jane Smith", resp.Name);
         Assert.Equal("Public creator", resp.Bio);
         Assert.Equal("https://cdn.example.com/avatars/creator-1/pic.jpg", resp.AvatarUrl);
