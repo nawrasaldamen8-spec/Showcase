@@ -64,4 +64,18 @@ public interface IIdentityService
         string newUsername,
         string currentPassword,
         CancellationToken ct = default);
+
+    Task<Result> UpdatePhoneNumberAsync(
+        string userId,
+        string phoneNumber,
+        CancellationToken ct = default);
+
+    Task<Result> UpdateUserRolesAsync(
+        string userId,
+        IEnumerable<string> roles,
+        CancellationToken ct = default);
+
+    Task<Result<IReadOnlyDictionary<string, UserIdentityDetails>>> GetUsersByIdsAsync(
+        IEnumerable<string> userIds,
+        CancellationToken ct = default);
 }

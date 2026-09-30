@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using Showcase.Domain.Common.BaseEntity;
 using Showcase.Domain.ValueObjects;
 
@@ -16,6 +13,7 @@ public class Experience : BaseEntity
     public string? Achievements { get; private set; }
     public string? EmploymentType { get; private set; }
     public string? Location { get; private set; }
+    public DateTime CreatedAtUtc { get; private set; } = DateTime.UtcNow;
 
     private readonly List<string> _skillsUsed = new();
 

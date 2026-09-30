@@ -26,5 +26,9 @@ public class RegisterCommandValidator : AbstractValidator<RegisterCommand>
             .EmailAddress(FluentValidation.Validators.EmailValidationMode.Net4xRegex).WithMessage("Email must be a valid email address.")
             .When(x => !string.IsNullOrWhiteSpace(x.Email));
 #pragma warning restore CS0618
+
+        RuleFor(x => x.Bio)
+            .MaximumLength(1000).WithMessage("Bio must not exceed 1000 characters.")
+            .When(x => !string.IsNullOrWhiteSpace(x.Bio));
     }
 }

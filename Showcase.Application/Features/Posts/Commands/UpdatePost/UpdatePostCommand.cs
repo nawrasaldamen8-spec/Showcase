@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using MediatR;
 using Showcase.Domain.Common.Results;
 
@@ -8,4 +9,5 @@ public record UpdatePostCommand(
     Guid Id,
     string Title,
     string Description = "",
-    string? ExternalUrl = null) : IRequest<Result>;
+    string? ExternalUrl = null,
+    IReadOnlyList<string>? Tags = null) : IRequest<Result>;

@@ -74,6 +74,9 @@ public class GetMyProfileQueryHandler : IRequestHandler<GetMyProfileQuery, Resul
             profile.AvatarKey?.Value,
             avatarUrl,
             socialLinks,
+            profile.IsVerified,
+            profile.VerificationStatus,
+            profile.FeaturedStatus,
             profile.CreatedAt,
             profile.UpdatedAt);
 

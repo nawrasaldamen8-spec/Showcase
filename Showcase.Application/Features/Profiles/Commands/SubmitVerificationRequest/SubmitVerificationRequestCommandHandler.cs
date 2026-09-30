@@ -37,8 +37,19 @@ public class SubmitVerificationRequestCommandHandler : IRequestHandler<SubmitVer
         if (requestResult.IsFailure)
             return requestResult;
 
-        var message = string.IsNullOrWhiteSpace(request.Note) ? "Requesting account verification badge." : request.Note.Trim();
-        var verificationRequest = new VerificationRequest(userId, message);
+        var rawMessage = !string.IsNullOrWhiteSpace(request.Message)
+            ? request.Message
+            : (!string.IsNullOrWhiteSpace(request.Notes) ? request.Notes : "Requesting account verification badge.");
+        var message = rawMessage.Trim();
+
+        var verificationRequest = new VerificationRequest(
+            userId,
+            message,
+            request.Category ?? "other",
+            request.IdentificationNumber,
+            request.WebsiteUrl,
+            request.PortfolioUrl,
+            request.DocumentUrl);
         _context.VerificationRequests.Add(verificationRequest);
 
         await _context.SaveChangesAsync(ct);

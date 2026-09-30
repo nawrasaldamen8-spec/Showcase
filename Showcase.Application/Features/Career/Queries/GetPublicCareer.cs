@@ -73,85 +73,42 @@ public class GetPublicCareerQueryHandler : IRequestHandler<GetPublicCareerQuery,
         var experiences = (isOwnProfile || visibilityDto.Experience)
             ? profile.Experiences
                 .OrderByDescending(e => e.Period.Start)
-                .Select(e => new CareerExperienceDto(
-                    e.Id,
-                    e.JobTitle,
-                    e.Company,
-                    e.Period.StartText,
-                    e.Period.EndText,
-                    e.Period.IsCurrent,
-                    e.Description,
-                    e.Achievements,
-                    e.EmploymentType,
-                    e.Location,
-                    e.SkillsUsed.ToList(),
-                    DateTime.UtcNow))
+                .Select(e => e.ToDto())
                 .ToList()
             : new List<CareerExperienceDto>();
 
         var academics = (isOwnProfile || visibilityDto.Academics)
             ? profile.Academics
                 .OrderByDescending(a => a.Period.Start)
-                .Select(a => new CareerAcademicDto(
-                    a.Id,
-                    a.Institution,
-                    a.Degree,
-                    a.FieldOfStudy,
-                    a.Period.StartText,
-                    a.Period.EndText,
-                    a.Period.IsCurrent,
-                    a.Gpa,
-                    a.Achievements,
-                    a.Location,
-                    a.Description,
-                    DateTime.UtcNow))
+                .Select(a => a.ToDto())
                 .ToList()
             : new List<CareerAcademicDto>();
 
         var skills = (isOwnProfile || visibilityDto.Skills)
             ? profile.Skills
                 .OrderBy(s => s.Name)
-                .Select(s => new CareerSkillDto(s.Id, s.Name, s.Category, DateTime.UtcNow))
+                .Select(s => s.ToDto())
                 .ToList()
             : new List<CareerSkillDto>();
 
         var credentials = (isOwnProfile || visibilityDto.Credentials)
             ? profile.Credentials
                 .OrderByDescending(c => c.Validity.Start)
-                .Select(c => new CareerCredentialDto(
-                    c.Id,
-                    c.Name,
-                    c.IssuingOrganization,
-                    c.Validity.StartText,
-                    c.Validity.EndText,
-                    c.Validity.IsCurrent,
-                    c.CredentialId,
-                    c.VerificationUrl?.Value,
-                    c.MediaUrl?.Value,
-                    DateTime.UtcNow))
+                .Select(c => c.ToDto())
                 .ToList()
             : new List<CareerCredentialDto>();
 
         var languages = (isOwnProfile || visibilityDto.Languages)
             ? profile.Languages
                 .OrderBy(l => l.LanguageName)
-                .Select(l => new CareerLanguageDto(l.Id, l.LanguageName, l.Proficiency.ToString(), DateTime.UtcNow))
+                .Select(l => l.ToDto())
                 .ToList()
             : new List<CareerLanguageDto>();
 
         var achievements = (isOwnProfile || visibilityDto.Achievements)
             ? profile.Achievements
                 .OrderByDescending(a => a.Date)
-                .Select(a => new CareerAchievementDto(
-                    a.Id,
-                    a.Title,
-                    a.Type,
-                    a.Organization,
-                    a.Date,
-                    a.Url?.Value,
-                    a.MediaUrl?.Value,
-                    a.Description,
-                    DateTime.UtcNow))
+                .Select(a => a.ToDto())
                 .ToList()
             : new List<CareerAchievementDto>();
 

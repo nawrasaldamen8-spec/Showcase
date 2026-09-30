@@ -37,7 +37,7 @@ public class GetMyPostsQueryHandler : IRequestHandler<GetMyPostsQuery, Result<Pa
             return Error.Unauthorized("Auth.Unauthorized", "User is not authenticated.");
         }
 
-        var profile = await _context.Profiles.FirstOrDefaultAsync(p => p.UserId == userId, ct);
+        var profile = await _context.Profiles.FirstOrDefaultAsync(p => p.UserId == userId && !p.IsDeleted, ct);
         if (profile is null)
         {
             return ProfileErrors.NotFoundForUser(userId);
@@ -45,6 +45,8 @@ public class GetMyPostsQueryHandler : IRequestHandler<GetMyPostsQuery, Result<Pa
 
         var query = _context.Posts
             .Include(p => p.Images)
+            .Include(p => p.PostTags)
+                .ThenInclude(pt => pt.Tag)
             .Where(p => p.ProfileId == profile.Id);
 
         if (request.Status.HasValue)
@@ -76,12 +78,28 @@ public class GetMyPostsQueryHandler : IRequestHandler<GetMyPostsQuery, Result<Pa
                 avatarUrl);
         }
 
+        var postIds = posts.Select(p => p.Id).ToList();
+        var likedPostIds = new HashSet<Guid>();
+        if (!string.IsNullOrWhiteSpace(userId) && postIds.Count > 0)
+        {
+            var likes = await _context.PostLikes
+                .Where(l => postIds.Contains(l.PostId) && l.UserId == userId)
+                .Select(l => l.PostId)
+                .ToListAsync(ct);
+            likedPostIds = new HashSet<Guid>(likes);
+        }
+
         var items = posts.Select(post =>
         {
             var firstImage = post.Images.OrderBy(i => i.DisplayOrder).FirstOrDefault();
             var thumbnailUrl = firstImage is not null
                 ? _storageService.GetPublicUrl(firstImage.StorageKey.Value)
                 : null;
+
+            var tags = post.PostTags
+                .Where(pt => pt.Tag != null)
+                .Select(pt => pt.Tag.Name)
+                .ToList();
 
             return new PostSummaryResponse(
                 post.Id,
@@ -94,7 +112,10 @@ public class GetMyPostsQueryHandler : IRequestHandler<GetMyPostsQuery, Result<Pa
                 post.PublishedAt,
                 thumbnailUrl,
                 post.Images.Count,
-                creator);
+                tags,
+                creator,
+                post.LikesCount,
+                likedPostIds.Contains(post.Id));
         }).ToList();
 
         return PaginatedList<PostSummaryResponse>.Create(items, request.PageNumber, request.PageSize, totalCount);

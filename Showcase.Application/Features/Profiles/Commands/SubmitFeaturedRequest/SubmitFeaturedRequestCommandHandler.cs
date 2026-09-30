@@ -38,7 +38,10 @@ public class SubmitFeaturedRequestCommandHandler : IRequestHandler<SubmitFeature
         if (transitionResult.IsFailure)
             return transitionResult;
 
-        var message = string.IsNullOrWhiteSpace(request.Note) ? "Requesting featured creator status." : request.Note.Trim();
+        var rawMessage = !string.IsNullOrWhiteSpace(request.Message)
+            ? request.Message
+            : (!string.IsNullOrWhiteSpace(request.Notes) ? request.Notes : "Requesting featured creator status.");
+        var message = rawMessage.Trim();
         var featuredRequest = new FeaturedRequest(userId, message);
         _context.FeaturedRequests.Add(featuredRequest);
 

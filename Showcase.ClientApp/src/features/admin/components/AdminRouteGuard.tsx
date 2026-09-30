@@ -1,5 +1,5 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, Navigate, useLocation } from "react-router-dom";
 import { ArrowLeft, ShieldAlert } from "lucide-react";
 import { Button } from "@shared/components/Button.tsx";
 import { useAuth } from "@shared/context/index.ts";
@@ -9,11 +9,25 @@ export interface AdminRouteGuardProps {
 }
 
 export const AdminRouteGuard: React.FC<AdminRouteGuardProps> = ({ children }) => {
-  const { currentUser, activePersona, switchPersona } = useAuth();
+  const { isAuthenticated, isAdmin, isLoading } = useAuth();
+  const location = useLocation();
 
-  const isAdmin =
-    activePersona === "admin" ||
-    (currentUser?.roles && currentUser.roles.includes("Admin"));
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh] py-20">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-8 h-8 rounded-full border-2 border-slate-dark/20 border-t-slate-dark animate-spin" />
+          <span className="font-gothic text-xs uppercase tracking-widest text-cloud-dark">
+            Verifying Privileges...
+          </span>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
 
   if (!isAdmin) {
     return (
@@ -28,21 +42,10 @@ export const AdminRouteGuard: React.FC<AdminRouteGuardProps> = ({ children }) =>
           </h2>
 
           <p className="font-serif text-sm text-slate-dark/70 leading-relaxed">
-            This area of the Pority console is reserved for system administrators, curators, and platform moderators.
+            This area of the Pority console is reserved strictly for system administrators, curators, and platform moderators.
           </p>
 
-          <div className="pt-3 space-y-2">
-            <Button
-              type="button"
-              variant="clay"
-              size="md"
-              fullWidth
-              onClick={() => switchPersona("admin")}
-              className="font-gothic uppercase tracking-wider text-xs justify-center"
-            >
-              Switch to Admin Persona (Demo)
-            </Button>
-
+          <div className="pt-3">
             <Link to="/studio" className="block text-decoration-none">
               <Button
                 type="button"
@@ -63,3 +66,4 @@ export const AdminRouteGuard: React.FC<AdminRouteGuardProps> = ({ children }) =>
 
   return <>{children}</>;
 };
+

@@ -67,6 +67,8 @@ public class GetPublicProfileQueryHandler : IRequestHandler<GetPublicProfileQuer
             profile.Bio?.Value,
             avatarUrl,
             profile.IsVerified,
+            profile.VerificationStatus,
+            profile.FeaturedStatus,
             socialLinks);
 
         return response;

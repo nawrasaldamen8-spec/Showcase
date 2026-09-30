@@ -43,7 +43,13 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, Result<Au
         var userId = registerResult.Value;
 
         // 2. Provision linked Profile entity in Domain
-        var profile = new Profile(userId, request.Name);
+        var bioResult = Showcase.Domain.ValueObjects.Bio.CreateOptional(request.Bio);
+        if (bioResult.IsFailure)
+        {
+            return Result.Failure<AuthResponse>(bioResult.Error);
+        }
+
+        var profile = new Profile(userId, request.Name, bio: bioResult.Value);
         _context.Set<Profile>().Add(profile);
         await _context.SaveChangesAsync(ct);
 

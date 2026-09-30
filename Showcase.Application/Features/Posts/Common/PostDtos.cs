@@ -15,6 +15,9 @@ public record PostCreatorDto(
     string Name,
     string? AvatarUrl);
 
+public record PostCreatedResponse(
+    Guid Id);
+
 public record PostResponse(
     Guid Id,
     Guid ProfileId,
@@ -26,7 +29,10 @@ public record PostResponse(
     DateTime? PublishedAt,
     DateTime? UpdatedAt,
     IReadOnlyCollection<PostImageDto> Images,
-    PostCreatorDto? Creator);
+    IReadOnlyCollection<string> Tags,
+    PostCreatorDto? Creator,
+    int LikeCount = 0,
+    bool IsLiked = false);
 
 public record PostSummaryResponse(
     Guid Id,
@@ -39,7 +45,10 @@ public record PostSummaryResponse(
     DateTime? PublishedAt,
     string? ThumbnailUrl,
     int ImageCount,
-    PostCreatorDto? Creator);
+    IReadOnlyCollection<string> Tags,
+    PostCreatorDto? Creator,
+    int LikeCount = 0,
+    bool IsLiked = false);
 
 public record PaginatedList<T>(
     IReadOnlyList<T> Items,

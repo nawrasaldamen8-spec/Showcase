@@ -8,6 +8,7 @@ public class Skill : BaseEntity
     public Guid ProfileId { get; private set; }
     public string Name { get; private set; } = string.Empty;
     public string? Category { get; private set; }
+    public DateTime CreatedAtUtc { get; private set; } = DateTime.UtcNow;
 
     private Skill() { } // EF Core
 

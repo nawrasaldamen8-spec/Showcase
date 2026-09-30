@@ -16,6 +16,7 @@ public class Credential : BaseEntity
     public string? CredentialId { get; private set; }
     public Url? VerificationUrl { get; private set; }
     public StorageKey? MediaUrl { get; private set; }
+    public DateTime CreatedAtUtc { get; private set; } = DateTime.UtcNow;
 
     private Credential() { } // EF Core
 

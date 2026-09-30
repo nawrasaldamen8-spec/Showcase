@@ -234,9 +234,11 @@ public class Profile : BaseEntity
         string company,
         DateRange period,
         string? description = null,
-        string? achievements = null)
+        string? achievements = null,
+        string? employmentType = null,
+        string? location = null)
     {
-        var experience = new Experience(Id, jobTitle, company, period, description, achievements);
+        var experience = new Experience(Id, jobTitle, company, period, description, achievements, employmentType, location);
         _experiences.Add(experience);
         Touch();
         return experience;
@@ -248,9 +250,11 @@ public class Profile : BaseEntity
         string fieldOfStudy,
         DateRange period,
         string? gpa = null,
-        string? achievements = null)
+        string? achievements = null,
+        string? location = null,
+        string? description = null)
     {
-        var academic = new Academic(Id, institution, degree, fieldOfStudy, period, gpa, achievements);
+        var academic = new Academic(Id, institution, degree, fieldOfStudy, period, gpa, achievements, location, description);
         _academics.Add(academic);
         Touch();
         return academic;

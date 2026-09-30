@@ -16,15 +16,18 @@ public class GetProfilePostsQueryHandler : IRequestHandler<GetProfilePostsQuery,
     private readonly IApplicationDbContext _context;
     private readonly IIdentityService _identityService;
     private readonly IStorageService _storageService;
+    private readonly ICurrentUserService _currentUserService;
 
     public GetProfilePostsQueryHandler(
         IApplicationDbContext context,
         IIdentityService identityService,
-        IStorageService storageService)
+        IStorageService storageService,
+        ICurrentUserService currentUserService)
     {
         _context = context;
         _identityService = identityService;
         _storageService = storageService;
+        _currentUserService = currentUserService;
     }
 
     public async Task<Result<PaginatedList<PostSummaryResponse>>> Handle(GetProfilePostsQuery request, CancellationToken ct)
@@ -48,6 +51,8 @@ public class GetProfilePostsQueryHandler : IRequestHandler<GetProfilePostsQuery,
 
         var query = _context.Posts
             .Include(p => p.Images)
+            .Include(p => p.PostTags)
+                .ThenInclude(pt => pt.Tag)
             .Where(p => p.ProfileId == profile.Id && p.Status == PostStatus.Published);
 
         var totalCount = await query.CountAsync(ct);
@@ -68,12 +73,29 @@ public class GetProfilePostsQueryHandler : IRequestHandler<GetProfilePostsQuery,
             profile.Name,
             avatarUrl);
 
+        var currentUserId = _currentUserService.UserId;
+        var postIds = posts.Select(p => p.Id).ToList();
+        var likedPostIds = new HashSet<Guid>();
+        if (!string.IsNullOrWhiteSpace(currentUserId) && postIds.Count > 0)
+        {
+            var likes = await _context.PostLikes
+                .Where(l => postIds.Contains(l.PostId) && l.UserId == currentUserId)
+                .Select(l => l.PostId)
+                .ToListAsync(ct);
+            likedPostIds = new HashSet<Guid>(likes);
+        }
+
         var items = posts.Select(post =>
         {
             var firstImage = post.Images.OrderBy(i => i.DisplayOrder).FirstOrDefault();
             var thumbnailUrl = firstImage is not null
                 ? _storageService.GetPublicUrl(firstImage.StorageKey.Value)
                 : null;
+
+            var tags = post.PostTags
+                .Where(pt => pt.Tag != null)
+                .Select(pt => pt.Tag.Name)
+                .ToList();
 
             return new PostSummaryResponse(
                 post.Id,
@@ -86,7 +108,10 @@ public class GetProfilePostsQueryHandler : IRequestHandler<GetProfilePostsQuery,
                 post.PublishedAt,
                 thumbnailUrl,
                 post.Images.Count,
-                creator);
+                tags,
+                creator,
+                post.LikesCount,
+                likedPostIds.Contains(post.Id));
         }).ToList();
 
         return PaginatedList<PostSummaryResponse>.Create(items, request.PageNumber, request.PageSize, totalCount);

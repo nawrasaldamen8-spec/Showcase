@@ -2,6 +2,7 @@ using Showcase.Api.DependencyInjection;
 using Showcase.Api.Endpoints;
 using Showcase.Application.Common.DependencyInjection;
 using Showcase.Infrastructure.DependencyInjection;
+using Showcase.Infrastructure.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,6 +23,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseStaticFiles();
 app.UseCors("AllowAll");
 app.UseRateLimiter();
 
@@ -55,6 +57,8 @@ app.MapHealthChecks("/health", new Microsoft.AspNetCore.Diagnostics.HealthChecks
         await context.Response.WriteAsJsonAsync(response);
     }
 });
+
+app.MapHub<NotificationHub>("/hubs/notifications");
 
 app.MapEndpoints();
 

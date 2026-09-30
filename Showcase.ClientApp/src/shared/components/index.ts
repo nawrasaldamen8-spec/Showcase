@@ -12,5 +12,6 @@ export * from "./Textarea.tsx";
 export * from "./Toggle.tsx";
 export * from "./VerifiedBadge.tsx";
 export * from "./VisitorGuard.tsx";
+export * from "./ProtectedRoute.tsx";
 
 

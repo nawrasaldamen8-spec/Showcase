@@ -11,6 +11,7 @@ using Microsoft.IdentityModel.Tokens;
 using Showcase.Application.Common.Interfaces;
 using Showcase.Infrastructure.Data;
 using Showcase.Infrastructure.HealthChecks;
+using Showcase.Infrastructure.Hubs;
 using Showcase.Infrastructure.Identity;
 using Showcase.Infrastructure.Storage;
 
@@ -67,7 +68,7 @@ public static class DependencyInjection
         })
         .AddJwtBearer(options =>
         {
-            options.RequireHttpsMetadata = false;
+            options.RequireHttpsMetadata = !string.Equals(configuration["ASPNETCORE_ENVIRONMENT"], "Development", StringComparison.OrdinalIgnoreCase);
             options.SaveToken = true;
             options.TokenValidationParameters = new TokenValidationParameters
             {
@@ -104,6 +105,7 @@ public static class DependencyInjection
         services.AddScoped<IIdentityService, IdentityService>();
         services.AddScoped<ITokenService, TokenService>();
         services.AddScoped<ICurrentUserService, CurrentUserService>();
+        services.AddScoped<IRealtimeNotifier, SignalRRealtimeNotifier>();
 
         // Cloudflare R2 AWS S3 Client singleton for connection pooling
         services.AddSingleton<IAmazonS3>(sp =>

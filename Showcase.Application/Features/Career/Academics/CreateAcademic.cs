@@ -78,20 +78,9 @@ public class CreateAcademicCommandHandler : IRequestHandler<CreateAcademicComman
             request.FieldOfStudy,
             dateRangeResult.Value,
             request.Gpa,
-            request.Achievements);
-
-        if (!string.IsNullOrWhiteSpace(request.Location) || !string.IsNullOrWhiteSpace(request.Description))
-        {
-            academic.Update(
-                request.Institution,
-                request.Degree,
-                request.FieldOfStudy,
-                dateRangeResult.Value,
-                request.Gpa,
-                request.Achievements,
-                request.Location,
-                request.Description);
-        }
+            request.Achievements,
+            request.Location,
+            request.Description);
 
         _context.Academics.Add(academic);
         await _context.SaveChangesAsync(ct);

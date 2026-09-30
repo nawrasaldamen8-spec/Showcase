@@ -33,8 +33,12 @@ public class GetPostByIdQueryHandler : IRequestHandler<GetPostByIdQuery, Result<
 
     public async Task<Result<PostResponse>> Handle(GetPostByIdQuery request, CancellationToken ct)
     {
+        var currentUserId = _currentUserService.UserId;
+
         var post = await _context.Posts
             .Include(p => p.Images)
+            .Include(p => p.PostTags)
+                .ThenInclude(pt => pt.Tag)
             .FirstOrDefaultAsync(p => p.Id == request.Id, ct);
 
         if (post is null)
@@ -48,14 +52,18 @@ public class GetPostByIdQueryHandler : IRequestHandler<GetPostByIdQuery, Result<
             return PostErrors.NotFound(request.Id);
         }
 
-        // If post is not published, only the post owner can view it
-        if (post.Status != PostStatus.Published)
+        var isOwner = !string.IsNullOrWhiteSpace(currentUserId) && profile.UserId == currentUserId;
+
+        // If author profile is deleted or banned, hide post unless owner is viewing
+        if ((profile.IsDeleted || profile.IsBanned) && !isOwner)
         {
-            var currentUserId = _currentUserService.UserId;
-            if (string.IsNullOrWhiteSpace(currentUserId) || profile.UserId != currentUserId)
-            {
-                return PostErrors.NotFound(request.Id);
-            }
+            return PostErrors.NotFound(request.Id);
+        }
+
+        // If post is not published, only the post owner can view it
+        if (post.Status != PostStatus.Published && !isOwner)
+        {
+            return PostErrors.NotFound(request.Id);
         }
 
         // Resolve creator identity
@@ -83,6 +91,17 @@ public class GetPostByIdQueryHandler : IRequestHandler<GetPostByIdQuery, Result<
                 i.DisplayOrder))
             .ToList();
 
+        var tags = post.PostTags
+            .Where(pt => pt.Tag != null)
+            .Select(pt => pt.Tag.Name)
+            .ToList();
+
+        bool isLiked = false;
+        if (!string.IsNullOrWhiteSpace(currentUserId))
+        {
+            isLiked = await _context.PostLikes.AnyAsync(l => l.PostId == post.Id && l.UserId == currentUserId, ct);
+        }
+
         return new PostResponse(
             post.Id,
             post.ProfileId,
@@ -94,6 +113,9 @@ public class GetPostByIdQueryHandler : IRequestHandler<GetPostByIdQuery, Result<
             post.PublishedAt,
             post.UpdatedAt,
             images,
-            creator);
+            tags,
+            creator,
+            post.LikesCount,
+            isLiked);
     }
 }

@@ -35,14 +35,22 @@ public class GetVerificationRequestsQueryHandler : IRequestHandler<GetVerificati
             .Take(100)
             .ToListAsync(ct);
 
-        var list = new List<VerificationRequestItemDto>();
+        var userIds = requests.Select(r => r.UserId).Distinct().ToList();
+
+        var usersResult = await _identityService.GetUsersByIdsAsync(userIds, ct);
+        var usersDict = usersResult.IsSuccess ? usersResult.Value : new Dictionary<string, UserIdentityDetails>();
+
+        var profiles = await _context.Profiles
+            .Where(p => userIds.Contains(p.UserId))
+            .ToDictionaryAsync(p => p.UserId, ct);
+
+        var list = new List<VerificationRequestItemDto>(requests.Count);
 
         foreach (var req in requests)
         {
-            var userResult = await _identityService.GetUserByIdAsync(req.UserId, ct);
-            var username = userResult.IsSuccess ? userResult.Value.UserName : "unknown";
+            var username = usersDict.TryGetValue(req.UserId, out var u) ? u.UserName : "unknown";
+            profiles.TryGetValue(req.UserId, out var profile);
 
-            var profile = await _context.Profiles.FirstOrDefaultAsync(p => p.UserId == req.UserId, ct);
             var name = profile?.Name ?? username;
             var avatarUrl = profile?.AvatarKey is not null
                 ? _storageService.GetPublicUrl(profile.AvatarKey.Value)

@@ -33,6 +33,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>, IApplica
     public DbSet<CareerVisibility> CareerVisibilities => Set<CareerVisibility>();
     public DbSet<Country> Countries => Set<Country>();
     public DbSet<LanguageReference> LanguageReferences => Set<LanguageReference>();
+    public DbSet<ContentReport> ContentReports => Set<ContentReport>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

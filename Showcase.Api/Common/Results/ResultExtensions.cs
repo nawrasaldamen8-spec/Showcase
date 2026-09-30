@@ -1,4 +1,4 @@
-﻿using Showcase.Domain.Common.Results;
+using Showcase.Domain.Common.Results;
 
 namespace Showcase.Api.Common.Results;
 
@@ -33,7 +33,7 @@ public static class ResultExtensions
             ErrorType.Forbidden => StatusCodes.Status403Forbidden,
             ErrorType.Conflict => StatusCodes.Status409Conflict,
             ErrorType.Validation => StatusCodes.Status400BadRequest,
-            _ => StatusCodes.Status400BadRequest
+            _ => StatusCodes.Status500InternalServerError
         };
 
         return Microsoft.AspNetCore.Http.Results.Problem(

@@ -34,7 +34,7 @@ public class RemovePostImageCommandHandler : IRequestHandler<RemovePostImageComm
             return Error.Unauthorized("Auth.Unauthorized", "User is not authenticated.");
         }
 
-        var profile = await _context.Profiles.FirstOrDefaultAsync(p => p.UserId == userId, ct);
+        var profile = await _context.Profiles.FirstOrDefaultAsync(p => p.UserId == userId && !p.IsDeleted, ct);
         if (profile is null)
         {
             return ProfileErrors.NotFoundForUser(userId);

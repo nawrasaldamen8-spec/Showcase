@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Showcase.Application.Common.Interfaces;
 using Showcase.Domain.Common.Results;
 
@@ -309,6 +310,91 @@ public class IdentityService : IIdentityService
         }
 
         return Result.Success();
+    }
+
+    public async Task<Result> UpdatePhoneNumberAsync(
+        string userId,
+        string phoneNumber,
+        CancellationToken ct = default)
+    {
+        var user = await _userManager.FindByIdAsync(userId);
+        if (user is null)
+        {
+            return Error.NotFound("Auth.UserNotFound", $"User with ID '{userId}' was not found.");
+        }
+
+        var result = await _userManager.SetPhoneNumberAsync(user, phoneNumber);
+        if (!result.Succeeded)
+        {
+            var firstError = result.Errors.FirstOrDefault()?.Description ?? "Failed to update phone number.";
+            return Error.Validation("Profile.UpdatePhoneFailed", firstError);
+        }
+
+        return Result.Success();
+    }
+
+    public async Task<Result> UpdateUserRolesAsync(
+        string userId,
+        IEnumerable<string> roles,
+        CancellationToken ct = default)
+    {
+        var user = await _userManager.FindByIdAsync(userId);
+        if (user is null)
+        {
+            return Error.NotFound("Auth.UserNotFound", $"User with ID '{userId}' was not found.");
+        }
+
+        var currentRoles = await _userManager.GetRolesAsync(user);
+        var requestedRoles = roles.Where(r => !string.IsNullOrWhiteSpace(r)).Select(r => r.Trim()).Distinct().ToList();
+
+        var rolesToRemove = currentRoles.Except(requestedRoles, StringComparer.OrdinalIgnoreCase).ToList();
+        var rolesToAdd = requestedRoles.Except(currentRoles, StringComparer.OrdinalIgnoreCase).ToList();
+
+        if (rolesToRemove.Count > 0)
+        {
+            var removeResult = await _userManager.RemoveFromRolesAsync(user, rolesToRemove);
+            if (!removeResult.Succeeded)
+            {
+                var firstError = removeResult.Errors.FirstOrDefault()?.Description ?? "Failed to remove old roles.";
+                return Error.Validation("Auth.UpdateRolesFailed", firstError);
+            }
+        }
+
+        if (rolesToAdd.Count > 0)
+        {
+            var addResult = await _userManager.AddToRolesAsync(user, rolesToAdd);
+            if (!addResult.Succeeded)
+            {
+                var firstError = addResult.Errors.FirstOrDefault()?.Description ?? "Failed to add new roles.";
+                return Error.Validation("Auth.UpdateRolesFailed", firstError);
+            }
+        }
+
+        return Result.Success();
+    }
+
+    public async Task<Result<IReadOnlyDictionary<string, UserIdentityDetails>>> GetUsersByIdsAsync(
+        IEnumerable<string> userIds,
+        CancellationToken ct = default)
+    {
+        var idList = userIds?.Where(id => !string.IsNullOrWhiteSpace(id)).Distinct().ToList() ?? new List<string>();
+        if (idList.Count == 0)
+        {
+            return Result.Success<IReadOnlyDictionary<string, UserIdentityDetails>>(new Dictionary<string, UserIdentityDetails>());
+        }
+
+        var users = await _userManager.Users
+            .Where(u => idList.Contains(u.Id))
+            .ToListAsync(ct);
+
+        var resultDict = new Dictionary<string, UserIdentityDetails>();
+        foreach (var user in users)
+        {
+            var roles = await _userManager.GetRolesAsync(user);
+            resultDict[user.Id] = ToDetails(user, roles);
+        }
+
+        return Result.Success<IReadOnlyDictionary<string, UserIdentityDetails>>(resultDict);
     }
 
     /// <summary>Keeps the null email intact instead of coercing it to an empty string, which lost the distinction.</summary>

@@ -14,6 +14,7 @@ public class Achievement : BaseEntity
     public Url? Url { get; private set; }
     public StorageKey? MediaUrl { get; private set; }
     public string? Description { get; private set; }
+    public DateTime CreatedAtUtc { get; private set; } = DateTime.UtcNow;
 
     private Achievement() { } // EF Core
 

@@ -20,7 +20,7 @@ public static class CareerMappingExtensions
             e.EmploymentType,
             e.Location,
             e.SkillsUsed.ToList(),
-            DateTime.UtcNow);
+            e.CreatedAtUtc);
 
     public static CareerAcademicDto ToDto(this Academic a) =>
         new(
@@ -35,14 +35,14 @@ public static class CareerMappingExtensions
             a.Achievements,
             a.Location,
             a.Description,
-            DateTime.UtcNow);
+            a.CreatedAtUtc);
 
     public static CareerSkillDto ToDto(this Skill s) =>
         new(
             s.Id,
             s.Name,
             s.Category,
-            DateTime.UtcNow);
+            s.CreatedAtUtc);
 
     public static CareerCredentialDto ToDto(this Credential c) =>
         new(
@@ -55,14 +55,14 @@ public static class CareerMappingExtensions
             c.CredentialId,
             c.VerificationUrl?.Value,
             c.MediaUrl?.Value,
-            DateTime.UtcNow);
+            c.CreatedAtUtc);
 
     public static CareerLanguageDto ToDto(this Language l) =>
         new(
             l.Id,
             l.LanguageName,
             l.Proficiency.ToString(),
-            DateTime.UtcNow);
+            l.CreatedAtUtc);
 
     public static CareerAchievementDto ToDto(this Achievement a) =>
         new(
@@ -74,7 +74,7 @@ public static class CareerMappingExtensions
             a.Url?.Value,
             a.MediaUrl?.Value,
             a.Description,
-            DateTime.UtcNow);
+            a.CreatedAtUtc);
 
     public static CareerVisibilityDto ToDto(this CareerVisibility? v) =>
         v is null

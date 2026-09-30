@@ -15,6 +15,7 @@ public class Academic : BaseEntity
     public string? Achievements { get; private set; }
     public string? Location { get; private set; }
     public string? Description { get; private set; }
+    public DateTime CreatedAtUtc { get; private set; } = DateTime.UtcNow;
 
     private Academic() { } // EF Core
 

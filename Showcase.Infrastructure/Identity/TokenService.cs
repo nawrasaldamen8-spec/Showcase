@@ -4,6 +4,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Showcase.Application.Common.Interfaces;
@@ -13,11 +14,13 @@ namespace Showcase.Infrastructure.Identity;
 public class TokenService : ITokenService
 {
     private readonly JwtSettings _jwtSettings;
+    private readonly ILogger<TokenService>? _logger;
 
-    public TokenService(IOptions<JwtSettings> jwtOptions)
+    public TokenService(IOptions<JwtSettings> jwtOptions, ILogger<TokenService>? logger = null)
     {
         ArgumentNullException.ThrowIfNull(jwtOptions);
         _jwtSettings = jwtOptions.Value ?? new JwtSettings();
+        _logger = logger;
     }
 
     public string GenerateAccessToken(string userId, string username, string? email, IList<string>? roles = null)
@@ -54,7 +57,13 @@ public class TokenService : ITokenService
             }
         }
 
-        var secret = !string.IsNullOrWhiteSpace(_jwtSettings.Secret) && Encoding.UTF8.GetByteCount(_jwtSettings.Secret.Trim()) >= 32
+        var isConfiguredSecret = !string.IsNullOrWhiteSpace(_jwtSettings.Secret) && Encoding.UTF8.GetByteCount(_jwtSettings.Secret.Trim()) >= 32;
+        if (!isConfiguredSecret)
+        {
+            _logger?.LogWarning("JWT Secret is not properly configured or is too short (< 32 bytes). Using development fallback secret. DO NOT use in production!");
+        }
+
+        var secret = isConfiguredSecret
             ? _jwtSettings.Secret.Trim()
             : JwtSettings.DefaultDevelopmentSecret;
 

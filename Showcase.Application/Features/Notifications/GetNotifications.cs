@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Showcase.Application.Common.Interfaces;
@@ -11,6 +12,15 @@ using Showcase.Domain.Common.Results;
 namespace Showcase.Application.Features.Notifications;
 
 public record GetNotificationsQuery(int Limit = 50) : IRequest<Result<IReadOnlyList<NotificationDto>>>;
+
+public class GetNotificationsQueryValidator : AbstractValidator<GetNotificationsQuery>
+{
+    public GetNotificationsQueryValidator()
+    {
+        RuleFor(x => x.Limit)
+            .InclusiveBetween(1, 100).WithMessage("Limit must be between 1 and 100.");
+    }
+}
 
 public class GetNotificationsQueryHandler : IRequestHandler<GetNotificationsQuery, Result<IReadOnlyList<NotificationDto>>>
 {

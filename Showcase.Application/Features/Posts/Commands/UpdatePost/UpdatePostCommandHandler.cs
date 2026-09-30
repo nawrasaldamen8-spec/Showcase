@@ -31,13 +31,15 @@ public class UpdatePostCommandHandler : IRequestHandler<UpdatePostCommand, Resul
             return Error.Unauthorized("Auth.Unauthorized", "User is not authenticated.");
         }
 
-        var profile = await _context.Profiles.FirstOrDefaultAsync(p => p.UserId == userId, ct);
+        var profile = await _context.Profiles.FirstOrDefaultAsync(p => p.UserId == userId && !p.IsDeleted, ct);
         if (profile is null)
         {
             return ProfileErrors.NotFoundForUser(userId);
         }
 
-        var post = await _context.Posts.FirstOrDefaultAsync(p => p.Id == request.Id, ct);
+        var post = await _context.Posts
+            .Include(p => p.PostTags)
+            .FirstOrDefaultAsync(p => p.Id == request.Id, ct);
         if (post is null)
         {
             return PostErrors.NotFound(request.Id);
@@ -60,6 +62,27 @@ public class UpdatePostCommandHandler : IRequestHandler<UpdatePostCommand, Resul
         }
 
         post.UpdateDetails(request.Title, request.Description, externalUrl);
+
+        if (request.Tags is not null)
+        {
+            post.ClearTags();
+            foreach (var rawTagName in request.Tags)
+            {
+                if (string.IsNullOrWhiteSpace(rawTagName)) continue;
+                var normalized = Tag.NormalizeTag(rawTagName);
+                if (string.IsNullOrEmpty(normalized)) continue;
+
+                var tag = await _context.Tags.FirstOrDefaultAsync(t => t.NormalizedName == normalized, ct);
+                if (tag is null)
+                {
+                    tag = new Tag(rawTagName);
+                    _context.Tags.Add(tag);
+                }
+
+                post.AddTag(tag.Id);
+            }
+        }
+
         await _context.SaveChangesAsync(ct);
 
         return Result.Success();

@@ -65,6 +65,8 @@ public class GetCurrentUserQueryHandler : IRequestHandler<GetCurrentUserQuery, R
             profile.Bio?.Value,
             avatarUrl,
             profile.IsVerified,
+            profile.VerificationStatus,
+            profile.FeaturedStatus,
             profile.IsBanned,
             profile.BanReason,
             user.Roles);

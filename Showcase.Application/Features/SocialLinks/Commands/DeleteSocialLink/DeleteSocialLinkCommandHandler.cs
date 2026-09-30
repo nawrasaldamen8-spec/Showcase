@@ -31,7 +31,7 @@ public class DeleteSocialLinkCommandHandler : IRequestHandler<DeleteSocialLinkCo
 
         var profile = await _context.Profiles
             .Include(p => p.SocialLinks)
-            .FirstOrDefaultAsync(p => p.UserId == userId, ct);
+            .FirstOrDefaultAsync(p => p.UserId == userId && !p.IsDeleted, ct);
 
         if (profile is null)
         {

@@ -9,6 +9,7 @@ public class Language : BaseEntity
     public Guid ProfileId { get; private set; }
     public string LanguageName { get; private set; } = string.Empty;
     public LanguageProficiency Proficiency { get; private set; }
+    public DateTime CreatedAtUtc { get; private set; } = DateTime.UtcNow;
 
     private Language() { } // EF Core
 

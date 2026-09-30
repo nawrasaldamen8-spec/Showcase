@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Showcase.Domain.Enums;
 
 namespace Showcase.Application.Features.Profiles.Common;
 
@@ -13,7 +14,7 @@ public record MyProfileResponse(
     Guid Id,
     string UserId,
     string? Email,
-    string UserName,
+    string Username,
     string Name,
     string? Specialty,
     string? Country,
@@ -21,18 +22,23 @@ public record MyProfileResponse(
     string? AvatarKey,
     string? AvatarUrl,
     IReadOnlyCollection<SocialLinkDto> SocialLinks,
+    bool IsVerified,
+    VerificationStatus VerificationStatus,
+    FeaturedStatus FeaturedStatus,
     DateTime CreatedAt,
     DateTime? UpdatedAt);
 
 public record PublicProfileResponse(
     Guid Id,
-    string UserName,
+    string Username,
     string Name,
     string? Specialty,
     string? Country,
     string? Bio,
     string? AvatarUrl,
     bool IsVerified,
+    VerificationStatus VerificationStatus,
+    FeaturedStatus FeaturedStatus,
     IReadOnlyCollection<SocialLinkDto> SocialLinks);
 
 public record AvatarUploadUrlResponse(

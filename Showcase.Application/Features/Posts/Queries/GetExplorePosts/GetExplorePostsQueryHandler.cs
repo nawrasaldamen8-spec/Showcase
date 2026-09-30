@@ -17,15 +17,18 @@ public class GetExplorePostsQueryHandler : IRequestHandler<GetExplorePostsQuery,
     private readonly IApplicationDbContext _context;
     private readonly IIdentityService _identityService;
     private readonly IStorageService _storageService;
+    private readonly ICurrentUserService _currentUserService;
 
     public GetExplorePostsQueryHandler(
         IApplicationDbContext context,
         IIdentityService identityService,
-        IStorageService storageService)
+        IStorageService storageService,
+        ICurrentUserService currentUserService)
     {
         _context = context;
         _identityService = identityService;
         _storageService = storageService;
+        _currentUserService = currentUserService;
     }
 
     public async Task<Result<PaginatedList<PostSummaryResponse>>> Handle(GetExplorePostsQuery request, CancellationToken ct)
@@ -38,6 +41,8 @@ public class GetExplorePostsQueryHandler : IRequestHandler<GetExplorePostsQuery,
 
         var query = _context.Posts
             .Include(p => p.Images)
+            .Include(p => p.PostTags)
+                .ThenInclude(pt => pt.Tag)
             .Where(p => p.Status == PostStatus.Published && visibleProfileIds.Contains(p.ProfileId));
 
         if (!string.IsNullOrWhiteSpace(request.Search))
@@ -60,12 +65,25 @@ public class GetExplorePostsQueryHandler : IRequestHandler<GetExplorePostsQuery,
             .Where(p => profileIds.Contains(p.Id))
             .ToDictionaryAsync(p => p.Id, p => p, ct);
 
+        // Batch load users for creators
+        var userIds = profiles.Values.Select(p => p.UserId).Distinct().ToList();
+        var usersResult = await _identityService.GetUsersByIdsAsync(userIds, ct);
+        var usersDict = usersResult?.IsSuccess == true ? usersResult.Value : new Dictionary<string, UserIdentityDetails>();
+
         // Cache creator DTOs
         var creatorCache = new Dictionary<Guid, PostCreatorDto>();
         foreach (var profile in profiles.Values)
         {
-            var userResult = await _identityService.GetUserByIdAsync(profile.UserId, ct);
-            if (userResult.IsSuccess)
+            if (!usersDict.TryGetValue(profile.UserId, out var userDetails))
+            {
+                var individualUser = await _identityService.GetUserByIdAsync(profile.UserId, ct);
+                if (individualUser?.IsSuccess == true)
+                {
+                    userDetails = individualUser.Value;
+                }
+            }
+
+            if (userDetails is not null)
             {
                 var avatarUrl = profile.AvatarKey is not null
                     ? _storageService.GetPublicUrl(profile.AvatarKey.Value)
@@ -73,10 +91,22 @@ public class GetExplorePostsQueryHandler : IRequestHandler<GetExplorePostsQuery,
 
                 creatorCache[profile.Id] = new PostCreatorDto(
                     profile.Id,
-                    userResult.Value.UserName,
+                    userDetails.UserName,
                     profile.Name,
                     avatarUrl);
             }
+        }
+
+        var currentUserId = _currentUserService.UserId;
+        var postIds = posts.Select(p => p.Id).ToList();
+        var likedPostIds = new HashSet<Guid>();
+        if (!string.IsNullOrWhiteSpace(currentUserId) && postIds.Count > 0)
+        {
+            var likes = await _context.PostLikes
+                .Where(l => postIds.Contains(l.PostId) && l.UserId == currentUserId)
+                .Select(l => l.PostId)
+                .ToListAsync(ct);
+            likedPostIds = new HashSet<Guid>(likes);
         }
 
         var items = posts.Select(post =>
@@ -87,6 +117,11 @@ public class GetExplorePostsQueryHandler : IRequestHandler<GetExplorePostsQuery,
                 : null;
 
             creatorCache.TryGetValue(post.ProfileId, out var creator);
+
+            var tags = post.PostTags
+                .Where(pt => pt.Tag != null)
+                .Select(pt => pt.Tag.Name)
+                .ToList();
 
             return new PostSummaryResponse(
                 post.Id,
@@ -99,7 +134,10 @@ public class GetExplorePostsQueryHandler : IRequestHandler<GetExplorePostsQuery,
                 post.PublishedAt,
                 thumbnailUrl,
                 post.Images.Count,
-                creator);
+                tags,
+                creator,
+                post.LikesCount,
+                likedPostIds.Contains(post.Id));
         }).ToList();
 
         return PaginatedList<PostSummaryResponse>.Create(items, request.PageNumber, request.PageSize, totalCount);

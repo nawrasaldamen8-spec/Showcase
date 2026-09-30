@@ -25,6 +25,7 @@ public interface IApplicationDbContext
     DbSet<CareerVisibility> CareerVisibilities { get; }
     DbSet<Country> Countries { get; }
     DbSet<LanguageReference> LanguageReferences { get; }
+    DbSet<ContentReport> ContentReports { get; }
 
     DbSet<TEntity> Set<TEntity>() where TEntity : class;
 

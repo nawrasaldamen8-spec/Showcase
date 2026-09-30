@@ -1,10 +1,14 @@
 using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentValidation;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 using Showcase.Application.Common.Interfaces;
 using Showcase.Domain.Common.Results;
+using Showcase.Domain.Entities;
+using Showcase.Domain.Enums;
 
 namespace Showcase.Application.Features.Admin.Broadcasts;
 
@@ -30,8 +34,41 @@ public class CreateBroadcastCommandValidator : AbstractValidator<CreateBroadcast
 
 public class CreateBroadcastCommandHandler : IRequestHandler<CreateBroadcastCommand, Result>
 {
-    public Task<Result> Handle(CreateBroadcastCommand request, CancellationToken ct)
+    private readonly IApplicationDbContext _context;
+    private readonly IRealtimeNotifier _realtimeNotifier;
+
+    public CreateBroadcastCommandHandler(
+        IApplicationDbContext context,
+        IRealtimeNotifier realtimeNotifier)
     {
-        return Task.FromResult(Result.Success());
+        _context = context;
+        _realtimeNotifier = realtimeNotifier;
+    }
+
+    public async Task<Result> Handle(CreateBroadcastCommand request, CancellationToken ct)
+    {
+        // 1. Broadcast real-time message to all connected clients
+        await _realtimeNotifier.BroadcastAsync(request.Title, request.Message, request.Severity, ct);
+
+        // 2. Persist system notification for all active profiles
+        var activeUserIds = await _context.Profiles
+            .Where(p => !p.IsDeleted && !p.IsBanned)
+            .Select(p => p.UserId)
+            .ToListAsync(ct);
+
+        if (activeUserIds.Count > 0)
+        {
+            var notifications = activeUserIds.Select(userId => new Notification(
+                userId,
+                NotificationType.System,
+                request.Title,
+                request.Message
+            )).ToList();
+
+            _context.Notifications.AddRange(notifications);
+            await _context.SaveChangesAsync(ct);
+        }
+
+        return Result.Success();
     }
 }
