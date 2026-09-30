@@ -53,7 +53,6 @@ export interface RegisterRequest {
   name: string;
   email?: string | null;
   bio?: string;
-  avatarUrl?: string;
 }
 
 export interface LoginRequest {

@@ -21,7 +21,7 @@ export const CredentialForm: React.FC<CredentialFormProps> = ({
   const [name, setName] = useState(initialItem?.name || "");
   const [issuingOrganization, setIssuingOrganization] = useState(initialItem?.issuingOrganization || "");
   const [issueDate, setIssueDate] = useState(initialItem?.issueDate || "");
-  const [expirationDate, setExpirationDate] = useState(initialItem?.expirationDate || "");
+  const [expiryDate, setExpiryDate] = useState(initialItem?.expiryDate || "");
   const [credentialId, setCredentialId] = useState(initialItem?.credentialId || "");
   const [mediaUrl, setMediaUrl] = useState(initialItem?.mediaUrl || "");
 
@@ -57,7 +57,7 @@ export const CredentialForm: React.FC<CredentialFormProps> = ({
       name: name.trim(),
       issuingOrganization: issuingOrganization.trim(),
       issueDate: issueDate.trim() || undefined,
-      expirationDate: expirationDate.trim() || undefined,
+      expiryDate: expiryDate.trim() || undefined,
       credentialId: credentialId.trim() || undefined,
       mediaUrl: mediaUrl.trim() || undefined,
     };
@@ -133,8 +133,8 @@ export const CredentialForm: React.FC<CredentialFormProps> = ({
           </label>
           <input
             type="month"
-            value={expirationDate}
-            onChange={(e) => setExpirationDate(e.target.value)}
+            value={expiryDate}
+            onChange={(e) => setExpiryDate(e.target.value)}
             className="w-full px-3.5 py-2.5 rounded-xl bg-ivory-medium border border-stone/60 text-sm text-slate-dark focus:outline-none focus:ring-1 focus:ring-slate-dark"
           />
         </div>

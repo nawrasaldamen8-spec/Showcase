@@ -1,9 +1,8 @@
-import { Plus } from "lucide-react";
+import { Plus, Sparkles } from "lucide-react";
 import React from "react";
 import { Link } from "react-router-dom";
 import { BrandLogo } from "../components/BrandLogo.tsx";
 import { Button } from "../components/Button.tsx";
-import { DemoSwitcher, type DemoPersona } from "./DemoSwitcher.tsx";
 import { SidebarNavLinks, type SidebarUser } from "./SidebarNavLinks.tsx";
 import { SidebarUserMenu } from "./SidebarUserMenu.tsx";
 
@@ -11,12 +10,10 @@ export type { SidebarUser };
 
 export interface SidebarProps {
   user?: SidebarUser | null;
-  currentPersona?: DemoPersona;
-  onPersonaChange?: (persona: DemoPersona) => void;
   onLogout?: () => void;
 }
 
-export const Sidebar: React.FC<SidebarProps> = ({ user, currentPersona = "creator", onPersonaChange, onLogout }) => {
+export const Sidebar: React.FC<SidebarProps> = ({ user, onLogout }) => {
   return (
     <aside
       aria-label="Main Sidebar Navigation"
@@ -24,7 +21,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ user, currentPersona = "creato
     >
       {/* 1. Header / Platform Branding */}
       <div className="h-18 lg:h-20 px-6 flex items-center justify-between border-b border-[#262624]">
-        <Link to="/studio" className="flex items-center gap-3 group text-decoration-none" aria-label="Pority Home">
+        <Link to={user ? "/studio" : "/"} className="flex items-center gap-3 group text-decoration-none" aria-label="Pority Home">
           <BrandLogo
             variant="full"
             theme="dark"
@@ -38,30 +35,37 @@ export const Sidebar: React.FC<SidebarProps> = ({ user, currentPersona = "creato
       {/* 2. Middle Navigation Items */}
       <SidebarNavLinks user={user} />
 
-      {/* 3. Bottom Section: CTA, Persona, Profile Menu */}
+      {/* 3. Bottom Section: Action CTA & Profile Menu */}
       <div className="p-4 border-t border-[#262624] space-y-3 bg-slate-dark">
-        <Link to="/posts/new" className="block text-decoration-none">
-          <Button
-            variant="clay"
-            size="md"
-            fullWidth
-            leftIcon={<Plus className="h-4 w-4" />}
-            className="font-gothic uppercase tracking-wider text-xs shadow-none justify-center"
-          >
-            New Post
-          </Button>
-        </Link>
+        {user ? (
+          <Link to="/posts/new" className="block text-decoration-none">
+            <Button
+              variant="clay"
+              size="md"
+              fullWidth
+              leftIcon={<Plus className="h-4 w-4" />}
+              className="font-gothic uppercase tracking-wider text-xs shadow-none justify-center"
+            >
+              New Post
+            </Button>
+          </Link>
+        ) : (
+          <Link to="/register" className="block text-decoration-none">
+            <Button
+              variant="clay"
+              size="md"
+              fullWidth
+              leftIcon={<Sparkles className="h-4 w-4" />}
+              className="font-gothic uppercase tracking-wider text-xs shadow-none justify-center"
+            >
+              Get Started
+            </Button>
+          </Link>
+        )}
 
-        <div className="pt-1">
-          <DemoSwitcher
-            currentPersona={currentPersona}
-            onPersonaChange={onPersonaChange}
-            className="w-full justify-between bg-[#262624]/60 border border-[#262624] text-ivory-light"
-          />
-        </div>
-
-        <SidebarUserMenu user={user} onPersonaChange={onPersonaChange} onLogout={onLogout} />
+        <SidebarUserMenu user={user} onLogout={onLogout} />
       </div>
     </aside>
   );
 };
+

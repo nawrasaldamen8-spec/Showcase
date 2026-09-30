@@ -30,6 +30,7 @@ export function usePostEditorImages({
         url: img.url,
         storageKey: img.storageKey,
         displayOrder: startOrder + index,
+        file: img.file,
       }));
       return [...prev, ...formatted];
     });

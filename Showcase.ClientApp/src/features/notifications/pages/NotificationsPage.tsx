@@ -24,26 +24,29 @@ export const NotificationsPage: React.FC = () => {
 
   const [filter, setFilter] = useState<"all" | "announcements" | "warnings">("all");
 
-  const { data: broadcasts, isLoading } = useAsyncData(() => apiClient.getBroadcasts());
+  const { data: rawNotifications, isLoading } = useAsyncData(() => apiClient.getNotifications());
 
-  // Map broadcasts into standard notification items
+  // Map notifications into standard notification items
   const notifications: NotificationCardItem[] = useMemo(() => {
-    if (!broadcasts) return [];
+    if (!rawNotifications) return [];
 
-    return broadcasts.map((b) => {
-      const isWarning = b.severity === "warning";
+    return rawNotifications.map((n) => {
+      const isWarning =
+        n.type === "system" ||
+        n.type === "verificationrejected" ||
+        n.type === "featuredrejected";
       return {
-        id: b.id,
-        title: b.title,
-        message: b.message,
+        id: n.id,
+        title: n.title,
+        message: n.message,
         category: isWarning ? ("System Warning" as const) : ("Announcement" as const),
-        timestamp: b.publishedAt,
-        isRead: readIds.has(b.id),
+        timestamp: n.createdAtUtc,
+        isRead: n.isRead || readIds.has(n.id),
       };
     });
-  }, [broadcasts, readIds]);
+  }, [rawNotifications, readIds]);
 
-  const handleMarkAsRead = (id: string) => {
+  const handleMarkAsRead = async (id: string) => {
     setReadIds((prev) => {
       const next = new Set(prev);
       next.add(id);
@@ -54,15 +57,27 @@ export const NotificationsPage: React.FC = () => {
       }
       return next;
     });
+
+    try {
+      await apiClient.markNotificationAsRead(id);
+    } catch (err) {
+      console.error("Failed to mark notification as read:", err);
+    }
   };
 
-  const handleMarkAllAsRead = () => {
+  const handleMarkAllAsRead = async () => {
     const allIds = new Set(notifications.map((n) => n.id));
     setReadIds(allIds);
     try {
       localStorage.setItem(NOTIFICATIONS_STORAGE_KEY, JSON.stringify([...allIds]));
     } catch {
       // Ignore storage errors
+    }
+
+    try {
+      await apiClient.markAllNotificationsAsRead();
+    } catch (err) {
+      console.error("Failed to mark all notifications as read:", err);
     }
   };
 

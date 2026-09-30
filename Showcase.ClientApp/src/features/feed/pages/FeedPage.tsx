@@ -1,10 +1,10 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Sparkles, User as UserIcon } from "lucide-react";
-import { apiClient } from "@shared/api/apiClient.ts";
+import { useQuery } from "@tanstack/react-query";
+import { apiClient, queryKeys } from "@shared/api/index.ts";
 import { EmptyState } from "@shared/components/EmptyState.tsx";
 import { Skeleton } from "@shared/components/Skeleton.tsx";
-import { useAsyncData } from "@shared/hooks/index.ts";
 import { FeedSearchBar } from "../components/FeedSearchBar.tsx";
 import { MemberProfileCard } from "../components/MemberProfileCard.tsx";
 
@@ -12,9 +12,11 @@ export const FeedPage: React.FC = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
 
-  const { data: profiles, isLoading } = useAsyncData(
-    () => apiClient.getProfiles()
-  );
+  const { data: profiles, isLoading } = useQuery({
+    queryKey: queryKeys.profiles.all,
+    queryFn: () => apiClient.getProfiles(),
+    staleTime: 1000 * 60 * 2,
+  });
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();

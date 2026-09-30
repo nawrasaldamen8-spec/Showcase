@@ -3,16 +3,14 @@ import React, { useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { VerifiedBadge } from "../components/VerifiedBadge.tsx";
 import { useClickOutside } from "../hooks/useClickOutside.ts";
-import type { DemoPersona } from "./DemoSwitcher.tsx";
 import type { SidebarUser } from "./SidebarNavLinks.tsx";
 
 export interface SidebarUserMenuProps {
   user?: SidebarUser | null;
-  onPersonaChange?: (persona: DemoPersona) => void;
   onLogout?: () => void;
 }
 
-export const SidebarUserMenu: React.FC<SidebarUserMenuProps> = ({ user, onPersonaChange, onLogout }) => {
+export const SidebarUserMenu: React.FC<SidebarUserMenuProps> = ({ user, onLogout }) => {
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
 
@@ -77,7 +75,7 @@ export const SidebarUserMenu: React.FC<SidebarUserMenuProps> = ({ user, onPerson
                   <Link
                     to="/admin"
                     onClick={() => setUserMenuOpen(false)}
-                    className="flex items-center gap-2.5 px-4 py-2 text-xs font-gothic uppercase tracking-wider text-clay hover:bg-[#262624] transition-colors"
+                    className="flex items-center gap-2.5 px-4 py-2 text-xs font-gothic uppercase tracking-wider text-clay hover:bg-[#262624] transition-colors text-decoration-none"
                     role="menuitem"
                   >
                     <Shield className="h-3.5 w-3.5 text-clay" />
@@ -88,7 +86,7 @@ export const SidebarUserMenu: React.FC<SidebarUserMenuProps> = ({ user, onPerson
                 <Link
                   to="/settings"
                   onClick={() => setUserMenuOpen(false)}
-                  className="flex items-center gap-2.5 px-4 py-2 text-xs font-gothic uppercase tracking-wider text-ivory-light hover:bg-[#262624] transition-colors"
+                  className="flex items-center gap-2.5 px-4 py-2 text-xs font-gothic uppercase tracking-wider text-ivory-light hover:bg-[#262624] transition-colors text-decoration-none"
                   role="menuitem"
                 >
                   <SettingsIcon className="h-3.5 w-3.5 text-cloud-dark" />
@@ -104,7 +102,7 @@ export const SidebarUserMenu: React.FC<SidebarUserMenuProps> = ({ user, onPerson
                       setUserMenuOpen(false);
                       onLogout();
                     }}
-                    className="w-full flex items-center gap-2.5 px-4 py-2 text-xs font-gothic uppercase tracking-wider text-clay hover:bg-[#262624] transition-colors text-left cursor-pointer"
+                    className="w-full flex items-center gap-2.5 px-4 py-2 text-xs font-gothic uppercase tracking-wider text-clay hover:bg-[#262624] transition-colors text-left cursor-pointer bg-transparent border-none"
                     role="menuitem"
                   >
                     <LogOut className="h-3.5 w-3.5" />
@@ -114,19 +112,25 @@ export const SidebarUserMenu: React.FC<SidebarUserMenuProps> = ({ user, onPerson
               )}
             </>
           ) : (
-            <div className="p-2">
-              <button
-                type="button"
-                onClick={() => {
-                  setUserMenuOpen(false);
-                  onPersonaChange?.("creator");
-                }}
-                className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-gothic uppercase tracking-wider text-ivory-light hover:bg-[#262624] rounded-lg transition-colors text-left cursor-pointer"
+            <div className="p-2 space-y-1">
+              <Link
+                to="/login"
+                onClick={() => setUserMenuOpen(false)}
+                className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-gothic uppercase tracking-wider text-ivory-light hover:bg-[#262624] rounded-lg transition-colors text-left text-decoration-none"
+                role="menuitem"
+              >
+                <UserIcon className="h-3.5 w-3.5 text-cloud-dark" />
+                <span>Sign In</span>
+              </Link>
+              <Link
+                to="/register"
+                onClick={() => setUserMenuOpen(false)}
+                className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-gothic uppercase tracking-wider text-clay hover:bg-[#262624] rounded-lg transition-colors text-left text-decoration-none"
                 role="menuitem"
               >
                 <Sparkles className="h-3.5 w-3.5 text-clay" />
-                <span>Switch to Creator</span>
-              </button>
+                <span>Create Account</span>
+              </Link>
             </div>
           )}
         </div>
@@ -134,3 +138,4 @@ export const SidebarUserMenu: React.FC<SidebarUserMenuProps> = ({ user, onPerson
     </div>
   );
 };
+

@@ -35,12 +35,7 @@ export const SocialLinksManager: React.FC<SocialLinksManagerProps> = ({ initialL
         displayOrder: nextOrder,
       });
 
-      const newLink: SocialLinkDto = {
-        id: res.id,
-        platform,
-        url,
-        displayOrder: nextOrder,
-      };
+      const newLink: SocialLinkDto = res;
 
       const updatedLinks = [...links, newLink].sort((a, b) => a.displayOrder - b.displayOrder);
       setLinks(updatedLinks);
@@ -112,7 +107,7 @@ export const SocialLinksManager: React.FC<SocialLinksManagerProps> = ({ initialL
 
       if (reindexed.length > 0) {
         await apiClient.reorderSocialLinks({
-          orderedIds: reindexed.map((l) => l.id),
+          items: reindexed.map((l) => ({ id: l.id, displayOrder: l.displayOrder })),
         });
       }
     } catch (err: unknown) {
@@ -139,7 +134,7 @@ export const SocialLinksManager: React.FC<SocialLinksManagerProps> = ({ initialL
 
     try {
       await apiClient.reorderSocialLinks({
-        orderedIds: updatedLinks.map((l) => l.id),
+        items: updatedLinks.map((l) => ({ id: l.id, displayOrder: l.displayOrder })),
       });
       onNotify?.("Links reordered.", "success");
     } catch (err: unknown) {

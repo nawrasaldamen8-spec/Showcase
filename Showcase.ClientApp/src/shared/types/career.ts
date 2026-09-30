@@ -47,7 +47,8 @@ export interface CareerCredential {
   name: string;
   issuingOrganization: string;
   issueDate?: string;
-  expirationDate?: string;
+  expiryDate?: string;
+  doesNotExpire?: boolean;
   credentialId?: string;
   verificationUrl?: string;
   mediaUrl?: string;
@@ -76,7 +77,7 @@ export interface CareerAchievement {
 }
 
 export interface CareerSummary {
-  experienceCount: number;
+  experiencesCount: number;
   academicsCount: number;
   skillsCount: number;
   credentialsCount: number;

@@ -2,7 +2,8 @@ import { Archive, ExternalLink, Globe, Image as ImageIcon, Pencil, Trash2 } from
 import React from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@shared/components/Button.tsx";
-import { PostStatus, type PostSummaryResponse } from "@shared/types/index.ts";
+import { type PostSummaryResponse } from "@shared/types/index.ts";
+import { isPostPublished } from "../utils.ts";
 import { PostStatusBadge } from "./PostStatusBadge.tsx";
 
 function formatDate(isoString?: string | null): string {
@@ -32,7 +33,7 @@ export const StudioPostCard: React.FC<StudioPostCardProps> = ({
   onTogglePublish,
   onDeleteClick,
 }) => {
-  const isPublished = Number(post.status) === PostStatus.Published;
+  const isPublished = isPostPublished(post.status);
   const hasImages = (post.imageCount || 0) > 0;
 
   return (

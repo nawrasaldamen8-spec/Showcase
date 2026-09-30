@@ -1,5 +1,6 @@
 import { apiClient } from "@shared/api/apiClient.ts";
 import type { ImageGridItem } from "../components/ImageReorderGrid.tsx";
+import { normalizePostStatus } from "../utils.ts";
 
 export interface PersistPostDataOptions {
   id?: string;
@@ -28,12 +29,30 @@ export async function persistPostData({
     });
     targetPostId = created.id;
     for (const img of images) {
-      await apiClient.addPostImage(
-        targetPostId,
-        img.storageKey || `posts/${Date.now()}.jpg`,
-        img.url,
-        img.displayOrder
-      );
+      let finalKey = img.storageKey;
+      let finalUrl = img.url;
+
+      if (img.file) {
+        try {
+          const { uploadUrl, storageKey } = await apiClient.getPostImageUploadUrl(targetPostId, {
+            contentType: img.file.type || "image/jpeg",
+            fileSizeBytes: img.file.size,
+          });
+          finalUrl = await apiClient.uploadImageFile(uploadUrl, img.file);
+          finalKey = storageKey;
+        } catch (uploadErr) {
+          console.error("Failed to upload staged image binary to storage:", uploadErr);
+        }
+      }
+
+      if (finalKey) {
+        await apiClient.addPostImage(
+          targetPostId,
+          finalKey,
+          finalUrl,
+          img.displayOrder
+        );
+      }
     }
   } else {
     await apiClient.updatePost(targetPostId, {
@@ -59,7 +78,7 @@ export async function fetchPostEditorData(id: string) {
     description: postData.description || "",
     externalUrl: postData.externalUrl || "",
     tags: postData.tags || [],
-    postStatus: Number(postData.status),
+    postStatus: normalizePostStatus(postData.status),
     images: mappedImages,
   };
 }

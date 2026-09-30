@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { apiClient } from "@shared/api/apiClient.ts";
+import { useQueryClient } from "@tanstack/react-query";
+import { apiClient, queryKeys } from "@shared/api/index.ts";
 import { useToast } from "@shared/context/index.ts";
 import { PostStatus, type PostSummaryResponse } from "@shared/types/index.ts";
 
@@ -9,6 +10,7 @@ export interface UsePostActionsProps {
 }
 
 export function usePostActions({ setPosts }: UsePostActionsProps) {
+  const queryClient = useQueryClient();
   const { showToast } = useToast();
   const [actionInProgressId, setActionInProgressId] = useState<string | null>(null);
   const [postToDelete, setPostToDelete] = useState<PostSummaryResponse | null>(null);
@@ -52,6 +54,7 @@ export function usePostActions({ setPosts }: UsePostActionsProps) {
           )
         );
         showToast("success", `"${post.title}" is now published.`);
+        queryClient.invalidateQueries({ queryKey: queryKeys.posts.all });
       } catch (err) {
         console.error("Failed to publish post:", err);
         showToast("error", "Failed to publish post. Please check your connection and try again.");
@@ -68,6 +71,7 @@ export function usePostActions({ setPosts }: UsePostActionsProps) {
       await apiClient.deletePost(postToDelete.id);
       setPosts((prev) => prev.filter((p) => p.id !== postToDelete.id));
       showToast("success", `"${postToDelete.title}" deleted.`);
+      queryClient.invalidateQueries({ queryKey: queryKeys.posts.all });
       setPostToDelete(null);
     } catch (err) {
       console.error("Failed to delete post:", err);

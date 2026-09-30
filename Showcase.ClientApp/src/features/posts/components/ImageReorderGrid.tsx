@@ -6,6 +6,7 @@ export interface ImageGridItem {
   url: string;
   storageKey?: string;
   displayOrder: number;
+  file?: File;
 }
 
 export interface ImageReorderGridProps {

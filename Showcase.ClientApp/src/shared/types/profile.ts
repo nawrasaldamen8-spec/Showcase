@@ -118,8 +118,7 @@ export interface UpdateSocialLinkRequest {
 export type ReorderSocialLinkItem = ReorderItem;
 
 export interface ReorderSocialLinksRequest {
-  items?: ReorderSocialLinkItem[];
-  orderedIds?: string[];
+  items: ReorderSocialLinkItem[];
 }
 
 export type AvatarUploadUrlResponse = UploadUrlResponse;

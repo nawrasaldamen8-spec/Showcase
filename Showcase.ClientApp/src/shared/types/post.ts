@@ -115,6 +115,7 @@ export interface ReorderPostImagesRequest {
 export type PostImageUploadUrlResponse = UploadUrlResponse;
 
 export interface PostImageAddedResponse {
+  id?: string;
   imageId: string;
 }
 

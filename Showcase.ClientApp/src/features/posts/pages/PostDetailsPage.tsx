@@ -1,14 +1,14 @@
 import { ArrowLeft, Pencil } from "lucide-react";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
-import { apiClient } from "@shared/api/apiClient.ts";
 import { Button } from "@shared/components/Button.tsx";
 import { Lightbox } from "@shared/components/Lightbox.tsx";
 import { NotFoundView } from "@shared/components/NotFoundView.tsx";
 import { Skeleton } from "@shared/components/Skeleton.tsx";
 import { useAuth } from "@shared/context/index.ts";
 import { useMediaQuery } from "@shared/hooks/index.ts";
-import type { PostDetailsResponse, PublicProfileResponse } from "@shared/types/index.ts";
+import { usePostDetailsQuery } from "../hooks/usePostQueries.ts";
+import { usePublicProfileQuery } from "../../profile/hooks/useProfileQueries.ts";
 import { PostDetailDesktop, PostDetailMobile } from "../components/index.ts";
 
 export const PostDetailsPage: React.FC = () => {
@@ -19,57 +19,12 @@ export const PostDetailsPage: React.FC = () => {
   const navigate = useNavigate();
 
   const fromState = location.state as { from?: string; fromLabel?: string } | null;
-
-  const [post, setPost] = useState<PostDetailsResponse | null>(null);
-  const [creatorProfile, setCreatorProfile] = useState<PublicProfileResponse | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [notFound, setNotFound] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
-  useEffect(() => {
-    let isMounted = true;
-
-    async function loadPostData() {
-      if (!id) {
-        if (isMounted) {
-          setNotFound(true);
-          setIsLoading(false);
-        }
-        return;
-      }
-
-      setIsLoading(true);
-      setError(null);
-      setNotFound(false);
-      try {
-        const postData = await apiClient.getPostById(id as string);
-        if (!isMounted) return;
-        setPost(postData);
-
-        if (postData.creator?.username) {
-          try {
-            const profile = await apiClient.getPublicProfile(postData.creator.username);
-            if (isMounted) setCreatorProfile(profile);
-          } catch {
-            // Non-critical fallback
-          }
-        }
-      } catch (err: unknown) {
-        if (!isMounted) return;
-        const status = (err as { status?: number })?.status;
-        if (status === 404) setNotFound(true);
-        else setError("Unable to load project details. Please try again.");
-      } finally {
-        if (isMounted) setIsLoading(false);
-      }
-    }
-
-    loadPostData();
-    return () => {
-      isMounted = false;
-    };
-  }, [id]);
+  const { data: post, isLoading, isError } = usePostDetailsQuery(id || "");
+  const { data: creatorProfile } = usePublicProfileQuery(post?.creator?.username || "", {
+    enabled: Boolean(post?.creator?.username),
+  });
 
   if (isLoading) {
     return (
@@ -106,7 +61,7 @@ export const PostDetailsPage: React.FC = () => {
     );
   }
 
-  if (notFound || !post) {
+  if (isError || !post) {
     return (
       <NotFoundView
         eyebrow="Error 404"
@@ -115,26 +70,6 @@ export const PostDetailsPage: React.FC = () => {
         backHref="/studio"
         backLabel="Back to Studio"
       />
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="max-w-2xl mx-auto px-4 py-16 text-center">
-        <div className="bg-ivory-light border border-clay/40 rounded-card p-8">
-          <p className="font-serif text-lg text-slate-dark">{error}</p>
-          <div className="mt-6 flex justify-center gap-4">
-            <Link to="/studio">
-              <Button variant="outline" size="sm">
-                Back to Studio
-              </Button>
-            </Link>
-            <Button variant="slate" size="sm" onClick={() => window.location.reload()}>
-              Retry
-            </Button>
-          </div>
-        </div>
-      </div>
     );
   }
 

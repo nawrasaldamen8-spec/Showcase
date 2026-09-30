@@ -1,14 +1,10 @@
 import { Layers } from "lucide-react";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
-import { apiClient } from "@shared/api/apiClient.ts";
-import { Button } from "@shared/components/Button.tsx";
+import { apiClient, extractApiErrorMessage } from "@shared/api/index.ts";
 import { EmptyState } from "@shared/components/EmptyState.tsx";
 import { ErrorBanner } from "@shared/components/ErrorBanner.tsx";
 import { Skeleton } from "@shared/components/Skeleton.tsx";
-import { VisitorGuard } from "@shared/components/VisitorGuard.tsx";
-import { useAuth } from "@shared/context/index.ts";
-import { PostStatus, type PostSummaryResponse } from "@shared/types/index.ts";
+import { type PostSummaryResponse } from "@shared/types/index.ts";
 import {
   StudioDeleteModal,
   StudioFilterBar,
@@ -17,6 +13,7 @@ import {
   type StudioTabFilter,
 } from "../components/index.ts";
 import { usePostActions } from "../hooks/index.ts";
+import { isPostDraft, isPostPublished } from "../utils.ts";
 
 function filterAndSortStudioPosts(
   posts: PostSummaryResponse[],
@@ -25,10 +22,9 @@ function filterAndSortStudioPosts(
   sortBy: StudioSortOption
 ): PostSummaryResponse[] {
   let result = posts.filter((post) => {
-    const statusNum = Number(post.status);
-    if (activeTab === "published") return statusNum === PostStatus.Published;
+    if (activeTab === "published") return isPostPublished(post.status);
     if (activeTab === "drafts") {
-      return statusNum === PostStatus.Draft || statusNum === PostStatus.Unpublished;
+      return isPostDraft(post.status);
     }
     return true;
   });
@@ -58,8 +54,6 @@ function filterAndSortStudioPosts(
 }
 
 export const StudioDashboardPage: React.FC = () => {
-  const { activePersona, switchPersona, currentUser } = useAuth();
-
   const [posts, setPosts] = useState<PostSummaryResponse[]>([]);
   const [activeTab, setActiveTab] = useState<StudioTabFilter>("all");
   const [searchQuery, setSearchQuery] = useState<string>("");
@@ -80,11 +74,11 @@ export const StudioDashboardPage: React.FC = () => {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await apiClient.getMyPosts("all", 1, 100);
+      const response = await apiClient.getMyPosts("all", 1, 50);
       setPosts(response.items);
     } catch (err) {
       console.error("Failed to load studio posts:", err);
-      setError("Unable to load projects. Please try again.");
+      setError(extractApiErrorMessage(err, "Unable to load projects. Please try again."));
     } finally {
       setIsLoading(false);
     }
@@ -108,32 +102,12 @@ export const StudioDashboardPage: React.FC = () => {
 
   const counts = useMemo(() => {
     const total = posts.length;
-    const published = posts.filter((p) => Number(p.status) === PostStatus.Published).length;
-    const drafts = posts.filter(
-      (p) => Number(p.status) === PostStatus.Draft || Number(p.status) === PostStatus.Unpublished
-    ).length;
+    const published = posts.filter((p) => isPostPublished(p.status)).length;
+    const drafts = posts.filter((p) => isPostDraft(p.status)).length;
     return { total, published, drafts };
   }, [posts]);
 
-  if (activePersona === "visitor") {
-    return (
-      <VisitorGuard
-        eyebrow="Studio Access"
-        title="Creator Mode Required"
-        description="The Studio is where you create, manage, and publish your projects. Switch to Creator mode in the sidebar to get started."
-        onSwitchPersona={() => switchPersona("creator")}
-        secondaryAction={
-          currentUser ? (
-            <Link to={`/u/${currentUser.username}`}>
-              <Button variant="outline" size="md">
-                View My Portfolio
-              </Button>
-            </Link>
-          ) : null
-        }
-      />
-    );
-  }
+
 
   return (
     <div className="min-h-screen bg-ivory-medium pb-24">

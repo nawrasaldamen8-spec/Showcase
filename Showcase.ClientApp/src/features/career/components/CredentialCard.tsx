@@ -49,7 +49,7 @@ export const CredentialCard: React.FC<CredentialCardProps> = ({ item: cred, onEd
               <Calendar className="w-3.5 h-3.5 text-cloud-dark shrink-0" />
               <span className="break-words">
                 Issued {cred.issueDate}
-                {cred.expirationDate ? ` \u2022 Expires ${cred.expirationDate}` : ""}
+                {cred.expiryDate ? ` \u2022 Expires ${cred.expiryDate}` : ""}
               </span>
             </div>
           )}

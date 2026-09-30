@@ -40,7 +40,7 @@ export const CareerHubPage: React.FC = () => {
   const sections = [
     {
       title: "Experience",
-      count: summary?.experienceCount ?? 0,
+      count: summary?.experiencesCount ?? 0,
       countLabel: "roles",
       description: "Work history, roles, and professional achievements.",
       to: "/career/experience",

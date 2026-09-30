@@ -1,10 +1,9 @@
 import React from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "@shared/components/Button.tsx";
 import { ErrorBanner } from "@shared/components/ErrorBanner.tsx";
 import { Modal } from "@shared/components/Modal.tsx";
 import { Skeleton } from "@shared/components/Skeleton.tsx";
-import { VisitorGuard } from "@shared/components/VisitorGuard.tsx";
 import { useAuth } from "@shared/context/index.ts";
 import { PostStatus } from "@shared/types/index.ts";
 import { WIZARD_STEPS } from "../constants.ts";
@@ -21,27 +20,10 @@ import { usePostEditor } from "../hooks/usePostEditor.ts";
 export const PostEditorPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { currentUser, activePersona, switchPersona } = useAuth();
+  const { currentUser } = useAuth();
 
   const editor = usePostEditor(id);
 
-  if (activePersona === "visitor") {
-    return (
-      <VisitorGuard
-        eyebrow="Studio Access"
-        title="Creator Mode Required"
-        description="Creating and editing projects is reserved for creators. Switch to Creator mode to continue."
-        onSwitchPersona={() => switchPersona("creator")}
-        secondaryAction={
-          <Link to="/studio">
-            <Button variant="outline" size="md">
-              Return to Studio
-            </Button>
-          </Link>
-        }
-      />
-    );
-  }
 
   if (editor.isLoading) {
     return (
