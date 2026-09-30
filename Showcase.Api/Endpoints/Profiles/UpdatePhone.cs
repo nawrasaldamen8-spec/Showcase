@@ -4,27 +4,28 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Showcase.Api.Common.Results;
-using Showcase.Application.Features.Posts.Commands.CreatePost;
+using Showcase.Application.Features.Profiles.Commands.UpdatePhone;
 
-namespace Showcase.Api.Endpoints.Posts;
+namespace Showcase.Api.Endpoints.Profiles;
 
-public class CreatePost : IEndpoint
+public class UpdatePhone : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app)
     {
-        app.MapPost("api/posts", async (
-            CreatePostCommand command,
+        app.MapPut("api/profiles/me/phone", async (
+            UpdatePhoneCommand command,
             ISender sender,
             CancellationToken ct) =>
         {
             var result = await sender.Send(command, ct);
             return result.ToResponse();
         })
-        .WithTags("Posts")
-        .WithName(nameof(CreatePost))
-        .Produces<Showcase.Application.Features.Posts.Common.PostCreatedResponse>(StatusCodes.Status200OK)
+        .WithTags("Profiles")
+        .WithName(nameof(UpdatePhone))
+        .Produces(StatusCodes.Status200OK)
         .ProducesProblem(StatusCodes.Status400BadRequest)
         .ProducesProblem(StatusCodes.Status401Unauthorized)
+        .ProducesProblem(StatusCodes.Status404NotFound)
         .RequireAuthorization();
     }
 }

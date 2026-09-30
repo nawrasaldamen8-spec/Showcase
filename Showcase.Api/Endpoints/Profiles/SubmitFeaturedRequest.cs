@@ -17,7 +17,7 @@ public class SubmitFeaturedRequest : IEndpoint
             ISender sender,
             CancellationToken ct) =>
         {
-            var cmd = command ?? new SubmitFeaturedRequestCommand(null);
+            var cmd = command ?? new SubmitFeaturedRequestCommand();
             var result = await sender.Send(cmd, ct);
             return result.ToResponse();
         })

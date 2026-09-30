@@ -17,7 +17,7 @@ public class SubmitVerificationRequest : IEndpoint
             ISender sender,
             CancellationToken ct) =>
         {
-            var cmd = command ?? new SubmitVerificationRequestCommand(null);
+            var cmd = command ?? new SubmitVerificationRequestCommand();
             var result = await sender.Send(cmd, ct);
             return result.ToResponse();
         })

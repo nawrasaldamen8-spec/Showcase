@@ -12,7 +12,8 @@ namespace Showcase.Api.Endpoints.Posts;
 public record UpdatePostRequest(
     string Title,
     string Description = "",
-    string? ExternalUrl = null);
+    string? ExternalUrl = null,
+    System.Collections.Generic.IReadOnlyList<string>? Tags = null);
 
 public class UpdatePost : IEndpoint
 {
@@ -24,7 +25,7 @@ public class UpdatePost : IEndpoint
             ISender sender,
             CancellationToken ct) =>
         {
-            var command = new UpdatePostCommand(id, request.Title, request.Description, request.ExternalUrl);
+            var command = new UpdatePostCommand(id, request.Title, request.Description, request.ExternalUrl, request.Tags);
             var result = await sender.Send(command, ct);
             return result.ToResponse();
         })
