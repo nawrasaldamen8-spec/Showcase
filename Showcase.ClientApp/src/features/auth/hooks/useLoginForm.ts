@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
+import { extractApiErrorMessage } from "@shared/api/index.ts";
 import { useAuth, useToast } from "@shared/context/index.ts";
 
 export function useLoginForm() {
@@ -12,6 +13,7 @@ export function useLoginForm() {
   const { login } = useAuth();
   const { showToast } = useToast();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -27,14 +29,20 @@ export function useLoginForm() {
     try {
       await login({ emailOrUsername: identifier, password });
       showToast("success", "Welcome back to Pority Studio.");
-      navigate("/studio");
+      
+      const fromState = location.state as { from?: { pathname: string; search?: string } } | null;
+      const targetPath = fromState?.from?.pathname
+        ? `${fromState.from.pathname}${fromState.from.search || ""}`
+        : "/studio";
+
+      navigate(targetPath, { replace: true });
     } catch (err: unknown) {
-      const e = err as Error;
-      setError(e.message || "Invalid credentials. Please verify your login details.");
+      setError(extractApiErrorMessage(err, "Invalid username/email or password. Please verify your credentials."));
     } finally {
       setIsLoading(false);
     }
   };
+
 
   const handleGoogleLogin = () => {
     setIsGoogleLoading(true);

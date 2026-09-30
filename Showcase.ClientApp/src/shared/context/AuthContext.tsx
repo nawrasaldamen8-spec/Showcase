@@ -4,11 +4,9 @@ import type {
   LoginRequest,
   RegisterRequest,
 } from '../types/index.ts';
-import { apiClient } from '../api/index.ts';
+import { apiClient, tokenStorage } from '../api/index.ts';
 import {
   AuthContext,
-  PERSONA_STORAGE_KEY,
-  type ActivePersona,
   type AuthContextValue,
 } from './authContextDef.ts';
 
@@ -17,22 +15,17 @@ export interface AuthProviderProps {
 }
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-  const [activePersona, setActivePersonaState] = useState<ActivePersona>(() => {
-    if (typeof window !== 'undefined') {
-      const stored = localStorage.getItem(PERSONA_STORAGE_KEY);
-      if (stored === 'visitor' || stored === 'creator' || stored === 'admin') {
-        return stored;
-      }
-    }
-    return 'creator';
+  const [currentUser, setCurrentUser] = useState<CurrentUserResponse | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(() => {
+    return typeof window !== 'undefined' && Boolean(tokenStorage.getToken());
   });
 
-  const [creatorUser, setCreatorUser] = useState<CurrentUserResponse | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-
-  // Synchronize creator/admin user details when in authenticated mode
+  // Load current authenticated user on app initialization
   useEffect(() => {
-    if (activePersona === 'visitor') {
+    const token = tokenStorage.getToken();
+    if (!token) {
+      setCurrentUser(null);
+      setIsLoading(false);
       return;
     }
 
@@ -44,12 +37,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       try {
         const user = await apiClient.getCurrentUser();
         if (!isCancelled) {
-          setCreatorUser(user);
+          if (user) {
+            setCurrentUser(user);
+          } else {
+            tokenStorage.clear();
+            setCurrentUser(null);
+          }
         }
       } catch (err) {
-        console.error('Failed to load identity:', err);
+        console.error('Failed to authenticate session:', err);
         if (!isCancelled) {
-          setCreatorUser(null);
+          tokenStorage.clear();
+          setCurrentUser(null);
         }
       } finally {
         if (!isCancelled) {
@@ -61,67 +60,62 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     return () => {
       isCancelled = true;
     };
-  }, [activePersona]);
-
-  // Synchronize across window events and cross-tab storage changes
-  useEffect(() => {
-    const handleStorage = (e: StorageEvent) => {
-      if (e.key === PERSONA_STORAGE_KEY && (e.newValue === 'visitor' || e.newValue === 'creator' || e.newValue === 'admin')) {
-        setActivePersonaState(e.newValue);
-      }
-    };
-
-    const handleCustomChange = (e: Event) => {
-      const customEvent = e as CustomEvent<ActivePersona>;
-      if (customEvent.detail === 'visitor' || customEvent.detail === 'creator' || customEvent.detail === 'admin') {
-        setActivePersonaState(customEvent.detail);
-      }
-    };
-
-    window.addEventListener('storage', handleStorage);
-    window.addEventListener('showcase:persona-change', handleCustomChange);
-
-    return () => {
-      window.removeEventListener('storage', handleStorage);
-      window.removeEventListener('showcase:persona-change', handleCustomChange);
-    };
   }, []);
 
-  const switchPersona = useCallback((persona: ActivePersona) => {
-    setActivePersonaState(persona);
-    if (typeof window !== 'undefined') {
-      localStorage.getItem(PERSONA_STORAGE_KEY);
-      localStorage.setItem(PERSONA_STORAGE_KEY, persona);
-      window.dispatchEvent(new CustomEvent('showcase:persona-change', { detail: persona }));
-    }
-    apiClient.switchPersona(persona);
+  // Listen to silent refresh expiration or cross-tab token clearance
+  useEffect(() => {
+    const handleAuthExpired = () => {
+      tokenStorage.clear();
+      setCurrentUser(null);
+      setIsLoading(false);
+    };
+
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key === 'showcase_auth_token' && !e.newValue) {
+        setCurrentUser(null);
+        setIsLoading(false);
+      }
+    };
+
+    window.addEventListener('showcase:auth-expired', handleAuthExpired);
+    window.addEventListener('storage', handleStorage);
+
+    return () => {
+      window.removeEventListener('showcase:auth-expired', handleAuthExpired);
+      window.removeEventListener('storage', handleStorage);
+    };
   }, []);
 
   const refreshUser = useCallback(async () => {
-    if (activePersona !== 'visitor') {
-      setIsLoading(true);
-      try {
-        const user = await apiClient.getCurrentUser();
-        setCreatorUser(user);
-      } finally {
-        setIsLoading(false);
-      }
+    const token = tokenStorage.getToken();
+    if (!token) {
+      setCurrentUser(null);
+      return;
     }
-  }, [activePersona]);
+
+    setIsLoading(true);
+    try {
+      const user = await apiClient.getCurrentUser();
+      setCurrentUser(user);
+    } catch {
+      setCurrentUser(null);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
 
   const login = useCallback(
     async (request: LoginRequest) => {
       setIsLoading(true);
       try {
         await apiClient.login(request);
-        switchPersona('creator');
         const user = await apiClient.getCurrentUser();
-        setCreatorUser(user);
+        setCurrentUser(user);
       } finally {
         setIsLoading(false);
       }
     },
-    [switchPersona]
+    []
   );
 
   const register = useCallback(
@@ -129,44 +123,45 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setIsLoading(true);
       try {
         await apiClient.register(request);
-        switchPersona('creator');
         const user = await apiClient.getCurrentUser();
-        setCreatorUser(user);
+        setCurrentUser(user);
       } finally {
         setIsLoading(false);
       }
     },
-    [switchPersona]
+    []
   );
 
   const logout = useCallback(async () => {
     setIsLoading(true);
     try {
       await apiClient.logout();
-      switchPersona('visitor');
-      setCreatorUser(null);
+    } catch (err) {
+      console.warn('Logout request failed or network issue:', err);
     } finally {
+      tokenStorage.clear();
+      setCurrentUser(null);
       setIsLoading(false);
     }
-  }, [switchPersona]);
+  }, []);
 
-  const currentUser = activePersona === 'visitor' ? null : creatorUser;
-  const isAuthenticated = activePersona !== 'visitor' && currentUser !== null;
+  const isAuthenticated = Boolean(currentUser && tokenStorage.getToken());
+  const isAdmin = Boolean(currentUser?.roles?.includes('Admin'));
 
   const value: AuthContextValue = useMemo(
     () => ({
       currentUser,
-      activePersona,
       isAuthenticated,
+      isAdmin,
       isLoading,
-      switchPersona,
       login,
       register,
       logout,
       refreshUser,
     }),
-    [currentUser, activePersona, isAuthenticated, isLoading, switchPersona, login, register, logout, refreshUser]
+    [currentUser, isAuthenticated, isAdmin, isLoading, login, register, logout, refreshUser]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
+

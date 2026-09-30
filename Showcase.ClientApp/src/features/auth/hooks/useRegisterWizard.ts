@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { apiClient } from "@shared/api/apiClient.ts";
+import { useLocation, useNavigate } from "react-router-dom";
+import { apiClient, extractApiErrorMessage } from "@shared/api/index.ts";
 import { useAuth, useToast } from "@shared/context/index.ts";
 
 export function useRegisterWizard() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { register } = useAuth();
   const { showToast } = useToast();
 
@@ -91,7 +92,7 @@ export function useRegisterWizard() {
   };
 
   // Step 3: Complete registration
-  const handleCompleteRegistration = async (customAvatarUrl?: string) => {
+  const handleCompleteRegistration = async (_customAvatarUrl?: string) => {
     setError(null);
     setIsLoading(true);
 
@@ -102,18 +103,23 @@ export function useRegisterWizard() {
         name: name.trim(),
         email: email.trim() || undefined,
         bio: bio.trim() || undefined,
-        avatarUrl: customAvatarUrl !== undefined ? customAvatarUrl : (avatarUrl || undefined),
       });
 
       showToast("success", `Welcome to Pority, ${name.trim()}!`);
-      navigate("/studio");
+      
+      const fromState = location.state as { from?: { pathname: string; search?: string } } | null;
+      const targetPath = fromState?.from?.pathname
+        ? `${fromState.from.pathname}${fromState.from.search || ""}`
+        : "/studio";
+
+      navigate(targetPath, { replace: true });
     } catch (err: unknown) {
-      const e = err as Error;
-      setError(e.message || "Registration failed. Please try again.");
+      setError(extractApiErrorMessage(err, "Registration failed. Please check your information and try again."));
     } finally {
       setIsLoading(false);
     }
   };
+
 
   return {
     currentStep,

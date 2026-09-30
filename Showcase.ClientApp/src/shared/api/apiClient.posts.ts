@@ -63,7 +63,7 @@ export const apiPostsClient = {
   async getMyPosts(
     status?: PostStatus | "all",
     pageNumber = 1,
-    pageSize = 10,
+    pageSize = 50,
   ): Promise<PaginatedList<PostSummaryResponse>> {
     const params = new URLSearchParams({
       pageNumber: pageNumber.toString(),
@@ -76,10 +76,14 @@ export const apiPostsClient = {
   },
 
   async createPost(data: CreatePostRequest): Promise<PostCreatedResponse> {
-    return httpFetch<PostCreatedResponse>("/api/posts", {
+    const res = await httpFetch<PostCreatedResponse | string>("/api/posts", {
       method: "POST",
       body: JSON.stringify(data),
     });
+    if (typeof res === "string") {
+      return { id: res };
+    }
+    return res;
   },
 
   async updatePost(id: string, data: UpdatePostRequest): Promise<void> {
@@ -94,11 +98,11 @@ export const apiPostsClient = {
   },
 
   async publishPost(id: string): Promise<void> {
-    return httpFetch<void>(`/api/posts/${id}/publish`, { method: "POST" });
+    return httpFetch<void>(`/api/posts/${id}/publish`, { method: "PUT" });
   },
 
   async unpublishPost(id: string): Promise<void> {
-    return httpFetch<void>(`/api/posts/${id}/unpublish`, { method: "POST" });
+    return httpFetch<void>(`/api/posts/${id}/unpublish`, { method: "PUT" });
   },
 
   async getPostImageUploadUrl(postId: string, data: UploadUrlRequest): Promise<UploadUrlResponse> {
@@ -128,10 +132,15 @@ export const apiPostsClient = {
     _url?: string,
     displayOrder?: number,
   ): Promise<PostImageAddedResponse> {
-    return httpFetch<PostImageAddedResponse>(`/api/posts/${postId}/images`, {
+    const res = await httpFetch<{ id?: string; imageId?: string }>(`/api/posts/${postId}/images`, {
       method: "POST",
       body: JSON.stringify({ storageKey, displayOrder }),
     });
+    const imgId = res.id || res.imageId || "";
+    return {
+      id: imgId,
+      imageId: imgId,
+    };
   },
 
   async removePostImage(postId: string, imageId: string): Promise<void> {

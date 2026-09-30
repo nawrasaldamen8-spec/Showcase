@@ -43,6 +43,18 @@ export const apiAuthClient = {
     return res;
   },
 
+  async refreshToken(accessToken: string, refreshToken: string): Promise<AuthResponse> {
+    const res = await httpFetch<AuthResponse>("/api/auth/refresh", {
+      method: "POST",
+      body: JSON.stringify({ accessToken, refreshToken }),
+      requiresAuth: false,
+    });
+    if (res.accessToken) {
+      tokenStorage.setTokens({ accessToken: res.accessToken, refreshToken: res.refreshToken });
+    }
+    return res;
+  },
+
   async logout(): Promise<void> {
     try {
       await httpFetch<void>("/api/auth/logout", { method: "POST" });
@@ -52,6 +64,9 @@ export const apiAuthClient = {
   },
 
   async getCurrentUser(): Promise<CurrentUserResponse | null> {
+    if (!tokenStorage.getToken()) {
+      return null;
+    }
     try {
       return await httpFetch<CurrentUserResponse>("/api/auth/me");
     } catch {
@@ -79,27 +94,5 @@ export const apiAuthClient = {
       body: JSON.stringify(data),
     });
   },
-
-  getActivePersona(): "visitor" | "creator" | "admin" {
-    if (typeof window !== "undefined") {
-      const stored = localStorage.getItem("showcase_active_persona");
-      if (stored === "visitor" || stored === "creator" || stored === "admin") {
-        return stored;
-      }
-    }
-    return "creator";
-  },
-
-  async switchPersona(persona: "visitor" | "creator" | "admin"): Promise<void> {
-    if (typeof window !== "undefined") {
-      localStorage.setItem("showcase_active_persona", persona);
-    }
-  },
-
-  resetDatabase(): void {
-    if (typeof window !== "undefined") {
-      tokenStorage.clear();
-      localStorage.removeItem("showcase_active_persona");
-    }
-  },
 };
+

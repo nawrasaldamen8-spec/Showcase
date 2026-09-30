@@ -1,0 +1,50 @@
+export const queryKeys = {
+  auth: {
+    all: ["auth"] as const,
+    currentUser: () => [...queryKeys.auth.all, "current-user"] as const,
+  },
+  profiles: {
+    all: ["profiles"] as const,
+    me: () => [...queryKeys.profiles.all, "me"] as const,
+    public: (username: string) => [...queryKeys.profiles.all, "public", username] as const,
+    directory: (params?: Record<string, unknown>) => [...queryKeys.profiles.all, "directory", params || {}] as const,
+  },
+  posts: {
+    all: ["posts"] as const,
+    explore: (filters?: Record<string, unknown>) => [...queryKeys.posts.all, "explore", filters || {}] as const,
+    mine: (filters?: Record<string, unknown>) => [...queryKeys.posts.all, "mine", filters || {}] as const,
+    detail: (id: string) => [...queryKeys.posts.all, "detail", id] as const,
+    byUser: (username: string) => [...queryKeys.posts.all, "user", username] as const,
+  },
+  career: {
+    all: ["career"] as const,
+    experiences: () => [...queryKeys.career.all, "experiences"] as const,
+    academics: () => [...queryKeys.career.all, "academics"] as const,
+    skills: () => [...queryKeys.career.all, "skills"] as const,
+    languages: () => [...queryKeys.career.all, "languages"] as const,
+    achievements: () => [...queryKeys.career.all, "achievements"] as const,
+    credentials: () => [...queryKeys.career.all, "credentials"] as const,
+    visibility: () => [...queryKeys.career.all, "visibility"] as const,
+    public: (username?: string) => [...queryKeys.career.all, "public", username || "me"] as const,
+  },
+  notifications: {
+    all: ["notifications"] as const,
+    list: (page = 1) => [...queryKeys.notifications.all, "list", page] as const,
+  },
+  lookups: {
+    all: ["lookups"] as const,
+    countries: () => [...queryKeys.lookups.all, "countries"] as const,
+    languages: () => [...queryKeys.lookups.all, "languages"] as const,
+    popularTags: (limit = 20) => [...queryKeys.lookups.all, "popular-tags", limit] as const,
+  },
+  admin: {
+    all: ["admin"] as const,
+    dashboard: () => [...queryKeys.admin.all, "dashboard"] as const,
+    users: (params?: Record<string, unknown>) => [...queryKeys.admin.all, "users", params || {}] as const,
+    verifications: () => [...queryKeys.admin.all, "verifications"] as const,
+    featured: () => [...queryKeys.admin.all, "featured"] as const,
+    reports: () => [...queryKeys.admin.all, "reports"] as const,
+    broadcasts: () => [...queryKeys.admin.all, "broadcasts"] as const,
+    auditLogs: (params?: Record<string, unknown>) => [...queryKeys.admin.all, "audit-logs", params || {}] as const,
+  },
+};

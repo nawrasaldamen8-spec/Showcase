@@ -1,42 +1,55 @@
-import { tokenStorage } from "./tokenStorage.ts";
+import { axiosInstance, extractApiErrorMessage, type ApiProblemDetails } from "./axiosClient.ts";
 
 export const USE_MOCK_API = false;
-
 export const API_BASE_URL = typeof window !== "undefined" ? import.meta.env.VITE_API_URL || "" : "";
 
-export interface FetchOptions extends RequestInit {
+export interface FetchOptions {
+  method?: "GET" | "POST" | "PUT" | "DELETE" | "PATCH" | string;
+  headers?: Record<string, string> | Headers;
+  body?: string | FormData | unknown;
   requiresAuth?: boolean;
 }
 
+export { extractApiErrorMessage, axiosInstance };
+export type { ApiProblemDetails };
+
 export async function httpFetch<T>(endpoint: string, options: FetchOptions = {}): Promise<T> {
-  const headers = new Headers(options.headers || {});
-  if (!headers.has("Content-Type") && !(options.body instanceof FormData)) {
-    headers.set("Content-Type", "application/json");
-  }
+  const method = (options.method || "GET").toUpperCase();
+  const url = endpoint.startsWith("/") ? endpoint : `/${endpoint}`;
 
-  if (options.requiresAuth !== false) {
-    const token = tokenStorage.getToken();
-    if (token) {
-      headers.set("Authorization", `Bearer ${token}`);
+  let headers: Record<string, string> = {};
+  if (options.headers) {
+    if (options.headers instanceof Headers) {
+      options.headers.forEach((val, key) => {
+        headers[key] = val;
+      });
+    } else {
+      headers = { ...options.headers };
     }
   }
 
-  const url = `${API_BASE_URL}${endpoint.startsWith("/") ? endpoint : `/${endpoint}`}`;
-  const response = await fetch(url, { ...options, headers });
+  if (options.requiresAuth === false) {
+    delete headers["Authorization"];
+  }
 
-  if (!response.ok) {
-    let errorBody: unknown;
+  let data: unknown = options.body;
+  if (typeof options.body === "string") {
     try {
-      errorBody = await response.json();
+      data = JSON.parse(options.body);
     } catch {
-      errorBody = { title: response.statusText, status: response.status };
+      data = options.body;
     }
-    throw errorBody;
   }
 
-  if (response.status === 204) {
-    return {} as T;
+  try {
+    const res = await axiosInstance.request<T>({
+      url,
+      method,
+      headers,
+      data,
+    });
+    return res.data;
+  } catch (error) {
+    throw error;
   }
-
-  return response.json();
 }

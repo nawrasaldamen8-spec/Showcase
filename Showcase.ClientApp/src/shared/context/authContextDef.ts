@@ -5,14 +5,11 @@ import type {
   RegisterRequest,
 } from '../types/index.ts';
 
-export type ActivePersona = 'visitor' | 'creator' | 'admin';
-
 export interface AuthContextValue {
   currentUser: CurrentUserResponse | null;
-  activePersona: ActivePersona;
   isAuthenticated: boolean;
+  isAdmin: boolean;
   isLoading: boolean;
-  switchPersona: (persona: ActivePersona) => void;
   login: (request: LoginRequest) => Promise<void>;
   register: (request: RegisterRequest) => Promise<void>;
   logout: () => Promise<void>;
@@ -20,4 +17,4 @@ export interface AuthContextValue {
 }
 
 export const AuthContext = createContext<AuthContextValue | undefined>(undefined);
-export const PERSONA_STORAGE_KEY = 'showcase_active_persona';
+

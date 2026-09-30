@@ -9,7 +9,7 @@ export interface AppLayoutProps {
 }
 
 export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
-  const { currentUser, activePersona, switchPersona, logout } = useAuth();
+  const { currentUser, logout } = useAuth();
   const location = useLocation();
 
   const isEditorRoute =
@@ -48,8 +48,6 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
       <ScrollToTop />
       <Sidebar
         user={layoutUser}
-        currentPersona={activePersona}
-        onPersonaChange={switchPersona}
         onLogout={logout}
       />
       <div className="flex-1 flex flex-col min-w-0 md:pl-60 lg:pl-64 transition-all">
@@ -61,3 +59,4 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
     </div>
   );
 };
+

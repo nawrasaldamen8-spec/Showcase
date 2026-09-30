@@ -1,8 +1,14 @@
 import React, { lazy, Suspense } from "react";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { QueryClientProvider } from "@tanstack/react-query";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import { Toaster } from "sonner";
 import { NotFoundView } from "@shared/components/NotFoundView.tsx";
+import { ProtectedRoute } from "@shared/components/ProtectedRoute.tsx";
 import { AuthProvider, ToastProvider } from "@shared/context/index.ts";
+
 import { AppLayout } from "./AppLayout.tsx";
+import { queryClient } from "./queryClient.ts";
 
 // Career Pages
 const AcademicFormPage = lazy(() => import("@features/career/pages/AcademicFormPage.tsx").then((m) => ({ default: m.AcademicFormPage })));
@@ -78,12 +84,32 @@ const PageLoadingSpinner: React.FC = () => (
 );
 
 export const AppRoutes: React.FC = () => {
+
   return (
     <Suspense fallback={<PageLoadingSpinner />}>
       <Routes>
+        {/* 1. Public Auth Pages without Shell */}
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterWizardPage />} />
+        <Route path="/auth/complete-oauth" element={<CompleteOAuthPage />} />
+
+        {/* 2. Public Content Routes with AppLayout (Open to Guests & Users) */}
         <Route element={<AppLayout />}>
-          {/* Studio & Feeds */}
-          <Route path="/" element={<StudioDashboardPage />} />
+          <Route path="/u/:username" element={<PublicProfilePage />} />
+          <Route path="/posts/:id" element={<PostDetailsPage />} />
+          <Route path="/terms" element={<TermsOfServicePage />} />
+          <Route path="/privacy" element={<PrivacyPolicyPage />} />
+        </Route>
+
+        {/* 3. Protected User Routes with AppLayout */}
+        <Route
+          element={
+            <ProtectedRoute>
+              <AppLayout />
+            </ProtectedRoute>
+          }
+        >
+          <Route path="/" element={<Navigate to="/studio" replace />} />
           <Route path="/studio" element={<StudioDashboardPage />} />
           <Route path="/posts/mine" element={<StudioDashboardPage />} />
           <Route path="/feed" element={<FeedPage />} />
@@ -91,13 +117,11 @@ export const AppRoutes: React.FC = () => {
           <Route path="/search" element={<SearchResultsPage />} />
           <Route path="/explore" element={<Navigate to="/feed" replace />} />
 
-          {/* Post Pages */}
+          {/* Post Management */}
           <Route path="/posts/new" element={<PostEditorPage />} />
           <Route path="/posts/:id/edit" element={<PostEditorPage />} />
-          <Route path="/posts/:id" element={<PostDetailsPage />} />
 
-          {/* Profiles */}
-          <Route path="/u/:username" element={<PublicProfilePage />} />
+          {/* Profiles Management */}
           <Route path="/profile/edit" element={<EditProfilePage />} />
           <Route path="/profile/social-links" element={<EditSocialLinksPage />} />
 
@@ -142,18 +166,9 @@ export const AppRoutes: React.FC = () => {
             <Route path="achievements/new" element={<AchievementFormPage />} />
             <Route path="achievements/:id/edit" element={<AchievementFormPage />} />
           </Route>
-
-          {/* System Pages within Layout */}
-          <Route path="/terms" element={<TermsOfServicePage />} />
-          <Route path="/privacy" element={<PrivacyPolicyPage />} />
         </Route>
 
-        {/* Auth Routes without Shell Layout */}
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterWizardPage />} />
-        <Route path="/auth/complete-oauth" element={<CompleteOAuthPage />} />
-
-        {/* Admin Console Routes */}
+        {/* 4. Protected Admin Console Routes */}
         <Route path="/admin">
           <Route index element={<AdminDashboardPage />} />
           <Route path="users" element={<AdminUsersPage />} />
@@ -165,7 +180,7 @@ export const AppRoutes: React.FC = () => {
           <Route path="broadcasts" element={<AdminBroadcastsPage />} />
         </Route>
 
-        {/* System Error & 404 */}
+        {/* 5. System Error & 404 */}
         <Route path="/500" element={<ServerErrorPage />} />
         <Route path="*" element={<NotFoundView />} />
       </Routes>
@@ -175,13 +190,17 @@ export const AppRoutes: React.FC = () => {
 
 export const App: React.FC = () => {
   return (
-    <BrowserRouter>
-      <AuthProvider>
-        <ToastProvider>
-          <AppRoutes />
-        </ToastProvider>
-      </AuthProvider>
-    </BrowserRouter>
+    <QueryClientProvider client={queryClient}>
+      <BrowserRouter>
+        <AuthProvider>
+          <ToastProvider>
+            <AppRoutes />
+            <Toaster position="top-right" richColors closeButton />
+          </ToastProvider>
+        </AuthProvider>
+      </BrowserRouter>
+      {import.meta.env.DEV && <ReactQueryDevtools initialIsOpen={false} />}
+    </QueryClientProvider>
   );
 };
 

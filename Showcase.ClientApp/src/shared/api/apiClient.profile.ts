@@ -3,7 +3,7 @@ import type {
   ProfileDetailsResponse,
   PublicProfileResponse,
   ReorderSocialLinksRequest,
-  SocialLinkIdResponse,
+  SocialLinkDto,
   UpdatePhoneRequest,
   UpdateProfileRequest,
   UpdateSocialLinkRequest,
@@ -54,8 +54,8 @@ export const apiProfileClient = {
     return httpFetch<void>("/api/profiles/me/avatar", { method: "DELETE" });
   },
 
-  async addSocialLink(data: AddSocialLinkRequest): Promise<SocialLinkIdResponse> {
-    return httpFetch<SocialLinkIdResponse>("/api/profiles/me/social-links", {
+  async addSocialLink(data: AddSocialLinkRequest): Promise<SocialLinkDto> {
+    return httpFetch<SocialLinkDto>("/api/profiles/me/social-links", {
       method: "POST",
       body: JSON.stringify(data),
     });

@@ -8,7 +8,7 @@ import { AuthCardLayout } from "../components/AuthCardLayout.tsx";
 
 export const CompleteOAuthPage: React.FC = () => {
   const navigate = useNavigate();
-  const { switchPersona, register } = useAuth();
+  const { register } = useAuth();
   const { showToast } = useToast();
 
   const [username, setUsername] = useState("");
@@ -34,7 +34,6 @@ export const CompleteOAuthPage: React.FC = () => {
         password: mockPassword,
         name: handle,
       });
-      switchPersona("creator");
       showToast("success", "Google account connected successfully.");
       navigate("/studio");
     } catch {
