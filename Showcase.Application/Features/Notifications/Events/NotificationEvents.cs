@@ -38,10 +38,14 @@ public class NotificationEventHandlers :
     INotificationHandler<FeaturedRejectedNotificationEvent>
 {
     private readonly IApplicationDbContext _context;
+    private readonly IRealtimeNotifier _realtimeNotifier;
 
-    public NotificationEventHandlers(IApplicationDbContext context)
+    public NotificationEventHandlers(
+        IApplicationDbContext context,
+        IRealtimeNotifier realtimeNotifier)
     {
         _context = context;
+        _realtimeNotifier = realtimeNotifier;
     }
 
     public async Task Handle(PostLikedNotificationEvent notification, CancellationToken ct)
@@ -52,13 +56,20 @@ public class NotificationEventHandlers :
         var item = new Notification(
             notification.TargetUserId,
             NotificationType.Like,
-            "New Like",
-            $"Someone liked your post '{notification.PostTitle}'",
+            "Like",
+            "liked your post",
             notification.PostId,
             notification.SourceUserId);
 
         _context.Notifications.Add(item);
         await _context.SaveChangesAsync(ct);
+
+        await _realtimeNotifier.PublishToUserAsync(
+            notification.TargetUserId,
+            item.Title,
+            item.Message,
+            new { item.Id, Type = item.Type.ToString(), item.CreatedAtUtc },
+            ct);
     }
 
     public async Task Handle(VerificationApprovedNotificationEvent notification, CancellationToken ct)
@@ -71,6 +82,13 @@ public class NotificationEventHandlers :
 
         _context.Notifications.Add(item);
         await _context.SaveChangesAsync(ct);
+
+        await _realtimeNotifier.PublishToUserAsync(
+            notification.TargetUserId,
+            item.Title,
+            item.Message,
+            new { item.Id, Type = item.Type.ToString(), item.CreatedAtUtc },
+            ct);
     }
 
     public async Task Handle(VerificationRejectedNotificationEvent notification, CancellationToken ct)
@@ -83,6 +101,13 @@ public class NotificationEventHandlers :
 
         _context.Notifications.Add(item);
         await _context.SaveChangesAsync(ct);
+
+        await _realtimeNotifier.PublishToUserAsync(
+            notification.TargetUserId,
+            item.Title,
+            item.Message,
+            new { item.Id, Type = item.Type.ToString(), item.CreatedAtUtc },
+            ct);
     }
 
     public async Task Handle(FeaturedApprovedNotificationEvent notification, CancellationToken ct)
@@ -95,6 +120,13 @@ public class NotificationEventHandlers :
 
         _context.Notifications.Add(item);
         await _context.SaveChangesAsync(ct);
+
+        await _realtimeNotifier.PublishToUserAsync(
+            notification.TargetUserId,
+            item.Title,
+            item.Message,
+            new { item.Id, Type = item.Type.ToString(), item.CreatedAtUtc },
+            ct);
     }
 
     public async Task Handle(FeaturedRejectedNotificationEvent notification, CancellationToken ct)
@@ -107,5 +139,12 @@ public class NotificationEventHandlers :
 
         _context.Notifications.Add(item);
         await _context.SaveChangesAsync(ct);
+
+        await _realtimeNotifier.PublishToUserAsync(
+            notification.TargetUserId,
+            item.Title,
+            item.Message,
+            new { item.Id, Type = item.Type.ToString(), item.CreatedAtUtc },
+            ct);
     }
 }

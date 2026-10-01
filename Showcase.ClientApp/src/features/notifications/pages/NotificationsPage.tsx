@@ -1,97 +1,63 @@
-import React, { useMemo, useState } from "react";
+import { ArrowLeft, Bell } from "lucide-react";
+import React, { useEffect } from "react";
 import { Link } from "react-router-dom";
-import {
-  ArrowLeft,
-  CheckCheck,
-  Megaphone,
-} from "lucide-react";
-import { Button } from "@shared/components/Button.tsx";
-import { useAsyncData } from "@shared/hooks/index.ts";
-import { apiClient } from "@shared/api/index.ts";
-import { NotificationCard, type NotificationCardItem } from "../components/NotificationCard.tsx";
-
-const NOTIFICATIONS_STORAGE_KEY = "showcase_read_notifications";
+import { useQueryClient } from "@tanstack/react-query";
+import { apiClient, queryKeys } from "@shared/api/index.ts";
+import { useInfiniteScroll } from "@shared/hooks/index.ts";
+import type { NotificationDto } from "@shared/api/apiClient.notifications.ts";
+import { NotificationRow } from "../components/NotificationRow.tsx";
+import { NotificationRowSkeleton } from "../components/NotificationRowSkeleton.tsx";
+import { useInfiniteNotificationsQuery } from "../hooks/useNotificationQueries.ts";
 
 export const NotificationsPage: React.FC = () => {
-  const [readIds, setReadIds] = useState<Set<string>>(() => {
-    try {
-      const stored = localStorage.getItem(NOTIFICATIONS_STORAGE_KEY);
-      return stored ? new Set(JSON.parse(stored) as string[]) : new Set<string>();
-    } catch {
-      return new Set<string>();
-    }
+  const queryClient = useQueryClient();
+  const {
+    data,
+    isLoading,
+    isFetchingNextPage,
+    hasNextPage,
+    fetchNextPage,
+  } = useInfiniteNotificationsQuery(20);
+
+  const notifications = data?.pages.flatMap((page) => page.items) || [];
+
+  const sentinelRef = useInfiniteScroll({
+    hasNextPage,
+    isFetchingNextPage,
+    fetchNextPage,
   });
 
-  const [filter, setFilter] = useState<"all" | "announcements" | "warnings">("all");
+  // Automatically mark unread notifications as seen/read in the background
+  useEffect(() => {
+    if (notifications.length === 0) return;
 
-  const { data: rawNotifications, isLoading } = useAsyncData(() => apiClient.getNotifications());
+    const unreadList = notifications.filter((n) => !n.isRead);
+    if (unreadList.length === 0) return;
 
-  // Map notifications into standard notification items
-  const notifications: NotificationCardItem[] = useMemo(() => {
-    if (!rawNotifications) return [];
-
-    return rawNotifications.map((n) => {
-      const isWarning =
-        n.type === "system" ||
-        n.type === "verificationrejected" ||
-        n.type === "featuredrejected";
-      return {
-        id: n.id,
-        title: n.title,
-        message: n.message,
-        category: isWarning ? ("System Warning" as const) : ("Announcement" as const),
-        timestamp: n.createdAtUtc,
-        isRead: n.isRead || readIds.has(n.id),
-      };
+    unreadList.forEach((n) => {
+      apiClient.markNotificationAsRead(n.id).catch(() => {});
     });
-  }, [rawNotifications, readIds]);
 
-  const handleMarkAsRead = async (id: string) => {
-    setReadIds((prev) => {
-      const next = new Set(prev);
-      next.add(id);
-      try {
-        localStorage.setItem(NOTIFICATIONS_STORAGE_KEY, JSON.stringify([...next]));
-      } catch {
-        // Ignore storage errors
+    // Update query cache so rows and badges reflect read state without full refetch
+    queryClient.setQueriesData({ queryKey: queryKeys.notifications.all }, (oldData: unknown) => {
+      if (!oldData || typeof oldData !== "object") return oldData;
+      if ("pages" in (oldData as { pages: unknown[] })) {
+        const infiniteData = oldData as { pages: { items: NotificationDto[] }[] };
+        return {
+          ...infiniteData,
+          pages: infiniteData.pages.map((p) => ({
+            ...p,
+            items: p.items.map((item) => ({ ...item, isRead: true })),
+          })),
+        };
       }
-      return next;
+      return oldData;
     });
-
-    try {
-      await apiClient.markNotificationAsRead(id);
-    } catch (err) {
-      console.error("Failed to mark notification as read:", err);
-    }
-  };
-
-  const handleMarkAllAsRead = async () => {
-    const allIds = new Set(notifications.map((n) => n.id));
-    setReadIds(allIds);
-    try {
-      localStorage.setItem(NOTIFICATIONS_STORAGE_KEY, JSON.stringify([...allIds]));
-    } catch {
-      // Ignore storage errors
-    }
-
-    try {
-      await apiClient.markAllNotificationsAsRead();
-    } catch (err) {
-      console.error("Failed to mark all notifications as read:", err);
-    }
-  };
-
-  const filteredNotifications = notifications.filter((item) => {
-    if (filter === "announcements") return item.category === "Announcement";
-    if (filter === "warnings") return item.category === "System Warning";
-    return true;
-  });
-
-  const unreadCount = notifications.filter((n) => !n.isRead).length;
+  }, [notifications, queryClient]);
 
   return (
-    <div className="min-h-[80vh] bg-ivory-medium py-8 sm:py-12 px-4 sm:px-6 lg:px-8 pb-24">
-      <div className="max-w-3xl mx-auto space-y-6">
+    <div className="min-h-[85vh] bg-ivory-medium py-6 sm:py-10 px-4 sm:px-6 lg:px-8 pb-24">
+      <div className="max-w-2xl mx-auto space-y-6">
         {/* Navigation Breadcrumb */}
         <nav aria-label="Breadcrumb navigation">
           <Link
@@ -99,108 +65,49 @@ export const NotificationsPage: React.FC = () => {
             className="inline-flex items-center gap-2 font-gothic text-xs font-semibold uppercase tracking-[0.14em] text-cloud-dark hover:text-slate-dark transition-colors group text-decoration-none"
           >
             <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
-            <span>Creator Studio</span>
+            <span>Studio</span>
           </Link>
         </nav>
 
-        {/* Page Header */}
-        <header className="border-b border-stone pb-6 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-          <div className="space-y-1.5">
-            <div className="flex items-center gap-2">
-              <span className="font-gothic text-xs font-bold uppercase tracking-[0.16em] text-clay">
-                System Notices
-              </span>
-              <span className="text-stone">&bull;</span>
-              <span className="font-gothic text-xs font-semibold uppercase tracking-[0.10em] text-cloud-dark">
-                {unreadCount > 0 ? `${unreadCount} Unread` : "All Caught Up"}
-              </span>
-            </div>
-
-            <h1 className="font-gothic font-extrabold text-3xl sm:text-4xl uppercase tracking-tight text-slate-dark">
-              Notifications
-            </h1>
-
-            <p className="font-serif text-sm text-slate-dark/75">
-              Official platform announcements and system warnings regarding your account.
-            </p>
-          </div>
-
-          {notifications.length > 0 && (
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={handleMarkAllAsRead}
-              disabled={unreadCount === 0}
-              leftIcon={<CheckCheck className="w-4 h-4" />}
-              className="font-gothic uppercase tracking-wider text-xs self-start sm:self-auto"
-            >
-              Mark All as Read
-            </Button>
-          )}
+        {/* Minimalist Page Header */}
+        <header className="border-b border-stone/50 pb-4">
+          <h1 className="font-gothic font-extrabold text-2xl sm:text-3xl uppercase tracking-tight text-slate-dark">
+            Notifications
+          </h1>
         </header>
 
-        {/* Category Filter Tabs */}
-        <div className="bg-ivory-light p-2 rounded-2xl border border-stone flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => setFilter("all")}
-            className={`px-3 py-1.5 rounded-xl font-gothic text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer ${
-              filter === "all"
-                ? "bg-slate-dark text-ivory-light"
-                : "text-cloud-dark hover:text-slate-dark hover:bg-[#e8e5dc]/60"
-            }`}
-          >
-            All ({notifications.length})
-          </button>
-          <button
-            type="button"
-            onClick={() => setFilter("announcements")}
-            className={`px-3 py-1.5 rounded-xl font-gothic text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer ${
-              filter === "announcements"
-                ? "bg-slate-dark text-ivory-light"
-                : "text-cloud-dark hover:text-slate-dark hover:bg-[#e8e5dc]/60"
-            }`}
-          >
-            Announcements
-          </button>
-          <button
-            type="button"
-            onClick={() => setFilter("warnings")}
-            className={`px-3 py-1.5 rounded-xl font-gothic text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer ${
-              filter === "warnings"
-                ? "bg-slate-dark text-ivory-light"
-                : "text-cloud-dark hover:text-slate-dark hover:bg-[#e8e5dc]/60"
-            }`}
-          >
-            System Warnings
-          </button>
-        </div>
-
-        {/* Notifications List */}
-        <div className="space-y-3">
+        {/* Unified Activity Feed Rows */}
+        <div className="bg-ivory-light/40 border border-stone/50 rounded-2xl p-2 sm:p-3 divide-y divide-stone/30">
           {isLoading ? (
-            <div className="p-10 bg-ivory-light rounded-2xl border border-stone text-center font-serif text-xs text-cloud-dark">
-              Loading system notifications...
-            </div>
-          ) : filteredNotifications.length === 0 ? (
-            <div className="p-10 bg-ivory-light rounded-2xl border border-stone text-center space-y-2">
-              <Megaphone className="w-8 h-8 text-cloud-dark mx-auto opacity-50" />
-              <h3 className="font-gothic text-sm font-bold uppercase tracking-wider text-slate-dark">
-                No Notifications Found
-              </h3>
+            <NotificationRowSkeleton count={5} />
+          ) : notifications.length === 0 ? (
+            <div className="py-14 text-center space-y-2">
+              <Bell className="w-7 h-7 text-cloud-dark/40 mx-auto" />
+              <h2 className="font-gothic text-xs font-bold uppercase tracking-wider text-slate-dark">
+                No notifications yet
+              </h2>
               <p className="font-serif text-xs text-cloud-dark">
-                You have no active system notifications in this category.
+                New likes, profile visits, and updates will appear here.
               </p>
             </div>
           ) : (
-            filteredNotifications.map((item) => (
-              <NotificationCard
-                key={item.id}
-                item={item}
-                onMarkAsRead={handleMarkAsRead}
-              />
-            ))
+            <>
+              {notifications.map((notification) => (
+                <NotificationRow
+                  key={notification.id}
+                  notification={notification}
+                />
+              ))}
+
+              {/* Infinite Scroll Sentinel & Subtle Bottom Loading Indicator */}
+              <div ref={sentinelRef} className="pt-2">
+                {isFetchingNextPage && (
+                  <div className="py-3">
+                    <NotificationRowSkeleton count={2} />
+                  </div>
+                )}
+              </div>
+            </>
           )}
         </div>
       </div>

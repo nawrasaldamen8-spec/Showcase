@@ -1,11 +1,11 @@
-import { AlertTriangle, Megaphone } from "lucide-react";
+import { AlertTriangle, Eye, Megaphone } from "lucide-react";
 import React from "react";
 
 export interface NotificationCardItem {
   id: string;
   title: string;
   message: string;
-  category: "Announcement" | "System Warning";
+  category: "Announcement" | "System Warning" | "Activity";
   timestamp: string;
   isRead: boolean;
 }
@@ -34,11 +34,15 @@ export const NotificationCard: React.FC<NotificationCardProps> = ({
             className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full font-gothic text-[10px] font-bold uppercase tracking-wider border ${
               item.category === "System Warning"
                 ? "bg-red-500/15 text-red-700 border-red-500/30"
+                : item.category === "Activity"
+                ? "bg-clay/15 text-clay border-clay/30"
                 : "bg-[#2e7d32]/15 text-[#2e7d32] border-[#2e7d32]/30"
             }`}
           >
             {item.category === "System Warning" ? (
               <AlertTriangle className="w-3 h-3" />
+            ) : item.category === "Activity" ? (
+              <Eye className="w-3 h-3" />
             ) : (
               <Megaphone className="w-3 h-3" />
             )}

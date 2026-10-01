@@ -8,13 +8,16 @@ export const queryKeys = {
     me: () => [...queryKeys.profiles.all, "me"] as const,
     public: (username: string) => [...queryKeys.profiles.all, "public", username] as const,
     directory: (params?: Record<string, unknown>) => [...queryKeys.profiles.all, "directory", params || {}] as const,
+    infiniteDirectory: (params?: Record<string, unknown>) => [...queryKeys.profiles.all, "infinite-directory", params || {}] as const,
   },
   posts: {
     all: ["posts"] as const,
     explore: (filters?: Record<string, unknown>) => [...queryKeys.posts.all, "explore", filters || {}] as const,
+    infiniteExplore: (filters?: Record<string, unknown>) => [...queryKeys.posts.all, "infinite-explore", filters || {}] as const,
     mine: (filters?: Record<string, unknown>) => [...queryKeys.posts.all, "mine", filters || {}] as const,
     detail: (id: string) => [...queryKeys.posts.all, "detail", id] as const,
-    byUser: (username: string) => [...queryKeys.posts.all, "user", username] as const,
+    byUser: (username: string, params?: Record<string, unknown>) => [...queryKeys.posts.all, "user", username, params || {}] as const,
+    infiniteByUser: (username: string, params?: Record<string, unknown>) => [...queryKeys.posts.all, "infinite-user", username, params || {}] as const,
   },
   career: {
     all: ["career"] as const,
@@ -29,7 +32,8 @@ export const queryKeys = {
   },
   notifications: {
     all: ["notifications"] as const,
-    list: (page = 1) => [...queryKeys.notifications.all, "list", page] as const,
+    list: (params?: unknown) => [...queryKeys.notifications.all, "list", params || {}] as const,
+    infinite: (pageSize = 20) => [...queryKeys.notifications.all, "infinite", pageSize] as const,
   },
   lookups: {
     all: ["lookups"] as const,
