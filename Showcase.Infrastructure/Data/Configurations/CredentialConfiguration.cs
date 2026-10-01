@@ -17,6 +17,7 @@ public class CredentialConfiguration : IEntityTypeConfiguration<Credential>
         builder.Property(c => c.Name).IsRequired().HasMaxLength(150);
         builder.Property(c => c.IssuingOrganization).IsRequired().HasMaxLength(150);
         builder.Property(c => c.CredentialId).HasMaxLength(100);
+        builder.Ignore(c => c.CreatedAtUtc);
 
         builder.OwnsOne(c => c.Validity, validityBuilder =>
         {

@@ -37,10 +37,17 @@ export const apiAdminClient = {
     });
   },
 
-  async updateUserRole(userId: string, roles: UserRole[]): Promise<void> {
+  async updateUserRole(userId: string, roles: UserRole[], adminPassword?: string): Promise<void> {
     return httpFetch<void>(`/api/admin/users/${userId}/roles`, {
       method: "PUT",
-      body: JSON.stringify({ roles }),
+      body: JSON.stringify({ roles, adminPassword }),
+    });
+  },
+
+  async toggleUserVerification(userId: string, isVerified: boolean, note?: string): Promise<void> {
+    return httpFetch<void>(`/api/admin/users/${userId}/verification`, {
+      method: "POST",
+      body: JSON.stringify({ isVerified, note }),
     });
   },
 

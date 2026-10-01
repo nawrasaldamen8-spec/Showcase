@@ -4,14 +4,16 @@ using System.Collections.Generic;
 namespace Showcase.Application.Features.Admin.Common;
 
 public record AdminDashboardMetricsDto(
-    int TotalUsers,
-    int ActiveCreators,
+    int TotalUsersCount,
+    int ActiveCreatorsCount,
     int TotalPublishedPosts,
-    int PendingVerifications,
-    int PendingReports,
-    int FeaturedNominations,
-    long StorageBytesUsed,
-    double StorageQuotaPercentage);
+    int PendingVerificationsCount,
+    int PendingReportsCount,
+    int CuratedPinnedCount,
+    long StorageUsedBytes,
+    long StorageCapacityBytes,
+    IReadOnlyList<AuditLogItemDto> RecentAuditLogs,
+    IReadOnlyList<BroadcastAnnouncementItemDto> RecentBroadcasts);
 
 public record AdminUserListItemDto(
     string Id,
@@ -45,6 +47,7 @@ public record FeaturedRecommendationItemDto(
     string Name,
     string? AvatarUrl,
     string? Specialty,
+    string Message,
     int PostsCount,
     bool IsCuratedPin,
     string Status,
@@ -58,6 +61,7 @@ public record ContentReportItemDto(
     string TargetId,
     string TargetLabel,
     string Reason,
+    string Details,
     string Status,
     string? ActionTaken,
     DateTime CreatedAt);

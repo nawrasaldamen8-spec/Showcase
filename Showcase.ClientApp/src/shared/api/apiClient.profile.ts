@@ -1,5 +1,8 @@
 import type {
   AddSocialLinkRequest,
+  FeaturedRequestDto,
+  GetProfilesParams,
+  PaginatedList,
   ProfileDetailsResponse,
   PublicProfileResponse,
   ReorderSocialLinksRequest,
@@ -10,13 +13,20 @@ import type {
   UploadUrlRequest,
   UploadUrlResponse,
   VerificationRequestDto,
-  FeaturedRequestDto,
 } from "../types/index.ts";
 import { httpFetch } from "./apiClient.base.ts";
 
 export const apiProfileClient = {
-  async getProfiles(): Promise<ProfileDetailsResponse[]> {
-    return httpFetch<ProfileDetailsResponse[]>("/api/profiles", { requiresAuth: false });
+  async getProfiles(params?: GetProfilesParams): Promise<PaginatedList<PublicProfileResponse>> {
+    const searchParams = new URLSearchParams();
+    if (params?.search) searchParams.set("search", params.search);
+    if (params?.featuredOnly !== undefined) searchParams.set("featuredOnly", String(params.featuredOnly));
+    if (params?.pageNumber) searchParams.set("page", String(params.pageNumber));
+    if (params?.pageSize) searchParams.set("pageSize", String(params.pageSize));
+
+    const queryString = searchParams.toString();
+    const url = queryString ? `/api/profiles?${queryString}` : "/api/profiles";
+    return httpFetch<PaginatedList<PublicProfileResponse>>(url, { requiresAuth: false });
   },
 
   async getMyProfile(): Promise<ProfileDetailsResponse> {
@@ -95,6 +105,19 @@ export const apiProfileClient = {
 
   async submitFeaturedRequest(data: FeaturedRequestDto): Promise<void> {
     return httpFetch<void>("/api/profiles/me/featured", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  },
+
+  async submitReport(data: {
+    targetType: string;
+    targetId: string;
+    targetLabel?: string;
+    reason: string;
+    details?: string;
+  }): Promise<string> {
+    return httpFetch<string>("/api/reports", {
       method: "POST",
       body: JSON.stringify(data),
     });

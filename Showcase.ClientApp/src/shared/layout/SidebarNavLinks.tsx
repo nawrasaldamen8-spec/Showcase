@@ -1,6 +1,8 @@
-import { Bell, Briefcase, LayoutGrid, Search, User as UserIcon } from "lucide-react";
+import { Briefcase, LayoutGrid, Search, User as UserIcon } from "lucide-react";
 import React from "react";
 import { NavLink, useLocation } from "react-router-dom";
+import { NotificationBellBadge } from "@features/notifications/components/index.ts";
+import { useNotificationsQuery } from "@features/notifications/hooks/useNotificationQueries.ts";
 
 export interface SidebarUser {
   username: string;
@@ -16,6 +18,8 @@ export interface SidebarNavLinksProps {
 
 export const SidebarNavLinks: React.FC<SidebarNavLinksProps> = ({ user }) => {
   const location = useLocation();
+  const { data: notifications } = useNotificationsQuery(1, 50, { enabled: Boolean(user) });
+  const unreadCount = notifications ? notifications.items.filter((n) => !n.isRead).length : 0;
 
   const isLinkActive = (to: string, isActive: boolean) => {
     if (isActive) return true;
@@ -28,7 +32,7 @@ export const SidebarNavLinks: React.FC<SidebarNavLinksProps> = ({ user }) => {
     { label: "Studio", to: "/studio", icon: LayoutGrid },
     { label: "Feed", to: "/feed", icon: Search },
     { label: "Career", to: "/career", icon: Briefcase },
-    { label: "Notifications", to: "/notifications", icon: Bell },
+    { label: "Notifications", to: "/notifications", isNotification: true },
     ...(user ? [{ label: "Profile", to: `/u/${user.username}`, icon: UserIcon }] : []),
   ];
 
@@ -59,7 +63,16 @@ export const SidebarNavLinks: React.FC<SidebarNavLinksProps> = ({ user }) => {
                 return (
                   <>
                     {active && <span className="absolute left-1.5 w-1 h-4 rounded-full bg-clay" />}
-                    <Icon className={`h-4.5 w-4.5 shrink-0 ${active ? "text-clay" : "text-cloud-dark"}`} />
+                    {link.isNotification ? (
+                      <NotificationBellBadge
+                        unreadCount={unreadCount}
+                        isActive={active}
+                        iconClassName="h-4.5 w-4.5"
+                        badgeRingColor="ring-[#262624]"
+                      />
+                    ) : Icon ? (
+                      <Icon className={`h-4.5 w-4.5 shrink-0 ${active ? "text-clay" : "text-cloud-dark"}`} />
+                    ) : null}
                     <span>{link.label}</span>
                   </>
                 );

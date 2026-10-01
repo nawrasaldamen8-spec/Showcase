@@ -21,42 +21,51 @@ export interface VerificationRequestItem {
   id: string;
   userId: string;
   username: string;
-  fullName: string;
+  name?: string;
+  fullName?: string;
   avatarUrl?: string | null;
+  category?: string;
   message: string;
   notes?: string;
-  status: "pending" | "approved" | "rejected";
-  postsCount: number;
-  submittedAt: string;
+  status: "pending" | "approved" | "rejected" | string;
+  postsCount?: number;
+  createdAt?: string;
+  submittedAt?: string;
   decisionNote?: string;
 }
 
 export interface ContentReportItem {
   id: string;
-  reporterId: string;
+  reporterUserId?: string;
+  reporterId?: string;
   reporterUsername: string;
-  targetType: "post" | "user";
+  targetType: "post" | "user" | string;
   targetId: string;
-  targetTitle: string;
-  targetAuthorUsername: string;
-  reason: "copyright" | "impersonation" | "inappropriate" | "spam" | "other";
-  details: string;
-  status: "pending" | "resolved" | "dismissed";
+  targetLabel?: string;
+  targetTitle?: string;
+  targetAuthorUsername?: string;
+  reason: "copyright" | "impersonation" | "inappropriate" | "spam" | "other" | string;
+  details?: string;
+  status: "pending" | "resolved" | "dismissed" | string;
   createdAt: string;
-  actionTaken?: string;
+  actionTaken?: string | null;
 }
 
 export interface FeaturedRecommendationItem {
   id: string;
   userId: string;
   username: string;
-  fullName: string;
+  name?: string;
+  fullName?: string;
   avatarUrl?: string | null;
-  headline: string;
+  specialty?: string;
+  headline?: string;
   message: string;
-  isCuratedPinned: boolean;
-  status: "none" | "pending" | "featured" | "rejected";
-  submittedAt: string;
+  isCuratedPin?: boolean;
+  isCuratedPinned?: boolean;
+  status: "none" | "pending" | "featured" | "rejected" | string;
+  nominatedAt?: string;
+  submittedAt?: string;
 }
 
 export interface StorageConsumerItem {

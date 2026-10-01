@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Amazon.S3;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http;
@@ -28,11 +27,10 @@ public class DependencyInjectionTests
             { "JwtSettings:Issuer", "TestIssuer" },
             { "JwtSettings:Audience", "TestAudience" },
             { "JwtSettings:ExpiryMinutes", "45" },
-            { "CloudflareR2:AccountId", "test-account" },
-            { "CloudflareR2:AccessKeyId", "test-key" },
-            { "CloudflareR2:SecretAccessKey", "test-secret" },
-            { "CloudflareR2:BucketName", "test-bucket" },
-            { "CloudflareR2:PublicUrlPrefix", "https://cdn.example.com" }
+            { "Cloudinary:CloudName", "test-cloud" },
+            { "Cloudinary:ApiKey", "test-key" },
+            { "Cloudinary:ApiSecret", "test-secret" },
+            { "Cloudinary:UploadPreset", "test-preset" }
         };
 
         var configuration = new ConfigurationBuilder()
@@ -52,11 +50,11 @@ public class DependencyInjectionTests
         Assert.Equal("TestAudience", jwtOptions.Value.Audience);
         Assert.Equal(45, jwtOptions.Value.ExpiryMinutes);
 
-        var r2Options = provider.GetService<IOptions<R2Settings>>();
-        Assert.NotNull(r2Options);
-        Assert.Equal("test-account", r2Options.Value.AccountId);
-        Assert.Equal("test-bucket", r2Options.Value.BucketName);
-        Assert.Equal("https://cdn.example.com", r2Options.Value.PublicUrlPrefix);
+        var cloudinaryOptions = provider.GetService<IOptions<CloudinarySettings>>();
+        Assert.NotNull(cloudinaryOptions);
+        Assert.Equal("test-cloud", cloudinaryOptions.Value.CloudName);
+        Assert.Equal("test-key", cloudinaryOptions.Value.ApiKey);
+        Assert.Equal("test-preset", cloudinaryOptions.Value.UploadPreset);
 
         // Assert - Services
         var tokenService = provider.GetService<ITokenService>();
@@ -67,12 +65,9 @@ public class DependencyInjectionTests
         Assert.NotNull(currentUserService);
         Assert.IsType<CurrentUserService>(currentUserService);
 
-        var s3Client = provider.GetService<IAmazonS3>();
-        Assert.NotNull(s3Client);
-
         var storageService = provider.GetService<IStorageService>();
         Assert.NotNull(storageService);
-        Assert.IsType<CloudflareR2StorageService>(storageService);
+        Assert.IsType<CloudinaryStorageService>(storageService);
 
         var httpContextAccessor = provider.GetService<IHttpContextAccessor>();
         Assert.NotNull(httpContextAccessor);
@@ -110,9 +105,7 @@ public class DependencyInjectionTests
 
         var storageService = provider.GetService<IStorageService>();
         Assert.NotNull(storageService);
-
-        var s3Client = provider.GetService<IAmazonS3>();
-        Assert.NotNull(s3Client);
+        Assert.IsType<LocalStorageService>(storageService);
     }
 
     [Fact]

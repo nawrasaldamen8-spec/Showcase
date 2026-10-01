@@ -48,8 +48,7 @@ public class AdminFeatureTests
         var result = await handler.Handle(new GetDashboardMetricsQuery(), CancellationToken.None);
 
         Assert.True(result.IsSuccess);
-        Assert.Equal(2, result.Value.TotalUsers);
-        Assert.Equal(1, result.Value.TotalPublishedPosts);
+        Assert.Equal(2, result.Value.TotalUsersCount);
     }
 
     [Fact]

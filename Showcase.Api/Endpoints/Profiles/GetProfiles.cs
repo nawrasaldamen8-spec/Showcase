@@ -16,15 +16,17 @@ public class GetProfiles : IEndpoint
     {
         app.MapGet("api/profiles", async (
             string? search,
+            bool? featuredOnly,
             int? page,
             int? pageSize,
             ISender sender,
             CancellationToken ct) =>
         {
-            var query = new GetProfilesQuery(search, page ?? 1, pageSize ?? 20);
+            var query = new GetProfilesQuery(search, featuredOnly, page ?? 1, pageSize ?? 20);
             var result = await sender.Send(query, ct);
             return result.ToResponse();
         })
+
         .WithTags("Profiles")
         .WithName(nameof(GetProfiles))
         .Produces<PaginatedList<PublicProfileResponse>>(StatusCodes.Status200OK)

@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using System.Threading;
 using MediatR;
 using Microsoft.AspNetCore.Builder;
@@ -9,24 +8,24 @@ using Showcase.Application.Features.Admin.Users;
 
 namespace Showcase.Api.Endpoints.Admin.Users;
 
-public record UpdateUserRoleRequest(IReadOnlyList<string> Roles, string? AdminPassword = null);
+public record ToggleUserVerificationRequest(bool IsVerified, string? Note = null);
 
-public class UpdateUserRole : IEndpoint
+public class ToggleUserVerification : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app)
     {
-        app.MapPut("api/admin/users/{userId}/roles", async (
+        app.MapPost("api/admin/users/{userId}/verification", async (
             string userId,
-            UpdateUserRoleRequest request,
+            ToggleUserVerificationRequest request,
             ISender sender,
             CancellationToken ct) =>
         {
-            var command = new UpdateUserRoleCommand(userId, request.Roles, request.AdminPassword);
+            var command = new ToggleUserVerificationCommand(userId, request.IsVerified, request.Note);
             var result = await sender.Send(command, ct);
             return result.ToResponse();
         })
         .WithTags("Admin - Users")
-        .WithName(nameof(UpdateUserRole))
+        .WithName(nameof(ToggleUserVerification))
         .Produces(StatusCodes.Status200OK)
         .ProducesProblem(StatusCodes.Status400BadRequest)
         .ProducesProblem(StatusCodes.Status401Unauthorized)

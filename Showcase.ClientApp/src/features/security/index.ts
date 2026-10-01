@@ -10,5 +10,6 @@ export * from "./pages/SecurityHubPage.tsx";
 export * from "./pages/UpdateEmailPage.tsx";
 export * from "./pages/VerificationRequestPage.tsx";
 export * from "./pages/FeaturedRequestPage.tsx";
+export * from "./pages/AccountBannedPage.tsx";
 
 

@@ -34,11 +34,11 @@ export const DeleteAccountPage: React.FC = () => {
 
     setIsDeleting(true);
 
-    setTimeout(() => {
+    setTimeout(async () => {
       setIsDeleting(false);
-      logout();
+      await logout();
       showToast("info", "Your account and data have been permanently deleted.");
-      navigate("/studio");
+      navigate("/login", { replace: true });
     }, 800);
   };
 

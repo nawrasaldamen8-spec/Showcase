@@ -75,6 +75,11 @@ public interface IIdentityService
         IEnumerable<string> roles,
         CancellationToken ct = default);
 
+    Task<Result> VerifyPasswordAsync(
+        string userId,
+        string password,
+        CancellationToken ct = default);
+
     Task<Result<IReadOnlyDictionary<string, UserIdentityDetails>>> GetUsersByIdsAsync(
         IEnumerable<string> userIds,
         CancellationToken ct = default);

@@ -19,6 +19,7 @@ public class AchievementConfiguration : IEntityTypeConfiguration<Achievement>
         builder.Property(a => a.Organization).HasMaxLength(150);
         builder.Property(a => a.Date).HasMaxLength(50);
         builder.Property(a => a.Description).HasMaxLength(2000);
+        builder.Ignore(a => a.CreatedAtUtc);
 
         builder.OwnsOne(a => a.Url, urlBuilder =>
         {

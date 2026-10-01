@@ -1,6 +1,14 @@
 import type { ReorderItem, UploadUrlResponse, VerificationStatus } from "./common.ts";
 
+export interface GetProfilesParams {
+  search?: string;
+  featuredOnly?: boolean;
+  pageNumber?: number;
+  pageSize?: number;
+}
+
 export interface SocialLink {
+
   id: string;
   profileId: string;
   platform: string;

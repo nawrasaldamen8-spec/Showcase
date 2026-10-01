@@ -420,6 +420,7 @@ public class PostFeatureTests
     {
         using var context = CreateInMemoryDbContext();
         var profile = new Profile("creator-1", "John", "Doe");
+        profile.SetFeaturedStatus(FeaturedStatus.Featured);
         context.Profiles.Add(profile);
 
         var pubPost = new Post(profile.Id, "Published Art", "An illustration");

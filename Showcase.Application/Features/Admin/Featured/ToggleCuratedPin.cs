@@ -16,10 +16,14 @@ public record ToggleCuratedPinCommand(
 public class ToggleCuratedPinCommandHandler : IRequestHandler<ToggleCuratedPinCommand, Result>
 {
     private readonly IApplicationDbContext _context;
+    private readonly IPublisher _publisher;
 
-    public ToggleCuratedPinCommandHandler(IApplicationDbContext context)
+    public ToggleCuratedPinCommandHandler(
+        IApplicationDbContext context,
+        IPublisher publisher)
     {
         _context = context;
+        _publisher = publisher;
     }
 
     public async Task<Result> Handle(ToggleCuratedPinCommand request, CancellationToken ct)
@@ -37,6 +41,13 @@ public class ToggleCuratedPinCommandHandler : IRequestHandler<ToggleCuratedPinCo
         {
             var nextStatus = request.IsPinned ? FeaturedStatus.Featured : FeaturedStatus.None;
             profile.SetFeaturedStatus(nextStatus);
+
+            if (request.IsPinned)
+            {
+                await _publisher.Publish(new Showcase.Application.Features.Notifications.Events.FeaturedApprovedNotificationEvent(
+                    featuredReq.UserId,
+                    "Your profile has been spotlighted in the Curated Discover Feed!"), ct);
+            }
         }
 
         await _context.SaveChangesAsync(ct);

@@ -80,8 +80,8 @@ export const AdminDashboardPage: React.FC = () => {
 
         <AdminKpiCard
           title="R2 Storage Used"
-          value={metrics ? formatBytes(metrics.storageUsedBytes) : "—"}
-          subtitle={`of ${metrics ? formatBytes(metrics.storageCapacityBytes) : "50 GB"} limit`}
+          value={metrics && typeof metrics.storageUsedBytes === "number" ? formatBytes(metrics.storageUsedBytes) : "—"}
+          subtitle={`of ${metrics && typeof metrics.storageCapacityBytes === "number" ? formatBytes(metrics.storageCapacityBytes) : "50 GB"} limit`}
           icon={Database}
           onClick={() => navigate("/admin/storage")}
         />

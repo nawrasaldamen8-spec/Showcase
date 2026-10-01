@@ -29,6 +29,20 @@ export const setTokens = (tokens: StoredTokens): void => {
   }
 };
 
+const VISITOR_STORAGE_KEY = "showcase_visitor_token";
+
+export const getVisitorToken = (): string => {
+  if (typeof window === "undefined") return "";
+  let token = localStorage.getItem(VISITOR_STORAGE_KEY);
+  if (!token) {
+    token = typeof crypto !== "undefined" && crypto.randomUUID
+      ? crypto.randomUUID()
+      : `guest_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+    localStorage.setItem(VISITOR_STORAGE_KEY, token);
+  }
+  return token;
+};
+
 export const clear = (): void => {
   if (typeof window === "undefined") return;
   localStorage.removeItem(AUTH_STORAGE_KEY);
@@ -41,4 +55,5 @@ export const tokenStorage = {
   setToken,
   setTokens,
   clear,
+  getVisitorToken,
 };

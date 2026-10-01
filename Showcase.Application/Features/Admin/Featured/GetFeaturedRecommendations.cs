@@ -60,6 +60,7 @@ public class GetFeaturedRecommendationsQueryHandler : IRequestHandler<GetFeature
                 name,
                 avatarUrl,
                 profile?.Specialty,
+                req.Message,
                 postsCount,
                 req.Status == FeaturedStatus.Featured,
                 req.Status.ToString().ToLowerInvariant(),

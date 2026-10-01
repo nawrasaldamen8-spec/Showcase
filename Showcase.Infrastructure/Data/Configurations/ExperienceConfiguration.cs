@@ -18,8 +18,9 @@ public class ExperienceConfiguration : IEntityTypeConfiguration<Experience>
         builder.Property(e => e.Company).IsRequired().HasMaxLength(150);
         builder.Property(e => e.Description).HasMaxLength(2000);
         builder.Property(e => e.Achievements).HasMaxLength(2000);
-        builder.Property(e => e.EmploymentType).HasMaxLength(50);
-        builder.Property(e => e.Location).HasMaxLength(150);
+        builder.Ignore(e => e.EmploymentType);
+        builder.Ignore(e => e.Location);
+        builder.Ignore(e => e.CreatedAtUtc);
 
         builder.OwnsOne(e => e.Period, periodBuilder =>
         {
@@ -31,6 +32,9 @@ public class ExperienceConfiguration : IEntityTypeConfiguration<Experience>
                 .HasColumnName("PeriodEnd");
         });
 
-        builder.Property(e => e.SkillsUsed).HasColumnType("text[]");
+        builder.Property(e => e.SkillsUsed)
+            .HasField("_skillsUsed")
+            .UsePropertyAccessMode(PropertyAccessMode.Field)
+            .HasColumnType("text[]");
     }
 }

@@ -39,12 +39,14 @@ export const VerificationReviewModal: React.FC<VerificationReviewModalProps> = (
     }
   };
 
+  const displayName = request.name || request.fullName || request.username;
+
   return (
     <Modal
       isOpen={isOpen}
       onClose={onClose}
       title="Review Verification Request"
-      description={`Submitted by @${request.username} (${request.fullName})`}
+      description={`Submitted by @${request.username} (${displayName})`}
       size="lg"
     >
       <div className="space-y-5 pt-2">
@@ -54,20 +56,20 @@ export const VerificationReviewModal: React.FC<VerificationReviewModalProps> = (
             {request.avatarUrl ? (
               <img
                 src={request.avatarUrl}
-                alt={request.fullName}
+                alt={displayName}
                 className="w-12 h-12 rounded-full object-cover border border-stone"
               />
             ) : (
               <div className="w-12 h-12 rounded-full bg-slate-dark text-ivory-light flex items-center justify-center font-gothic text-base font-bold">
-                {request.fullName[0]}
+                {(displayName || "?")[0]}
               </div>
             )}
             <div>
               <h4 className="font-gothic text-sm font-bold uppercase tracking-wider text-slate-dark">
-                {request.fullName}
+                {displayName}
               </h4>
               <p className="font-serif text-xs text-cloud-dark">
-                @{request.username} &bull; {request.postsCount} Published Works
+                @{request.username} {request.postsCount !== undefined ? `• ${request.postsCount} Published Works` : ""}
               </p>
             </div>
           </div>

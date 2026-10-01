@@ -16,5 +16,6 @@ public class LanguageConfiguration : IEntityTypeConfiguration<Language>
 
         builder.Property(l => l.LanguageName).IsRequired().HasMaxLength(100);
         builder.Property(l => l.Proficiency).HasConversion<int>().IsRequired();
+        builder.Ignore(l => l.CreatedAtUtc);
     }
 }

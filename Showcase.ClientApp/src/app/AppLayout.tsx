@@ -1,5 +1,6 @@
 import React from "react";
-import { Outlet, useLocation } from "react-router-dom";
+import { Outlet, useLocation, useNavigate } from "react-router-dom";
+import { useNotificationRealtime } from "@features/notifications/hooks/useNotificationRealtime.ts";
 import { useAuth } from "@shared/context/index.ts";
 import { Footer, MobileBottomNav, MobileTopBar, Sidebar } from "@shared/layout/index.ts";
 import { ScrollToTop } from "./ScrollToTop.tsx";
@@ -10,12 +11,26 @@ export interface AppLayoutProps {
 
 export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   const { currentUser, logout } = useAuth();
+  useNotificationRealtime();
   const location = useLocation();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    await logout();
+    navigate("/login", { replace: true });
+  };
+
+  React.useEffect(() => {
+    if (currentUser?.isBanned && location.pathname !== "/banned") {
+      navigate("/banned", { replace: true });
+    }
+  }, [currentUser?.isBanned, location.pathname, navigate]);
 
   const isEditorRoute =
     location.pathname.startsWith("/posts/new") || /^\/posts\/[^/]+\/edit/.test(location.pathname);
 
   const isStandaloneRoute =
+    location.pathname === "/banned" ||
     location.pathname.startsWith("/login") ||
     location.pathname.startsWith("/register") ||
     location.pathname.startsWith("/auth") ||
@@ -48,7 +63,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
       <ScrollToTop />
       <Sidebar
         user={layoutUser}
-        onLogout={logout}
+        onLogout={handleLogout}
       />
       <div className="flex-1 flex flex-col min-w-0 md:pl-60 lg:pl-64 transition-all">
         <MobileTopBar />

@@ -18,8 +18,9 @@ public class AcademicConfiguration : IEntityTypeConfiguration<Academic>
         builder.Property(a => a.FieldOfStudy).IsRequired().HasMaxLength(150);
         builder.Property(a => a.Gpa).HasMaxLength(50);
         builder.Property(a => a.Achievements).HasMaxLength(2000);
-        builder.Property(a => a.Location).HasMaxLength(150);
-        builder.Property(a => a.Description).HasMaxLength(2000);
+        builder.Ignore(a => a.Location);
+        builder.Ignore(a => a.Description);
+        builder.Ignore(a => a.CreatedAtUtc);
 
         builder.OwnsOne(a => a.Period, periodBuilder =>
         {

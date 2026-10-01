@@ -15,5 +15,6 @@ public class SkillConfiguration : IEntityTypeConfiguration<Skill>
 
         builder.Property(s => s.Name).IsRequired().HasMaxLength(100);
         builder.Property(s => s.Category).HasMaxLength(100);
+        builder.Ignore(s => s.CreatedAtUtc);
     }
 }

@@ -113,6 +113,31 @@ export const apiPostsClient = {
   },
 
   async uploadImageFile(uploadUrl: string, file: File | Blob): Promise<string> {
+    if (uploadUrl.includes("api.cloudinary.com")) {
+      const urlObj = new URL(uploadUrl);
+      const params = new URLSearchParams(urlObj.search);
+
+      const formData = new FormData();
+      formData.append("file", file);
+      params.forEach((value, key) => {
+        formData.append(key, value);
+      });
+
+      const response = await fetch(urlObj.origin + urlObj.pathname, {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        const errorMsg = errorData?.error?.message || response.statusText;
+        throw new Error(`Failed to upload to Cloudinary: ${errorMsg}`);
+      }
+
+      const result = await response.json().catch(() => null);
+      return result?.secure_url || uploadUrl;
+    }
+
     const response = await fetch(uploadUrl, {
       method: "PUT",
       body: file,
@@ -154,9 +179,10 @@ export const apiPostsClient = {
     });
   },
 
-  async toggleLikePost(postId: string): Promise<{ isLiked: boolean; likeCount: number }> {
+  async toggleLikePost(postId: string, desiredState?: boolean): Promise<{ isLiked: boolean; likeCount: number }> {
     return httpFetch<{ isLiked: boolean; likeCount: number }>(`/api/posts/${postId}/like`, {
       method: "POST",
+      body: desiredState !== undefined ? JSON.stringify({ desiredState }) : undefined,
     });
   },
 };

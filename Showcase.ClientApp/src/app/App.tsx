@@ -5,6 +5,7 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { Toaster } from "sonner";
 import { NotFoundView } from "@shared/components/NotFoundView.tsx";
 import { ProtectedRoute } from "@shared/components/ProtectedRoute.tsx";
+import { RouteLoadingSkeleton } from "@shared/components/RouteLoadingSkeleton.tsx";
 import { AuthProvider, ToastProvider } from "@shared/context/index.ts";
 
 import { AppLayout } from "./AppLayout.tsx";
@@ -51,6 +52,7 @@ const ManagePhonePage = lazy(() => import("@features/security/pages/ManagePhoneP
 const SecurityHubPage = lazy(() => import("@features/security/pages/SecurityHubPage.tsx").then((m) => ({ default: m.SecurityHubPage })));
 const UpdateEmailPage = lazy(() => import("@features/security/pages/UpdateEmailPage.tsx").then((m) => ({ default: m.UpdateEmailPage })));
 const VerificationRequestPage = lazy(() => import("@features/security/pages/VerificationRequestPage.tsx").then((m) => ({ default: m.VerificationRequestPage })));
+const AccountBannedPage = lazy(() => import("@features/security/pages/AccountBannedPage.tsx").then((m) => ({ default: m.AccountBannedPage })));
 
 // Auth Pages
 const CompleteOAuthPage = lazy(() => import("@features/auth/pages/CompleteOAuthPage.tsx").then((m) => ({ default: m.CompleteOAuthPage })));
@@ -72,26 +74,15 @@ const PrivacyPolicyPage = lazy(() => import("@features/system/pages/PrivacyPolic
 const ServerErrorPage = lazy(() => import("@features/system/pages/ServerErrorPage.tsx").then((m) => ({ default: m.ServerErrorPage })));
 const TermsOfServicePage = lazy(() => import("@features/system/pages/TermsOfServicePage.tsx").then((m) => ({ default: m.TermsOfServicePage })));
 
-const PageLoadingSpinner: React.FC = () => (
-  <div className="flex items-center justify-center min-h-[60vh] py-20">
-    <div className="flex flex-col items-center gap-3">
-      <div className="w-8 h-8 rounded-full border-2 border-slate-dark/20 border-t-slate-dark animate-spin" />
-      <span className="font-gothic text-xs uppercase tracking-widest text-cloud-dark">
-        Loading...
-      </span>
-    </div>
-  </div>
-);
-
 export const AppRoutes: React.FC = () => {
-
   return (
-    <Suspense fallback={<PageLoadingSpinner />}>
+    <Suspense fallback={<RouteLoadingSkeleton />}>
       <Routes>
-        {/* 1. Public Auth Pages without Shell */}
+        {/* 1. Public Auth & Standalone Pages */}
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterWizardPage />} />
         <Route path="/auth/complete-oauth" element={<CompleteOAuthPage />} />
+        <Route path="/banned" element={<AccountBannedPage />} />
 
         {/* 2. Public Content Routes with AppLayout (Open to Guests & Users) */}
         <Route element={<AppLayout />}>
@@ -132,6 +123,8 @@ export const AppRoutes: React.FC = () => {
           <Route path="/settings">
             <Route index element={<SecurityHubPage />} />
             <Route path="profile" element={<Navigate to="/profile/edit" replace />} />
+            <Route path="featured" element={<Navigate to="/settings/security/featured" replace />} />
+            <Route path="verification" element={<Navigate to="/settings/security/verification" replace />} />
             <Route path="security" element={<SecurityHubPage />} />
             <Route path="security/username" element={<ChangeUsernamePage />} />
             <Route path="security/email" element={<UpdateEmailPage />} />

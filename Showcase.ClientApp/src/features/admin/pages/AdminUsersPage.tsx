@@ -5,6 +5,7 @@ import {
   ExternalLink,
   Search,
   Shield,
+  ShieldCheck,
   UserCheck,
 } from "lucide-react";
 import { Input } from "@shared/components/Input.tsx";
@@ -15,6 +16,7 @@ import { useToast } from "@shared/context/index.ts";
 import { formatBytes } from "@shared/utils/format.ts";
 import type { AdminUserListItem, UserRole } from "@shared/types/index.ts";
 import { AdminLayout } from "../components/AdminLayout.tsx";
+import { AdminPasswordConfirmModal } from "../components/AdminPasswordConfirmModal.tsx";
 import { AdminTable, type AdminTableColumn } from "../components/AdminTable.tsx";
 import { BanUserModal } from "../components/BanUserModal.tsx";
 
@@ -26,6 +28,7 @@ export const AdminUsersPage: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState("all");
   const [roleFilter, setRoleFilter] = useState("all");
   const [selectedUserForBan, setSelectedUserForBan] = useState<AdminUserListItem | null>(null);
+  const [selectedUserForRoleChange, setSelectedUserForRoleChange] = useState<AdminUserListItem | null>(null);
 
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedSearch(searchInput), 300);
@@ -54,23 +57,43 @@ export const AdminUsersPage: React.FC = () => {
     loadUsers();
   };
 
-  const handleToggleAdminRole = async (user: AdminUserListItem) => {
+  const handleConfirmRoleChange = async (adminPassword: string) => {
+    if (!selectedUserForRoleChange) return;
+    const user = selectedUserForRoleChange;
     const hasAdmin = user.roles.includes("Admin");
     const nextRoles: UserRole[] = hasAdmin
       ? user.roles.filter((r) => r !== "Admin")
       : [...user.roles, "Admin"];
 
+    await apiClient.updateUserRole(user.id, nextRoles, adminPassword);
+    showToast(
+      "success",
+      hasAdmin
+        ? `Admin privileges revoked for @${user.username}.`
+        : `Admin privileges granted to @${user.username}.`
+    );
+    loadUsers();
+  };
+
+  const handleToggleVerification = async (user: AdminUserListItem) => {
+    const nextVerified = !user.isVerified;
     try {
-      await apiClient.updateUserRole(user.id, nextRoles);
+      await apiClient.toggleUserVerification(
+        user.id,
+        nextVerified,
+        nextVerified
+          ? "Direct verified badge granted by administrator."
+          : "Verified badge revoked by administrator."
+      );
       showToast(
         "success",
-        hasAdmin
-          ? `Admin privileges revoked for @${user.username}.`
-          : `Admin privileges granted to @${user.username}.`
+        nextVerified
+          ? `Verified badge granted to @${user.username}.`
+          : `Verified badge revoked from @${user.username}.`
       );
       loadUsers();
     } catch {
-      showToast("error", "Failed to update user role.");
+      showToast("error", "Failed to update verification status.");
     }
   };
 
@@ -175,7 +198,20 @@ export const AdminUsersPage: React.FC = () => {
 
           <button
             type="button"
-            onClick={() => handleToggleAdminRole(user)}
+            onClick={() => handleToggleVerification(user)}
+            className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
+              user.isVerified
+                ? "text-clay hover:bg-clay/10"
+                : "text-cloud-dark hover:text-clay hover:bg-[#e8e5dc]"
+            }`}
+            title={user.isVerified ? "Revoke Verification Badge" : "Grant Verification Badge"}
+          >
+            <ShieldCheck className="w-4 h-4" />
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setSelectedUserForRoleChange(user)}
             className="p-1.5 rounded-lg text-cloud-dark hover:text-[#2e7d32] hover:bg-[#e8e5dc] transition-colors cursor-pointer"
             title={user.roles.includes("Admin") ? "Revoke Admin Role" : "Make Admin"}
           >
@@ -261,6 +297,25 @@ export const AdminUsersPage: React.FC = () => {
         onClose={() => setSelectedUserForBan(null)}
         onConfirmBan={handleConfirmBan}
         onConfirmUnban={handleConfirmUnban}
+      />
+
+      {/* Admin Role Password Confirmation Modal */}
+      <AdminPasswordConfirmModal
+        isOpen={!!selectedUserForRoleChange}
+        onClose={() => setSelectedUserForRoleChange(null)}
+        onConfirm={handleConfirmRoleChange}
+        title={
+          selectedUserForRoleChange?.roles.includes("Admin")
+            ? "Revoke Administrator Role"
+            : "Grant Administrator Role"
+        }
+        description={`Target user: @${selectedUserForRoleChange?.username} (${selectedUserForRoleChange?.name})`}
+        actionLabel={
+          selectedUserForRoleChange?.roles.includes("Admin")
+            ? "Confirm Revoke Admin"
+            : "Confirm Grant Admin"
+        }
+        variant={selectedUserForRoleChange?.roles.includes("Admin") ? "slate" : "clay"}
       />
     </AdminLayout>
   );

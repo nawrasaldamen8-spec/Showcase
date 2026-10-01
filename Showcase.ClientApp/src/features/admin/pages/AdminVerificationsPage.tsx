@@ -64,77 +64,81 @@ export const AdminVerificationsPage: React.FC = () => {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {pendingRequests.map((req) => (
-              <div
-                key={req.id}
-                className="bg-ivory-light border border-stone rounded-2xl p-5 space-y-4 flex flex-col justify-between"
-              >
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between gap-3">
-                    <div className="flex items-center gap-3">
-                      {req.avatarUrl ? (
-                        <img
-                          src={req.avatarUrl}
-                          alt={req.fullName}
-                          className="w-10 h-10 rounded-full object-cover border border-stone"
-                        />
-                      ) : (
-                        <div className="w-10 h-10 rounded-full bg-slate-dark text-ivory-light flex items-center justify-center font-gothic text-xs font-bold uppercase">
-                          {req.fullName[0]}
+            {pendingRequests.map((req) => {
+              const displayName = req.name || req.fullName || req.username;
+              const dateStr = req.createdAt || req.submittedAt;
+              return (
+                <div
+                  key={req.id}
+                  className="bg-ivory-light border border-stone rounded-2xl p-5 space-y-4 flex flex-col justify-between"
+                >
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-3">
+                        {req.avatarUrl ? (
+                          <img
+                            src={req.avatarUrl}
+                            alt={displayName}
+                            className="w-10 h-10 rounded-full object-cover border border-stone"
+                          />
+                        ) : (
+                          <div className="w-10 h-10 rounded-full bg-slate-dark text-ivory-light flex items-center justify-center font-gothic text-xs font-bold uppercase">
+                            {(displayName || "?")[0]}
+                          </div>
+                        )}
+                        <div>
+                          <span className="font-gothic font-bold uppercase tracking-wider text-sm text-slate-dark">
+                            {displayName}
+                          </span>
+                          <span className="font-serif text-xs text-cloud-dark block">
+                            @{req.username} {req.postsCount !== undefined ? `• ${req.postsCount} Works` : ""}
+                          </span>
                         </div>
-                      )}
-                      <div>
-                        <span className="font-gothic font-bold uppercase tracking-wider text-sm text-slate-dark">
-                          {req.fullName}
-                        </span>
-                        <span className="font-serif text-xs text-cloud-dark block">
-                          @{req.username} &bull; {req.postsCount} Works
-                        </span>
                       </div>
+
+                      <a
+                        href={`/u/${req.username}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="p-1.5 rounded-lg text-cloud-dark hover:text-slate-dark hover:bg-[#e8e5dc] transition-colors"
+                        title="View Public Profile"
+                      >
+                        <ExternalLink className="w-4 h-4" />
+                      </a>
                     </div>
 
-                    <a
-                      href={`/u/${req.username}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="p-1.5 rounded-lg text-cloud-dark hover:text-slate-dark hover:bg-[#e8e5dc] transition-colors"
-                      title="View Public Profile"
+                    <div className="p-3 bg-ivory-medium rounded-xl font-serif text-xs text-slate-dark/85 leading-relaxed">
+                      &ldquo;{req.message}&rdquo;
+                    </div>
+
+                    {req.notes && (
+                      <div className="text-[11px] font-serif text-cloud-dark">
+                        <strong className="font-gothic font-bold uppercase text-slate-dark text-[10px]">
+                          Credentials:{" "}
+                        </strong>
+                        {req.notes}
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="pt-2 border-t border-stone/50 flex items-center justify-between gap-2">
+                    <span className="font-serif text-[11px] text-cloud-dark">
+                      Submitted {dateStr ? new Date(dateStr).toLocaleDateString() : "Recently"}
+                    </span>
+
+                    <Button
+                      type="button"
+                      variant="clay"
+                      size="sm"
+                      onClick={() => setSelectedRequest(req)}
+                      leftIcon={<FileCheck className="w-3.5 h-3.5" />}
                     >
-                      <ExternalLink className="w-4 h-4" />
-                    </a>
+                      Examine &amp; Decide
+                    </Button>
                   </div>
-
-                  <div className="p-3 bg-ivory-medium rounded-xl font-serif text-xs text-slate-dark/85 leading-relaxed">
-                    &ldquo;{req.message}&rdquo;
-                  </div>
-
-                  {req.notes && (
-                    <div className="text-[11px] font-serif text-cloud-dark">
-                      <strong className="font-gothic font-bold uppercase text-slate-dark text-[10px]">
-                        Credentials:{" "}
-                      </strong>
-                      {req.notes}
-                    </div>
-                  )}
                 </div>
-
-                <div className="pt-2 border-t border-stone/50 flex items-center justify-between gap-2">
-                  <span className="font-serif text-[11px] text-cloud-dark">
-                    Submitted {new Date(req.submittedAt).toLocaleDateString()}
-                  </span>
-
-                  <Button
-                    type="button"
-                    variant="clay"
-                    size="sm"
-                    onClick={() => setSelectedRequest(req)}
-                    leftIcon={<FileCheck className="w-3.5 h-3.5" />}
-                  >
-                    Examine &amp; Decide
-                  </Button>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </section>
@@ -151,34 +155,37 @@ export const AdminVerificationsPage: React.FC = () => {
 
           <div className="bg-ivory-light rounded-2xl border border-stone overflow-hidden">
             <div className="divide-y divide-stone/60">
-              {processedRequests.map((req) => (
-                <div
-                  key={req.id}
-                  className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs"
-                >
-                  <div className="flex items-center gap-3">
-                    {req.status === "approved" ? (
-                      <VerifiedBadge size="md" />
-                    ) : (
-                      <div className="w-7 h-7 rounded-full bg-red-500/10 text-red-600 flex items-center justify-center">
-                        <XCircle className="w-4 h-4" />
-                      </div>
-                    )}
-                    <div>
-                      <span className="font-gothic font-bold uppercase tracking-wider text-slate-dark">
-                        {req.fullName} (@{req.username})
-                      </span>
-                      {req.decisionNote && (
-                        <p className="font-serif text-cloud-dark text-[11px]">{req.decisionNote}</p>
+              {processedRequests.map((req) => {
+                const displayName = req.name || req.fullName || req.username;
+                return (
+                  <div
+                    key={req.id}
+                    className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs"
+                  >
+                    <div className="flex items-center gap-3">
+                      {req.status === "approved" ? (
+                        <VerifiedBadge size="md" />
+                      ) : (
+                        <div className="w-7 h-7 rounded-full bg-red-500/10 text-red-600 flex items-center justify-center">
+                          <XCircle className="w-4 h-4" />
+                        </div>
                       )}
+                      <div>
+                        <span className="font-gothic font-bold uppercase tracking-wider text-slate-dark">
+                          {displayName} (@{req.username})
+                        </span>
+                        {req.decisionNote && (
+                          <p className="font-serif text-cloud-dark text-[11px]">{req.decisionNote}</p>
+                        )}
+                      </div>
                     </div>
-                  </div>
 
-                  <span className="font-gothic text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border self-start sm:self-auto bg-[#e8e5dc] text-slate-dark border-stone">
-                    {req.status}
-                  </span>
-                </div>
-              ))}
+                    <span className="font-gothic text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border self-start sm:self-auto bg-[#e8e5dc] text-slate-dark border-stone">
+                      {req.status}
+                    </span>
+                  </div>
+                );
+              })}
             </div>
           </div>
         </section>

@@ -60,7 +60,16 @@ public class GetPublicCareerQueryHandler : IRequestHandler<GetPublicCareerQuery,
             .FirstOrDefaultAsync(p => p.UserId == targetUserId && !p.IsBanned && !p.IsDeleted, ct);
 
         if (profile is null)
-            return ProfileErrors.NotFoundForUser(targetUserId);
+        {
+            return new PublicCareerDataResponse(
+                new List<CareerExperienceDto>(),
+                new List<CareerAcademicDto>(),
+                new List<CareerSkillDto>(),
+                new List<CareerCredentialDto>(),
+                new List<CareerLanguageDto>(),
+                new List<CareerAchievementDto>(),
+                new CareerVisibilityDto(true, true, true, true, true, true));
+        }
 
         var vis = profile.CareerVisibility;
         var visibilityDto = vis is not null
@@ -68,46 +77,46 @@ public class GetPublicCareerQueryHandler : IRequestHandler<GetPublicCareerQuery,
             : new CareerVisibilityDto(true, true, true, true, true, true);
 
         // Check if viewing own profile
-        bool isOwnProfile = _currentUserService.UserId == targetUserId;
+        bool isOwnProfile = !string.IsNullOrEmpty(_currentUserService.UserId) && _currentUserService.UserId == targetUserId;
 
         var experiences = (isOwnProfile || visibilityDto.Experience)
             ? profile.Experiences
-                .OrderByDescending(e => e.Period.Start)
+                .OrderByDescending(e => e.Period != null ? e.Period.Start : DateOnly.MinValue)
                 .Select(e => e.ToDto())
                 .ToList()
             : new List<CareerExperienceDto>();
 
         var academics = (isOwnProfile || visibilityDto.Academics)
             ? profile.Academics
-                .OrderByDescending(a => a.Period.Start)
+                .OrderByDescending(a => a.Period != null ? a.Period.Start : DateOnly.MinValue)
                 .Select(a => a.ToDto())
                 .ToList()
             : new List<CareerAcademicDto>();
 
         var skills = (isOwnProfile || visibilityDto.Skills)
             ? profile.Skills
-                .OrderBy(s => s.Name)
+                .OrderBy(s => s.Name ?? string.Empty)
                 .Select(s => s.ToDto())
                 .ToList()
             : new List<CareerSkillDto>();
 
         var credentials = (isOwnProfile || visibilityDto.Credentials)
             ? profile.Credentials
-                .OrderByDescending(c => c.Validity.Start)
+                .OrderByDescending(c => c.Validity != null ? c.Validity.Start : DateOnly.MinValue)
                 .Select(c => c.ToDto())
                 .ToList()
             : new List<CareerCredentialDto>();
 
         var languages = (isOwnProfile || visibilityDto.Languages)
             ? profile.Languages
-                .OrderBy(l => l.LanguageName)
+                .OrderBy(l => l.LanguageName ?? string.Empty)
                 .Select(l => l.ToDto())
                 .ToList()
             : new List<CareerLanguageDto>();
 
         var achievements = (isOwnProfile || visibilityDto.Achievements)
             ? profile.Achievements
-                .OrderByDescending(a => a.Date)
+                .OrderByDescending(a => a.Date ?? string.Empty)
                 .Select(a => a.ToDto())
                 .ToList()
             : new List<CareerAchievementDto>();

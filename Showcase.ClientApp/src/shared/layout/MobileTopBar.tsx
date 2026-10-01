@@ -1,6 +1,8 @@
-import { Bell, LogOut, Settings } from "lucide-react";
+import { LogOut, Settings } from "lucide-react";
 import React, { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { NotificationBellBadge } from "@features/notifications/components/index.ts";
+import { useNotificationsQuery } from "@features/notifications/hooks/useNotificationQueries.ts";
 import { BrandLogo } from "@shared/components/BrandLogo.tsx";
 import { Button } from "@shared/components/Button.tsx";
 import { Modal } from "@shared/components/Modal.tsx";
@@ -9,13 +11,17 @@ import { useAuth } from "../context/index.ts";
 export const MobileTopBar: React.FC = () => {
   const { currentUser, logout } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const { data: notifications } = useNotificationsQuery(1, 50, { enabled: Boolean(currentUser) });
+  const unreadCount = notifications ? notifications.items.filter((n) => !n.isRead).length : 0;
 
   const isProfilePage = location.pathname.startsWith("/u/") || location.pathname.startsWith("/profile");
 
-  const handleConfirmLogout = () => {
+  const handleConfirmLogout = async () => {
     setShowLogoutConfirm(false);
-    logout();
+    await logout();
+    navigate("/login", { replace: true });
   };
 
   return (
@@ -65,7 +71,12 @@ export const MobileTopBar: React.FC = () => {
             title="Notifications"
             className="flex items-center justify-center h-9 w-9 rounded-xl text-slate-dark hover:bg-[#e8e5dc]/70 active:scale-95 transition-all cursor-pointer"
           >
-            <Bell className="h-5 w-5 stroke-[1.8]" />
+            <NotificationBellBadge
+              unreadCount={unreadCount}
+              isActive={location.pathname === "/notifications"}
+              iconClassName="h-5 w-5 stroke-[1.8]"
+              badgeRingColor="ring-ivory-light"
+            />
           </Link>
         )}
       </header>

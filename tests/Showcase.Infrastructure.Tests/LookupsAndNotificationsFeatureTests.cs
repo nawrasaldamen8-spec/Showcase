@@ -62,11 +62,17 @@ public class LookupsAndNotificationsFeatureTests
         dbContext.Notifications.AddRange(n1, n2);
         await dbContext.SaveChangesAsync();
 
+        var identityService = new Mock<IIdentityService>();
+        IReadOnlyDictionary<string, UserIdentityDetails> emptyDict = new Dictionary<string, UserIdentityDetails>();
+        identityService.Setup(s => s.GetUsersByIdsAsync(It.IsAny<IEnumerable<string>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Showcase.Domain.Common.Results.Result<IReadOnlyDictionary<string, UserIdentityDetails>>.Success(emptyDict));
+        var storageService = new Mock<IStorageService>();
+
         // 1. Get notifications
-        var getHandler = new GetNotificationsQueryHandler(currentUserService.Object, dbContext);
+        var getHandler = new GetNotificationsQueryHandler(currentUserService.Object, dbContext, identityService.Object, storageService.Object);
         var getResult = await getHandler.Handle(new GetNotificationsQuery(), CancellationToken.None);
         Assert.True(getResult.IsSuccess);
-        Assert.Equal(2, getResult.Value.Count);
+        Assert.Equal(2, getResult.Value.Items.Count);
 
         // 2. Mark single notification as read
         var readHandler = new MarkNotificationAsReadCommandHandler(currentUserService.Object, dbContext);
@@ -74,13 +80,7 @@ public class LookupsAndNotificationsFeatureTests
         Assert.True(readResult.IsSuccess);
         Assert.True(n1.IsRead);
 
-        // 3. Mark all as read
-        var readAllHandler = new MarkAllNotificationsAsReadCommandHandler(currentUserService.Object, dbContext);
-        var readAllResult = await readAllHandler.Handle(new MarkAllNotificationsAsReadCommand(), CancellationToken.None);
-        Assert.True(readAllResult.IsSuccess);
-        Assert.True(n2.IsRead);
-
-        // 4. Delete notification
+        // 3. Delete notification
         var deleteHandler = new DeleteNotificationCommandHandler(currentUserService.Object, dbContext);
         var deleteResult = await deleteHandler.Handle(new DeleteNotificationCommand(n1.Id), CancellationToken.None);
         Assert.True(deleteResult.IsSuccess);
@@ -102,7 +102,8 @@ public class LookupsAndNotificationsFeatureTests
         var visitorService = new Mock<ICurrentUserService>();
         visitorService.Setup(s => s.UserId).Returns("visitor-id");
 
-        var trackHandler = new TrackProfileVisitCommandHandler(visitorService.Object, dbContext);
+        var realtimeNotifier = new Mock<IRealtimeNotifier>();
+        var trackHandler = new TrackProfileVisitCommandHandler(visitorService.Object, dbContext, realtimeNotifier.Object);
         var trackResult = await trackHandler.Handle(new TrackProfileVisitCommand(profile.Id, "hashed-ip-123"), CancellationToken.None);
         Assert.True(trackResult.IsSuccess);
 

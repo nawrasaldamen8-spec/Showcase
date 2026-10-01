@@ -373,6 +373,28 @@ public class IdentityService : IIdentityService
         return Result.Success();
     }
 
+    public async Task<Result> VerifyPasswordAsync(
+        string userId,
+        string password,
+        CancellationToken ct = default)
+    {
+        if (string.IsNullOrWhiteSpace(userId))
+            return Error.Validation("Auth.UserIdRequired", "User ID is required.");
+
+        if (string.IsNullOrWhiteSpace(password))
+            return Error.Validation("Auth.PasswordRequired", "Password is required for verification.");
+
+        var user = await _userManager.FindByIdAsync(userId);
+        if (user is null)
+            return Error.NotFound("User.NotFound", "User was not found.");
+
+        var isValid = await _userManager.CheckPasswordAsync(user, password);
+        if (!isValid)
+            return Error.Validation("Auth.InvalidPassword", "The password provided is incorrect.");
+
+        return Result.Success();
+    }
+
     public async Task<Result<IReadOnlyDictionary<string, UserIdentityDetails>>> GetUsersByIdsAsync(
         IEnumerable<string> userIds,
         CancellationToken ct = default)

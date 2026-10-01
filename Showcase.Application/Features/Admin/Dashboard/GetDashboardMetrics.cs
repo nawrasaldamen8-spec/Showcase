@@ -26,23 +26,28 @@ public class GetDashboardMetricsQueryHandler : IRequestHandler<GetDashboardMetri
         var activeCreators = await _context.Profiles.CountAsync(p => !p.IsBanned && !p.IsDeleted, ct);
         var publishedPosts = await _context.Posts.CountAsync(p => p.Status == PostStatus.Published, ct);
         var pendingVerifications = await _context.VerificationRequests.CountAsync(v => v.Status == VerificationStatus.Pending, ct);
-        var featuredNominations = await _context.FeaturedRequests.CountAsync(f => f.Status == FeaturedStatus.Pending, ct);
+        var pendingReports = await _context.ContentReports.CountAsync(r => r.Status == ReportStatus.Pending, ct);
+        var curatedPinnedCount = await _context.FeaturedRequests.CountAsync(f => f.Status == FeaturedStatus.Featured, ct);
 
         // Approximate storage metrics
         var totalPostImages = await _context.PostImages.CountAsync(ct);
         var totalAvatars = await _context.Profiles.CountAsync(p => p.AvatarKey != null, ct);
         long estimatedBytes = (totalPostImages * 850_000L) + (totalAvatars * 250_000L); // ~850KB per image, ~250KB per avatar
         long quotaBytes = 50L * 1024 * 1024 * 1024; // 50GB quota
-        double quotaPercentage = quotaBytes > 0 ? (double)estimatedBytes / quotaBytes * 100.0 : 0.0;
+
+        var recentAuditLogs = new List<AuditLogItemDto>();
+        var recentBroadcasts = new List<BroadcastAnnouncementItemDto>();
 
         return new AdminDashboardMetricsDto(
             totalUsers,
             activeCreators,
             publishedPosts,
             pendingVerifications,
-            0, // pending reports
-            featuredNominations,
+            pendingReports,
+            curatedPinnedCount,
             estimatedBytes,
-            quotaPercentage);
+            quotaBytes,
+            recentAuditLogs,
+            recentBroadcasts);
     }
 }
