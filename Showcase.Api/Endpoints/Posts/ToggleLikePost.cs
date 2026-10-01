@@ -3,11 +3,14 @@ using System.Threading;
 using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Showcase.Api.Common.Results;
 using Showcase.Application.Features.Posts.Commands.ToggleLikePost;
 
 namespace Showcase.Api.Endpoints.Posts;
+
+public record ToggleLikeRequest(bool? DesiredState);
 
 public class ToggleLikePost : IEndpoint
 {
@@ -15,10 +18,11 @@ public class ToggleLikePost : IEndpoint
     {
         app.MapPost("api/posts/{postId:guid}/like", async (
             Guid postId,
+            [FromBody] ToggleLikeRequest? body,
             ISender sender,
             CancellationToken ct) =>
         {
-            var command = new ToggleLikePostCommand(postId);
+            var command = new ToggleLikePostCommand(postId, body?.DesiredState);
             var result = await sender.Send(command, ct);
             return result.ToResponse();
         })

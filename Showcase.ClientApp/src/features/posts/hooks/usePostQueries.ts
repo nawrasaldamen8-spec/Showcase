@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { apiClient, extractApiErrorMessage, queryKeys } from "@shared/api/index.ts";
 import type {
@@ -22,6 +22,36 @@ export interface MyPostsFilters {
   status?: PostStatus | "all";
   pageNumber?: number;
   pageSize?: number;
+}
+
+export function useInfiniteExplorePostsQuery(filters?: Omit<ExploreFilters, "pageNumber">) {
+  return useInfiniteQuery<PaginatedList<ExplorePostResponse>>({
+    queryKey: queryKeys.posts.infiniteExplore(filters as Record<string, unknown>),
+    queryFn: ({ pageParam = 1 }) =>
+      apiClient.getExplorePosts(
+        filters?.search,
+        pageParam as number,
+        filters?.pageSize ?? 12,
+        filters?.category
+      ),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) =>
+      lastPage.hasNextPage ? lastPage.pageNumber + 1 : undefined,
+    staleTime: 1000 * 60 * 2, // 2 minutes
+  });
+}
+
+export function useInfiniteProfilePostsQuery(username: string, pageSize = 12) {
+  return useInfiniteQuery<PaginatedList<PostSummaryResponse>>({
+    queryKey: queryKeys.posts.infiniteByUser(username, { pageSize }),
+    queryFn: ({ pageParam = 1 }) =>
+      apiClient.getProfilePosts(username, pageParam as number, pageSize),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) =>
+      lastPage.hasNextPage ? lastPage.pageNumber + 1 : undefined,
+    enabled: Boolean(username),
+    staleTime: 1000 * 60 * 2, // 2 minutes
+  });
 }
 
 export function useExplorePostsQuery(filters?: ExploreFilters) {

@@ -1,11 +1,13 @@
-import { ArrowRight, ExternalLink, User as UserIcon } from "lucide-react";
-import React from "react";
+import { ArrowRight, ExternalLink, Flag, User as UserIcon } from "lucide-react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { Badge } from "@shared/components/Badge.tsx";
 import { Button } from "@shared/components/Button.tsx";
+import { ProgressiveImage } from "@shared/components/ProgressiveImage.tsx";
 import { VerifiedBadge } from "@shared/components/VerifiedBadge.tsx";
 import type { PostDetailsResponse } from "@shared/types/index.ts";
 import { PostLikeButton } from "./PostLikeButton.tsx";
+import { ReportPostModal } from "./ReportPostModal.tsx";
 
 export interface PostCuratorialMetaProps {
   post: PostDetailsResponse;
@@ -24,6 +26,7 @@ export const PostCuratorialMeta: React.FC<PostCuratorialMetaProps> = ({
   layout = "inline",
   showCreator = layout === "sidebar",
 }) => {
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const isSidebar = layout === "sidebar";
 
   return (
@@ -33,10 +36,11 @@ export const PostCuratorialMeta: React.FC<PostCuratorialMetaProps> = ({
         <div className="flex items-center gap-3.5">
           <Link to={`/u/${creatorUsername}`} className="shrink-0 group">
             {creatorAvatar ? (
-              <img
+              <ProgressiveImage
                 src={creatorAvatar}
                 alt={creatorName}
-                className="h-12 w-12 rounded-full object-cover border border-stone transition-transform group-hover:scale-105"
+                containerClassName="h-12 w-12 rounded-full border border-stone transition-transform group-hover:scale-105 shrink-0"
+                className="w-full h-full object-cover"
               />
             ) : (
               <div className="h-12 w-12 rounded-full bg-slate-dark text-ivory-light flex items-center justify-center font-gothic text-sm font-bold uppercase transition-transform group-hover:scale-105">
@@ -75,8 +79,8 @@ export const PostCuratorialMeta: React.FC<PostCuratorialMetaProps> = ({
         </h1>
       )}
 
-      {/* Action Row: Likes */}
-      <div className="flex items-center gap-3 pt-1">
+      {/* Action Row: Likes & Discreet Report */}
+      <div className="flex items-center justify-between gap-3 pt-1">
         <PostLikeButton
           key={post.id}
           postId={post.id}
@@ -85,6 +89,16 @@ export const PostCuratorialMeta: React.FC<PostCuratorialMetaProps> = ({
           size="md"
           variant="pill"
         />
+
+        <button
+          type="button"
+          onClick={() => setIsReportModalOpen(true)}
+          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-gothic text-cloud-dark hover:text-clay hover:bg-stone/30 transition-colors border border-transparent hover:border-stone/60 cursor-pointer"
+          title="Report this project"
+        >
+          <Flag className="w-3 h-3" />
+          <span className="hidden sm:inline">Report</span>
+        </button>
       </div>
 
       {/* Tags */}
@@ -148,6 +162,14 @@ export const PostCuratorialMeta: React.FC<PostCuratorialMetaProps> = ({
           </Button>
         </Link>
       </div>
+
+      <ReportPostModal
+        isOpen={isReportModalOpen}
+        onClose={() => setIsReportModalOpen(false)}
+        postId={post.id}
+        postTitle={post.title}
+        creatorUsername={creatorUsername}
+      />
     </div>
   );
 };

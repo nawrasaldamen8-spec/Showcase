@@ -1,7 +1,7 @@
 import { ArrowLeft, SearchX } from "lucide-react";
 import React, { useCallback, useEffect, useState } from "react";
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
-import { apiClient } from "@shared/api/apiClient.ts";
+import { apiClient, tokenStorage } from "@shared/api/index.ts";
 import { Button } from "@shared/components/Button.tsx";
 import { useAuth, useToast } from "@shared/context/index.ts";
 import type {
@@ -70,6 +70,14 @@ export const PublicProfilePage: React.FC = () => {
       setPageNumber(1);
       setHasNextPage(postsData.hasNextPage);
       setCareerData(careerRes);
+
+      // Track public profile visit for analytics and notifications
+      if (profileData.id) {
+        const visitorToken = tokenStorage.getVisitorToken();
+        apiClient.trackProfileVisit(profileData.id, visitorToken).catch((err) => {
+          console.warn("Failed to track profile visit:", err);
+        });
+      }
     } catch (err: unknown) {
       console.error("Failed to load creator profile:", err);
       const status = (err as { status?: number })?.status;
@@ -199,18 +207,10 @@ export const PublicProfilePage: React.FC = () => {
 
   const backLabel = fromState?.fromLabel || (isOwnProfile ? "Studio" : "Feed");
 
-  const totalCareerCount =
-    (careerData?.visibility?.experience ? (careerData?.experiences?.length ?? 0) : 0) +
-    (careerData?.visibility?.academics ? (careerData?.academics?.length ?? 0) : 0) +
-    (careerData?.visibility?.skills ? (careerData?.skills?.length ?? 0) : 0) +
-    (careerData?.visibility?.credentials ? (careerData?.credentials?.length ?? 0) : 0) +
-    (careerData?.visibility?.languages ? (careerData?.languages?.length ?? 0) : 0) +
-    (careerData?.visibility?.achievements ? (careerData?.achievements?.length ?? 0) : 0);
-
   // Exactly 3 top-level navigation tabs: Works, Career, About
-  const tabList: Array<{ id: ProfileTab; label: string; count?: number }> = [
-    { id: "works", label: "Works", count: posts.length },
-    { id: "career", label: "Career", count: totalCareerCount > 0 ? totalCareerCount : undefined },
+  const tabList: Array<{ id: ProfileTab; label: string }> = [
+    { id: "works", label: "Works" },
+    { id: "career", label: "Career" },
     { id: "about", label: "About" },
   ];
 
@@ -255,17 +255,6 @@ export const PublicProfilePage: React.FC = () => {
               }`}
             >
               <span>{tab.label}</span>
-              {tab.count !== undefined && tab.count > 0 && (
-                <span
-                  className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono ${
-                    isActive
-                      ? "bg-slate-dark text-ivory-light"
-                      : "bg-ivory-medium text-cloud-dark"
-                  }`}
-                >
-                  {tab.count}
-                </span>
-              )}
             </button>
           );
         })}

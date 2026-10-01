@@ -2,11 +2,12 @@ import { ArrowRight, User as UserIcon } from "lucide-react";
 import React from "react";
 import { Link } from "react-router-dom";
 import { Badge } from "@shared/components/Badge.tsx";
+import { ProgressiveImage } from "@shared/components/ProgressiveImage.tsx";
 import { VerifiedBadge } from "@shared/components/VerifiedBadge.tsx";
-import type { Profile, ProfileDetailsResponse } from "@shared/types/index.ts";
+import type { Profile, ProfileDetailsResponse, PublicProfileResponse } from "@shared/types/index.ts";
 
 export interface MemberProfileCardProps {
-  profile: Profile | ProfileDetailsResponse;
+  profile: Profile | ProfileDetailsResponse | PublicProfileResponse;
   from?: string;
   fromLabel?: string;
 }
@@ -23,10 +24,11 @@ export const MemberProfileCard: React.FC<MemberProfileCardProps> = ({
         <div className="flex items-start justify-between gap-2.5 sm:gap-3 mb-4">
           <div className="flex items-center gap-3 sm:gap-3.5 min-w-0 flex-1">
             {profile.avatarUrl ? (
-              <img
+              <ProgressiveImage
                 src={profile.avatarUrl}
                 alt={profile.name}
-                className="w-12 h-12 rounded-full object-cover border border-stone/80 group-hover:border-clay transition-colors shrink-0"
+                containerClassName="w-12 h-12 rounded-full border border-stone/80 group-hover:border-clay transition-colors shrink-0"
+                className="w-full h-full object-cover"
               />
             ) : (
               <div className="w-12 h-12 rounded-full bg-ivory-medium border border-stone/80 flex items-center justify-center text-cloud-dark shrink-0">

@@ -38,18 +38,50 @@ public class ToggleLikePostCommandHandler : IRequestHandler<ToggleLikePostComman
             .FirstOrDefaultAsync(l => l.PostId == request.PostId && l.UserId == userId, ct);
 
         bool isLikedNow;
-        if (existingLike is not null)
+
+        if (request.DesiredState.HasValue)
         {
-            _context.PostLikes.Remove(existingLike);
-            post.DecrementLikes();
-            isLikedNow = false;
+            if (request.DesiredState.Value)
+            {
+                if (existingLike is not null)
+                {
+                    // Already liked, idempotent no-op
+                    return new ToggleLikePostResponse(true, post.LikesCount);
+                }
+
+                var newLike = new PostLike(request.PostId, userId);
+                _context.PostLikes.Add(newLike);
+                post.IncrementLikes();
+                isLikedNow = true;
+            }
+            else
+            {
+                if (existingLike is null)
+                {
+                    // Already unliked, idempotent no-op
+                    return new ToggleLikePostResponse(false, post.LikesCount);
+                }
+
+                _context.PostLikes.Remove(existingLike);
+                post.DecrementLikes();
+                isLikedNow = false;
+            }
         }
         else
         {
-            var newLike = new PostLike(request.PostId, userId);
-            _context.PostLikes.Add(newLike);
-            post.IncrementLikes();
-            isLikedNow = true;
+            if (existingLike is not null)
+            {
+                _context.PostLikes.Remove(existingLike);
+                post.DecrementLikes();
+                isLikedNow = false;
+            }
+            else
+            {
+                var newLike = new PostLike(request.PostId, userId);
+                _context.PostLikes.Add(newLike);
+                post.IncrementLikes();
+                isLikedNow = true;
+            }
         }
 
         await _context.SaveChangesAsync(ct);

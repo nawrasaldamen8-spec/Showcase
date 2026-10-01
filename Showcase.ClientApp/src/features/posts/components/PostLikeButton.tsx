@@ -1,6 +1,7 @@
 import { Heart } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
-import { apiClient } from "@shared/api/apiClient.ts";
+import { useQueryClient } from "@tanstack/react-query";
+import { apiClient, queryKeys } from "@shared/api/index.ts";
 
 export interface PostLikeButtonProps {
   postId: string;
@@ -39,56 +40,89 @@ export const PostLikeButton: React.FC<PostLikeButtonProps> = ({
   className = "",
   onLikeChange,
 }) => {
+  const queryClient = useQueryClient();
   const [isLiked, setIsLiked] = useState<boolean>(initialLiked);
   const [count, setCount] = useState<number>(initialCount);
-  const [isPending, setIsPending] = useState<boolean>(false);
   const [isPopping, setIsPopping] = useState<boolean>(false);
-  const poppingTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  const syncedLikedRef = useRef<boolean>(initialLiked);
+  const currentLikedRef = useRef<boolean>(initialLiked);
+  const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const poppingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Sync initial props from server query
+  useEffect(() => {
+    setIsLiked(initialLiked);
+    setCount(initialCount);
+    syncedLikedRef.current = initialLiked;
+    currentLikedRef.current = initialLiked;
+  }, [initialLiked, initialCount]);
+
+  const commitLikeState = async (desired: boolean) => {
+    if (syncedLikedRef.current === desired) return;
+    try {
+      const res = await apiClient.toggleLikePost(postId, desired);
+      syncedLikedRef.current = res.isLiked;
+      // Keep TanStack Query cache in sync
+      queryClient.setQueriesData({ queryKey: queryKeys.posts.detail(postId) }, (old: any) => {
+        if (!old) return old;
+        return {
+          ...old,
+          isLiked: res.isLiked,
+          likeCount: res.likeCount,
+        };
+      });
+    } catch (err) {
+      console.error("Failed to commit like state:", err);
+    }
+  };
+
+  // Commit on unmount / navigation if a debounce is pending
   useEffect(() => {
     return () => {
-      if (poppingTimer.current) {
-        clearTimeout(poppingTimer.current);
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+        debounceTimerRef.current = null;
+      }
+      if (poppingTimerRef.current) {
+        clearTimeout(poppingTimerRef.current);
+        poppingTimerRef.current = null;
+      }
+      const target = currentLikedRef.current;
+      if (syncedLikedRef.current !== target) {
+        commitLikeState(target);
       }
     };
-  }, []);
+  }, [postId]);
 
-  const handleToggleLike = async (e: React.MouseEvent) => {
+  const handleToggleLike = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
 
-    if (isPending) return;
-
-    // Optimistic calculation
-    const currentLiked = isLiked;
-    const currentCount = count;
-    const nextLiked = !currentLiked;
-    const nextCount = nextLiked ? currentCount + 1 : Math.max(0, currentCount - 1);
+    // Optimistic local state update
+    const nextLiked = !currentLikedRef.current;
+    const nextCount = nextLiked ? count + 1 : Math.max(0, count - 1);
 
     setIsLiked(nextLiked);
     setCount(nextCount);
+    currentLikedRef.current = nextLiked;
     setIsPopping(true);
 
-    if (poppingTimer.current) {
-      clearTimeout(poppingTimer.current);
+    if (poppingTimerRef.current) {
+      clearTimeout(poppingTimerRef.current);
     }
-    poppingTimer.current = setTimeout(() => setIsPopping(false), 300);
+    poppingTimerRef.current = setTimeout(() => setIsPopping(false), 300);
+
     onLikeChange?.(nextLiked, nextCount);
 
-    setIsPending(true);
-    try {
-      const res = await apiClient.toggleLikePost(postId);
-      setIsLiked(res.isLiked);
-      setCount(res.likeCount);
-      onLikeChange?.(res.isLiked, res.likeCount);
-    } catch {
-      // Rollback on failure
-      setIsLiked(currentLiked);
-      setCount(currentCount);
-      onLikeChange?.(currentLiked, currentCount);
-    } finally {
-      setIsPending(false);
+    // Debounce network commit (400ms) to coalesce rapid toggles
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
     }
+    debounceTimerRef.current = setTimeout(() => {
+      debounceTimerRef.current = null;
+      commitLikeState(currentLikedRef.current);
+    }, 400);
   };
 
   const variantClass = {
@@ -107,7 +141,6 @@ export const PostLikeButton: React.FC<PostLikeButtonProps> = ({
     <button
       type="button"
       onClick={handleToggleLike}
-      disabled={isPending}
       aria-label={isLiked ? "Unlike exhibition plate" : "Like exhibition plate"}
       aria-pressed={isLiked}
       className={`inline-flex items-center justify-center font-gothic font-semibold uppercase tracking-wider rounded-full transition-all duration-200 cursor-pointer select-none active:scale-95 ${sizeClasses[size]} ${variantClass} ${className}`}

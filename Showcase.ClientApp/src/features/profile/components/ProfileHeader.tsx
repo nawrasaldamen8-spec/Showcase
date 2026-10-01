@@ -2,6 +2,7 @@ import { Edit3, Flag, MoreVertical, Share2, User as UserIcon } from "lucide-reac
 import React, { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { Badge } from "@shared/components/Badge.tsx";
+import { ProgressiveImage } from "@shared/components/ProgressiveImage.tsx";
 import { VerifiedBadge } from "@shared/components/VerifiedBadge.tsx";
 import type { PublicProfileResponse } from "@shared/types/index.ts";
 import { ReportProfileModal } from "./ReportProfileModal.tsx";
@@ -40,10 +41,11 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({ profile, isOwnProf
         {/* Creator Identity */}
         <div className="flex items-center gap-3.5 sm:gap-6 min-w-0 flex-1 pr-2 sm:pr-4">
           {profile.avatarUrl ? (
-            <img
+            <ProgressiveImage
               src={profile.avatarUrl}
               alt={fullName}
-              className="h-14 w-14 sm:h-20 sm:w-20 rounded-full object-cover border-2 border-stone/70 shrink-0"
+              containerClassName="h-14 w-14 sm:h-20 sm:w-20 rounded-full border-2 border-stone/70 shrink-0"
+              className="w-full h-full object-cover"
             />
           ) : (
             <div className="h-14 w-14 sm:h-20 sm:w-20 rounded-full bg-slate-dark text-ivory-light flex items-center justify-center font-gothic text-lg sm:text-2xl font-extrabold uppercase shrink-0">

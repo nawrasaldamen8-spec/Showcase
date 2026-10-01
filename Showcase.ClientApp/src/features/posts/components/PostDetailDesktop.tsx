@@ -1,5 +1,6 @@
 import { Maximize2 } from "lucide-react";
 import React, { useMemo } from "react";
+import { ProgressiveImage } from "@shared/components/ProgressiveImage.tsx";
 import type { PostDetailsResponse } from "@shared/types/index.ts";
 import { PostCuratorialMeta } from "./PostCuratorialMeta.tsx";
 
@@ -141,10 +142,11 @@ export const PostDetailDesktop: React.FC<PostDetailDesktopProps> = ({
               className="group relative rounded-card overflow-hidden bg-[#e6e3da] border border-stone/60 cursor-pointer shadow-none transition-all duration-300 hover:border-slate-dark/40"
               onClick={() => onInspectImage(0)}
             >
-              <img
+              <ProgressiveImage
                 src={primaryImage.url}
                 alt={post.title}
-                fetchPriority="high"
+                priority
+                containerClassName="w-full max-h-[75vh]"
                 className="w-full h-auto max-h-[75vh] object-cover transition-transform duration-700 ease-out group-hover:scale-[1.01]"
               />
               <div className="absolute top-4 right-4 bg-slate-dark/75 backdrop-blur-xs text-ivory-light px-3 py-1.5 rounded-full font-gothic text-[11px] font-semibold uppercase tracking-wider flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -185,10 +187,10 @@ export const PostDetailDesktop: React.FC<PostDetailDesktopProps> = ({
                   onClick={() => onInspectImage(overallIndex)}
                 >
                   <div className={`relative ${layout.aspectRatioClass} w-full overflow-hidden`}>
-                    <img
+                    <ProgressiveImage
                       src={image.url}
                       alt={`${post.title} - Image ${overallIndex + 1}`}
-                      loading="lazy"
+                      containerClassName="w-full h-full"
                       className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.01]"
                     />
                     <div className="absolute top-4 right-4 bg-slate-dark/75 backdrop-blur-xs text-ivory-light px-3 py-1.5 rounded-full font-gothic text-[11px] font-semibold uppercase tracking-wider flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">

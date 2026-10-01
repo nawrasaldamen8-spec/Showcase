@@ -1,6 +1,7 @@
 import { ArrowRight, User as UserIcon } from "lucide-react";
 import React, { useRef, useState } from "react";
 import { Link } from "react-router-dom";
+import { ProgressiveImage } from "@shared/components/ProgressiveImage.tsx";
 import { VerifiedBadge } from "@shared/components/VerifiedBadge.tsx";
 import { useAdaptiveImageDimensions, useResponsiveViewport } from "@shared/hooks/index.ts";
 import type { PostDetailsResponse } from "@shared/types/index.ts";
@@ -54,10 +55,11 @@ export const PostDetailMobile: React.FC<PostDetailMobileProps> = ({
       <div className="flex items-center justify-between py-1">
         <Link to={`/u/${creatorUsername}`} className="flex items-center gap-2.5 min-w-0 text-decoration-none group">
           {creatorAvatar ? (
-            <img
+            <ProgressiveImage
               src={creatorAvatar}
               alt={creatorName}
-              className="h-9 w-9 rounded-full object-cover border border-stone/70 shrink-0"
+              containerClassName="h-9 w-9 rounded-full border border-stone/70 shrink-0"
+              className="w-full h-full object-cover"
             />
           ) : (
             <div className="h-9 w-9 rounded-full bg-slate-dark text-ivory-light flex items-center justify-center font-gothic text-xs font-bold uppercase shrink-0">

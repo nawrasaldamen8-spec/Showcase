@@ -42,6 +42,7 @@ export async function persistPostData({
           finalKey = storageKey;
         } catch (uploadErr) {
           console.error("Failed to upload staged image binary to storage:", uploadErr);
+          throw uploadErr;
         }
       }
 

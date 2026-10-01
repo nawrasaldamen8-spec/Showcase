@@ -1,6 +1,7 @@
 import { Image as ImageIcon, Layers } from "lucide-react";
 import React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { ProgressiveImage } from "@shared/components/ProgressiveImage.tsx";
 import { VerifiedBadge } from "@shared/components/VerifiedBadge.tsx";
 import type { ExplorePostResponse } from "@shared/types/index.ts";
 
@@ -75,11 +76,11 @@ export const PostCard: React.FC<PostCardProps> = ({ post, spanType = "square", c
     >
       {/* Photography Preview */}
       {post.thumbnailUrl ? (
-        <img
+        <ProgressiveImage
           src={post.thumbnailUrl}
           alt={post.title}
-          loading="lazy"
-          className={`w-full ${imgHeightClass} object-cover transition-transform duration-500 ease-out group-hover:scale-105`}
+          containerClassName={`w-full ${imgHeightClass}`}
+          className="transition-transform duration-500 ease-out group-hover:scale-105"
         />
       ) : (
         <div className="w-full aspect-[4/3] flex flex-col items-center justify-center text-cloud-dark gap-2">

@@ -2,6 +2,7 @@ import { Archive, ExternalLink, Globe, Image as ImageIcon, Pencil, Trash2 } from
 import React from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@shared/components/Button.tsx";
+import { ProgressiveImage } from "@shared/components/ProgressiveImage.tsx";
 import { type PostSummaryResponse } from "@shared/types/index.ts";
 import { isPostPublished } from "../utils.ts";
 import { PostStatusBadge } from "./PostStatusBadge.tsx";
@@ -41,14 +42,11 @@ export const StudioPostCard: React.FC<StudioPostCardProps> = ({
       <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5 w-full lg:w-auto flex-1">
         <div className="relative w-full sm:w-40 sm:h-28 h-48 bg-ivory-medium rounded-xl overflow-hidden shrink-0 border border-stone/60">
           {post.thumbnailUrl ? (
-            <img
+            <ProgressiveImage
               src={post.thumbnailUrl}
               alt={post.title}
+              containerClassName="w-full h-full"
               className="w-full h-full object-cover"
-              onError={(e) => {
-                (e.currentTarget as HTMLImageElement).src =
-                  "https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=400&q=80";
-              }}
             />
           ) : (
             <div className="w-full h-full flex flex-col items-center justify-center text-cloud-dark gap-1 p-2">

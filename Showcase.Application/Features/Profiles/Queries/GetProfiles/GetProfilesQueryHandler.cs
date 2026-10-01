@@ -38,6 +38,11 @@ public class GetProfilesQueryHandler : IRequestHandler<GetProfilesQuery, Result<
             .Where(p => !p.IsBanned && !p.IsDeleted)
             .AsNoTracking();
 
+        if (request.FeaturedOnly == true)
+        {
+            query = query.Where(p => p.FeaturedStatus == Showcase.Domain.Enums.FeaturedStatus.Featured);
+        }
+
         if (!string.IsNullOrWhiteSpace(request.Search))
         {
             var search = request.Search.Trim().ToLower();
@@ -46,6 +51,7 @@ public class GetProfilesQueryHandler : IRequestHandler<GetProfilesQuery, Result<
                 (p.Specialty != null && p.Specialty.ToLower().Contains(search)) ||
                 (p.Country != null && p.Country.ToLower().Contains(search)));
         }
+
 
         var totalCount = await query.CountAsync(ct);
 

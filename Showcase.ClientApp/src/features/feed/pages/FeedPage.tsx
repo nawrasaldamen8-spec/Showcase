@@ -1,30 +1,45 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Sparkles, User as UserIcon } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
-import { apiClient, queryKeys } from "@shared/api/index.ts";
 import { EmptyState } from "@shared/components/EmptyState.tsx";
-import { Skeleton } from "@shared/components/Skeleton.tsx";
+import { useAuth } from "@shared/context/index.ts";
+import { useInfiniteScroll } from "@shared/hooks/useInfiniteScroll.ts";
+import { useInfiniteProfilesQuery } from "@features/profile/hooks/index.ts";
 import { FeedSearchBar } from "../components/FeedSearchBar.tsx";
 import { MemberProfileCard } from "../components/MemberProfileCard.tsx";
+import { MemberProfileCardSkeleton } from "../components/MemberProfileCardSkeleton.tsx";
 
 export const FeedPage: React.FC = () => {
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
   const [searchTerm, setSearchTerm] = useState("");
 
-  const { data: profiles, isLoading } = useQuery({
-    queryKey: queryKeys.profiles.all,
-    queryFn: () => apiClient.getProfiles(),
-    staleTime: 1000 * 60 * 2,
+  const {
+    data,
+    isLoading,
+    hasNextPage,
+    isFetchingNextPage,
+    fetchNextPage,
+  } = useInfiniteProfilesQuery({ featuredOnly: true, pageSize: 24 });
+
+  const sentinelRef = useInfiniteScroll({
+    hasNextPage,
+    isFetchingNextPage,
+    fetchNextPage,
+    rootMargin: "350px",
   });
+
+  const list = useMemo(() => {
+    return data?.pages.flatMap((page) => page.items) || [];
+  }, [data]);
+
+  const totalCount = data?.pages[0]?.totalCount ?? list.length;
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!searchTerm.trim()) return;
     navigate(`/feed/search?q=${encodeURIComponent(searchTerm.trim())}`);
   };
-
-  const list = profiles || [];
 
   return (
     <div className="min-h-screen bg-ivory-medium text-slate-dark py-6 sm:py-10 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
@@ -56,44 +71,47 @@ export const FeedPage: React.FC = () => {
       <div className="mb-8">
         <div className="mb-5">
           <h2 className="font-gothic text-base sm:text-lg font-bold uppercase tracking-tight text-slate-dark">
-            Members ({isLoading ? "..." : list.length})
+            Featured Members ({isLoading ? "..." : totalCount})
           </h2>
         </div>
 
         {isLoading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
-            {Array.from({ length: 6 }).map((_, idx) => (
-              <div key={idx} className="bg-ivory-light border border-stone rounded-2xl p-5 sm:p-6 space-y-4">
-                <div className="flex items-center gap-3">
-                  <Skeleton variant="circular" width={48} height={48} />
-                  <div className="flex-1 space-y-2">
-                    <Skeleton variant="text" width="70%" height={16} />
-                    <Skeleton variant="text" width="40%" height={12} />
-                  </div>
-                </div>
-                <Skeleton variant="text" width="100%" height={14} />
-                <Skeleton variant="text" width="85%" height={14} />
-                <Skeleton variant="rectangular" className="w-full h-10 rounded-xl mt-4" />
-              </div>
-            ))}
+            <MemberProfileCardSkeleton count={6} />
           </div>
         ) : list.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
-            {list.map((profile) => (
-              <MemberProfileCard
-                key={profile.id || profile.username}
-                profile={profile}
-                from="/feed"
-                fromLabel="Feed Directory"
-              />
-            ))}
-          </div>
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
+              {list.map((profile) => (
+                <MemberProfileCard
+                  key={profile.id || profile.username}
+                  profile={profile}
+                  from="/feed"
+                  fromLabel="Feed Directory"
+                />
+              ))}
+              {isFetchingNextPage && <MemberProfileCardSkeleton count={3} />}
+            </div>
+
+            {/* Sentinel for Infinite Scroll Trigger */}
+            <div ref={sentinelRef} className="h-6 w-full" aria-hidden="true" />
+          </>
+        ) : isAuthenticated ? (
+          <EmptyState
+            icon={Sparkles}
+            title="No Featured Creators Yet"
+            description="Only creator profiles approved by platform moderation are featured in this showcase. Submit a request to get your portfolio spotlighted in the community feed, or search for members above."
+            eyebrow="Community Spotlight"
+            actionLabel="Request Featured Spotlight"
+            onAction={() => navigate("/settings/security/featured")}
+            actionVariant="clay"
+          />
         ) : (
           <EmptyState
             icon={UserIcon}
-            title="No Members Registered Yet"
-            description="The community directory is currently fresh and clean. Be the first creator to join and build your public profile."
-            eyebrow="Community Fresh Start"
+            title="No Featured Creators Yet"
+            description="The featured directory showcases platform creators approved by platform moderation. Use the search bar to discover all members or register to build your portfolio."
+            eyebrow="Community Showcase"
             actionLabel="Register New Profile"
             onAction={() => navigate("/register")}
             actionVariant="clay"

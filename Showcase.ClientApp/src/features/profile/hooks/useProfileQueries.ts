@@ -1,9 +1,10 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { apiClient, extractApiErrorMessage, queryKeys, tokenStorage } from "@shared/api/index.ts";
 import type {
   AddSocialLinkRequest,
   FeaturedRequestDto,
+  PaginatedList,
   ProfileDetailsResponse,
   PublicProfileResponse,
   ReorderSocialLinksRequest,
@@ -28,6 +29,25 @@ export function usePublicProfileQuery(username: string, options?: { enabled?: bo
     queryFn: () => apiClient.getPublicProfile(username),
     enabled: options?.enabled ?? Boolean(username),
     staleTime: 1000 * 60 * 2, // 2 minutes
+  });
+}
+
+export function useInfiniteProfilesQuery(
+  params?: { search?: string; featuredOnly?: boolean; pageSize?: number }
+) {
+  const pageSize = params?.pageSize ?? 24;
+  return useInfiniteQuery<PaginatedList<PublicProfileResponse>, Error>({
+    queryKey: queryKeys.profiles.infiniteDirectory(params),
+    queryFn: ({ pageParam = 1 }) =>
+      apiClient.getProfiles({
+        ...params,
+        pageNumber: pageParam as number,
+        pageSize,
+      }),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) => (lastPage.hasNextPage ? lastPage.pageNumber + 1 : undefined),
+    staleTime: 1000 * 60 * 2, // 2 minutes
+    gcTime: 1000 * 60 * 15,
   });
 }
 

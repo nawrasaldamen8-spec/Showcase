@@ -1,8 +1,9 @@
-import { ArrowDown, Layers } from "lucide-react";
+import { Layers, Loader2 } from "lucide-react";
 import React from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@shared/components/Button.tsx";
 import { EmptyState } from "@shared/components/EmptyState.tsx";
+import { useInfiniteScroll } from "@shared/hooks/useInfiniteScroll.ts";
 import type { ExplorePostResponse, PostSummaryResponse, PublicProfileResponse } from "@shared/types/index.ts";
 import { PostCard } from "@features/posts/components/index.ts";
 
@@ -23,6 +24,13 @@ export const PostMasonryGrid: React.FC<PostMasonryGridProps> = ({
   isLoadingMore,
   onLoadMore,
 }) => {
+  const sentinelRef = useInfiniteScroll({
+    hasNextPage,
+    isFetchingNextPage: isLoadingMore,
+    fetchNextPage: onLoadMore,
+    rootMargin: "350px",
+  });
+
   if (posts.length === 0) {
     return (
       <EmptyState
@@ -63,20 +71,16 @@ export const PostMasonryGrid: React.FC<PostMasonryGridProps> = ({
         ))}
       </div>
 
-      {hasNextPage && (
-        <div className="mt-10 sm:mt-12 text-center">
-          <Button
-            variant="slate"
-            size="md"
-            onClick={onLoadMore}
-            isLoading={isLoadingMore}
-            rightIcon={!isLoadingMore ? <ArrowDown className="h-4 w-4" /> : undefined}
-            className="px-8"
-          >
-            Load More Projects
-          </Button>
-        </div>
-      )}
+      {/* Sentinel element for infinite scrolling & bottom loading shimmer */}
+      <div ref={sentinelRef} className="py-6 flex justify-center items-center">
+        {isLoadingMore && (
+          <div className="flex items-center gap-2 text-cloud-dark font-serif text-xs">
+            <Loader2 className="w-4 h-4 animate-spin text-clay" />
+            <span>Loading more projects...</span>
+          </div>
+        )}
+      </div>
     </>
   );
 };
+

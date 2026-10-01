@@ -14,7 +14,7 @@ public class Profile : BaseEntity
 
     private static readonly Dictionary<FeaturedStatus, FeaturedStatus[]> AllowedFeaturedTransitions = new()
     {
-        [FeaturedStatus.None] = [FeaturedStatus.Pending],
+        [FeaturedStatus.None] = [FeaturedStatus.Pending, FeaturedStatus.Featured],
         [FeaturedStatus.Pending] = [FeaturedStatus.Featured, FeaturedStatus.Rejected, FeaturedStatus.None],
         [FeaturedStatus.Featured] = [FeaturedStatus.None],
         [FeaturedStatus.Rejected] = [FeaturedStatus.Pending, FeaturedStatus.None]

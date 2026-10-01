@@ -7,5 +7,7 @@ namespace Showcase.Application.Features.Profiles.Queries.GetProfiles;
 
 public record GetProfilesQuery(
     string? Search = null,
+    bool? FeaturedOnly = null,
     int PageNumber = 1,
     int PageSize = 20) : IRequest<Result<PaginatedList<PublicProfileResponse>>>;
+

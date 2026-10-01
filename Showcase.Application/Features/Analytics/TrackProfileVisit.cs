@@ -18,13 +18,16 @@ public class TrackProfileVisitCommandHandler : IRequestHandler<TrackProfileVisit
 {
     private readonly ICurrentUserService _currentUserService;
     private readonly IApplicationDbContext _context;
+    private readonly IRealtimeNotifier _realtimeNotifier;
 
     public TrackProfileVisitCommandHandler(
         ICurrentUserService currentUserService,
-        IApplicationDbContext context)
+        IApplicationDbContext context,
+        IRealtimeNotifier realtimeNotifier)
     {
         _currentUserService = currentUserService;
         _context = context;
+        _realtimeNotifier = realtimeNotifier;
     }
 
     public async Task<Result> Handle(TrackProfileVisitCommand request, CancellationToken ct)
@@ -35,27 +38,68 @@ public class TrackProfileVisitCommandHandler : IRequestHandler<TrackProfileVisit
         if (profile is null)
             return ProfileErrors.NotFoundById(request.ProfileId);
 
-        // Avoid self-counting
-        if (_currentUserService.UserId == profile.UserId)
+        var currentUserId = _currentUserService.UserId;
+
+        // Avoid self-counting and self-notifying if creator views their own profile
+        if (!string.IsNullOrWhiteSpace(currentUserId) && currentUserId == profile.UserId)
             return Result.Success();
 
-        // 24 hour dedup check per visitorToken or hashedIp
+        // 24 hour dedup check: registered user by userId, guest by visitorToken, fallback to hashedIp
         var since = DateTime.UtcNow.AddHours(-24);
-        var alreadyVisited = await _context.ProfileVisits
-            .AnyAsync(v => v.ProfileId == request.ProfileId &&
-                           v.VisitedAtUtc >= since &&
-                           (v.HashedIp == request.HashedIp || (request.VisitorToken != null && v.VisitorToken == request.VisitorToken)), ct);
+        bool alreadyVisited;
+
+        if (!string.IsNullOrWhiteSpace(currentUserId))
+        {
+            alreadyVisited = await _context.ProfileVisits
+                .AnyAsync(v => v.ProfileId == request.ProfileId &&
+                               v.VisitedAtUtc >= since &&
+                               v.VisitorUserId == currentUserId, ct);
+        }
+        else if (!string.IsNullOrWhiteSpace(request.VisitorToken))
+        {
+            alreadyVisited = await _context.ProfileVisits
+                .AnyAsync(v => v.ProfileId == request.ProfileId &&
+                               v.VisitedAtUtc >= since &&
+                               v.VisitorToken == request.VisitorToken, ct);
+        }
+        else
+        {
+            alreadyVisited = await _context.ProfileVisits
+                .AnyAsync(v => v.ProfileId == request.ProfileId &&
+                               v.VisitedAtUtc >= since &&
+                               v.HashedIp == request.HashedIp, ct);
+        }
 
         if (!alreadyVisited)
         {
+            var isGuest = string.IsNullOrWhiteSpace(currentUserId);
             var visit = new ProfileVisit(
                 request.ProfileId,
                 request.HashedIp,
-                _currentUserService.UserId,
+                isGuest ? null : currentUserId,
                 request.VisitorToken);
 
             _context.ProfileVisits.Add(visit);
+
+            var notificationMessage = isGuest ? "A guest viewed your profile" : "visited your profile";
+
+            var notification = new Notification(
+                profile.UserId,
+                Domain.Enums.NotificationType.ProfileVisit,
+                "Profile Visit",
+                notificationMessage,
+                null,
+                isGuest ? null : currentUserId);
+
+            _context.Notifications.Add(notification);
             await _context.SaveChangesAsync(ct);
+
+            await _realtimeNotifier.PublishToUserAsync(
+                profile.UserId,
+                notification.Title,
+                notification.Message,
+                new { notification.Id, Type = notification.Type.ToString(), notification.CreatedAtUtc },
+                ct);
         }
 
         return Result.Success();
