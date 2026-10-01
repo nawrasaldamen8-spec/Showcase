@@ -5,6 +5,8 @@ import { Modal } from "@shared/components/Modal.tsx";
 import { Textarea } from "@shared/components/Textarea.tsx";
 import { useToast } from "@shared/context/index.ts";
 
+import { apiClient } from "@shared/api/index.ts";
+
 export interface ReportProfileModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -32,18 +34,28 @@ export const ReportProfileModal: React.FC<ReportProfileModalProps> = ({
   const [details, setDetails] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
 
-    // Simulate submission latency
-    setTimeout(() => {
-      setIsSubmitting(false);
+    try {
+      await apiClient.submitReport({
+        targetType: "user",
+        targetId: username,
+        targetLabel: `@${username} (${fullName})`,
+        reason: selectedReason,
+        details: details.trim() || undefined,
+      });
+
       showToast("success", `Report for @${username} submitted. Thank you for keeping Showcase safe.`);
       setSelectedReason("impersonation");
       setDetails("");
       onClose();
-    }, 600);
+    } catch {
+      showToast("error", "Failed to submit report. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (

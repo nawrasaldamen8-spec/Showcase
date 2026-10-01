@@ -52,6 +52,44 @@ public class ResolveReportCommandHandler : IRequestHandler<ResolveReportCommand,
             return resolveResult;
         }
 
+        // Determine target user to issue moderation warning notification
+        string? targetUserId = null;
+        Guid? sourcePostId = null;
+
+        if (report.TargetType.Equals("POST", StringComparison.OrdinalIgnoreCase) ||
+            report.TargetType.Equals("WORK", StringComparison.OrdinalIgnoreCase))
+        {
+            if (Guid.TryParse(report.TargetId, out var postId))
+            {
+                sourcePostId = postId;
+                var post = await _context.Posts.FirstOrDefaultAsync(p => p.Id == postId, ct);
+                if (post is not null)
+                {
+                    var profile = await _context.Profiles
+                        .IgnoreQueryFilters()
+                        .FirstOrDefaultAsync(p => p.Id == post.ProfileId, ct);
+                    targetUserId = profile?.UserId;
+                }
+            }
+        }
+        else if (report.TargetType.Equals("USER", StringComparison.OrdinalIgnoreCase) ||
+                 report.TargetType.Equals("PROFILE", StringComparison.OrdinalIgnoreCase))
+        {
+            targetUserId = report.TargetId;
+        }
+
+        if (!string.IsNullOrWhiteSpace(targetUserId))
+        {
+            var warningNotification = new Notification(
+                targetUserId,
+                Showcase.Domain.Enums.NotificationType.System,
+                "Moderation Notice",
+                $"Administrative review for '{report.TargetLabel}': {request.ActionTaken}",
+                sourcePostId);
+
+            _context.Notifications.Add(warningNotification);
+        }
+
         await _context.SaveChangesAsync(ct);
         return Result.Success();
     }

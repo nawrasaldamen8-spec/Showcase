@@ -54,7 +54,8 @@ public class GetContentReportsQueryHandler : IRequestHandler<GetContentReportsQu
             r.TargetId,
             r.TargetLabel,
             r.Reason,
-            r.Status.ToString(),
+            r.TargetLabel, // Details
+            r.Status.ToString().ToLowerInvariant(),
             r.ActionTaken,
             r.CreatedAtUtc
         )).ToList();

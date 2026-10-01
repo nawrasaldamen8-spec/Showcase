@@ -88,16 +88,20 @@ export const AdminReportsPage: React.FC = () => {
                     {rep.reason}
                   </span>
                   <span className="font-gothic text-xs font-bold uppercase tracking-wider text-slate-dark">
-                    {rep.targetType.toUpperCase()}: {rep.targetTitle}
+                    {rep.targetType.toUpperCase()}: {rep.targetTitle || rep.targetLabel || rep.targetId}
                   </span>
-                  <span className="text-cloud-dark">&bull;</span>
-                  <span className="font-serif text-xs text-cloud-dark">
-                    Author: @{rep.targetAuthorUsername}
-                  </span>
+                  {rep.targetAuthorUsername && (
+                    <>
+                      <span className="text-cloud-dark">&bull;</span>
+                      <span className="font-serif text-xs text-cloud-dark">
+                        Author: @{rep.targetAuthorUsername}
+                      </span>
+                    </>
+                  )}
                 </div>
 
                 <p className="font-serif text-xs text-slate-dark/85 leading-relaxed bg-ivory-medium p-3 rounded-xl">
-                  {rep.details}
+                  {rep.details || rep.targetLabel || "No statement provided."}
                 </p>
 
                 <div className="flex items-center gap-3 text-[11px] font-serif text-cloud-dark">

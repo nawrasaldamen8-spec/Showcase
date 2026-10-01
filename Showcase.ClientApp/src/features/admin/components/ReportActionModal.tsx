@@ -61,11 +61,13 @@ export const ReportActionModal: React.FC<ReportActionModalProps> = ({
 
           <div className="pt-1">
             <h4 className="font-gothic text-sm font-bold uppercase tracking-wider text-slate-dark">
-              {report.targetTitle}
+              {report.targetTitle || report.targetLabel || report.targetId}
             </h4>
-            <p className="font-serif text-xs text-cloud-dark">
-              Target Account: @{report.targetAuthorUsername}
-            </p>
+            {report.targetAuthorUsername && (
+              <p className="font-serif text-xs text-cloud-dark">
+                Target Account: @{report.targetAuthorUsername}
+              </p>
+            )}
           </div>
         </div>
 
@@ -75,7 +77,7 @@ export const ReportActionModal: React.FC<ReportActionModalProps> = ({
             Report Statement &amp; Evidence
           </span>
           <div className="p-3 rounded-xl bg-ivory-light border border-stone font-serif text-xs text-slate-dark leading-relaxed">
-            {report.details}
+            {report.details || report.targetLabel || "No additional statement provided."}
           </div>
         </div>
 
