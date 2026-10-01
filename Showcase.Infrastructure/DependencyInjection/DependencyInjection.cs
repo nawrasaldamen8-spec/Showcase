@@ -1,12 +1,11 @@
 using System;
 using System.Text;
-using Amazon.S3;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Showcase.Application.Common.Interfaces;
 using Showcase.Infrastructure.Data;
@@ -51,7 +50,7 @@ public static class DependencyInjection
 
         // Options pattern binding
         services.Configure<JwtSettings>(configuration.GetSection(JwtSettings.SectionName));
-        services.Configure<R2Settings>(configuration.GetSection(R2Settings.SectionName));
+        services.Configure<CloudinarySettings>(configuration.GetSection(CloudinarySettings.SectionName));
 
         // JWT Authentication & Authorization
         var jwtSettings = configuration.GetSection(JwtSettings.SectionName).Get<JwtSettings>() ?? new JwtSettings();
@@ -99,6 +98,7 @@ public static class DependencyInjection
 
         services.AddAuthorization();
         services.AddSignalR();
+        services.AddSingleton<IUserIdProvider, CustomUserIdProvider>();
 
         // Application service registrations
         services.AddHttpContextAccessor();
@@ -107,40 +107,19 @@ public static class DependencyInjection
         services.AddScoped<ICurrentUserService, CurrentUserService>();
         services.AddScoped<IRealtimeNotifier, SignalRRealtimeNotifier>();
 
-        // Cloudflare R2 AWS S3 Client singleton for connection pooling
-        services.AddSingleton<IAmazonS3>(sp =>
+        // Cloudinary vs Local Storage Service Registration
+        var cloudinaryConfig = configuration.GetSection(CloudinarySettings.SectionName).Get<CloudinarySettings>();
+        var isCloudinaryConfigured = cloudinaryConfig is not null
+            && !string.IsNullOrWhiteSpace(cloudinaryConfig.CloudName)
+            && !cloudinaryConfig.CloudName.StartsWith("your-", StringComparison.OrdinalIgnoreCase)
+            && !string.IsNullOrWhiteSpace(cloudinaryConfig.ApiKey)
+            && !cloudinaryConfig.ApiKey.StartsWith("your-", StringComparison.OrdinalIgnoreCase)
+            && !string.IsNullOrWhiteSpace(cloudinaryConfig.ApiSecret)
+            && !cloudinaryConfig.ApiSecret.StartsWith("your-", StringComparison.OrdinalIgnoreCase);
+
+        if (isCloudinaryConfigured)
         {
-            var r2Options = sp.GetService<IOptions<R2Settings>>()?.Value ?? new R2Settings();
-            var accountId = !string.IsNullOrWhiteSpace(r2Options.AccountId)
-                ? r2Options.AccountId.Trim()
-                : R2Settings.DefaultDummyAccountId;
-            var accessKey = !string.IsNullOrWhiteSpace(r2Options.AccessKeyId)
-                ? r2Options.AccessKeyId.Trim()
-                : R2Settings.DefaultDummyAccessKey;
-            var secretKey = !string.IsNullOrWhiteSpace(r2Options.SecretAccessKey)
-                ? r2Options.SecretAccessKey.Trim()
-                : R2Settings.DefaultDummySecretKey;
-
-            var config = new AmazonS3Config
-            {
-                ServiceURL = $"https://{accountId}.r2.cloudflarestorage.com",
-                AuthenticationRegion = "auto",
-                ForcePathStyle = true
-            };
-
-            return new AmazonS3Client(accessKey, secretKey, config);
-        });
-
-        var r2Config = configuration.GetSection(R2Settings.SectionName).Get<R2Settings>();
-        var isR2Configured = r2Config is not null
-            && !string.IsNullOrWhiteSpace(r2Config.AccountId)
-            && r2Config.AccountId != R2Settings.DefaultDummyAccountId
-            && !string.IsNullOrWhiteSpace(r2Config.AccessKeyId)
-            && r2Config.AccessKeyId != R2Settings.DefaultDummyAccessKey;
-
-        if (isR2Configured)
-        {
-            services.AddScoped<IStorageService, CloudflareR2StorageService>();
+            services.AddScoped<IStorageService, CloudinaryStorageService>();
         }
         else
         {

@@ -1,0 +1,105 @@
+using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+using CloudinaryDotNet;
+using CloudinaryDotNet.Actions;
+using Microsoft.Extensions.Options;
+using Showcase.Application.Common.Interfaces;
+
+namespace Showcase.Infrastructure.Storage;
+
+public class CloudinaryStorageService : IStorageService
+{
+    private readonly Cloudinary _cloudinary;
+    private readonly CloudinarySettings _settings;
+
+    public CloudinaryStorageService(IOptions<CloudinarySettings> options)
+    {
+        ArgumentNullException.ThrowIfNull(options);
+        _settings = options.Value ?? new CloudinarySettings();
+
+        var account = new Account(
+            _settings.CloudName,
+            _settings.ApiKey,
+            _settings.ApiSecret);
+
+        _cloudinary = new Cloudinary(account);
+        _cloudinary.Api.Secure = true;
+    }
+
+    public Task<string> GetPresignedUploadUrlAsync(
+        string storageKey,
+        string contentType,
+        TimeSpan expiresIn,
+        CancellationToken ct = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(storageKey);
+        ct.ThrowIfCancellationRequested();
+
+        var normalizedKey = storageKey.Trim().Replace('\\', '/').TrimStart('/');
+
+        // Strip extension from public_id if present for Cloudinary standard public_id management
+        var dotIndex = normalizedKey.LastIndexOf('.');
+        var publicId = dotIndex > 0 ? normalizedKey[..dotIndex] : normalizedKey;
+
+        var timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString();
+
+        // If UploadPreset is provided, use Unsigned direct upload (avoids API Key permission restrictions)
+        if (!string.IsNullOrWhiteSpace(_settings.UploadPreset))
+        {
+            var uploadUrl = $"https://api.cloudinary.com/v1_1/{Uri.EscapeDataString(_settings.CloudName)}/image/upload?upload_preset={Uri.EscapeDataString(_settings.UploadPreset)}&public_id={Uri.EscapeDataString(publicId)}";
+            return Task.FromResult(uploadUrl);
+        }
+
+        // Otherwise fallback to SHA1-signed upload parameters
+        var parameters = new SortedDictionary<string, object>
+        {
+            { "public_id", publicId },
+            { "timestamp", timestamp }
+        };
+
+        var signature = _cloudinary.Api.SignParameters(parameters);
+        var queryString = $"public_id={Uri.EscapeDataString(publicId)}&timestamp={timestamp}&api_key={Uri.EscapeDataString(_settings.ApiKey)}&signature={Uri.EscapeDataString(signature)}";
+        var signedUploadUrl = $"https://api.cloudinary.com/v1_1/{Uri.EscapeDataString(_settings.CloudName)}/image/upload?{queryString}";
+
+        return Task.FromResult(signedUploadUrl);
+    }
+
+    public string GetPublicUrl(string storageKey)
+    {
+        if (string.IsNullOrWhiteSpace(storageKey))
+            return string.Empty;
+
+        var normalizedKey = storageKey.Trim().Replace('\\', '/').TrimStart('/');
+        if (string.IsNullOrEmpty(normalizedKey))
+            return string.Empty;
+
+        if (normalizedKey.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ||
+            normalizedKey.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+        {
+            return normalizedKey;
+        }
+
+        return $"https://res.cloudinary.com/{_settings.CloudName}/image/upload/f_auto,q_auto/{normalizedKey}";
+    }
+
+    public async Task DeleteAsync(string storageKey, CancellationToken ct = default)
+    {
+        if (string.IsNullOrWhiteSpace(storageKey))
+            return;
+
+        ct.ThrowIfCancellationRequested();
+
+        var normalizedKey = storageKey.Trim().Replace('\\', '/').TrimStart('/');
+        var dotIndex = normalizedKey.LastIndexOf('.');
+        var publicId = dotIndex > 0 ? normalizedKey[..dotIndex] : normalizedKey;
+
+        var deletionParams = new DeletionParams(publicId)
+        {
+            ResourceType = ResourceType.Image
+        };
+
+        await _cloudinary.DestroyAsync(deletionParams);
+    }
+}
