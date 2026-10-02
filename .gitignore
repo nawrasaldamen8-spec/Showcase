@@ -3,6 +3,33 @@
 ##
 ## Get latest from `dotnet new gitignore`
 
+# ==============================================================
+# Security, Auth Credentials, API Keys & Environment Configs
+# ==============================================================
+# Environment variable files
+.env
+.env.*
+!.env.example
+*.env
+*.env.local
+
+# ASP.NET Core Secrets and Local Configurations
+secrets.json
+*.secrets.json
+appsettings.*.local.json
+appsettings.Local.json
+appsettings.Production.json
+appsettings.staging.json
+
+# Private Keys, Certificates, and Tokens
+*.pem
+*.key
+*.pfx
+*.p12
+*.cer
+*.crt
+*.pubxml.user
+
 # dotenv files
 .env
 
