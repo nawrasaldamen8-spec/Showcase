@@ -68,6 +68,7 @@ export function extractApiErrorMessage(error: unknown, fallback = "An unexpected
 
 export const axiosInstance = axios.create({
   baseURL: API_BASE_URL,
+  withCredentials: true,
   headers: {
     "Content-Type": "application/json",
     Accept: "application/json",
@@ -77,31 +78,22 @@ export const axiosInstance = axios.create({
 
 let isRefreshing = false;
 let failedQueue: Array<{
-  resolve: (token: string) => void;
+  resolve: () => void;
   reject: (error: unknown) => void;
 }> = [];
 
-function processQueue(error: unknown, token: string | null = null) {
+function processQueue(error: unknown) {
   failedQueue.forEach((prom) => {
     if (error) {
       prom.reject(error);
-    } else if (token) {
-      prom.resolve(token);
+    } else {
+      prom.resolve();
     }
   });
   failedQueue = [];
 }
 
-// Request Interceptor: Attach Access Token
-axiosInstance.interceptors.request.use((config: InternalAxiosRequestConfig) => {
-  const token = tokenStorage.getToken();
-  if (token && !config.headers.Authorization) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
-
-// Response Interceptor: 401 Silent Refresh Queue
+// Response Interceptor: 401 Silent Refresh Queue via HttpOnly Cookies
 axiosInstance.interceptors.response.use(
   (response) => response,
   async (error: AxiosError) => {
@@ -111,29 +103,18 @@ axiosInstance.interceptors.response.use(
       return Promise.reject(error);
     }
 
-    // Skip refresh token flow if the 401 was already on the refresh endpoint or retry already happened
+    // Skip refresh token flow if the 401 was already on the refresh/login/logout endpoints or retry already happened
     if (
       error.response?.status === 401 &&
       !originalRequest._retry &&
       !originalRequest.url?.includes("/api/auth/refresh") &&
-      !originalRequest.url?.includes("/api/auth/login")
+      !originalRequest.url?.includes("/api/auth/login") &&
+      !originalRequest.url?.includes("/api/auth/logout")
     ) {
-      const refreshToken = tokenStorage.getRefreshToken();
-      const accessToken = tokenStorage.getToken();
-
-      if (!refreshToken || !accessToken) {
-        tokenStorage.clear();
-        if (typeof window !== "undefined") {
-          window.dispatchEvent(new CustomEvent("showcase:auth-expired"));
-        }
-        return Promise.reject(error);
-      }
-
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
           failedQueue.push({
-            resolve: (newAccessToken: string) => {
-              originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+            resolve: () => {
               resolve(axiosInstance(originalRequest));
             },
             reject: (err: unknown) => reject(err),
@@ -145,40 +126,23 @@ axiosInstance.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        const res = await axios.post<{ accessToken: string; refreshToken?: string }>(
+        await axios.post(
           `${API_BASE_URL}/api/auth/refresh`,
-          { accessToken, refreshToken },
-          { headers: { "Content-Type": "application/json" } }
+          {},
+          {
+            withCredentials: true,
+            headers: { "Content-Type": "application/json" },
+          }
         );
 
-        const newAccessToken = res.data.accessToken;
-        const newRefreshToken = res.data.refreshToken || refreshToken;
-
-        if (newAccessToken) {
-          tokenStorage.setTokens({
-            accessToken: newAccessToken,
-            refreshToken: newRefreshToken,
-          });
-
-          axiosInstance.defaults.headers.common.Authorization = `Bearer ${newAccessToken}`;
-          originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
-
-          processQueue(null, newAccessToken);
-          return axiosInstance(originalRequest);
-        }
-
-        tokenStorage.clear();
-        if (typeof window !== "undefined") {
-          window.dispatchEvent(new CustomEvent("showcase:auth-expired"));
-        }
-        processQueue(error, null);
-        return Promise.reject(error);
+        processQueue(null);
+        return axiosInstance(originalRequest);
       } catch (refreshErr) {
         tokenStorage.clear();
         if (typeof window !== "undefined") {
           window.dispatchEvent(new CustomEvent("showcase:auth-expired"));
         }
-        processQueue(refreshErr, null);
+        processQueue(refreshErr);
         return Promise.reject(refreshErr);
       } finally {
         isRefreshing = false;

@@ -15,6 +15,19 @@ export function useLoginForm() {
   const navigate = useNavigate();
   const location = useLocation();
 
+  React.useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const errorParam = params.get("error");
+    if (errorParam) {
+      const decoded = decodeURIComponent(errorParam);
+      if (decoded === "access_denied" || decoded.includes("cancelled")) {
+        setError("Google sign-in was cancelled or access was denied.");
+      } else {
+        setError(decoded);
+      }
+    }
+  }, [location.search]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -46,10 +59,12 @@ export function useLoginForm() {
 
   const handleGoogleLogin = () => {
     setIsGoogleLoading(true);
-    setTimeout(() => {
-      setIsGoogleLoading(false);
-      navigate("/auth/complete-oauth");
-    }, 600);
+    const fromState = location.state as { from?: { pathname: string; search?: string } } | null;
+    const targetPath = fromState?.from?.pathname
+      ? `${fromState.from.pathname}${fromState.from.search || ""}`
+      : "/studio";
+
+    window.location.href = `/api/auth/google?returnUrl=${encodeURIComponent(targetPath)}`;
   };
 
   return {

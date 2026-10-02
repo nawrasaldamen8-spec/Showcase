@@ -16,19 +16,10 @@ export interface AuthProviderProps {
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [currentUser, setCurrentUser] = useState<CurrentUserResponse | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(() => {
-    return typeof window !== 'undefined' && Boolean(tokenStorage.getToken());
-  });
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
-  // Load current authenticated user on app initialization
+  // Load current authenticated user on app initialization via HttpOnly cookie
   useEffect(() => {
-    const token = tokenStorage.getToken();
-    if (!token) {
-      setCurrentUser(null);
-      setIsLoading(false);
-      return;
-    }
-
     let isCancelled = false;
 
     void Promise.resolve().then(async () => {
@@ -37,17 +28,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       try {
         const user = await apiClient.getCurrentUser();
         if (!isCancelled) {
-          if (user) {
-            setCurrentUser(user);
-          } else {
-            tokenStorage.clear();
-            setCurrentUser(null);
-          }
+          setCurrentUser(user);
         }
       } catch (err) {
         console.error('Failed to authenticate session:', err);
         if (!isCancelled) {
-          tokenStorage.clear();
           setCurrentUser(null);
         }
       } finally {
@@ -62,7 +47,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     };
   }, []);
 
-  // Listen to silent refresh expiration or cross-tab token clearance
+  // Listen to silent refresh expiration
   useEffect(() => {
     const handleAuthExpired = () => {
       tokenStorage.clear();
@@ -70,29 +55,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setIsLoading(false);
     };
 
-    const handleStorage = (e: StorageEvent) => {
-      if (e.key === 'showcase_auth_token' && !e.newValue) {
-        setCurrentUser(null);
-        setIsLoading(false);
-      }
-    };
-
     window.addEventListener('showcase:auth-expired', handleAuthExpired);
-    window.addEventListener('storage', handleStorage);
 
     return () => {
       window.removeEventListener('showcase:auth-expired', handleAuthExpired);
-      window.removeEventListener('storage', handleStorage);
     };
   }, []);
 
   const refreshUser = useCallback(async () => {
-    const token = tokenStorage.getToken();
-    if (!token) {
-      setCurrentUser(null);
-      return;
-    }
-
     setIsLoading(true);
     try {
       const user = await apiClient.getCurrentUser();
@@ -145,7 +115,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   }, []);
 
-  const isAuthenticated = Boolean(currentUser && tokenStorage.getToken());
+  const isAuthenticated = Boolean(currentUser);
   const isAdmin = Boolean(currentUser?.roles?.includes('Admin'));
 
   const value: AuthContextValue = useMemo(

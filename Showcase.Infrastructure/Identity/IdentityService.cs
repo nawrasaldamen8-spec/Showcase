@@ -1,22 +1,28 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Showcase.Application.Common.Interfaces;
 using Showcase.Domain.Common.Results;
+using Showcase.Domain.Entities;
+using Showcase.Domain.ValueObjects;
+using Showcase.Infrastructure.Data;
 
 namespace Showcase.Infrastructure.Identity;
 
 public class IdentityService : IIdentityService
 {
     private readonly UserManager<ApplicationUser> _userManager;
+    private readonly ApplicationDbContext _context;
 
-    public IdentityService(UserManager<ApplicationUser> userManager)
+    public IdentityService(UserManager<ApplicationUser> userManager, ApplicationDbContext context)
     {
         _userManager = userManager;
+        _context = context;
     }
 
     public async Task<Result<string>> RegisterUserAsync(
@@ -417,6 +423,97 @@ public class IdentityService : IIdentityService
         }
 
         return Result.Success<IReadOnlyDictionary<string, UserIdentityDetails>>(resultDict);
+    }
+
+    public async Task<Result<UserIdentityDetails>> GetOrCreateExternalUserAsync(
+        string provider,
+        string providerKey,
+        string email,
+        string name,
+        string? pictureUrl = null,
+        CancellationToken ct = default)
+    {
+        if (string.IsNullOrWhiteSpace(provider) || string.IsNullOrWhiteSpace(providerKey))
+        {
+            return Error.Validation("Auth.InvalidExternalLogin", "Provider and ProviderKey are required.");
+        }
+
+        if (string.IsNullOrWhiteSpace(email))
+        {
+            return Error.Validation("Auth.EmailRequired", "Email is required for external authentication.");
+        }
+
+        var normalizedEmail = email.Trim().ToLowerInvariant();
+
+        // 1. Try finding user by external login
+        var user = await _userManager.FindByLoginAsync(provider, providerKey);
+
+        // 2. If not found by login, try finding by email
+        if (user is null)
+        {
+            user = await _userManager.FindByEmailAsync(normalizedEmail);
+            if (user is not null)
+            {
+                // Link external login provider to existing user
+                await _userManager.AddLoginAsync(user, new UserLoginInfo(provider, providerKey, provider));
+            }
+        }
+
+        // 3. If still not found, create new user, role, login, and profile
+        if (user is null)
+        {
+            var baseUsername = normalizedEmail.Split('@')[0];
+            baseUsername = Regex.Replace(baseUsername, @"[^a-z0-9_]", "_");
+            if (string.IsNullOrWhiteSpace(baseUsername))
+            {
+                baseUsername = "user";
+            }
+
+            var username = baseUsername;
+            var suffix = 1;
+            while (await _userManager.FindByNameAsync(username) is not null)
+            {
+                username = $"{baseUsername}{suffix++}";
+            }
+
+            user = new ApplicationUser
+            {
+                UserName = username,
+                Email = normalizedEmail,
+                EmailConfirmed = true
+            };
+
+            var createResult = await _userManager.CreateAsync(user);
+            if (!createResult.Succeeded)
+            {
+                var firstError = createResult.Errors.FirstOrDefault()?.Description ?? "Failed to create external user.";
+                return Error.Validation("Auth.RegistrationFailed", firstError);
+            }
+
+            await _userManager.AddToRoleAsync(user, "Member");
+            await _userManager.AddLoginAsync(user, new UserLoginInfo(provider, providerKey, provider));
+
+            // Create Profile
+            var displayName = string.IsNullOrWhiteSpace(name) ? username : name.Trim();
+            var avatarKeyResult = StorageKey.CreateOptional(pictureUrl);
+            var profile = new Profile(user.Id, displayName, avatarKey: avatarKeyResult.IsSuccess ? avatarKeyResult.Value : null);
+            _context.Set<Profile>().Add(profile);
+            await _context.SaveChangesAsync(ct);
+        }
+
+        // 4. Verify account is not suspended or deleted
+        if (user.IsBanned)
+        {
+            return Error.Forbidden("Auth.AccountBanned", user.BanReason ?? "This account has been suspended.");
+        }
+
+        if (user.IsDeleted)
+        {
+            return Error.Forbidden("Auth.AccountDeleted", "This account has been deleted.");
+        }
+
+        var roles = await _userManager.GetRolesAsync(user);
+        return ToDetails(user, roles);
     }
 
     /// <summary>Keeps the null email intact instead of coercing it to an empty string, which lost the distinction.</summary>

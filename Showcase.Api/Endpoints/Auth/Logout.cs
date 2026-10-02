@@ -3,6 +3,9 @@ using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Hosting;
+using Showcase.Api.Common.Auth;
 using Showcase.Api.Common.Results;
 using Showcase.Application.Features.Auth.Commands.Logout;
 
@@ -14,17 +17,33 @@ public class Logout : IEndpoint
     {
         app.MapPost("api/auth/logout", async (
             ISender sender,
+            HttpContext httpContext,
+            IWebHostEnvironment env,
             CancellationToken ct) =>
         {
-            var result = await sender.Send(new LogoutCommand(), ct);
-            return result.ToResponse();
+            if (httpContext.User.Identity?.IsAuthenticated == true)
+            {
+                await sender.Send(new LogoutCommand(), ct);
+            }
+
+            var isDev = env.IsDevelopment();
+            httpContext.Response.Cookies.Append(
+                AuthCookieHelper.AccessTokenCookieName,
+                "",
+                AuthCookieHelper.GetDeleteCookieOptions(isDev));
+
+            httpContext.Response.Cookies.Append(
+                AuthCookieHelper.RefreshTokenCookieName,
+                "",
+                AuthCookieHelper.GetDeleteCookieOptions(isDev));
+
+            return Results.Ok();
         })
         .WithTags("Auth")
         .WithName(nameof(Logout))
         .WithSummary("Logout current user and revoke refresh token")
-        .WithDescription("Clears the stored refresh token and expiration for the authenticated user.")
+        .WithDescription("Clears the stored refresh token and expiration for the authenticated user and deletes cookies.")
         .Produces(StatusCodes.Status200OK)
-        .ProducesProblem(StatusCodes.Status401Unauthorized)
-        .RequireAuthorization();
+        .AllowAnonymous();
     }
 }

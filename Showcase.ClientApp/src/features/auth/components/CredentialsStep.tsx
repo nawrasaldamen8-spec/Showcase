@@ -9,6 +9,7 @@ import {
 import { Button } from "@shared/components/Button.tsx";
 import { Input } from "@shared/components/Input.tsx";
 import { PasswordStrengthMeter } from "./PasswordStrengthMeter.tsx";
+import { GoogleAuthButton } from "./GoogleAuthButton.tsx";
 
 export interface CredentialsStepProps {
   username: string;
@@ -116,6 +117,17 @@ export const CredentialsStep: React.FC<CredentialsStepProps> = ({
           Next: Personal Information
         </Button>
       </div>
+
+      <div className="relative my-4 flex items-center justify-center">
+        <div className="absolute inset-0 flex items-center">
+          <div className="w-full border-t border-stone/50" />
+        </div>
+        <span className="relative bg-ivory-light px-3 font-gothic text-[10px] font-bold uppercase tracking-wider text-cloud-dark">
+          Or register instantly with
+        </span>
+      </div>
+
+      <GoogleAuthButton onClick={() => { window.location.href = "/api/auth/google"; }} text="Register with Google" />
     </form>
   );
 };

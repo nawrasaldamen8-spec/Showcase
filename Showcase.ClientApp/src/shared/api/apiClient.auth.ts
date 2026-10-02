@@ -20,39 +20,27 @@ export const apiAuthClient = {
   },
 
   async register(data: RegisterRequest): Promise<AuthResponse> {
-    const res = await httpFetch<AuthResponse>("/api/auth/register", {
+    return await httpFetch<AuthResponse>("/api/auth/register", {
       method: "POST",
       body: JSON.stringify(data),
       requiresAuth: false,
     });
-    if (res.accessToken) {
-      tokenStorage.setTokens({ accessToken: res.accessToken, refreshToken: res.refreshToken });
-    }
-    return res;
   },
 
   async login(data: LoginRequest): Promise<AuthResponse> {
-    const res = await httpFetch<AuthResponse>("/api/auth/login", {
+    return await httpFetch<AuthResponse>("/api/auth/login", {
       method: "POST",
       body: JSON.stringify(data),
       requiresAuth: false,
     });
-    if (res.accessToken) {
-      tokenStorage.setTokens({ accessToken: res.accessToken, refreshToken: res.refreshToken });
-    }
-    return res;
   },
 
-  async refreshToken(accessToken: string, refreshToken: string): Promise<AuthResponse> {
-    const res = await httpFetch<AuthResponse>("/api/auth/refresh", {
+  async refreshToken(accessToken?: string, refreshToken?: string): Promise<AuthResponse> {
+    return await httpFetch<AuthResponse>("/api/auth/refresh", {
       method: "POST",
       body: JSON.stringify({ accessToken, refreshToken }),
       requiresAuth: false,
     });
-    if (res.accessToken) {
-      tokenStorage.setTokens({ accessToken: res.accessToken, refreshToken: res.refreshToken });
-    }
-    return res;
   },
 
   async logout(): Promise<void> {
@@ -64,9 +52,6 @@ export const apiAuthClient = {
   },
 
   async getCurrentUser(): Promise<CurrentUserResponse | null> {
-    if (!tokenStorage.getToken()) {
-      return null;
-    }
     try {
       return await httpFetch<CurrentUserResponse>("/api/auth/me");
     } catch {

@@ -1,5 +1,19 @@
+// Tokens are now stored securely in HttpOnly SameSite=Lax Cookies by the backend.
+// This module provides backward compatibility and cleans any legacy tokens from localStorage.
+
 const AUTH_STORAGE_KEY = "showcase_auth_token";
 const REFRESH_TOKEN_KEY = "showcase_refresh_token";
+const VISITOR_STORAGE_KEY = "showcase_visitor_token";
+
+// Auto-cleanup legacy tokens if they exist in browser storage
+if (typeof window !== "undefined") {
+  try {
+    localStorage.removeItem(AUTH_STORAGE_KEY);
+    localStorage.removeItem(REFRESH_TOKEN_KEY);
+  } catch {
+    // Ignore storage restrictions
+  }
+}
 
 export interface StoredTokens {
   accessToken: string;
@@ -7,29 +21,20 @@ export interface StoredTokens {
 }
 
 export const getToken = (): string | null => {
-  if (typeof window === "undefined") return null;
-  return localStorage.getItem(AUTH_STORAGE_KEY);
+  return null;
 };
 
 export const getRefreshToken = (): string | null => {
-  if (typeof window === "undefined") return null;
-  return localStorage.getItem(REFRESH_TOKEN_KEY);
+  return null;
 };
 
-export const setToken = (token: string): void => {
-  if (typeof window === "undefined") return;
-  localStorage.setItem(AUTH_STORAGE_KEY, token);
+export const setToken = (_token: string): void => {
+  // No-op: cookies are managed by the browser
 };
 
-export const setTokens = (tokens: StoredTokens): void => {
-  if (typeof window === "undefined") return;
-  localStorage.setItem(AUTH_STORAGE_KEY, tokens.accessToken);
-  if (tokens.refreshToken) {
-    localStorage.setItem(REFRESH_TOKEN_KEY, tokens.refreshToken);
-  }
+export const setTokens = (_tokens: StoredTokens): void => {
+  // No-op: cookies are managed by the browser
 };
-
-const VISITOR_STORAGE_KEY = "showcase_visitor_token";
 
 export const getVisitorToken = (): string => {
   if (typeof window === "undefined") return "";
@@ -45,8 +50,12 @@ export const getVisitorToken = (): string => {
 
 export const clear = (): void => {
   if (typeof window === "undefined") return;
-  localStorage.removeItem(AUTH_STORAGE_KEY);
-  localStorage.removeItem(REFRESH_TOKEN_KEY);
+  try {
+    localStorage.removeItem(AUTH_STORAGE_KEY);
+    localStorage.removeItem(REFRESH_TOKEN_KEY);
+  } catch {
+    // Ignore
+  }
 };
 
 export const tokenStorage = {
@@ -57,3 +66,4 @@ export const tokenStorage = {
   clear,
   getVisitorToken,
 };
+

@@ -83,4 +83,12 @@ public interface IIdentityService
     Task<Result<IReadOnlyDictionary<string, UserIdentityDetails>>> GetUsersByIdsAsync(
         IEnumerable<string> userIds,
         CancellationToken ct = default);
+
+    Task<Result<UserIdentityDetails>> GetOrCreateExternalUserAsync(
+        string provider,
+        string providerKey,
+        string email,
+        string name,
+        string? pictureUrl = null,
+        CancellationToken ct = default);
 }

@@ -51,6 +51,8 @@ public static class DependencyInjection
         // Options pattern binding
         services.Configure<JwtSettings>(configuration.GetSection(JwtSettings.SectionName));
         services.Configure<CloudinarySettings>(configuration.GetSection(CloudinarySettings.SectionName));
+        services.Configure<GoogleAuthSettings>(configuration.GetSection(GoogleAuthSettings.SectionName));
+        services.AddHttpClient();
 
         // JWT Authentication & Authorization
         var jwtSettings = configuration.GetSection(JwtSettings.SectionName).Get<JwtSettings>() ?? new JwtSettings();
@@ -90,7 +92,15 @@ public static class DependencyInjection
                     if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/hubs"))
                     {
                         context.Token = accessToken;
+                        return Task.CompletedTask;
                     }
+
+                    if (context.Request.Cookies.TryGetValue("showcase_access_token", out var cookieToken) && !string.IsNullOrWhiteSpace(cookieToken))
+                    {
+                        context.Token = cookieToken;
+                        return Task.CompletedTask;
+                    }
+
                     return Task.CompletedTask;
                 }
             };
@@ -106,6 +116,7 @@ public static class DependencyInjection
         services.AddScoped<ITokenService, TokenService>();
         services.AddScoped<ICurrentUserService, CurrentUserService>();
         services.AddScoped<IRealtimeNotifier, SignalRRealtimeNotifier>();
+        services.AddScoped<IAuditLogger, Showcase.Infrastructure.Services.AuditLogger>();
 
         // Cloudinary vs Local Storage Service Registration
         var cloudinaryConfig = configuration.GetSection(CloudinarySettings.SectionName).Get<CloudinarySettings>();

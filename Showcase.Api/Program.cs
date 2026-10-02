@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using Showcase.Api.DependencyInjection;
 using Showcase.Api.Endpoints;
 using Showcase.Application.Common.DependencyInjection;
@@ -5,6 +6,10 @@ using Showcase.Infrastructure.DependencyInjection;
 using Showcase.Infrastructure.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Load local overrides if present (ignored in git)
+builder.Configuration.AddJsonFile("appsettings.Local.json", optional: true, reloadOnChange: true);
+builder.Configuration.AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.local.json", optional: true, reloadOnChange: true);
 
 // Add layer dependencies
 builder.Services.AddApplication(builder.Configuration);
@@ -61,5 +66,26 @@ app.MapHealthChecks("/health", new Microsoft.AspNetCore.Diagnostics.HealthChecks
 app.MapHub<NotificationHub>("/hubs/notifications");
 
 app.MapEndpoints();
+
+// Seed Database
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    try
+    {
+        var context = services.GetRequiredService<Showcase.Infrastructure.Data.ApplicationDbContext>();
+        var userManager = services.GetRequiredService<Microsoft.AspNetCore.Identity.UserManager<Showcase.Infrastructure.Identity.ApplicationUser>>();
+        var roleManager = services.GetRequiredService<Microsoft.AspNetCore.Identity.RoleManager<Microsoft.AspNetCore.Identity.IdentityRole>>();
+        var logger = services.GetRequiredService<ILogger<Program>>();
+
+        await context.Database.MigrateAsync();
+        await Showcase.Infrastructure.Data.Seed.DatabaseSeeder.SeedAsync(context, userManager, roleManager, logger);
+    }
+    catch (Exception ex)
+    {
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "An error occurred during database migration/seeding.");
+    }
+}
 
 app.Run();

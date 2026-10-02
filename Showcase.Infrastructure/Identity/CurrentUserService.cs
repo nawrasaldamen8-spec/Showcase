@@ -31,6 +31,26 @@ public class CurrentUserService : ICurrentUserService
         }
     }
 
+    public string? Username
+    {
+        get
+        {
+            var user = _httpContextAccessor.HttpContext?.User;
+            if (user is null)
+                return null;
+
+            var name = user.FindFirst(ClaimTypes.Name)?.Value;
+            if (!string.IsNullOrWhiteSpace(name))
+                return name;
+
+            name = user.FindFirst("name")?.Value;
+            if (!string.IsNullOrWhiteSpace(name))
+                return name;
+
+            return user.Identity?.Name;
+        }
+    }
+
     public string? Email
     {
         get

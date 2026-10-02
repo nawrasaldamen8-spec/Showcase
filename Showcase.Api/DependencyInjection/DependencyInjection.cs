@@ -58,9 +58,18 @@ public static class DependencyInjection
         {
             options.AddPolicy("AllowAll", policy =>
             {
-                policy.AllowAnyOrigin()
+                policy.SetIsOriginAllowed(origin =>
+                      {
+                          if (string.IsNullOrWhiteSpace(origin)) return false;
+                          if (Uri.TryCreate(origin, UriKind.Absolute, out var uri))
+                          {
+                              return uri.Host == "localhost" || uri.Host == "127.0.0.1";
+                          }
+                          return false;
+                      })
                       .AllowAnyMethod()
-                      .AllowAnyHeader();
+                      .AllowAnyHeader()
+                      .AllowCredentials();
             });
         });
 

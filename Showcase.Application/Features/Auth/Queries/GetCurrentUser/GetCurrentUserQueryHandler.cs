@@ -44,6 +44,7 @@ public class GetCurrentUserQueryHandler : IRequestHandler<GetCurrentUserQuery, R
         var user = userResult.Value;
 
         var profile = await _context.Set<Profile>()
+            .IgnoreQueryFilters()
             .AsNoTracking()
             .FirstOrDefaultAsync(p => p.UserId == currentUserId, ct);
 
