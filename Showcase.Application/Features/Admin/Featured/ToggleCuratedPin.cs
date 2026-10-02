@@ -17,13 +17,19 @@ public class ToggleCuratedPinCommandHandler : IRequestHandler<ToggleCuratedPinCo
 {
     private readonly IApplicationDbContext _context;
     private readonly IPublisher _publisher;
+    private readonly IAuditLogger _auditLogger;
+    private readonly ICurrentUserService _currentUserService;
 
     public ToggleCuratedPinCommandHandler(
         IApplicationDbContext context,
-        IPublisher publisher)
+        IPublisher publisher,
+        IAuditLogger auditLogger,
+        ICurrentUserService currentUserService)
     {
         _context = context;
         _publisher = publisher;
+        _auditLogger = auditLogger;
+        _currentUserService = currentUserService;
     }
 
     public async Task<Result> Handle(ToggleCuratedPinCommand request, CancellationToken ct)
@@ -35,6 +41,7 @@ public class ToggleCuratedPinCommandHandler : IRequestHandler<ToggleCuratedPinCo
             return Error.NotFound("FeaturedRequest.NotFound", $"Featured request '{request.Id}' was not found.");
 
         var profile = await _context.Profiles
+            .IgnoreQueryFilters()
             .FirstOrDefaultAsync(p => p.UserId == featuredReq.UserId, ct);
 
         if (profile is not null)
@@ -51,6 +58,17 @@ public class ToggleCuratedPinCommandHandler : IRequestHandler<ToggleCuratedPinCo
         }
 
         await _context.SaveChangesAsync(ct);
+
+        await _auditLogger.LogAsync(
+            _currentUserService.UserId ?? "admin-system",
+            _currentUserService.Username ?? "admin",
+            "FEATURED_PIN_TOGGLED",
+            "FeaturedRequest",
+            request.Id.ToString(),
+            profile?.Name ?? featuredReq.UserId,
+            request.IsPinned ? "Pinned to curated feed" : "Unpinned from curated feed",
+            ct: ct);
+
         return Result.Success();
     }
 }

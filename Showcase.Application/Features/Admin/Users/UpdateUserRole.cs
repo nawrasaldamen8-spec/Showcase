@@ -29,13 +29,16 @@ public class UpdateUserRoleCommandHandler : IRequestHandler<UpdateUserRoleComman
 {
     private readonly IIdentityService _identityService;
     private readonly ICurrentUserService _currentUserService;
+    private readonly IAuditLogger _auditLogger;
 
     public UpdateUserRoleCommandHandler(
         IIdentityService identityService,
-        ICurrentUserService currentUserService)
+        ICurrentUserService currentUserService,
+        IAuditLogger auditLogger)
     {
         _identityService = identityService;
         _currentUserService = currentUserService;
+        _auditLogger = auditLogger;
     }
 
     public async Task<Result> Handle(UpdateUserRoleCommand request, CancellationToken ct)
@@ -69,6 +72,20 @@ public class UpdateUserRoleCommandHandler : IRequestHandler<UpdateUserRoleComman
             }
         }
 
-        return await _identityService.UpdateUserRolesAsync(request.UserId, request.Roles, ct);
+        var updateResult = await _identityService.UpdateUserRolesAsync(request.UserId, request.Roles, ct);
+        if (updateResult.IsSuccess)
+        {
+            await _auditLogger.LogAsync(
+                _currentUserService.UserId ?? "admin-system",
+                _currentUserService.Username ?? "admin",
+                "ROLE_MODIFIED",
+                "User",
+                request.UserId,
+                targetUser.UserName,
+                $"Assigned roles: {string.Join(", ", request.Roles)}",
+                ct: ct);
+        }
+
+        return updateResult;
     }
 }

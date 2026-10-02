@@ -60,14 +60,19 @@ public class AdminFeatureTests
         dbContext.Profiles.Add(profile);
         await dbContext.SaveChangesAsync();
 
-        var banHandler = new BanUserCommandHandler(dbContext);
+        var auditLogger = new Mock<IAuditLogger>();
+        var currentUserService = new Mock<ICurrentUserService>();
+        currentUserService.Setup(c => c.UserId).Returns("admin1");
+        currentUserService.Setup(c => c.Username).Returns("admin");
+
+        var banHandler = new BanUserCommandHandler(dbContext, auditLogger.Object, currentUserService.Object);
         var banResult = await banHandler.Handle(new BanUserCommand("u1", "Violating terms of service"), CancellationToken.None);
 
         Assert.True(banResult.IsSuccess);
         Assert.True(profile.IsBanned);
         Assert.Equal("Violating terms of service", profile.BanReason);
 
-        var unbanHandler = new UnbanUserCommandHandler(dbContext);
+        var unbanHandler = new UnbanUserCommandHandler(dbContext, auditLogger.Object, currentUserService.Object);
         var unbanResult = await unbanHandler.Handle(new UnbanUserCommand("u1"), CancellationToken.None);
 
         Assert.True(unbanResult.IsSuccess);
@@ -87,7 +92,12 @@ public class AdminFeatureTests
         await dbContext.SaveChangesAsync();
 
         var publisher = new Mock<MediatR.IPublisher>();
-        var approveHandler = new ApproveVerificationRequestCommandHandler(dbContext, publisher.Object);
+        var auditLogger = new Mock<IAuditLogger>();
+        var currentUserService = new Mock<ICurrentUserService>();
+        currentUserService.Setup(c => c.UserId).Returns("admin1");
+        currentUserService.Setup(c => c.Username).Returns("admin");
+
+        var approveHandler = new ApproveVerificationRequestCommandHandler(dbContext, publisher.Object, auditLogger.Object, currentUserService.Object);
         var approveResult = await approveHandler.Handle(new ApproveVerificationRequestCommand(req.Id, "Verified successfully"), CancellationToken.None);
 
         Assert.True(approveResult.IsSuccess);

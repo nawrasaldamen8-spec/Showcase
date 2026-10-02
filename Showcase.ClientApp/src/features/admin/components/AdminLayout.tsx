@@ -6,7 +6,6 @@ import {
   FileCheck,
   History,
   LayoutDashboard,
-  Megaphone,
   Shield,
   ShieldAlert,
   Sparkles,
@@ -44,9 +43,8 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
     { label: "Verifications", to: "/admin/verifications", icon: FileCheck },
     { label: "Reports", to: "/admin/reports", icon: ShieldAlert },
     { label: "Curated / Featured", to: "/admin/featured", icon: Sparkles },
-    { label: "R2 Storage", to: "/admin/storage", icon: Database },
+    { label: "Media Storage", to: "/admin/storage", icon: Database },
     { label: "Audit Logs", to: "/admin/audit-logs", icon: History },
-    { label: "Broadcasts", to: "/admin/broadcasts", icon: Megaphone },
   ];
 
   return (

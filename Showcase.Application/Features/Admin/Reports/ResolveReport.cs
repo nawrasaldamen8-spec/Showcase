@@ -30,10 +30,17 @@ public class ResolveReportCommandValidator : AbstractValidator<ResolveReportComm
 public class ResolveReportCommandHandler : IRequestHandler<ResolveReportCommand, Result>
 {
     private readonly IApplicationDbContext _context;
+    private readonly IAuditLogger _auditLogger;
+    private readonly ICurrentUserService _currentUserService;
 
-    public ResolveReportCommandHandler(IApplicationDbContext context)
+    public ResolveReportCommandHandler(
+        IApplicationDbContext context,
+        IAuditLogger auditLogger,
+        ICurrentUserService currentUserService)
     {
         _context = context;
+        _auditLogger = auditLogger;
+        _currentUserService = currentUserService;
     }
 
     public async Task<Result> Handle(ResolveReportCommand request, CancellationToken ct)
@@ -91,6 +98,17 @@ public class ResolveReportCommandHandler : IRequestHandler<ResolveReportCommand,
         }
 
         await _context.SaveChangesAsync(ct);
+
+        await _auditLogger.LogAsync(
+            _currentUserService.UserId ?? "admin-system",
+            _currentUserService.Username ?? "admin",
+            "REPORT_RESOLVED",
+            "ContentReport",
+            request.ReportId.ToString(),
+            $"{report.TargetType}:{report.TargetLabel}",
+            request.ActionTaken,
+            ct: ct);
+
         return Result.Success();
     }
 }

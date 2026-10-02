@@ -23,10 +23,17 @@ public class UnbanUserCommandValidator : AbstractValidator<UnbanUserCommand>
 public class UnbanUserCommandHandler : IRequestHandler<UnbanUserCommand, Result>
 {
     private readonly IApplicationDbContext _context;
+    private readonly IAuditLogger _auditLogger;
+    private readonly ICurrentUserService _currentUserService;
 
-    public UnbanUserCommandHandler(IApplicationDbContext context)
+    public UnbanUserCommandHandler(
+        IApplicationDbContext context,
+        IAuditLogger auditLogger,
+        ICurrentUserService currentUserService)
     {
         _context = context;
+        _auditLogger = auditLogger;
+        _currentUserService = currentUserService;
     }
 
     public async Task<Result> Handle(UnbanUserCommand request, CancellationToken ct)
@@ -40,6 +47,16 @@ public class UnbanUserCommandHandler : IRequestHandler<UnbanUserCommand, Result>
 
         profile.Unban();
         await _context.SaveChangesAsync(ct);
+
+        await _auditLogger.LogAsync(
+            _currentUserService.UserId ?? "admin-system",
+            _currentUserService.Username ?? "admin",
+            "USER_UNBANNED",
+            "User",
+            request.UserId,
+            profile.Name,
+            "Account reactivated by administrator",
+            ct: ct);
 
         return Result.Success();
     }

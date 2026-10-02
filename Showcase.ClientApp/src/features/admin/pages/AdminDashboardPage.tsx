@@ -5,7 +5,6 @@ import {
   Database,
   FileCheck,
   History,
-  Megaphone,
   ShieldAlert,
   Sparkles,
   Users,
@@ -31,10 +30,10 @@ export const AdminDashboardPage: React.FC = () => {
             type="button"
             variant="outline"
             size="sm"
-            onClick={() => navigate("/admin/broadcasts")}
-            leftIcon={<Megaphone className="w-3.5 h-3.5" />}
+            onClick={() => navigate("/admin/audit-logs")}
+            leftIcon={<History className="w-3.5 h-3.5" />}
           >
-            New Broadcast
+            Audit Logs
           </Button>
           <Button
             type="button"
@@ -79,9 +78,9 @@ export const AdminDashboardPage: React.FC = () => {
         />
 
         <AdminKpiCard
-          title="R2 Storage Used"
+          title="Media Storage Used"
           value={metrics && typeof metrics.storageUsedBytes === "number" ? formatBytes(metrics.storageUsedBytes) : "—"}
-          subtitle={`of ${metrics && typeof metrics.storageCapacityBytes === "number" ? formatBytes(metrics.storageCapacityBytes) : "50 GB"} limit`}
+          subtitle={`of ${metrics && typeof metrics.storageCapacityBytes === "number" ? formatBytes(metrics.storageCapacityBytes) : "25 GB"} limit`}
           icon={Database}
           onClick={() => navigate("/admin/storage")}
         />
@@ -139,48 +138,72 @@ export const AdminDashboardPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Right 5 cols: Active Broadcasts & Quick Links */}
+        {/* Right 5 cols: Governance Actions & Quick Links */}
         <div className="lg:col-span-5 space-y-6">
-          {/* Active Broadcasts */}
+          {/* Governance Direct Hub */}
           <div className="bg-ivory-light border border-stone rounded-2xl p-6 space-y-4">
             <div className="flex items-center justify-between border-b border-stone/60 pb-3">
               <div className="flex items-center gap-2">
-                <Megaphone className="w-4 h-4 text-slate-dark" />
+                <ShieldAlert className="w-4 h-4 text-clay" />
                 <h3 className="font-gothic text-xs font-bold uppercase tracking-wider text-slate-dark">
-                  Platform Broadcasts
+                  Governance Action Center
                 </h3>
               </div>
-              <Link
-                to="/admin/broadcasts"
-                className="font-gothic text-[11px] font-bold uppercase tracking-wider text-clay hover:underline text-decoration-none"
-              >
-                Manage
-              </Link>
             </div>
 
-            <div className="space-y-3">
-              {metrics?.recentBroadcasts && metrics.recentBroadcasts.length > 0 ? (
-                metrics.recentBroadcasts.map((b) => (
-                  <div
-                    key={b.id}
-                    className="p-3.5 rounded-xl bg-ivory-medium border border-stone/60 space-y-1.5"
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className="font-gothic text-xs font-bold uppercase tracking-tight text-slate-dark">
-                        {b.title}
-                      </span>
-                      <span className="px-2 py-0.2 rounded-full font-gothic text-[9px] font-extrabold uppercase bg-ivory-light border border-stone text-cloud-dark">
-                        {b.severity}
-                      </span>
-                    </div>
-                    <p className="font-serif text-xs text-slate-dark/70 line-clamp-2">{b.message}</p>
-                  </div>
-                ))
-              ) : (
-                <p className="font-serif text-xs text-cloud-dark py-4 text-center">
-                  No active broadcasts dispatched.
-                </p>
-              )}
+            <div className="space-y-2.5">
+              <Link
+                to="/admin/users"
+                className="p-3 rounded-xl bg-ivory-medium border border-stone/60 flex items-center justify-between hover:border-clay transition-colors text-decoration-none group"
+              >
+                <div className="flex items-center gap-2.5">
+                  <Users className="w-4 h-4 text-slate-dark group-hover:text-clay" />
+                  <span className="font-gothic text-xs font-bold uppercase tracking-wider text-slate-dark">
+                    Member Directory &amp; Roles
+                  </span>
+                </div>
+                <span className="font-serif text-[11px] text-cloud-dark font-medium">
+                  {metrics?.totalUsersCount ?? 0} Accounts
+                </span>
+              </Link>
+
+              <Link
+                to="/admin/verifications"
+                className="p-3 rounded-xl bg-ivory-medium border border-stone/60 flex items-center justify-between hover:border-clay transition-colors text-decoration-none group"
+              >
+                <div className="flex items-center gap-2.5">
+                  <FileCheck className="w-4 h-4 text-slate-dark group-hover:text-clay" />
+                  <span className="font-gothic text-xs font-bold uppercase tracking-wider text-slate-dark">
+                    Creator Verifications
+                  </span>
+                </div>
+                {metrics && metrics.pendingVerificationsCount > 0 ? (
+                  <span className="px-2 py-0.5 rounded-full bg-clay/15 text-clay font-gothic text-[10px] font-bold">
+                    {metrics.pendingVerificationsCount} Pending
+                  </span>
+                ) : (
+                  <span className="font-serif text-[11px] text-cloud-dark">All clear</span>
+                )}
+              </Link>
+
+              <Link
+                to="/admin/reports"
+                className="p-3 rounded-xl bg-ivory-medium border border-stone/60 flex items-center justify-between hover:border-clay transition-colors text-decoration-none group"
+              >
+                <div className="flex items-center gap-2.5">
+                  <ShieldAlert className="w-4 h-4 text-slate-dark group-hover:text-clay" />
+                  <span className="font-gothic text-xs font-bold uppercase tracking-wider text-slate-dark">
+                    Content Moderation Reports
+                  </span>
+                </div>
+                {metrics && metrics.pendingReportsCount > 0 ? (
+                  <span className="px-2 py-0.5 rounded-full bg-red-500/15 text-red-600 font-gothic text-[10px] font-bold">
+                    {metrics.pendingReportsCount} Needs Action
+                  </span>
+                ) : (
+                  <span className="font-serif text-[11px] text-cloud-dark">0 Incidents</span>
+                )}
+              </Link>
             </div>
           </div>
 

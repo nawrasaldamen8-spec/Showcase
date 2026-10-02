@@ -29,10 +29,17 @@ public class BanUserCommandValidator : AbstractValidator<BanUserCommand>
 public class BanUserCommandHandler : IRequestHandler<BanUserCommand, Result>
 {
     private readonly IApplicationDbContext _context;
+    private readonly IAuditLogger _auditLogger;
+    private readonly ICurrentUserService _currentUserService;
 
-    public BanUserCommandHandler(IApplicationDbContext context)
+    public BanUserCommandHandler(
+        IApplicationDbContext context,
+        IAuditLogger auditLogger,
+        ICurrentUserService currentUserService)
     {
         _context = context;
+        _auditLogger = auditLogger;
+        _currentUserService = currentUserService;
     }
 
     public async Task<Result> Handle(BanUserCommand request, CancellationToken ct)
@@ -46,6 +53,16 @@ public class BanUserCommandHandler : IRequestHandler<BanUserCommand, Result>
 
         profile.Ban(request.Reason);
         await _context.SaveChangesAsync(ct);
+
+        await _auditLogger.LogAsync(
+            _currentUserService.UserId ?? "admin-system",
+            _currentUserService.Username ?? "admin",
+            "USER_BANNED",
+            "User",
+            request.UserId,
+            profile.Name,
+            request.Reason,
+            ct: ct);
 
         return Result.Success();
     }

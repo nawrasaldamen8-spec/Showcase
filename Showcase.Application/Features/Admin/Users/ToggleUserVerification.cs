@@ -28,13 +28,19 @@ public class ToggleUserVerificationCommandHandler : IRequestHandler<ToggleUserVe
 {
     private readonly IApplicationDbContext _context;
     private readonly IPublisher _publisher;
+    private readonly IAuditLogger _auditLogger;
+    private readonly ICurrentUserService _currentUserService;
 
     public ToggleUserVerificationCommandHandler(
         IApplicationDbContext context,
-        IPublisher publisher)
+        IPublisher publisher,
+        IAuditLogger auditLogger,
+        ICurrentUserService currentUserService)
     {
         _context = context;
         _publisher = publisher;
+        _auditLogger = auditLogger;
+        _currentUserService = currentUserService;
     }
 
     public async Task<Result> Handle(ToggleUserVerificationCommand request, CancellationToken ct)
@@ -81,6 +87,16 @@ public class ToggleUserVerificationCommandHandler : IRequestHandler<ToggleUserVe
                 request.UserId,
                 request.Note ?? "Your verified badge has been revoked by administration."), ct);
         }
+
+        await _auditLogger.LogAsync(
+            _currentUserService.UserId ?? "admin-system",
+            _currentUserService.Username ?? "admin",
+            request.IsVerified ? "VERIFICATION_GRANTED" : "VERIFICATION_REVOKED",
+            "User",
+            request.UserId,
+            profile.Name,
+            request.Note ?? (request.IsVerified ? "Verified badge granted" : "Verified badge revoked"),
+            ct: ct);
 
         return Result.Success();
     }

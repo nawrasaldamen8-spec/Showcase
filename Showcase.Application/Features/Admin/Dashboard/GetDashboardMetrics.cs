@@ -35,7 +35,22 @@ public class GetDashboardMetricsQueryHandler : IRequestHandler<GetDashboardMetri
         long estimatedBytes = (totalPostImages * 850_000L) + (totalAvatars * 250_000L); // ~850KB per image, ~250KB per avatar
         long quotaBytes = 50L * 1024 * 1024 * 1024; // 50GB quota
 
-        var recentAuditLogs = new List<AuditLogItemDto>();
+        var recentAuditLogs = await _context.AuditLogs
+            .AsNoTracking()
+            .OrderByDescending(a => a.CreatedAt)
+            .Take(6)
+            .Select(a => new AuditLogItemDto(
+                a.Id,
+                a.AdminUserId,
+                a.AdminUsername,
+                a.Action,
+                a.TargetEntity,
+                a.TargetId,
+                a.TargetLabel ?? string.Empty,
+                a.Reason,
+                a.CreatedAt))
+            .ToListAsync(ct);
+
         var recentBroadcasts = new List<BroadcastAnnouncementItemDto>();
 
         return new AdminDashboardMetricsDto(

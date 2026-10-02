@@ -17,13 +17,19 @@ public class RejectVerificationRequestCommandHandler : IRequestHandler<RejectVer
 {
     private readonly IApplicationDbContext _context;
     private readonly IPublisher _publisher;
+    private readonly IAuditLogger _auditLogger;
+    private readonly ICurrentUserService _currentUserService;
 
     public RejectVerificationRequestCommandHandler(
         IApplicationDbContext context,
-        IPublisher publisher)
+        IPublisher publisher,
+        IAuditLogger auditLogger,
+        ICurrentUserService currentUserService)
     {
         _context = context;
         _publisher = publisher;
+        _auditLogger = auditLogger;
+        _currentUserService = currentUserService;
     }
 
     public async Task<Result> Handle(RejectVerificationRequestCommand request, CancellationToken ct)
@@ -52,6 +58,16 @@ public class RejectVerificationRequestCommandHandler : IRequestHandler<RejectVer
         await _publisher.Publish(new Showcase.Application.Features.Notifications.Events.VerificationRejectedNotificationEvent(
             verificationReq.UserId,
             request.Note), ct);
+
+        await _auditLogger.LogAsync(
+            _currentUserService.UserId ?? "admin-system",
+            _currentUserService.Username ?? "admin",
+            "VERIFICATION_REJECTED",
+            "VerificationRequest",
+            request.RequestId.ToString(),
+            profile?.Name ?? verificationReq.UserId,
+            request.Note ?? "Verification request rejected",
+            ct: ct);
 
         return Result.Success();
     }

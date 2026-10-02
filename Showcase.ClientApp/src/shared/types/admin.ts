@@ -83,6 +83,8 @@ export interface StorageTelemetryDto {
   totalFilesCount: number;
   monthlyBandwidthBytes: number;
   requestsCount: number;
+  planName?: string;
+  creditsUsedPercent?: number;
   breakdown: {
     imagesBytes: number;
     documentsBytes: number;

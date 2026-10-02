@@ -67,15 +67,28 @@ public record ContentReportItemDto(
     DateTime CreatedAt);
 
 public record StorageTelemetryDto(
-    long TotalUsedBytes,
-    long QuotaBytes,
-    int TotalObjectsCount,
-    IReadOnlyList<StorageBucketBreakdownDto> Buckets);
+    long TotalCapacityBytes,
+    long UsedBytes,
+    int TotalFilesCount,
+    long MonthlyBandwidthBytes,
+    int RequestsCount,
+    string PlanName,
+    double CreditsUsedPercent,
+    StorageAssetBreakdownDto Breakdown,
+    IReadOnlyList<StorageConsumerItemDto> TopConsumers);
 
-public record StorageBucketBreakdownDto(
-    string BucketName,
+public record StorageAssetBreakdownDto(
+    long ImagesBytes,
+    long DocumentsBytes,
+    long ThumbnailsBytes);
+
+public record StorageConsumerItemDto(
+    string UserId,
+    string Username,
+    string FullName,
+    string? AvatarUrl,
     long BytesUsed,
-    int FileCount);
+    int FilesCount);
 
 public record AuditLogItemDto(
     Guid Id,

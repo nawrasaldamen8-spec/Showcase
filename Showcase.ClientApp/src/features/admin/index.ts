@@ -6,6 +6,7 @@ export * from "./components/BanUserModal.tsx";
 export * from "./components/VerificationReviewModal.tsx";
 export * from "./components/ReportActionModal.tsx";
 export * from "./components/StorageBarChart.tsx";
+export * from "./components/AdminStorageSkeleton.tsx";
 export * from "./components/BroadcastComposeModal.tsx";
 
 export * from "./pages/AdminDashboardPage.tsx";
