@@ -66,6 +66,11 @@ public class DeletePostCommandHandler : IRequestHandler<DeletePostCommand, Resul
             }
         }
 
+        // Delete all associated notifications for this post to prevent ghost/broken links
+        await _context.Notifications
+            .Where(n => n.SourcePostId == post.Id)
+            .ExecuteDeleteAsync(ct);
+
         _context.Posts.Remove(post);
         await _context.SaveChangesAsync(ct);
 

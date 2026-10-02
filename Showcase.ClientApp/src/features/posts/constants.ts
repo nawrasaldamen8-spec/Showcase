@@ -37,3 +37,6 @@ export const WIZARD_STEPS: readonly WizardStepMeta[] = [
 ] as const;
 
 export const SUGGESTED_TAGS = ["UI/UX", "Photography", "Architecture", "Branding", "Engineering", "Editorial"];
+
+export const MAX_POST_IMAGES = 6;
+

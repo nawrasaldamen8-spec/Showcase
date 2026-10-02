@@ -38,7 +38,7 @@ public class GetAvatarUploadUrlCommandHandler : IRequestHandler<GetAvatarUploadU
             _ => "jpg"
         };
 
-        var storageKey = $"avatars/{userId}/{Guid.NewGuid():N}.{extension}";
+        var storageKey = $"media/avatars/{userId}/{Guid.NewGuid():N}.{extension}";
 
         var uploadUrl = await _storageService.GetPresignedUploadUrlAsync(
             storageKey,

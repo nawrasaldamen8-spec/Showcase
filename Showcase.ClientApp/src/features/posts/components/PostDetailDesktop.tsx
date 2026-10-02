@@ -145,6 +145,7 @@ export const PostDetailDesktop: React.FC<PostDetailDesktopProps> = ({
               <ProgressiveImage
                 src={primaryImage.url}
                 alt={post.title}
+                variant="detail"
                 priority
                 containerClassName="w-full max-h-[75vh]"
                 className="w-full h-auto max-h-[75vh] object-cover transition-transform duration-700 ease-out group-hover:scale-[1.01]"
@@ -190,6 +191,7 @@ export const PostDetailDesktop: React.FC<PostDetailDesktopProps> = ({
                     <ProgressiveImage
                       src={image.url}
                       alt={`${post.title} - Image ${overallIndex + 1}`}
+                      variant="detail"
                       containerClassName="w-full h-full"
                       className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.01]"
                     />

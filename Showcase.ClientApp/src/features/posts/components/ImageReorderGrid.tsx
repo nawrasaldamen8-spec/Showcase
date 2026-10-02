@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { AlertTriangle, Star, Trash2 } from 'lucide-react';
+import { MAX_POST_IMAGES } from '../constants.ts';
 
 export interface ImageGridItem {
   id: string;
@@ -94,11 +95,13 @@ export const ImageReorderGrid: React.FC<ImageReorderGridProps> = ({
         <div className="flex items-center gap-2">
           <span className="h-2 w-2 rounded-full bg-clay" />
           <span className="font-gothic text-xs font-bold uppercase tracking-wider text-slate-dark">
-            Project Images ({sortedImages.length})
+            Project Images ({sortedImages.length}/{MAX_POST_IMAGES})
           </span>
         </div>
         <span className="font-serif text-xs text-cloud-dark">
-          Set any image as your cover thumbnail
+          {sortedImages.length >= MAX_POST_IMAGES
+            ? `Maximum limit reached (${MAX_POST_IMAGES}/${MAX_POST_IMAGES})`
+            : 'Set any image as your cover thumbnail'}
         </span>
       </div>
 

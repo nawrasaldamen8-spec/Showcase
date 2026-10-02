@@ -79,6 +79,7 @@ export const PostCard: React.FC<PostCardProps> = ({ post, spanType = "square", c
         <ProgressiveImage
           src={post.thumbnailUrl}
           alt={post.title}
+          variant="thumb"
           containerClassName={`w-full ${imgHeightClass}`}
           className="transition-transform duration-500 ease-out group-hover:scale-105"
         />

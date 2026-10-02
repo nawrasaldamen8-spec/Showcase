@@ -51,6 +51,12 @@ public class GetPostImageUploadUrlCommandHandler : IRequestHandler<GetPostImageU
             return PostErrors.UnauthorizedAccess;
         }
 
+        var imageCount = await _context.PostImages.CountAsync(i => i.PostId == post.Id, ct);
+        if (imageCount >= Post.MaxImagesPerPost)
+        {
+            return PostErrors.MaxImagesReached;
+        }
+
         var extension = request.ContentType.Trim().ToLowerInvariant() switch
         {
             "image/jpeg" => "jpg",
@@ -60,7 +66,7 @@ public class GetPostImageUploadUrlCommandHandler : IRequestHandler<GetPostImageU
             _ => "jpg"
         };
 
-        var storageKey = $"posts/{post.Id}/{Guid.NewGuid():N}.{extension}";
+        var storageKey = $"media/posts/{profile.UserId}/{post.Id}/{Guid.NewGuid():N}.{extension}";
 
         var uploadUrl = await _storageService.GetPresignedUploadUrlAsync(
             storageKey,

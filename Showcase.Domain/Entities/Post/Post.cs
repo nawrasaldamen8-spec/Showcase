@@ -73,10 +73,15 @@ public class Post : BaseEntity
         return Result.Success();
     }
 
-    public PostImage AddImage(StorageKey storageKey, int? displayOrder = null)
+    public const int MaxImagesPerPost = 6;
+
+    public Result<PostImage> AddImage(StorageKey storageKey, int? displayOrder = null)
     {
         if (storageKey is null)
             throw new ArgumentNullException(nameof(storageKey));
+
+        if (_images.Count >= MaxImagesPerPost)
+            return PostErrors.MaxImagesReached;
 
         var order = displayOrder ?? (_images.Count > 0 ? _images.Max(x => x.DisplayOrder) + 1 : 0);
         var image = new PostImage(Id, storageKey, order);

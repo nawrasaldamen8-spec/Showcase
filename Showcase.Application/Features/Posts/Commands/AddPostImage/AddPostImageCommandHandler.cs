@@ -61,7 +61,13 @@ public class AddPostImageCommandHandler : IRequestHandler<AddPostImageCommand, R
             return Result.Failure<PostImageDto>(storageKeyResult.Error);
         }
 
-        var image = post.AddImage(storageKeyResult.Value, request.DisplayOrder);
+        var imageResult = post.AddImage(storageKeyResult.Value, request.DisplayOrder);
+        if (imageResult.IsFailure)
+        {
+            return Result.Failure<PostImageDto>(imageResult.Error);
+        }
+
+        var image = imageResult.Value;
         _context.PostImages.Add(image);
         await _context.SaveChangesAsync(ct);
 

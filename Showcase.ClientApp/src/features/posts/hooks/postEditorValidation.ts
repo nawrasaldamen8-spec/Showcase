@@ -1,3 +1,4 @@
+import { MAX_POST_IMAGES } from "../constants.ts";
 import type { WizardStepNumber } from "./usePostEditor.ts";
 
 export interface ValidationState {
@@ -29,6 +30,10 @@ export function validateStep(
   if (step === 1) {
     if (state.imagesCount === 0) {
       errors.setImageInvariantError("At least one image is required to proceed.");
+      return false;
+    }
+    if (state.imagesCount > MAX_POST_IMAGES) {
+      errors.setImageInvariantError(`A project can contain at most ${MAX_POST_IMAGES} images.`);
       return false;
     }
     errors.setImageInvariantError(null);

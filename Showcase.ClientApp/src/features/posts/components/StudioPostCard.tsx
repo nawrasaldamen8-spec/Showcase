@@ -45,6 +45,7 @@ export const StudioPostCard: React.FC<StudioPostCardProps> = ({
             <ProgressiveImage
               src={post.thumbnailUrl}
               alt={post.title}
+              variant="thumb"
               containerClassName="w-full h-full"
               className="w-full h-full object-cover"
             />

@@ -1,5 +1,6 @@
 import { AlertCircle } from "lucide-react";
 import React from "react";
+import { MAX_POST_IMAGES } from "../constants.ts";
 import { ImageDropzone, type UploadedImageData } from "./ImageDropzone.tsx";
 import { ImageReorderGrid, type ImageGridItem } from "./ImageReorderGrid.tsx";
 
@@ -53,6 +54,8 @@ export const WizardStepMedia: React.FC<WizardStepMediaProps> = ({
             variant="full"
             postId={postId}
             disabled={isSaving || isPublishing}
+            currentCount={images.length}
+            maxImages={MAX_POST_IMAGES}
             onImagesUploaded={onImagesUploaded}
             onError={(msg) => setImageInvariantError(msg)}
           />
@@ -66,13 +69,17 @@ export const WizardStepMedia: React.FC<WizardStepMediaProps> = ({
           isPublished={isCurrentlyPublished}
           disabled={isSaving || isPublishing}
           renderAddTile={
-            <ImageDropzone
-              variant="tile"
-              postId={postId}
-              disabled={isSaving || isPublishing}
-              onImagesUploaded={onImagesUploaded}
-              onError={(msg) => setImageInvariantError(msg)}
-            />
+            images.length < MAX_POST_IMAGES ? (
+              <ImageDropzone
+                variant="tile"
+                postId={postId}
+                disabled={isSaving || isPublishing}
+                currentCount={images.length}
+                maxImages={MAX_POST_IMAGES}
+                onImagesUploaded={onImagesUploaded}
+                onError={(msg) => setImageInvariantError(msg)}
+              />
+            ) : null
           }
         />
       )}

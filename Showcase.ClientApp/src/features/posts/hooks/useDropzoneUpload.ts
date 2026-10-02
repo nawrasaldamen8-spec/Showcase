@@ -1,6 +1,8 @@
 import React, { useState, useRef, useCallback, useEffect } from "react";
 import { apiClient } from "@shared/api/apiClient.ts";
 
+import { MAX_POST_IMAGES } from "../constants.ts";
+
 export interface UploadedImageData {
   id?: string;
   storageKey: string;
@@ -13,6 +15,8 @@ export interface UseDropzoneUploadOptions {
   disabled?: boolean;
   maxSizeBytes?: number;
   allowedTypes?: string[];
+  currentCount?: number;
+  maxImages?: number;
   onImagesUploaded?: (newImages: UploadedImageData[]) => void;
   onError?: (error: string) => void;
 }
@@ -63,6 +67,8 @@ export function useDropzoneUpload({
   disabled = false,
   maxSizeBytes = DEFAULT_MAX_SIZE,
   allowedTypes = DEFAULT_ALLOWED_TYPES,
+  currentCount = 0,
+  maxImages = MAX_POST_IMAGES,
   onImagesUploaded,
   onError,
 }: UseDropzoneUploadOptions) {
@@ -91,6 +97,17 @@ export function useDropzoneUpload({
 
   const validateFiles = useCallback(
     (files: File[]): { valid: File[]; error?: string } => {
+      if (currentCount + files.length > maxImages) {
+        const remaining = Math.max(0, maxImages - currentCount);
+        return {
+          valid: [],
+          error:
+            remaining === 0
+              ? `You have reached the maximum limit of ${maxImages} images per project.`
+              : `You can only add ${remaining} more image${remaining === 1 ? "" : "s"} (maximum ${maxImages} images per project).`,
+        };
+      }
+
       for (const file of files) {
         const isTypeAllowed =
           allowedTypes.includes(file.type.toLowerCase()) ||
@@ -115,7 +132,7 @@ export function useDropzoneUpload({
 
       return { valid: files };
     },
-    [allowedTypes, maxSizeBytes]
+    [allowedTypes, maxSizeBytes, currentCount, maxImages]
   );
 
   const processUploads = useCallback(

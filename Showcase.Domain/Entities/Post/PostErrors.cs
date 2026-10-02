@@ -14,6 +14,9 @@ public static class PostErrors
     public static readonly Error CannotPublishEmptyPost =
         Error.Validation("Post.CannotPublishEmptyPost", "Cannot publish a post without at least one image.");
 
+    public static readonly Error MaxImagesReached =
+        Error.Validation("Post.MaxImagesReached", $"A post cannot contain more than {Post.MaxImagesPerPost} images.");
+
     public static readonly Error UnauthorizedAccess =
         Error.Forbidden("Post.UnauthorizedAccess", "You are not authorized to access or modify this post.");
 }

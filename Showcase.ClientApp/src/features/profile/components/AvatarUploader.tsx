@@ -1,6 +1,7 @@
 import { AlertCircle, Camera, Check, Loader2, Trash2, Upload, User as UserIcon } from "lucide-react";
 import React from "react";
 import { Button } from "@shared/components/Button.tsx";
+import { getOptimizedImageUrl } from "@shared/utils/mediaUrl.ts";
 import { useAvatarUpload } from "../hooks/useAvatarUpload.ts";
 
 export interface AvatarUploaderProps {
@@ -81,7 +82,7 @@ export const AvatarUploader: React.FC<AvatarUploaderProps> = ({
           >
             {currentUrl ? (
               <img
-                src={currentUrl}
+                src={getOptimizedImageUrl(currentUrl, "avatar")}
                 alt={`${name || username || "User"} avatar`}
                 className={`h-full w-full object-cover transition-opacity duration-200 ${
                   isUploading ? "opacity-40" : "group-hover:opacity-85"

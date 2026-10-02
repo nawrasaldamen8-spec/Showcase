@@ -5,6 +5,7 @@ import { ProgressiveImage } from "@shared/components/ProgressiveImage.tsx";
 import { VerifiedBadge } from "@shared/components/VerifiedBadge.tsx";
 import { useAdaptiveImageDimensions, useResponsiveViewport } from "@shared/hooks/index.ts";
 import type { PostDetailsResponse } from "@shared/types/index.ts";
+import { getOptimizedImageUrl } from "@shared/utils/mediaUrl.ts";
 import { PostCuratorialMeta } from "./PostCuratorialMeta.tsx";
 
 export interface PostDetailMobileProps {
@@ -58,6 +59,7 @@ export const PostDetailMobile: React.FC<PostDetailMobileProps> = ({
             <ProgressiveImage
               src={creatorAvatar}
               alt={creatorName}
+              variant="avatar"
               containerClassName="h-9 w-9 rounded-full border border-stone/70 shrink-0"
               className="w-full h-full object-cover"
             />
@@ -116,7 +118,7 @@ export const PostDetailMobile: React.FC<PostDetailMobileProps> = ({
               className="w-full h-full snap-start snap-always shrink-0 relative flex items-center justify-center cursor-pointer select-none"
             >
               <img
-                src={image.url}
+                src={getOptimizedImageUrl(image.url, "detail")}
                 alt={`${post.title} - Image ${index + 1}`}
                 onLoad={(e) =>
                   handleImageLoad(index, e.currentTarget.naturalWidth, e.currentTarget.naturalHeight)

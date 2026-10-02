@@ -1,5 +1,6 @@
 import React from 'react';
 import { UploadCloud, AlertCircle, Loader2, CheckCircle2, Image as ImageIcon, Plus } from 'lucide-react';
+import { MAX_POST_IMAGES } from '../constants.ts';
 import { useDropzoneUpload, type UploadedImageData } from '../hooks/useDropzoneUpload.ts';
 
 export type { UploadedImageData };
@@ -9,6 +10,8 @@ export interface ImageDropzoneProps {
   disabled?: boolean;
   maxSizeBytes?: number; // default 10MB (10 * 1024 * 1024)
   allowedTypes?: string[]; // default ['image/jpeg', 'image/png', 'image/webp']
+  currentCount?: number;
+  maxImages?: number;
   onImagesUploaded?: (newImages: UploadedImageData[]) => void;
   onError?: (error: string) => void;
   className?: string;
@@ -23,11 +26,15 @@ export const ImageDropzone: React.FC<ImageDropzoneProps> = ({
   disabled = false,
   maxSizeBytes = DEFAULT_MAX_SIZE,
   allowedTypes = DEFAULT_ALLOWED_TYPES,
+  currentCount = 0,
+  maxImages = MAX_POST_IMAGES,
   onImagesUploaded,
   onError,
   className = '',
   variant = 'full',
 }) => {
+  const isAtLimit = currentCount >= maxImages;
+
   const {
     isDragOver,
     isUploading,
@@ -43,9 +50,11 @@ export const ImageDropzone: React.FC<ImageDropzoneProps> = ({
     openFilePicker,
   } = useDropzoneUpload({
     postId,
-    disabled,
+    disabled: disabled || isAtLimit,
     maxSizeBytes,
     allowedTypes,
+    currentCount,
+    maxImages,
     onImagesUploaded,
     onError,
   });
@@ -215,7 +224,7 @@ export const ImageDropzone: React.FC<ImageDropzoneProps> = ({
                 {isDragOver ? 'Drop images here' : 'Drag & drop images or browse'}
               </p>
               <p className="font-serif text-xs text-cloud-dark">
-                Supports JPEG, PNG, and WebP &bull; Max 10MB each
+                Supports JPEG, PNG, and WebP &bull; Max 10MB each &bull; Up to {maxImages} images
               </p>
             </div>
 

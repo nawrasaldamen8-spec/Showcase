@@ -288,7 +288,7 @@ public class PostFeatureTests
         var profile = new Profile("user-1", "John", "Doe");
         context.Profiles.Add(profile);
         var post = new Post(profile.Id, "Published Post");
-        var img = post.AddImage(StorageKey.Create("posts/img1.png").Value);
+        var img = post.AddImage(StorageKey.Create("posts/img1.png").Value).Value;
         post.Publish();
         context.Posts.Add(post);
         await context.SaveChangesAsync();
@@ -309,8 +309,8 @@ public class PostFeatureTests
         var profile = new Profile("user-1", "John", "Doe");
         context.Profiles.Add(profile);
         var post = new Post(profile.Id, "Post");
-        var img1 = post.AddImage(StorageKey.Create("posts/img1.png").Value, 0);
-        var img2 = post.AddImage(StorageKey.Create("posts/img2.png").Value, 1);
+        var img1 = post.AddImage(StorageKey.Create("posts/img1.png").Value, 0).Value;
+        var img2 = post.AddImage(StorageKey.Create("posts/img2.png").Value, 1).Value;
         context.Posts.Add(post);
         await context.SaveChangesAsync();
 
