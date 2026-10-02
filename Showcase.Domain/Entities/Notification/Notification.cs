@@ -48,4 +48,16 @@ public class Notification : BaseEntity
     {
         IsRead = true;
     }
+
+    public void UpdateActorAndMessage(string? sourceUserId, string message)
+    {
+        if (!string.IsNullOrWhiteSpace(sourceUserId))
+            SourceUserId = sourceUserId.Trim();
+
+        if (!string.IsNullOrWhiteSpace(message))
+            Message = message.Trim();
+
+        CreatedAtUtc = DateTime.UtcNow;
+        IsRead = false;
+    }
 }

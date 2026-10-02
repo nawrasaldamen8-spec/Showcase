@@ -40,17 +40,69 @@ export function useMarkNotificationReadMutation() {
   });
 }
 
+export function useMarkAllNotificationsReadMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: () => apiClient.markAllNotificationsAsRead(),
+    onMutate: async () => {
+      await queryClient.cancelQueries({ queryKey: queryKeys.notifications.all });
+
+      queryClient.setQueriesData({ queryKey: queryKeys.notifications.all }, (oldData: unknown) => {
+        if (!oldData || typeof oldData !== "object") return oldData;
+        if ("pages" in (oldData as { pages: unknown[] })) {
+          const infiniteData = oldData as { pages: { items: NotificationDto[] }[] };
+          return {
+            ...infiniteData,
+            pages: infiniteData.pages.map((p) => ({
+              ...p,
+              items: p.items.map((item) => ({ ...item, isRead: true })),
+            })),
+          };
+        }
+        return oldData;
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.notifications.all });
+      toast.success("All notifications marked as read.");
+    },
+    onError: (err) => {
+      toast.error(extractApiErrorMessage(err, "Failed to mark all notifications as read."));
+    },
+  });
+}
+
 export function useDeleteNotificationMutation() {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: (id: string) => apiClient.deleteNotification(id),
+    onMutate: async (deletedId: string) => {
+      await queryClient.cancelQueries({ queryKey: queryKeys.notifications.all });
+
+      queryClient.setQueriesData({ queryKey: queryKeys.notifications.all }, (oldData: unknown) => {
+        if (!oldData || typeof oldData !== "object") return oldData;
+        if ("pages" in (oldData as { pages: unknown[] })) {
+          const infiniteData = oldData as { pages: { items: NotificationDto[]; totalCount?: number }[] };
+          return {
+            ...infiniteData,
+            pages: infiniteData.pages.map((p) => ({
+              ...p,
+              items: p.items.filter((item) => item.id !== deletedId),
+              totalCount: p.totalCount ? p.totalCount - 1 : p.totalCount,
+            })),
+          };
+        }
+        return oldData;
+      });
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.notifications.all });
-      toast.success("Notification deleted.");
     },
     onError: (err) => {
       toast.error(extractApiErrorMessage(err, "Failed to delete notification."));
+      queryClient.invalidateQueries({ queryKey: queryKeys.notifications.all });
     },
   });
 }

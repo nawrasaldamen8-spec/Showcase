@@ -30,6 +30,12 @@ export const apiNotificationsClient = {
     });
   },
 
+  async markAllNotificationsAsRead(): Promise<void> {
+    return httpFetch<void>("/api/notifications/read-all", {
+      method: "PUT",
+    });
+  },
+
   async deleteNotification(id: string): Promise<void> {
     return httpFetch<void>(`/api/notifications/${id}`, {
       method: "DELETE",

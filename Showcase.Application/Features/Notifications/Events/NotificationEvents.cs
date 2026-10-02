@@ -2,6 +2,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 using Showcase.Application.Common.Interfaces;
 using Showcase.Domain.Entities;
 using Showcase.Domain.Enums;
@@ -53,11 +54,34 @@ public class NotificationEventHandlers :
         if (notification.TargetUserId == notification.SourceUserId)
             return; // Avoid notifying self
 
+        // Check if there is an existing unread Like notification on the same Post to aggregate
+        var existingNotification = await _context.Notifications
+            .FirstOrDefaultAsync(n => n.UserId == notification.TargetUserId
+                && n.Type == NotificationType.Like
+                && n.SourcePostId == notification.PostId
+                && !n.IsRead, ct);
+
+        if (existingNotification != null)
+        {
+            existingNotification.UpdateActorAndMessage(
+                notification.SourceUserId,
+                "and others liked your project");
+            await _context.SaveChangesAsync(ct);
+
+            await _realtimeNotifier.PublishToUserAsync(
+                notification.TargetUserId,
+                existingNotification.Title,
+                existingNotification.Message,
+                new { existingNotification.Id, Type = existingNotification.Type.ToString(), existingNotification.CreatedAtUtc },
+                ct);
+            return;
+        }
+
         var item = new Notification(
             notification.TargetUserId,
             NotificationType.Like,
             "Like",
-            "liked your post",
+            "liked your project",
             notification.PostId,
             notification.SourceUserId);
 

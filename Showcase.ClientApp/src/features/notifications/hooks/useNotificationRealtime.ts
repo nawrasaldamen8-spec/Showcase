@@ -48,23 +48,42 @@ export function useNotificationRealtime() {
 
     let isSubscribed = true;
 
-    connection
-      .start()
-      .then(() => {
-        if (isSubscribed) {
-          connectionRef.current = connection;
-        } else {
-          connection.stop().catch(() => {});
+    const startConnection = () => {
+      if (connection.state === "Disconnected" && isSubscribed && document.visibilityState === "visible") {
+        connection
+          .start()
+          .then(() => {
+            if (isSubscribed) {
+              connectionRef.current = connection;
+            } else {
+              connection.stop().catch(() => {});
+            }
+          })
+          .catch((err) => {
+            if (isSubscribed) {
+              console.warn("SignalR NotificationHub connection failed:", err);
+            }
+          });
+      }
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        queryClient.invalidateQueries({ queryKey: queryKeys.notifications.all });
+        startConnection();
+      } else {
+        if (connectionRef.current && connectionRef.current.state === "Connected") {
+          connectionRef.current.stop().catch(() => {});
         }
-      })
-      .catch((err) => {
-        if (isSubscribed) {
-          console.warn("SignalR NotificationHub connection failed:", err);
-        }
-      });
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    startConnection();
 
     return () => {
       isSubscribed = false;
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
       if (connectionRef.current) {
         connectionRef.current.stop().catch(() => {});
         connectionRef.current = null;

@@ -1,4 +1,4 @@
-import { ArrowLeft, Bell } from "lucide-react";
+import { ArrowLeft, Bell, CheckCheck } from "lucide-react";
 import React, { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
@@ -7,7 +7,11 @@ import { useInfiniteScroll } from "@shared/hooks/index.ts";
 import type { NotificationDto } from "@shared/api/apiClient.notifications.ts";
 import { NotificationRow } from "../components/NotificationRow.tsx";
 import { NotificationRowSkeleton } from "../components/NotificationRowSkeleton.tsx";
-import { useInfiniteNotificationsQuery } from "../hooks/useNotificationQueries.ts";
+import {
+  useDeleteNotificationMutation,
+  useInfiniteNotificationsQuery,
+  useMarkAllNotificationsReadMutation,
+} from "../hooks/useNotificationQueries.ts";
 
 export const NotificationsPage: React.FC = () => {
   const queryClient = useQueryClient();
@@ -19,7 +23,11 @@ export const NotificationsPage: React.FC = () => {
     fetchNextPage,
   } = useInfiniteNotificationsQuery(20);
 
+  const deleteMutation = useDeleteNotificationMutation();
+  const markAllReadMutation = useMarkAllNotificationsReadMutation();
+
   const notifications = data?.pages.flatMap((page) => page.items) || [];
+  const unreadCount = notifications.filter((n) => !n.isRead).length;
 
   const sentinelRef = useInfiniteScroll({
     hasNextPage,
@@ -55,6 +63,10 @@ export const NotificationsPage: React.FC = () => {
     });
   }, [notifications, queryClient]);
 
+  const handleMarkAllAsRead = () => {
+    markAllReadMutation.mutate();
+  };
+
   return (
     <div className="min-h-[85vh] bg-ivory-medium py-6 sm:py-10 px-4 sm:px-6 lg:px-8 pb-24">
       <div className="max-w-2xl mx-auto space-y-6">
@@ -69,11 +81,30 @@ export const NotificationsPage: React.FC = () => {
           </Link>
         </nav>
 
-        {/* Minimalist Page Header */}
-        <header className="border-b border-stone/50 pb-4">
-          <h1 className="font-gothic font-extrabold text-2xl sm:text-3xl uppercase tracking-tight text-slate-dark">
-            Notifications
-          </h1>
+        {/* Minimalist Page Header with Mark All as Read Action */}
+        <header className="border-b border-stone/50 pb-4 flex items-center justify-between gap-4">
+          <div>
+            <h1 className="font-gothic font-extrabold text-2xl sm:text-3xl uppercase tracking-tight text-slate-dark">
+              Notifications
+            </h1>
+            {notifications.length > 0 && (
+              <p className="font-serif text-xs text-cloud-dark mt-1">
+                Tip: Swipe right on any notification to delete.
+              </p>
+            )}
+          </div>
+
+          {notifications.length > 0 && (
+            <button
+              onClick={handleMarkAllAsRead}
+              disabled={markAllReadMutation.isPending || unreadCount === 0}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-stone/60 bg-ivory-light hover:bg-white text-slate-dark font-gothic text-[11px] font-bold uppercase tracking-wider transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer shadow-2xs hover:border-clay"
+              title="Mark all notifications as read"
+            >
+              <CheckCheck className="w-3.5 h-3.5 text-clay" />
+              <span>Mark All Read</span>
+            </button>
+          )}
         </header>
 
         {/* Unified Activity Feed Rows */}
@@ -96,6 +127,7 @@ export const NotificationsPage: React.FC = () => {
                 <NotificationRow
                   key={notification.id}
                   notification={notification}
+                  onDelete={(id) => deleteMutation.mutate(id)}
                 />
               ))}
 
