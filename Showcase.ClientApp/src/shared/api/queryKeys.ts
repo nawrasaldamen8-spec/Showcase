@@ -49,6 +49,7 @@ export const queryKeys = {
     featured: () => [...queryKeys.admin.all, "featured"] as const,
     reports: () => [...queryKeys.admin.all, "reports"] as const,
     broadcasts: () => [...queryKeys.admin.all, "broadcasts"] as const,
+    storage: () => [...queryKeys.admin.all, "storage"] as const,
     auditLogs: (params?: Record<string, unknown>) => [...queryKeys.admin.all, "audit-logs", params || {}] as const,
   },
 };

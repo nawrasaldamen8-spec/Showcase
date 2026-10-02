@@ -34,6 +34,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>, IApplica
     public DbSet<Country> Countries => Set<Country>();
     public DbSet<LanguageReference> LanguageReferences => Set<LanguageReference>();
     public DbSet<ContentReport> ContentReports => Set<ContentReport>();
+    public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
