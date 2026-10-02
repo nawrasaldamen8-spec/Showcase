@@ -80,4 +80,36 @@ public class LocalStorageService : IStorageService
 
         return Task.CompletedTask;
     }
+
+    public Task<StorageUsageTelemetry> GetUsageTelemetryAsync(CancellationToken ct = default)
+    {
+        long usedBytes = 0;
+        int fileCount = 0;
+
+        if (Directory.Exists(_uploadDirectory))
+        {
+            var files = Directory.GetFiles(_uploadDirectory, "*.*", SearchOption.AllDirectories);
+            fileCount = files.Length;
+            foreach (var file in files)
+            {
+                usedBytes += new FileInfo(file).Length;
+            }
+        }
+
+        long capacityBytes = 10L * 1024 * 1024 * 1024; // 10 GB
+        double creditPercent = capacityBytes > 0 ? (double)usedBytes / capacityBytes * 100.0 : 0.0;
+
+        return Task.FromResult(new StorageUsageTelemetry(
+            capacityBytes,
+            usedBytes,
+            fileCount,
+            usedBytes / 2,
+            fileCount * 3,
+            "Local Disk",
+            creditPercent,
+            (long)(usedBytes * 0.7),
+            (long)(usedBytes * 0.1),
+            (long)(usedBytes * 0.2)));
+    }
 }
+

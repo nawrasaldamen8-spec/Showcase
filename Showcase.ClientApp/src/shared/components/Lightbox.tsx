@@ -2,6 +2,7 @@ import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useEscapeKey, useScrollLock } from "../hooks/index.ts";
+import { getOptimizedImageUrl } from "../utils/mediaUrl.ts";
 
 export interface LightboxImageItem {
   url: string;
@@ -223,7 +224,7 @@ const LightboxDialog: React.FC<LightboxProps> = ({
       >
         <img
           key={currentImage.url}
-          src={currentImage.url}
+          src={getOptimizedImageUrl(currentImage.url, "large")}
           alt={currentImage.alt || alt}
           className="max-h-[85vh] max-w-[92vw] object-contain rounded-xl select-none shadow-2xl transition-all duration-300 animate-in fade-in zoom-in-95"
           draggable={false}

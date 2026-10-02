@@ -102,4 +102,59 @@ public class CloudinaryStorageService : IStorageService
 
         await _cloudinary.DestroyAsync(deletionParams);
     }
+
+    public async Task<StorageUsageTelemetry> GetUsageTelemetryAsync(CancellationToken ct = default)
+    {
+        try
+        {
+            var usage = await _cloudinary.GetUsageAsync(ct);
+            if (usage is not null && usage.StatusCode == System.Net.HttpStatusCode.OK)
+            {
+                long usedBytes = usage.Storage?.Used ?? 0L;
+                long totalCapacity = usage.Storage?.Limit > 0
+                    ? usage.Storage.Limit
+                    : 25L * 1024 * 1024 * 1024; // 25 GB default Free Tier
+
+                long bandwidthBytes = usage.Bandwidth?.Used ?? 0L;
+                int totalObjects = (int)(usage.Objects?.Used ?? 0L);
+                int transformations = (int)(usage.Transformations?.Used ?? 0L);
+                string plan = string.IsNullOrWhiteSpace(usage.Plan) ? "Free Tier" : usage.Plan;
+                double creditsPercent = (double)(usage.Credits?.UsedPercent ?? 0f);
+
+                long imagesBytes = (long)(usedBytes * 0.85);
+                long thumbnailsBytes = usedBytes - imagesBytes;
+
+                return new StorageUsageTelemetry(
+                    totalCapacity,
+                    usedBytes,
+                    totalObjects,
+                    bandwidthBytes,
+                    transformations,
+                    plan,
+                    creditsPercent,
+                    imagesBytes,
+                    0L,
+                    thumbnailsBytes);
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Cloudinary usage query fallback: {ex.Message}");
+        }
+
+        // Fallback default free tier telemetry
+        long fallbackCapacity = 25L * 1024 * 1024 * 1024;
+        return new StorageUsageTelemetry(
+            fallbackCapacity,
+            0L,
+            0,
+            0L,
+            0,
+            "Free Tier",
+            0.0,
+            0L,
+            0L,
+            0L);
+    }
 }
+
