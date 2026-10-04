@@ -1,4 +1,4 @@
-﻿using System.Reflection;
+using System.Reflection;
 using Showcase.Application.Common.Behaviors;
 using FluentValidation;
 using Microsoft.Extensions.Configuration;
@@ -13,9 +13,14 @@ public static class DependencyInjection
     {
         var assembly = Assembly.GetExecutingAssembly();
 
+        services.AddMemoryCache();
+
         services.AddMediatR(cfg =>
         {
             cfg.RegisterServicesFromAssembly(assembly);
+            cfg.AddOpenBehavior(typeof(UnhandledExceptionBehavior<,>));
+            cfg.AddOpenBehavior(typeof(PerformanceBehavior<,>));
+            cfg.AddOpenBehavior(typeof(CachingBehavior<,>));
             cfg.AddOpenBehavior(typeof(LoggingBehavior<,>));
             cfg.AddOpenBehavior(typeof(ValidationBehavior<,>));
         });

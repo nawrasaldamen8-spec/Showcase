@@ -11,6 +11,7 @@ using Showcase.Domain.Common.Results;
 using Showcase.Domain.Entities;
 
 namespace Showcase.Application.Features.Career.Queries;
+using Showcase.Application.Features.Career.Common;
 
 public record GetPublicCareerQuery(string? Username = null) : IRequest<Result<PublicCareerDataResponse>>;
 
@@ -131,3 +132,4 @@ public class GetPublicCareerQueryHandler : IRequestHandler<GetPublicCareerQuery,
             visibilityDto);
     }
 }
+

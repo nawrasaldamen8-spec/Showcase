@@ -29,6 +29,10 @@ public interface IIdentityService
         string refreshToken,
         CancellationToken ct = default);
 
+    Task<Result<UserIdentityDetails>> ValidateRefreshTokenDirectAsync(
+        string refreshToken,
+        CancellationToken ct = default);
+
     Task<Result> UpdateRefreshTokenAsync(
         string userId,
         string refreshToken,
@@ -84,7 +88,24 @@ public interface IIdentityService
         IEnumerable<string> userIds,
         CancellationToken ct = default);
 
-    Task<Result<UserIdentityDetails>> GetOrCreateExternalUserAsync(
+    Task<Result<UserIdentityDetails?>> GetExistingExternalUserAsync(
+        string provider,
+        string providerKey,
+        string email,
+        CancellationToken ct = default);
+
+    Task<Result<UserIdentityDetails>> RegisterExternalUserAsync(
+        string provider,
+        string providerKey,
+        string email,
+        string username,
+        string name,
+        string? specialty = null,
+        string? bio = null,
+        string? pictureUrl = null,
+        CancellationToken ct = default);
+
+    Task<Result<(UserIdentityDetails User, bool IsNewUser)>> GetOrCreateExternalUserAsync(
         string provider,
         string providerKey,
         string email,

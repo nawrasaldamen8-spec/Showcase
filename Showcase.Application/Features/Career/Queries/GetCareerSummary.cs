@@ -1,13 +1,14 @@
 using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
+using Showcase.Application.Common.Extensions;
 using Showcase.Application.Common.Interfaces;
 using Showcase.Application.Features.Career.Common;
 using Showcase.Domain.Common.Results;
 using Showcase.Domain.Entities;
 
 namespace Showcase.Application.Features.Career.Queries;
+using Showcase.Application.Features.Career.Common;
 
 public record GetCareerSummaryQuery : IRequest<Result<CareerSummaryResponse>>;
 
@@ -26,22 +27,11 @@ public class GetCareerSummaryQueryHandler : IRequestHandler<GetCareerSummaryQuer
 
     public async Task<Result<CareerSummaryResponse>> Handle(GetCareerSummaryQuery request, CancellationToken ct)
     {
-        var userId = _currentUserService.UserId;
-        if (string.IsNullOrWhiteSpace(userId))
-            return Error.Unauthorized("Auth.Unauthenticated", "User is not authenticated.");
+        var profileResult = await _context.GetProfileWithCareerDataAsync(_currentUserService.UserId, ct);
+        if (profileResult.IsFailure)
+            return Result.Failure<CareerSummaryResponse>(profileResult.Error);
 
-        var profile = await _context.Profiles
-            .Include(p => p.Experiences)
-            .Include(p => p.Academics)
-            .Include(p => p.Skills)
-            .Include(p => p.Credentials)
-            .Include(p => p.Languages)
-            .Include(p => p.Achievements)
-            .Include(p => p.CareerVisibility)
-            .FirstOrDefaultAsync(p => p.UserId == userId && !p.IsDeleted, ct);
-
-        if (profile is null)
-            return ProfileErrors.NotFoundForUser(userId);
+        var profile = profileResult.Value;
 
         var vis = profile.CareerVisibility;
         var visibilityDto = vis is not null
@@ -58,3 +48,4 @@ public class GetCareerSummaryQueryHandler : IRequestHandler<GetCareerSummaryQuer
             visibilityDto);
     }
 }
+

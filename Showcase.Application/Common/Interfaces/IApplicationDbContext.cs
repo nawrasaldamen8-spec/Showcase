@@ -25,10 +25,12 @@ public interface IApplicationDbContext
     DbSet<CareerVisibility> CareerVisibilities { get; }
     DbSet<Country> Countries { get; }
     DbSet<LanguageReference> LanguageReferences { get; }
+    DbSet<SpecialtyReference> SpecialtyReferences { get; }
     DbSet<ContentReport> ContentReports { get; }
     DbSet<AuditLog> AuditLogs { get; }
 
     DbSet<TEntity> Set<TEntity>() where TEntity : class;
 
+    Task<Microsoft.EntityFrameworkCore.Storage.IDbContextTransaction> BeginTransactionAsync(CancellationToken cancellationToken = default);
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

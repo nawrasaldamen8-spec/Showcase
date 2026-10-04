@@ -12,8 +12,7 @@ public record AdminDashboardMetricsDto(
     int CuratedPinnedCount,
     long StorageUsedBytes,
     long StorageCapacityBytes,
-    IReadOnlyList<AuditLogItemDto> RecentAuditLogs,
-    IReadOnlyList<BroadcastAnnouncementItemDto> RecentBroadcasts);
+    IReadOnlyList<AuditLogItemDto> RecentAuditLogs);
 
 public record AdminUserListItemDto(
     string Id,
@@ -101,11 +100,4 @@ public record AuditLogItemDto(
     string? Reason,
     DateTime Timestamp);
 
-public record BroadcastAnnouncementItemDto(
-    Guid Id,
-    string Title,
-    string Message,
-    string Severity,
-    string AdminUsername,
-    DateTime PublishedAt,
-    DateTime? ExpiresAt);
+

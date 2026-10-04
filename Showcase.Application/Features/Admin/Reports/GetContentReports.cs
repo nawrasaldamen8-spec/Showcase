@@ -29,7 +29,7 @@ public class GetContentReportsQueryHandler : IRequestHandler<GetContentReportsQu
 
     public async Task<Result<IReadOnlyList<ContentReportItemDto>>> Handle(GetContentReportsQuery request, CancellationToken ct)
     {
-        var query = _context.ContentReports.AsNoTracking();
+        var query = _context.ContentReports.AsQueryable();
 
         if (!string.IsNullOrWhiteSpace(request.Status) &&
             Enum.TryParse<ReportStatus>(request.Status, true, out var parsedStatus))

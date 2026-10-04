@@ -1,6 +1,8 @@
 using System;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Showcase.Domain.Common.Results;
 
 namespace Showcase.Application.Common.Interfaces;
 
@@ -22,5 +24,5 @@ public interface IStorageService
     string GetPublicUrl(string storageKey);
     Task DeleteAsync(string storageKey, CancellationToken ct = default);
     Task<StorageUsageTelemetry> GetUsageTelemetryAsync(CancellationToken ct = default);
+    Task<Result<string>> SaveAsync(string storageKey, Stream contentStream, CancellationToken ct = default);
 }
-

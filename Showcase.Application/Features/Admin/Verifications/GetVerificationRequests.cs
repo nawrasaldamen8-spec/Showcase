@@ -44,9 +44,7 @@ public class GetVerificationRequestsQueryHandler : IRequestHandler<GetVerificati
             .Where(p => userIds.Contains(p.UserId))
             .ToDictionaryAsync(p => p.UserId, ct);
 
-        var list = new List<VerificationRequestItemDto>(requests.Count);
-
-        foreach (var req in requests)
+        var list = requests.Select(req =>
         {
             var username = usersDict.TryGetValue(req.UserId, out var u) ? u.UserName : "unknown";
             profiles.TryGetValue(req.UserId, out var profile);
@@ -56,7 +54,7 @@ public class GetVerificationRequestsQueryHandler : IRequestHandler<GetVerificati
                 ? _storageService.GetPublicUrl(profile.AvatarKey.Value)
                 : null;
 
-            list.Add(new VerificationRequestItemDto(
+            return new VerificationRequestItemDto(
                 req.Id,
                 req.UserId,
                 username,
@@ -65,9 +63,9 @@ public class GetVerificationRequestsQueryHandler : IRequestHandler<GetVerificati
                 req.Category,
                 req.Message,
                 req.Status.ToString().ToLowerInvariant(),
-                req.CreatedAtUtc));
-        }
+                req.CreatedAtUtc);
+        }).ToList();
 
-        return list;
+        return Result.Success<IReadOnlyList<VerificationRequestItemDto>>(list);
     }
 }

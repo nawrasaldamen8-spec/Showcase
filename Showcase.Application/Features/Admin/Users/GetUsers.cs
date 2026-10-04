@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Showcase.Application.Common.Extensions;
 using Showcase.Application.Common.Interfaces;
 using Showcase.Application.Features.Admin.Common;
 using Showcase.Domain.Common.Results;
@@ -23,6 +24,10 @@ public class GetUsersQueryHandler : IRequestHandler<GetUsersQuery, Result<IReadO
     private readonly IIdentityService _identityService;
     private readonly IStorageService _storageService;
 
+    // Statistical approximation: ~850 KB per high-resolution architectural plate.
+    // Actual file sizes are not stored in post_images; this is a display estimate only.
+    private const long ApproximateBytesPerPost = 850_000L;
+
     public GetUsersQueryHandler(
         IApplicationDbContext context,
         IIdentityService identityService,
@@ -35,72 +40,65 @@ public class GetUsersQueryHandler : IRequestHandler<GetUsersQuery, Result<IReadO
 
     public async Task<Result<IReadOnlyList<AdminUserListItemDto>>> Handle(GetUsersQuery request, CancellationToken ct)
     {
-        var query = _context.Profiles
+        var profiles = await _context.Profiles
             .IgnoreQueryFilters()
             .Where(p => !p.IsDeleted)
-            .AsNoTracking();
-
-        if (!string.IsNullOrWhiteSpace(request.Search))
-        {
-            var search = request.Search.Trim().ToLower();
-            query = query.Where(p =>
-                p.Name.ToLower().Contains(search) ||
-                (p.Specialty != null && p.Specialty.ToLower().Contains(search)) ||
-                (p.Country != null && p.Country.ToLower().Contains(search)));
-        }
-
-        if (request.Status == "active")
-        {
-            query = query.Where(p => !p.IsBanned && !p.IsDeleted);
-        }
-        else if (request.Status == "suspended")
-        {
-            query = query.Where(p => p.IsBanned);
-        }
-
-        var profiles = await query
+            .Search(request.Search)
+            .FilterByStatus(request.Status)
             .OrderByDescending(p => p.CreatedAt)
             .Take(100)
             .ToListAsync(ct);
 
-        var list = new List<AdminUserListItemDto>();
+        // 1. Batch Identity Lookups
+        var userIds = profiles.Select(p => p.UserId).Distinct().ToList();
+        var usersResult = await _identityService.GetUsersByIdsAsync(userIds, ct);
+        var usersMap = usersResult.IsSuccess
+            ? usersResult.Value
+            : new Dictionary<string, UserIdentityDetails>();
 
-        foreach (var profile in profiles)
-        {
-            var userResult = await _identityService.GetUserByIdAsync(profile.UserId, ct);
-            var username = userResult.IsSuccess ? userResult.Value.UserName : "unknown";
-            var email = userResult.IsSuccess ? userResult.Value.Email : null;
-            var roles = userResult.IsSuccess ? userResult.Value.Roles : new List<string>();
+        // 2. Batch Post Counts (Eliminates N+1 query)
+        var profileIds = profiles.Select(p => p.Id).ToList();
+        var postCounts = await _context.Posts
+            .Where(p => profileIds.Contains(p.ProfileId) && p.Status == PostStatus.Published)
+            .GroupBy(p => p.ProfileId)
+            .Select(g => new { ProfileId = g.Key, Count = g.Count() })
+            .ToDictionaryAsync(x => x.ProfileId, x => x.Count, ct);
 
-            if (!string.IsNullOrWhiteSpace(request.Role) && request.Role != "all")
+        // 3. Domain Projection & In-Memory Role Filter
+        var filterByRole = !string.IsNullOrWhiteSpace(request.Role) && !request.Role.Equals("all", StringComparison.OrdinalIgnoreCase);
+
+        var list = profiles
+            .Select(profile =>
             {
-                if (!roles.Contains(request.Role, StringComparer.OrdinalIgnoreCase))
+                usersMap.TryGetValue(profile.UserId, out var user);
+                var roles = user?.Roles?.ToList() ?? new List<string>();
+                var postsCount = postCounts.GetValueOrDefault(profile.Id, 0);
+                var avatarUrl = profile.AvatarKey is not null ? _storageService.GetPublicUrl(profile.AvatarKey.Value) : null;
+
+                return new
                 {
-                    continue;
-                }
-            }
-
-            var postsCount = await _context.Posts
-                .CountAsync(p => p.ProfileId == profile.Id && p.Status == PostStatus.Published, ct);
-
-            var avatarUrl = profile.AvatarKey is not null
-                ? _storageService.GetPublicUrl(profile.AvatarKey.Value)
-                : null;
-
-            list.Add(new AdminUserListItemDto(
-                profile.UserId,
-                username,
-                profile.Name,
-                email,
-                avatarUrl,
-                profile.IsVerified,
-                profile.IsBanned ? "suspended" : "active",
-                profile.BanReason,
-                postsCount,
-                postsCount * 850_000L,
-                roles.ToList(),
-                profile.CreatedAt));
-        }
+                    Profile = profile,
+                    User = user,
+                    Roles = roles,
+                    PostsCount = postsCount,
+                    AvatarUrl = avatarUrl
+                };
+            })
+            .Where(x => !filterByRole || x.Roles.Contains(request.Role!, StringComparer.OrdinalIgnoreCase))
+            .Select(x => new AdminUserListItemDto(
+                x.Profile.UserId,
+                x.User?.UserName ?? "unknown",
+                x.Profile.Name,
+                x.User?.Email,
+                x.AvatarUrl,
+                x.Profile.IsVerified,
+                x.Profile.IsBanned ? "suspended" : "active",
+                x.Profile.BanReason,
+                x.PostsCount,
+                x.PostsCount * ApproximateBytesPerPost,
+                x.Roles.ToList(),
+                x.Profile.CreatedAt))
+            .ToList();
 
         return list;
     }

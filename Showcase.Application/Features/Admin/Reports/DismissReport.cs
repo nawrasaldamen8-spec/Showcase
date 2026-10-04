@@ -25,16 +25,13 @@ public class DismissReportCommandHandler : IRequestHandler<DismissReportCommand,
 {
     private readonly IApplicationDbContext _context;
     private readonly IAuditLogger _auditLogger;
-    private readonly ICurrentUserService _currentUserService;
 
     public DismissReportCommandHandler(
         IApplicationDbContext context,
-        IAuditLogger auditLogger,
-        ICurrentUserService currentUserService)
+        IAuditLogger auditLogger)
     {
         _context = context;
         _auditLogger = auditLogger;
-        _currentUserService = currentUserService;
     }
 
     public async Task<Result> Handle(DismissReportCommand request, CancellationToken ct)
@@ -56,8 +53,6 @@ public class DismissReportCommandHandler : IRequestHandler<DismissReportCommand,
         await _context.SaveChangesAsync(ct);
 
         await _auditLogger.LogAsync(
-            _currentUserService.UserId ?? "admin-system",
-            _currentUserService.Username ?? "admin",
             "REPORT_DISMISSED",
             "ContentReport",
             request.ReportId.ToString(),

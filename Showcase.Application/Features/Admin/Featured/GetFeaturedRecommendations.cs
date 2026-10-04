@@ -36,24 +36,38 @@ public class GetFeaturedRecommendationsQueryHandler : IRequestHandler<GetFeature
             .Take(100)
             .ToListAsync(ct);
 
-        var list = new List<FeaturedRecommendationItemDto>();
+        var userIds = requests.Select(r => r.UserId).Distinct().ToList();
 
-        foreach (var req in requests)
+        var usersResult = await _identityService.GetUsersByIdsAsync(userIds, ct);
+        var usersMap = usersResult.IsSuccess ? usersResult.Value : new Dictionary<string, UserIdentityDetails>();
+
+        var profiles = await _context.Profiles
+            .Where(p => userIds.Contains(p.UserId))
+            .ToListAsync(ct);
+
+        var profileMap = profiles.ToDictionary(p => p.UserId, p => p);
+        var profileIds = profiles.Select(p => p.Id).ToList();
+
+        var postCounts = await _context.Posts
+            .Where(p => profileIds.Contains(p.ProfileId) && p.Status == PostStatus.Published)
+            .GroupBy(p => p.ProfileId)
+            .Select(g => new { ProfileId = g.Key, Count = g.Count() })
+            .ToDictionaryAsync(x => x.ProfileId, x => x.Count, ct);
+
+        var list = requests.Select(req =>
         {
-            var userResult = await _identityService.GetUserByIdAsync(req.UserId, ct);
-            var username = userResult.IsSuccess ? userResult.Value.UserName : "unknown";
-
-            var profile = await _context.Profiles.FirstOrDefaultAsync(p => p.UserId == req.UserId, ct);
+            var username = usersMap.TryGetValue(req.UserId, out var user) ? user.UserName : "unknown";
+            profileMap.TryGetValue(req.UserId, out var profile);
             var name = profile?.Name ?? username;
             var avatarUrl = profile?.AvatarKey is not null
                 ? _storageService.GetPublicUrl(profile.AvatarKey.Value)
                 : null;
 
-            var postsCount = profile is not null
-                ? await _context.Posts.CountAsync(p => p.ProfileId == profile.Id && p.Status == PostStatus.Published, ct)
+            var postsCount = (profile is not null && postCounts.TryGetValue(profile.Id, out var count))
+                ? count
                 : 0;
 
-            list.Add(new FeaturedRecommendationItemDto(
+            return new FeaturedRecommendationItemDto(
                 req.Id,
                 req.UserId,
                 username,
@@ -64,9 +78,9 @@ public class GetFeaturedRecommendationsQueryHandler : IRequestHandler<GetFeature
                 postsCount,
                 req.Status == FeaturedStatus.Featured,
                 req.Status.ToString().ToLowerInvariant(),
-                req.CreatedAtUtc));
-        }
+                req.CreatedAtUtc);
+        }).ToList();
 
-        return list;
+        return Result.Success<IReadOnlyList<FeaturedRecommendationItemDto>>(list);
     }
 }

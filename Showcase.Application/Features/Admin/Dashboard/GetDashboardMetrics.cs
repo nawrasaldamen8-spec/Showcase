@@ -36,7 +36,6 @@ public class GetDashboardMetricsQueryHandler : IRequestHandler<GetDashboardMetri
         long quotaBytes = 50L * 1024 * 1024 * 1024; // 50GB quota
 
         var recentAuditLogs = await _context.AuditLogs
-            .AsNoTracking()
             .OrderByDescending(a => a.CreatedAt)
             .Take(6)
             .Select(a => new AuditLogItemDto(
@@ -51,8 +50,6 @@ public class GetDashboardMetricsQueryHandler : IRequestHandler<GetDashboardMetri
                 a.CreatedAt))
             .ToListAsync(ct);
 
-        var recentBroadcasts = new List<BroadcastAnnouncementItemDto>();
-
         return new AdminDashboardMetricsDto(
             totalUsers,
             activeCreators,
@@ -62,7 +59,6 @@ public class GetDashboardMetricsQueryHandler : IRequestHandler<GetDashboardMetri
             curatedPinnedCount,
             estimatedBytes,
             quotaBytes,
-            recentAuditLogs,
-            recentBroadcasts);
+            recentAuditLogs);
     }
 }

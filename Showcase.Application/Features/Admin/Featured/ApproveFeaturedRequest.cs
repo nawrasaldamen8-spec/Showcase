@@ -19,18 +19,15 @@ public class ApproveFeaturedRequestCommandHandler : IRequestHandler<ApproveFeatu
     private readonly IApplicationDbContext _context;
     private readonly IPublisher _publisher;
     private readonly IAuditLogger _auditLogger;
-    private readonly ICurrentUserService _currentUserService;
 
     public ApproveFeaturedRequestCommandHandler(
         IApplicationDbContext context,
         IPublisher publisher,
-        IAuditLogger auditLogger,
-        ICurrentUserService currentUserService)
+        IAuditLogger auditLogger)
     {
         _context = context;
         _publisher = publisher;
         _auditLogger = auditLogger;
-        _currentUserService = currentUserService;
     }
 
     public async Task<Result> Handle(ApproveFeaturedRequestCommand request, CancellationToken ct)
@@ -61,8 +58,6 @@ public class ApproveFeaturedRequestCommandHandler : IRequestHandler<ApproveFeatu
             request.Note), ct);
 
         await _auditLogger.LogAsync(
-            _currentUserService.UserId ?? "admin-system",
-            _currentUserService.Username ?? "admin",
             "FEATURED_APPROVED",
             "FeaturedRequest",
             request.Id.ToString(),

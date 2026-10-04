@@ -30,20 +30,19 @@ public class BanUserCommandHandler : IRequestHandler<BanUserCommand, Result>
 {
     private readonly IApplicationDbContext _context;
     private readonly IAuditLogger _auditLogger;
-    private readonly ICurrentUserService _currentUserService;
 
     public BanUserCommandHandler(
         IApplicationDbContext context,
-        IAuditLogger auditLogger,
-        ICurrentUserService currentUserService)
+        IAuditLogger auditLogger)
     {
         _context = context;
         _auditLogger = auditLogger;
-        _currentUserService = currentUserService;
     }
 
     public async Task<Result> Handle(BanUserCommand request, CancellationToken ct)
     {
+        await using var transaction = await _context.BeginTransactionAsync(ct);
+
         var profile = await _context.Profiles
             .IgnoreQueryFilters()
             .FirstOrDefaultAsync(p => p.UserId == request.UserId, ct);
@@ -55,14 +54,14 @@ public class BanUserCommandHandler : IRequestHandler<BanUserCommand, Result>
         await _context.SaveChangesAsync(ct);
 
         await _auditLogger.LogAsync(
-            _currentUserService.UserId ?? "admin-system",
-            _currentUserService.Username ?? "admin",
             "USER_BANNED",
             "User",
             request.UserId,
             profile.Name,
             request.Reason,
             ct: ct);
+
+        await transaction.CommitAsync(ct);
 
         return Result.Success();
     }

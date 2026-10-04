@@ -16,3 +16,5 @@ public record NotificationDto(
     string? PostCoverUrl,
     bool IsRead,
     DateTime CreatedAtUtc);
+
+public record UnreadCountResponse(int Count);

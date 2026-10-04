@@ -1,9 +1,12 @@
 using System;
+using System.Security.Cryptography;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Showcase.Application.Common.Interfaces;
+using Showcase.Application.Features.Notifications.Events;
 using Showcase.Domain.Common.Results;
 using Showcase.Domain.Entities;
 
@@ -11,23 +14,23 @@ namespace Showcase.Application.Features.Analytics;
 
 public record TrackProfileVisitCommand(
     Guid ProfileId,
-    string HashedIp,
+    string? IpAddress = null,
     string? VisitorToken = null) : IRequest<Result>;
 
 public class TrackProfileVisitCommandHandler : IRequestHandler<TrackProfileVisitCommand, Result>
 {
     private readonly ICurrentUserService _currentUserService;
     private readonly IApplicationDbContext _context;
-    private readonly IRealtimeNotifier _realtimeNotifier;
+    private readonly IPublisher _publisher;
 
     public TrackProfileVisitCommandHandler(
         ICurrentUserService currentUserService,
         IApplicationDbContext context,
-        IRealtimeNotifier realtimeNotifier)
+        IPublisher publisher)
     {
         _currentUserService = currentUserService;
         _context = context;
-        _realtimeNotifier = realtimeNotifier;
+        _publisher = publisher;
     }
 
     public async Task<Result> Handle(TrackProfileVisitCommand request, CancellationToken ct)
@@ -44,64 +47,64 @@ public class TrackProfileVisitCommandHandler : IRequestHandler<TrackProfileVisit
         if (!string.IsNullOrWhiteSpace(currentUserId) && currentUserId == profile.UserId)
             return Result.Success();
 
+        var rawIp = !string.IsNullOrWhiteSpace(request.IpAddress)
+            ? request.IpAddress
+            : _currentUserService.IpAddress ?? "127.0.0.1";
+        var hashedIp = HashIp(rawIp);
+
         // 24 hour dedup check: registered user by userId, guest by visitorToken, fallback to hashedIp
-        var since = DateTime.UtcNow.AddHours(-24);
-        bool alreadyVisited;
+        if (await IsDuplicateVisitAsync(request.ProfileId, currentUserId, request.VisitorToken, hashedIp, ct))
+            return Result.Success();
 
-        if (!string.IsNullOrWhiteSpace(currentUserId))
-        {
-            alreadyVisited = await _context.ProfileVisits
-                .AnyAsync(v => v.ProfileId == request.ProfileId &&
-                               v.VisitedAtUtc >= since &&
-                               v.VisitorUserId == currentUserId, ct);
-        }
-        else if (!string.IsNullOrWhiteSpace(request.VisitorToken))
-        {
-            alreadyVisited = await _context.ProfileVisits
-                .AnyAsync(v => v.ProfileId == request.ProfileId &&
-                               v.VisitedAtUtc >= since &&
-                               v.VisitorToken == request.VisitorToken, ct);
-        }
-        else
-        {
-            alreadyVisited = await _context.ProfileVisits
-                .AnyAsync(v => v.ProfileId == request.ProfileId &&
-                               v.VisitedAtUtc >= since &&
-                               v.HashedIp == request.HashedIp, ct);
-        }
+        var isGuest = string.IsNullOrWhiteSpace(currentUserId);
+        var visit = new ProfileVisit(
+            request.ProfileId,
+            hashedIp,
+            isGuest ? null : currentUserId,
+            request.VisitorToken);
 
-        if (!alreadyVisited)
-        {
-            var isGuest = string.IsNullOrWhiteSpace(currentUserId);
-            var visit = new ProfileVisit(
-                request.ProfileId,
-                request.HashedIp,
-                isGuest ? null : currentUserId,
-                request.VisitorToken);
+        _context.ProfileVisits.Add(visit);
+        await _context.SaveChangesAsync(ct);
 
-            _context.ProfileVisits.Add(visit);
-
-            var notificationMessage = isGuest ? "A guest viewed your profile" : "visited your profile";
-
-            var notification = new Notification(
-                profile.UserId,
-                Domain.Enums.NotificationType.ProfileVisit,
-                "Profile Visit",
-                notificationMessage,
-                null,
-                isGuest ? null : currentUserId);
-
-            _context.Notifications.Add(notification);
-            await _context.SaveChangesAsync(ct);
-
-            await _realtimeNotifier.PublishToUserAsync(
-                profile.UserId,
-                notification.Title,
-                notification.Message,
-                new { notification.Id, Type = notification.Type.ToString(), notification.CreatedAtUtc },
-                ct);
-        }
+        await _publisher.Publish(new ProfileVisitedNotificationEvent(
+            profile.UserId,
+            isGuest ? null : currentUserId,
+            isGuest), ct);
 
         return Result.Success();
+    }
+
+    private static string HashIp(string ip) =>
+        Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(ip)));
+
+    private async Task<bool> IsDuplicateVisitAsync(
+        Guid profileId,
+        string? userId,
+        string? visitorToken,
+        string hashedIp,
+        CancellationToken ct)
+    {
+        var since = DateTime.UtcNow.AddHours(-24);
+
+        if (!string.IsNullOrWhiteSpace(userId))
+        {
+            return await _context.ProfileVisits
+                .AnyAsync(v => v.ProfileId == profileId &&
+                               v.VisitedAtUtc >= since &&
+                               v.VisitorUserId == userId, ct);
+        }
+
+        if (!string.IsNullOrWhiteSpace(visitorToken))
+        {
+            return await _context.ProfileVisits
+                .AnyAsync(v => v.ProfileId == profileId &&
+                               v.VisitedAtUtc >= since &&
+                               v.VisitorToken == visitorToken, ct);
+        }
+
+        return await _context.ProfileVisits
+            .AnyAsync(v => v.ProfileId == profileId &&
+                           v.VisitedAtUtc >= since &&
+                           v.HashedIp == hashedIp, ct);
     }
 }

@@ -25,7 +25,6 @@ public class GetAuditLogsQueryHandler : IRequestHandler<GetAuditLogsQuery, Resul
     public async Task<Result<IReadOnlyList<AuditLogItemDto>>> Handle(GetAuditLogsQuery request, CancellationToken ct)
     {
         var logs = await _context.AuditLogs
-            .AsNoTracking()
             .OrderByDescending(a => a.CreatedAt)
             .Take(250)
             .Select(a => new AuditLogItemDto(
@@ -39,14 +38,6 @@ public class GetAuditLogsQueryHandler : IRequestHandler<GetAuditLogsQuery, Resul
                 a.Reason,
                 a.CreatedAt))
             .ToListAsync(ct);
-
-        if (logs.Count == 0)
-        {
-            logs = new List<AuditLogItemDto>
-            {
-                new(Guid.NewGuid(), "admin", "admin", "SYSTEM_STARTUP", "System", "Server", "System governance initialized", null, DateTime.UtcNow)
-            };
-        }
 
         return Result.Success<IReadOnlyList<AuditLogItemDto>>(logs);
     }

@@ -19,6 +19,10 @@ public class GetStorageTelemetryQueryHandler : IRequestHandler<GetStorageTelemet
     private readonly IStorageService _storageService;
     private readonly IIdentityService _identityService;
 
+    // Statistical approximations: ~850 KB per high-res plate.
+    // Actual file sizes are not stored in the database; these are display estimates only.
+    private const long ApproximateBytesPerPost = 850_000L;
+
     public GetStorageTelemetryQueryHandler(
         IApplicationDbContext context,
         IStorageService storageService,
@@ -42,7 +46,7 @@ public class GetStorageTelemetryQueryHandler : IRequestHandler<GetStorageTelemet
             {
                 ProfileId = g.Key,
                 FilesCount = g.Count(),
-                BytesUsed = g.Count() * 850_000L
+                BytesUsed = g.Count() * ApproximateBytesPerPost
             })
             .OrderByDescending(x => x.BytesUsed)
             .Take(10)
@@ -54,14 +58,19 @@ public class GetStorageTelemetryQueryHandler : IRequestHandler<GetStorageTelemet
             .Where(p => profileIds.Contains(p.Id))
             .ToListAsync(ct);
 
+        var userIds = profiles.Select(p => p.UserId).Distinct().ToList();
+        var usersResult = await _identityService.GetUsersByIdsAsync(userIds, ct);
+        var usersMap = usersResult.IsSuccess ? usersResult.Value : new Dictionary<string, UserIdentityDetails>();
+
         var topConsumers = new List<StorageConsumerItemDto>();
         foreach (var c in consumersGrouped)
         {
             var p = profiles.FirstOrDefault(prof => prof.Id == c.ProfileId);
             if (p is not null)
             {
-                var userRes = await _identityService.GetUserByIdAsync(p.UserId, ct);
-                var username = userRes.IsSuccess ? userRes.Value.UserName : p.Name;
+                var username = (usersMap.TryGetValue(p.UserId, out var user) && !string.IsNullOrWhiteSpace(user.UserName))
+                    ? user.UserName
+                    : p.Name;
                 var avatarUrl = p.AvatarKey is not null ? _storageService.GetPublicUrl(p.AvatarKey.Value) : null;
                 topConsumers.Add(new StorageConsumerItemDto(
                     p.UserId,
@@ -70,29 +79,6 @@ public class GetStorageTelemetryQueryHandler : IRequestHandler<GetStorageTelemet
                     avatarUrl,
                     c.BytesUsed,
                     c.FilesCount));
-            }
-        }
-
-        // If no posts exist yet, include sample profile accounts
-        if (topConsumers.Count == 0)
-        {
-            var fallbackProfiles = await _context.Profiles
-                .IgnoreQueryFilters()
-                .Take(5)
-                .ToListAsync(ct);
-
-            foreach (var p in fallbackProfiles)
-            {
-                var userRes = await _identityService.GetUserByIdAsync(p.UserId, ct);
-                var username = userRes.IsSuccess ? userRes.Value.UserName : p.Name;
-                var avatarUrl = p.AvatarKey is not null ? _storageService.GetPublicUrl(p.AvatarKey.Value) : null;
-                topConsumers.Add(new StorageConsumerItemDto(
-                    p.UserId,
-                    username,
-                    p.Name,
-                    avatarUrl,
-                    250_000L,
-                    p.AvatarKey is not null ? 1 : 0));
             }
         }
 

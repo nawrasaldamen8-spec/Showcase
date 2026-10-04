@@ -1,5 +1,9 @@
-﻿using MediatR;
+using System.Diagnostics;
+using System.Threading;
+using System.Threading.Tasks;
+using MediatR;
 using Microsoft.Extensions.Logging;
+using Showcase.Application.Common.Interfaces;
 
 namespace Showcase.Application.Common.Behaviors;
 
@@ -7,10 +11,14 @@ public class LoggingBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, 
     where TRequest : notnull
 {
     private readonly ILogger<TRequest> _logger;
+    private readonly ICurrentUserService _currentUserService;
 
-    public LoggingBehavior(ILogger<TRequest> logger)
+    public LoggingBehavior(
+        ILogger<TRequest> logger,
+        ICurrentUserService currentUserService)
     {
         _logger = logger;
+        _currentUserService = currentUserService;
     }
 
     public async Task<TResponse> Handle(
@@ -19,16 +27,24 @@ public class LoggingBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, 
         CancellationToken cancellationToken)
     {
         var requestName = typeof(TRequest).Name;
+        var userId = _currentUserService.UserId ?? "Anonymous";
 
-        _logger.LogInformation("Processing request {RequestName}", requestName);
+        _logger.LogInformation(
+            "Handling {RequestName} [User: {UserId}]",
+            requestName,
+            userId);
 
-        var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+        var stopwatch = Stopwatch.StartNew();
 
         var response = await next();
 
         stopwatch.Stop();
 
-        _logger.LogInformation("Completed request {RequestName} in {ElapsedMilliseconds} ms", requestName, stopwatch.ElapsedMilliseconds);
+        _logger.LogInformation(
+            "Handled {RequestName} [User: {UserId}] in {ElapsedMilliseconds} ms",
+            requestName,
+            userId,
+            stopwatch.ElapsedMilliseconds);
 
         return response;
     }

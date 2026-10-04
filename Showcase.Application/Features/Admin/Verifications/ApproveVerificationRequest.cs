@@ -18,18 +18,15 @@ public class ApproveVerificationRequestCommandHandler : IRequestHandler<ApproveV
     private readonly IApplicationDbContext _context;
     private readonly IPublisher _publisher;
     private readonly IAuditLogger _auditLogger;
-    private readonly ICurrentUserService _currentUserService;
 
     public ApproveVerificationRequestCommandHandler(
         IApplicationDbContext context,
         IPublisher publisher,
-        IAuditLogger auditLogger,
-        ICurrentUserService currentUserService)
+        IAuditLogger auditLogger)
     {
         _context = context;
         _publisher = publisher;
         _auditLogger = auditLogger;
-        _currentUserService = currentUserService;
     }
 
     public async Task<Result> Handle(ApproveVerificationRequestCommand request, CancellationToken ct)
@@ -60,8 +57,6 @@ public class ApproveVerificationRequestCommandHandler : IRequestHandler<ApproveV
             request.Note), ct);
 
         await _auditLogger.LogAsync(
-            _currentUserService.UserId ?? "admin-system",
-            _currentUserService.Username ?? "admin",
             "VERIFICATION_APPROVED",
             "VerificationRequest",
             request.RequestId.ToString(),

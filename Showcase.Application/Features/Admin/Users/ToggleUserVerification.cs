@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using Showcase.Application.Common.Interfaces;
 using Showcase.Application.Features.Notifications.Events;
 using Showcase.Domain.Common.Results;
+using Showcase.Domain.Entities;
 
 namespace Showcase.Application.Features.Admin.Users;
 
@@ -29,18 +30,15 @@ public class ToggleUserVerificationCommandHandler : IRequestHandler<ToggleUserVe
     private readonly IApplicationDbContext _context;
     private readonly IPublisher _publisher;
     private readonly IAuditLogger _auditLogger;
-    private readonly ICurrentUserService _currentUserService;
 
     public ToggleUserVerificationCommandHandler(
         IApplicationDbContext context,
         IPublisher publisher,
-        IAuditLogger auditLogger,
-        ICurrentUserService currentUserService)
+        IAuditLogger auditLogger)
     {
         _context = context;
         _publisher = publisher;
         _auditLogger = auditLogger;
-        _currentUserService = currentUserService;
     }
 
     public async Task<Result> Handle(ToggleUserVerificationCommand request, CancellationToken ct)
@@ -51,46 +49,19 @@ public class ToggleUserVerificationCommandHandler : IRequestHandler<ToggleUserVe
 
         if (profile is null)
         {
-            return Error.NotFound("Profile.NotFound", $"Profile for user '{request.UserId}' was not found.");
+            return ProfileErrors.NotFoundForUser(request.UserId);
         }
 
         profile.MarkVerified(request.IsVerified);
-
-        // Update any active verification request if present
-        var pendingReq = await _context.VerificationRequests
-            .Where(v => v.UserId == request.UserId && v.Status == Showcase.Domain.Enums.VerificationStatus.Pending)
-            .FirstOrDefaultAsync(ct);
-
-        if (pendingReq is not null)
-        {
-            if (request.IsVerified)
-            {
-                pendingReq.Approve(request.Note);
-            }
-            else
-            {
-                pendingReq.Reject(request.Note ?? "Verification removed by administrator.");
-            }
-        }
-
         await _context.SaveChangesAsync(ct);
 
-        if (request.IsVerified)
-        {
-            await _publisher.Publish(new VerificationApprovedNotificationEvent(
-                request.UserId,
-                request.Note ?? "Congratulations! Your profile has been granted a verified creator badge."), ct);
-        }
-        else
-        {
-            await _publisher.Publish(new VerificationRejectedNotificationEvent(
-                request.UserId,
-                request.Note ?? "Your verified badge has been revoked by administration."), ct);
-        }
+        INotification notificationEvent = request.IsVerified
+            ? new VerificationApprovedNotificationEvent(request.UserId, request.Note)
+            : new VerificationRejectedNotificationEvent(request.UserId, request.Note);
+
+        await _publisher.Publish(notificationEvent, ct);
 
         await _auditLogger.LogAsync(
-            _currentUserService.UserId ?? "admin-system",
-            _currentUserService.Username ?? "admin",
             request.IsVerified ? "VERIFICATION_GRANTED" : "VERIFICATION_REVOKED",
             "User",
             request.UserId,

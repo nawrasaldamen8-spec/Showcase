@@ -18,18 +18,15 @@ public class ToggleCuratedPinCommandHandler : IRequestHandler<ToggleCuratedPinCo
     private readonly IApplicationDbContext _context;
     private readonly IPublisher _publisher;
     private readonly IAuditLogger _auditLogger;
-    private readonly ICurrentUserService _currentUserService;
 
     public ToggleCuratedPinCommandHandler(
         IApplicationDbContext context,
         IPublisher publisher,
-        IAuditLogger auditLogger,
-        ICurrentUserService currentUserService)
+        IAuditLogger auditLogger)
     {
         _context = context;
         _publisher = publisher;
         _auditLogger = auditLogger;
-        _currentUserService = currentUserService;
     }
 
     public async Task<Result> Handle(ToggleCuratedPinCommand request, CancellationToken ct)
@@ -60,8 +57,6 @@ public class ToggleCuratedPinCommandHandler : IRequestHandler<ToggleCuratedPinCo
         await _context.SaveChangesAsync(ct);
 
         await _auditLogger.LogAsync(
-            _currentUserService.UserId ?? "admin-system",
-            _currentUserService.Username ?? "admin",
             "FEATURED_PIN_TOGGLED",
             "FeaturedRequest",
             request.Id.ToString(),

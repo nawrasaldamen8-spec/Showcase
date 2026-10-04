@@ -1,10 +1,14 @@
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentValidation;
 using MediatR;
 using Showcase.Application.Common.Interfaces;
+using Showcase.Domain.Common.Errors;
 using Showcase.Domain.Common.Results;
+using Showcase.Domain.Constants;
 
 namespace Showcase.Application.Features.Admin.Users;
 
@@ -48,44 +52,52 @@ public class UpdateUserRoleCommandHandler : IRequestHandler<UpdateUserRoleComman
             return targetUserResult.Error;
 
         var targetUser = targetUserResult.Value;
-        var currentlyHasAdmin = targetUser.Roles.Contains("Admin", System.StringComparer.OrdinalIgnoreCase);
-        var willHaveAdmin = request.Roles.Contains("Admin", System.StringComparer.OrdinalIgnoreCase);
 
-        // If modifying Admin status (granting or revoking Admin role), require admin password confirmation
-        if (currentlyHasAdmin != willHaveAdmin)
-        {
-            if (string.IsNullOrWhiteSpace(request.AdminPassword))
-            {
-                return Error.Validation("Admin.PasswordRequired", "Admin password confirmation is required to modify administrative privileges.");
-            }
+        // 1. Validate security policy when modifying administrative privileges
+        var privilegeCheck = await ValidateAdminPrivilegeChangeAsync(targetUser.Roles, request.Roles, request.AdminPassword, ct);
+        if (privilegeCheck.IsFailure)
+            return privilegeCheck;
 
-            var currentAdminId = _currentUserService.UserId;
-            if (string.IsNullOrWhiteSpace(currentAdminId))
-            {
-                return Error.Unauthorized("Auth.Unauthorized", "You must be authenticated as an administrator.");
-            }
-
-            var verifyResult = await _identityService.VerifyPasswordAsync(currentAdminId, request.AdminPassword, ct);
-            if (verifyResult.IsFailure)
-            {
-                return Error.Validation("Admin.InvalidPassword", "The administrator password provided is incorrect.");
-            }
-        }
-
+        // 2. Perform role update
         var updateResult = await _identityService.UpdateUserRolesAsync(request.UserId, request.Roles, ct);
-        if (updateResult.IsSuccess)
-        {
-            await _auditLogger.LogAsync(
-                _currentUserService.UserId ?? "admin-system",
-                _currentUserService.Username ?? "admin",
-                "ROLE_MODIFIED",
-                "User",
-                request.UserId,
-                targetUser.UserName,
-                $"Assigned roles: {string.Join(", ", request.Roles)}",
-                ct: ct);
-        }
+        if (updateResult.IsFailure)
+            return updateResult;
 
-        return updateResult;
+        // 3. Record security audit log
+        await _auditLogger.LogAsync(
+            "ROLE_MODIFIED",
+            "User",
+            request.UserId,
+            targetUser.UserName,
+            $"Assigned roles: {string.Join(", ", request.Roles)}",
+            ct: ct);
+
+        return Result.Success();
+    }
+
+    private async Task<Result> ValidateAdminPrivilegeChangeAsync(
+        IEnumerable<string> currentRoles,
+        IEnumerable<string> newRoles,
+        string? adminPassword,
+        CancellationToken ct)
+    {
+        var currentlyHasAdmin = currentRoles.Contains(AppRoles.Admin, StringComparer.OrdinalIgnoreCase);
+        var willHaveAdmin = newRoles.Contains(AppRoles.Admin, StringComparer.OrdinalIgnoreCase);
+
+        if (currentlyHasAdmin == willHaveAdmin)
+            return Result.Success();
+
+        if (string.IsNullOrWhiteSpace(adminPassword))
+            return AdminErrors.PasswordRequired;
+
+        var currentAdminId = _currentUserService.UserId;
+        if (string.IsNullOrWhiteSpace(currentAdminId))
+            return Error.Unauthorized("Auth.Unauthorized", "You must be authenticated as an administrator.");
+
+        var verifyResult = await _identityService.VerifyPasswordAsync(currentAdminId, adminPassword, ct);
+        if (verifyResult.IsFailure)
+            return AdminErrors.InvalidPassword;
+
+        return Result.Success();
     }
 }
