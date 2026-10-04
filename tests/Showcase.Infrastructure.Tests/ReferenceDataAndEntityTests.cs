@@ -154,9 +154,13 @@ public class ReferenceDataAndEntityTests
 
         var countryCount = await context.Countries.CountAsync();
         var languageCount = await context.LanguageReferences.CountAsync();
+        var specialtyCount = await context.SpecialtyReferences.CountAsync();
+        var profileCount = await context.Profiles.CountAsync();
 
         Assert.Equal(249, countryCount);
         Assert.Equal(184, languageCount);
+        Assert.True(specialtyCount > 3000);
+        Assert.Equal(0, profileCount);
 
         var jordan = await context.Countries.FirstOrDefaultAsync(c => c.Alpha2 == "jo");
         Assert.NotNull(jordan);
@@ -167,4 +171,17 @@ public class ReferenceDataAndEntityTests
         Assert.NotNull(arabic);
         Assert.Equal("Arabic", arabic.Name);
     }
+
+    [Theory]
+    [InlineData("2024-05-01T00:00:00+03:00", 2024, 4, 30)] // +03:00 converted to UTC is April 30, 21:00 UTC
+    [InlineData("2024-05-01T05:00:00Z", 2024, 5, 1)]
+    [InlineData("2024-05-15", 2024, 5, 15)]
+    [InlineData("2024-05", 2024, 5, 1)]
+    public void DateRange_Should_Parse_Iso_Strings_And_Offsets(string input, int expectedYear, int expectedMonth, int expectedDay)
+    {
+        var result = DateRange.Create(input, null);
+        Assert.True(result.IsSuccess);
+        Assert.Equal(new DateOnly(expectedYear, expectedMonth, expectedDay), result.Value.Start);
+    }
 }
+

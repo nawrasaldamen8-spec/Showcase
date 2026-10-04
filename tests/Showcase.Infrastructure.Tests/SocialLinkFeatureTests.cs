@@ -7,10 +7,7 @@ using FluentValidation.TestHelper;
 using Microsoft.EntityFrameworkCore;
 using Moq;
 using Showcase.Application.Common.Interfaces;
-using Showcase.Application.Features.SocialLinks.Commands.AddSocialLink;
-using Showcase.Application.Features.SocialLinks.Commands.DeleteSocialLink;
-using Showcase.Application.Features.SocialLinks.Commands.ReorderSocialLinks;
-using Showcase.Application.Features.SocialLinks.Commands.UpdateSocialLink;
+using Showcase.Application.Features.SocialLinks.Commands;
 using Showcase.Domain.Entities;
 using Showcase.Domain.ValueObjects;
 using Showcase.Infrastructure.Data;
@@ -202,3 +199,4 @@ public class SocialLinkFeatureTests
 
     #endregion
 }
+

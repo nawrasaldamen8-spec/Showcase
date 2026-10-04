@@ -3,9 +3,7 @@ using System.Threading.Tasks;
 using FluentValidation.TestHelper;
 using Moq;
 using Showcase.Application.Common.Interfaces;
-using Showcase.Application.Features.Auth.Commands.ChangeEmail;
-using Showcase.Application.Features.Auth.Commands.ChangePassword;
-using Showcase.Application.Features.Auth.Commands.ChangeUsername;
+using Showcase.Application.Features.Auth.Commands;
 using Showcase.Domain.Common.Results;
 using Xunit;
 
@@ -14,6 +12,7 @@ namespace Showcase.Infrastructure.Tests;
 public class AccountSecurityFeatureTests
 {
     private readonly Mock<IIdentityService> _identityServiceMock = new();
+    private readonly Mock<ITokenService> _tokenServiceMock = new();
     private readonly Mock<ICurrentUserService> _currentUserServiceMock = new();
 
     #region ChangePassword Tests
@@ -52,7 +51,7 @@ public class AccountSecurityFeatureTests
     {
         _currentUserServiceMock.Setup(x => x.UserId).Returns((string?)null);
 
-        var handler = new ChangePasswordCommandHandler(_identityServiceMock.Object, _currentUserServiceMock.Object);
+        var handler = new ChangePasswordCommandHandler(_identityServiceMock.Object, _tokenServiceMock.Object, _currentUserServiceMock.Object);
         var result = await handler.Handle(new ChangePasswordCommand("OldPass123!", "NewPass456!"), CancellationToken.None);
 
         Assert.True(result.IsFailure);
@@ -66,11 +65,24 @@ public class AccountSecurityFeatureTests
         _identityServiceMock
             .Setup(x => x.ChangePasswordAsync("user-1", "OldPass123!", "NewPass456!", It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Success());
+        _identityServiceMock
+            .Setup(x => x.GetUserByIdAsync("user-1", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Result.Success(new UserIdentityDetails("user-1", "user@test.com", "username", new[] { "Member" })));
+        _tokenServiceMock
+            .Setup(x => x.GenerateAccessToken("user-1", "username", "user@test.com", It.IsAny<System.Collections.Generic.IList<string>>()))
+            .Returns("new-access-token");
+        _tokenServiceMock
+            .Setup(x => x.GenerateRefreshToken())
+            .Returns("new-refresh-token");
+        _identityServiceMock
+            .Setup(x => x.UpdateRefreshTokenAsync("user-1", "new-refresh-token", It.IsAny<System.DateTime>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Result.Success());
 
-        var handler = new ChangePasswordCommandHandler(_identityServiceMock.Object, _currentUserServiceMock.Object);
+        var handler = new ChangePasswordCommandHandler(_identityServiceMock.Object, _tokenServiceMock.Object, _currentUserServiceMock.Object);
         var result = await handler.Handle(new ChangePasswordCommand("OldPass123!", "NewPass456!"), CancellationToken.None);
 
         Assert.True(result.IsSuccess);
+        Assert.Equal("new-access-token", result.Value.AccessToken);
     }
 
     #endregion
@@ -161,7 +173,7 @@ public class AccountSecurityFeatureTests
     {
         _currentUserServiceMock.Setup(x => x.UserId).Returns((string?)null);
 
-        var handler = new ChangeUsernameCommandHandler(_identityServiceMock.Object, _currentUserServiceMock.Object);
+        var handler = new ChangeUsernameCommandHandler(_identityServiceMock.Object, _tokenServiceMock.Object, _currentUserServiceMock.Object);
         var result = await handler.Handle(new ChangeUsernameCommand("new_username", "Password123!"), CancellationToken.None);
 
         Assert.True(result.IsFailure);
@@ -175,12 +187,26 @@ public class AccountSecurityFeatureTests
         _identityServiceMock
             .Setup(x => x.ChangeUsernameAsync("user-1", "new_username", "Password123!", It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Success());
+        _identityServiceMock
+            .Setup(x => x.GetUserByIdAsync("user-1", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Result.Success(new UserIdentityDetails("user-1", "user@test.com", "new_username", new[] { "Member" })));
+        _tokenServiceMock
+            .Setup(x => x.GenerateAccessToken("user-1", "new_username", "user@test.com", It.IsAny<System.Collections.Generic.IList<string>>()))
+            .Returns("new-access-token");
+        _tokenServiceMock
+            .Setup(x => x.GenerateRefreshToken())
+            .Returns("new-refresh-token");
+        _identityServiceMock
+            .Setup(x => x.UpdateRefreshTokenAsync("user-1", "new-refresh-token", It.IsAny<System.DateTime>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Result.Success());
 
-        var handler = new ChangeUsernameCommandHandler(_identityServiceMock.Object, _currentUserServiceMock.Object);
+        var handler = new ChangeUsernameCommandHandler(_identityServiceMock.Object, _tokenServiceMock.Object, _currentUserServiceMock.Object);
         var result = await handler.Handle(new ChangeUsernameCommand("new_username", "Password123!"), CancellationToken.None);
 
         Assert.True(result.IsSuccess);
+        Assert.Equal("new-access-token", result.Value.AccessToken);
     }
 
     #endregion
 }
+

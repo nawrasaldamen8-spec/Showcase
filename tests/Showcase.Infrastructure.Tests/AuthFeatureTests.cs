@@ -8,11 +8,8 @@ using FluentValidation.TestHelper;
 using Microsoft.EntityFrameworkCore;
 using Moq;
 using Showcase.Application.Common.Interfaces;
-using Showcase.Application.Features.Auth.Commands.Login;
-using Showcase.Application.Features.Auth.Commands.Logout;
-using Showcase.Application.Features.Auth.Commands.RefreshToken;
-using Showcase.Application.Features.Auth.Commands.Register;
-using Showcase.Application.Features.Auth.Queries.GetCurrentUser;
+using Showcase.Application.Features.Auth.Commands;
+using Showcase.Application.Features.Auth.Queries;
 using Showcase.Domain.Common.Results;
 using Showcase.Domain.Entities;
 using Showcase.Infrastructure.Data;
@@ -89,11 +86,10 @@ public class AuthFeatureTests
     public void RefreshTokenCommandValidator_Should_Fail_When_Tokens_Empty()
     {
         var validator = new RefreshTokenCommandValidator();
-        var command = new RefreshTokenCommand("", "");
+        var command = new RefreshTokenCommand(null, "");
 
         var result = validator.TestValidate(command);
 
-        result.ShouldHaveValidationErrorFor(x => x.AccessToken);
         result.ShouldHaveValidationErrorFor(x => x.RefreshToken);
     }
 
@@ -127,7 +123,8 @@ public class AuthFeatureTests
                 userId, refreshToken, It.IsAny<DateTime>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Success());
 
-        var handler = new RegisterCommandHandler(mockIdentity.Object, context, mockTokenService.Object);
+        var orchestrator = new Showcase.Infrastructure.Identity.AuthSessionOrchestrator(mockIdentity.Object, mockTokenService.Object);
+        var handler = new RegisterCommandHandler(mockIdentity.Object, context, orchestrator);
         var command = new RegisterCommand("testuser", "Password123!", "John Doe", "test@test.com");
 
         // Act
@@ -155,7 +152,8 @@ public class AuthFeatureTests
                 It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Error.Conflict("Auth.EmailTaken", "Email is already registered."));
 
-        var handler = new RegisterCommandHandler(mockIdentity.Object, context, mockTokenService.Object);
+        var orchestrator = new Showcase.Infrastructure.Identity.AuthSessionOrchestrator(mockIdentity.Object, mockTokenService.Object);
+        var handler = new RegisterCommandHandler(mockIdentity.Object, context, orchestrator);
         var command = new RegisterCommand("testuser", "Password123!", "John Doe", "duplicate@test.com");
 
         // Act
@@ -193,7 +191,8 @@ public class AuthFeatureTests
                 userId, "refresh-token-123", It.IsAny<DateTime>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Success());
 
-        var handler = new LoginCommandHandler(mockIdentity.Object, mockTokenService.Object);
+        var orchestrator = new Showcase.Infrastructure.Identity.AuthSessionOrchestrator(mockIdentity.Object, mockTokenService.Object);
+        var handler = new LoginCommandHandler(mockIdentity.Object, orchestrator);
         var command = new LoginCommand("test@test.com", "Password123!");
 
         // Act
@@ -215,7 +214,8 @@ public class AuthFeatureTests
         mockIdentity.Setup(i => i.AuthenticateAsync("test@test.com", "WrongPassword", It.IsAny<CancellationToken>()))
             .ReturnsAsync(Error.Unauthorized("Auth.InvalidCredentials", "Invalid credentials."));
 
-        var handler = new LoginCommandHandler(mockIdentity.Object, mockTokenService.Object);
+        var orchestrator = new Showcase.Infrastructure.Identity.AuthSessionOrchestrator(mockIdentity.Object, mockTokenService.Object);
+        var handler = new LoginCommandHandler(mockIdentity.Object, orchestrator);
         var command = new LoginCommand("test@test.com", "WrongPassword");
 
         // Act
@@ -260,7 +260,8 @@ public class AuthFeatureTests
                 userId, "new-refresh-token", It.IsAny<DateTime>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Success());
 
-        var handler = new RefreshTokenCommandHandler(mockIdentity.Object, mockTokenService.Object);
+        var orchestrator = new Showcase.Infrastructure.Identity.AuthSessionOrchestrator(mockIdentity.Object, mockTokenService.Object);
+        var handler = new RefreshTokenCommandHandler(orchestrator);
         var command = new RefreshTokenCommand("expired-access-token", "valid-refresh-token");
 
         // Act
@@ -282,7 +283,8 @@ public class AuthFeatureTests
         mockTokenService.Setup(t => t.GetPrincipalFromExpiredToken("malformed-token"))
             .Returns((ClaimsPrincipal?)null);
 
-        var handler = new RefreshTokenCommandHandler(mockIdentity.Object, mockTokenService.Object);
+        var orchestrator = new Showcase.Infrastructure.Identity.AuthSessionOrchestrator(mockIdentity.Object, mockTokenService.Object);
+        var handler = new RefreshTokenCommandHandler(orchestrator);
         var command = new RefreshTokenCommand("malformed-token", "some-refresh-token");
 
         // Act
@@ -403,4 +405,76 @@ public class AuthFeatureTests
     }
 
     #endregion
+
+    #region AuthSessionOrchestrator Tests
+
+    [Fact]
+    public async Task AuthSessionOrchestrator_CreateSessionAsync_Should_Set_Cookies_And_Return_Tokens()
+    {
+        // Arrange
+        var mockIdentity = new Mock<IIdentityService>();
+        var mockTokenService = new Mock<ITokenService>();
+        var mockCookieService = new Mock<IAuthCookieService>();
+
+        const string userId = "u-456";
+        var user = new UserIdentityDetails(userId, "orchestrator@test.com", "orchUser", new List<string> { "User" });
+
+        mockTokenService.Setup(t => t.GenerateAccessToken(userId, "orchUser", "orchestrator@test.com", It.IsAny<IList<string>>()))
+            .Returns("access-jwt");
+        mockTokenService.Setup(t => t.GenerateRefreshToken())
+            .Returns("refresh-jwt");
+        mockIdentity.Setup(i => i.UpdateRefreshTokenAsync(userId, "refresh-jwt", It.IsAny<DateTime>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Result.Success());
+
+        var orchestrator = new Showcase.Infrastructure.Identity.AuthSessionOrchestrator(
+            mockIdentity.Object,
+            mockTokenService.Object,
+            mockCookieService.Object);
+
+        // Act
+        var result = await orchestrator.CreateSessionAsync(user, CancellationToken.None);
+
+        // Assert
+        Assert.True(result.IsSuccess);
+        Assert.Equal("access-jwt", result.Value.AccessToken);
+        Assert.Equal("refresh-jwt", result.Value.RefreshToken);
+        mockCookieService.Verify(c => c.SetAuthCookies("access-jwt", "refresh-jwt"), Times.Once);
+    }
+
+    [Fact]
+    public async Task AuthSessionOrchestrator_RefreshSessionAsync_Should_Work_With_Direct_RefreshToken()
+    {
+        // Arrange
+        var mockIdentity = new Mock<IIdentityService>();
+        var mockTokenService = new Mock<ITokenService>();
+        var mockCookieService = new Mock<IAuthCookieService>();
+
+        const string userId = "u-789";
+        var user = new UserIdentityDetails(userId, "direct@test.com", "directUser", new List<string>());
+
+        mockIdentity.Setup(i => i.ValidateRefreshTokenDirectAsync("direct-refresh-token", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Result.Success(user));
+        mockTokenService.Setup(t => t.GenerateAccessToken(userId, "directUser", "direct@test.com", It.IsAny<IList<string>>()))
+            .Returns("new-access");
+        mockTokenService.Setup(t => t.GenerateRefreshToken())
+            .Returns("new-refresh");
+        mockIdentity.Setup(i => i.UpdateRefreshTokenAsync(userId, "new-refresh", It.IsAny<DateTime>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Result.Success());
+
+        var orchestrator = new Showcase.Infrastructure.Identity.AuthSessionOrchestrator(
+            mockIdentity.Object,
+            mockTokenService.Object,
+            mockCookieService.Object);
+
+        // Act
+        var result = await orchestrator.RefreshSessionAsync(null, "direct-refresh-token", CancellationToken.None);
+
+        // Assert
+        Assert.True(result.IsSuccess);
+        Assert.Equal("new-access", result.Value.AccessToken);
+        Assert.Equal("new-refresh", result.Value.RefreshToken);
+    }
+
+    #endregion
 }
+

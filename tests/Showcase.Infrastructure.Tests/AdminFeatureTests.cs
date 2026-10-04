@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Moq;
 using Showcase.Application.Common.Interfaces;
-using Showcase.Application.Features.Admin.Broadcasts;
 using Showcase.Application.Features.Admin.Dashboard;
 using Showcase.Application.Features.Admin.Featured;
 using Showcase.Application.Features.Admin.Reports;
@@ -61,18 +60,15 @@ public class AdminFeatureTests
         await dbContext.SaveChangesAsync();
 
         var auditLogger = new Mock<IAuditLogger>();
-        var currentUserService = new Mock<ICurrentUserService>();
-        currentUserService.Setup(c => c.UserId).Returns("admin1");
-        currentUserService.Setup(c => c.Username).Returns("admin");
 
-        var banHandler = new BanUserCommandHandler(dbContext, auditLogger.Object, currentUserService.Object);
+        var banHandler = new BanUserCommandHandler(dbContext, auditLogger.Object);
         var banResult = await banHandler.Handle(new BanUserCommand("u1", "Violating terms of service"), CancellationToken.None);
 
         Assert.True(banResult.IsSuccess);
         Assert.True(profile.IsBanned);
         Assert.Equal("Violating terms of service", profile.BanReason);
 
-        var unbanHandler = new UnbanUserCommandHandler(dbContext, auditLogger.Object, currentUserService.Object);
+        var unbanHandler = new UnbanUserCommandHandler(dbContext, auditLogger.Object);
         var unbanResult = await unbanHandler.Handle(new UnbanUserCommand("u1"), CancellationToken.None);
 
         Assert.True(unbanResult.IsSuccess);
@@ -93,37 +89,12 @@ public class AdminFeatureTests
 
         var publisher = new Mock<MediatR.IPublisher>();
         var auditLogger = new Mock<IAuditLogger>();
-        var currentUserService = new Mock<ICurrentUserService>();
-        currentUserService.Setup(c => c.UserId).Returns("admin1");
-        currentUserService.Setup(c => c.Username).Returns("admin");
 
-        var approveHandler = new ApproveVerificationRequestCommandHandler(dbContext, publisher.Object, auditLogger.Object, currentUserService.Object);
+        var approveHandler = new ApproveVerificationRequestCommandHandler(dbContext, publisher.Object, auditLogger.Object);
         var approveResult = await approveHandler.Handle(new ApproveVerificationRequestCommand(req.Id, "Verified successfully"), CancellationToken.None);
 
         Assert.True(approveResult.IsSuccess);
         Assert.Equal(VerificationStatus.Verified, req.Status);
         Assert.True(profile.IsVerified);
-    }
-
-    [Fact]
-    public async Task CreateBroadcast_And_GetBroadcasts_Should_Work()
-    {
-        var dbContext = CreateInMemoryDbContext();
-        var notifier = new Mock<IRealtimeNotifier>();
-        var createHandler = new CreateBroadcastCommandHandler(dbContext, notifier.Object);
-        var createResult = await createHandler.Handle(new CreateBroadcastCommand(
-            Title: "Platform Maintenance",
-            Message: "System maintenance tonight at 2 AM",
-            Severity: "info",
-            ExpiresAt: DateTime.UtcNow.AddDays(1)
-        ), CancellationToken.None);
-
-        Assert.True(createResult.IsSuccess);
-
-        var getHandler = new GetBroadcastsQueryHandler();
-        var getResult = await getHandler.Handle(new GetBroadcastsQuery(), CancellationToken.None);
-
-        Assert.True(getResult.IsSuccess);
-        Assert.NotEmpty(getResult.Value);
     }
 }

@@ -4,22 +4,15 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentValidation.TestHelper;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Moq;
 using Showcase.Application.Common.Interfaces;
-using Showcase.Application.Features.Posts.Commands.AddPostImage;
-using Showcase.Application.Features.Posts.Commands.CreatePost;
-using Showcase.Application.Features.Posts.Commands.DeletePost;
-using Showcase.Application.Features.Posts.Commands.GetPostImageUploadUrl;
-using Showcase.Application.Features.Posts.Commands.PublishPost;
-using Showcase.Application.Features.Posts.Commands.RemovePostImage;
-using Showcase.Application.Features.Posts.Commands.ReorderPostImages;
-using Showcase.Application.Features.Posts.Commands.UnpublishPost;
-using Showcase.Application.Features.Posts.Commands.UpdatePost;
-using Showcase.Application.Features.Posts.Queries.GetExplorePosts;
-using Showcase.Application.Features.Posts.Queries.GetMyPosts;
-using Showcase.Application.Features.Posts.Queries.GetPostById;
-using Showcase.Application.Features.Posts.Queries.GetProfilePosts;
+using Showcase.Application.Features.Notifications.Events;
+using Showcase.Application.Features.Notifications.Handlers;
+using Showcase.Application.Features.Posts.Commands;
+using Showcase.Application.Features.Posts.Queries;
 using Showcase.Domain.Common.Results;
 using Showcase.Domain.Entities;
 using Showcase.Domain.Enums;
@@ -34,6 +27,7 @@ public class PostFeatureTests
     private readonly Mock<ICurrentUserService> _currentUserServiceMock = new();
     private readonly Mock<IIdentityService> _identityServiceMock = new();
     private readonly Mock<IStorageService> _storageServiceMock = new();
+    private readonly Mock<IPublisher> _publisherMock = new();
 
     private static ApplicationDbContext CreateInMemoryDbContext()
     {
@@ -210,7 +204,7 @@ public class PostFeatureTests
     #region DeletePost Tests
 
     [Fact]
-    public async Task DeletePostHandler_Should_Remove_Post_And_Delete_Images_From_Storage()
+    public async Task DeletePostHandler_Should_Remove_Post_And_Publish_PostDeletedEvent()
     {
         using var context = CreateInMemoryDbContext();
         var profile = new Profile("user-1", "John", "Doe");
@@ -222,19 +216,52 @@ public class PostFeatureTests
         await context.SaveChangesAsync();
 
         _currentUserServiceMock.Setup(x => x.UserId).Returns("user-1");
-        _storageServiceMock
-            .Setup(x => x.DeleteAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
-            .Returns(Task.CompletedTask);
 
-        var handler = new DeletePostCommandHandler(context, _currentUserServiceMock.Object, _storageServiceMock.Object);
+        var handler = new DeletePostCommandHandler(context, _currentUserServiceMock.Object, _publisherMock.Object);
         var result = await handler.Handle(new DeletePostCommand(post.Id), CancellationToken.None);
 
         Assert.True(result.IsSuccess);
         var remainingPost = await context.Posts.FirstOrDefaultAsync(p => p.Id == post.Id);
         Assert.Null(remainingPost);
 
+        _publisherMock.Verify(
+            x => x.Publish(
+                It.Is<PostDeletedNotificationEvent>(e =>
+                    e.PostId == post.Id &&
+                    e.StorageKeys.Count == 2 &&
+                    e.StorageKeys.Contains("posts/post-1/img1.png") &&
+                    e.StorageKeys.Contains("posts/post-1/img2.png")),
+                It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task PostDeletedNotificationHandler_Should_Delete_Images_Concurrently_And_Cleanup_Notifications()
+    {
+        using var context = CreateInMemoryDbContext();
+        var profile = new Profile("user-1", "John", "Doe");
+        context.Profiles.Add(profile);
+        var postId = Guid.NewGuid();
+
+        var notification = new Notification("user-1", NotificationType.Like, "Like", "User liked your post", sourcePostId: postId);
+        context.Notifications.Add(notification);
+        await context.SaveChangesAsync();
+
+        _storageServiceMock
+            .Setup(x => x.DeleteAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
+        var loggerMock = new Mock<ILogger<PostDeletedNotificationHandler>>();
+        var handler = new PostDeletedNotificationHandler(context, _storageServiceMock.Object, loggerMock.Object);
+
+        var keys = new List<string> { "posts/post-1/img1.png", "posts/post-1/img2.png" };
+        await handler.Handle(new PostDeletedNotificationEvent(postId, keys), CancellationToken.None);
+
         _storageServiceMock.Verify(x => x.DeleteAsync("posts/post-1/img1.png", It.IsAny<CancellationToken>()), Times.Once);
         _storageServiceMock.Verify(x => x.DeleteAsync("posts/post-1/img2.png", It.IsAny<CancellationToken>()), Times.Once);
+
+        var remainingNotification = await context.Notifications.FirstOrDefaultAsync(n => n.SourcePostId == postId);
+        Assert.Null(remainingNotification);
     }
 
     #endregion
@@ -253,6 +280,30 @@ public class PostFeatureTests
 
         var result = validator.TestValidate(command);
         Assert.Equal(expectedValid, result.IsValid);
+    }
+
+    [Fact]
+    public async Task GetPostImageUploadUrlHandler_Should_Generate_Domain_StorageKey_And_Presigned_Url()
+    {
+        using var context = CreateInMemoryDbContext();
+        var profile = new Profile("user-1", "John", "Doe");
+        context.Profiles.Add(profile);
+        var post = new Post(profile.Id, "Post For Upload");
+        context.Posts.Add(post);
+        await context.SaveChangesAsync();
+
+        _currentUserServiceMock.Setup(x => x.UserId).Returns("user-1");
+        _storageServiceMock
+            .Setup(x => x.GetPresignedUploadUrlAsync(It.IsAny<string>(), "image/png", It.IsAny<TimeSpan>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync("https://upload.r2.com/presigned-post-img");
+
+        var handler = new GetPostImageUploadUrlCommandHandler(context, _currentUserServiceMock.Object, _storageServiceMock.Object);
+        var result = await handler.Handle(new GetPostImageUploadUrlCommand(post.Id, "image/png", 1024), CancellationToken.None);
+
+        Assert.True(result.IsSuccess);
+        Assert.Equal("https://upload.r2.com/presigned-post-img", result.Value.UploadUrl);
+        Assert.Contains($"media/posts/user-1/{post.Id}/", result.Value.StorageKey);
+        Assert.EndsWith(".png", result.Value.StorageKey);
     }
 
     [Fact]
@@ -476,4 +527,99 @@ public class PostFeatureTests
     }
 
     #endregion
+
+    #region ToggleLikePost Tests
+
+    [Fact]
+    public async Task ToggleLikePostHandler_Should_Like_Post_And_Publish_Event()
+    {
+        using var context = CreateInMemoryDbContext();
+        var profile = new Profile("creator-user", "Creator", "User");
+        context.Profiles.Add(profile);
+
+        var post = new Post(profile.Id, "Liked Project");
+        context.Posts.Add(post);
+        await context.SaveChangesAsync();
+
+        _currentUserServiceMock.Setup(x => x.UserId).Returns("liker-user");
+
+        var handler = new ToggleLikePostCommandHandler(_currentUserServiceMock.Object, context, _publisherMock.Object);
+        var result = await handler.Handle(new ToggleLikePostCommand(post.Id), CancellationToken.None);
+
+        Assert.True(result.IsSuccess);
+        Assert.True(result.Value.IsLiked);
+        Assert.Equal(1, result.Value.LikeCount);
+
+        var likeExists = await context.PostLikes.AnyAsync(l => l.PostId == post.Id && l.UserId == "liker-user");
+        Assert.True(likeExists);
+
+        _publisherMock.Verify(
+            x => x.Publish(
+                It.Is<PostLikedNotificationEvent>(e =>
+                    e.TargetUserId == "creator-user" &&
+                    e.SourceUserId == "liker-user" &&
+                    e.PostId == post.Id &&
+                    e.PostTitle == "Liked Project"),
+                It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task ToggleLikePostHandler_Should_Unlike_Post_When_Already_Liked()
+    {
+        using var context = CreateInMemoryDbContext();
+        var profile = new Profile("creator-user", "Creator", "User");
+        context.Profiles.Add(profile);
+
+        var post = new Post(profile.Id, "Liked Project");
+        post.IncrementLikes();
+        context.Posts.Add(post);
+
+        var initialLike = new PostLike(post.Id, "liker-user");
+        context.PostLikes.Add(initialLike);
+        await context.SaveChangesAsync();
+
+        _currentUserServiceMock.Setup(x => x.UserId).Returns("liker-user");
+
+        var handler = new ToggleLikePostCommandHandler(_currentUserServiceMock.Object, context, _publisherMock.Object);
+        var result = await handler.Handle(new ToggleLikePostCommand(post.Id), CancellationToken.None);
+
+        Assert.True(result.IsSuccess);
+        Assert.False(result.Value.IsLiked);
+        Assert.Equal(0, result.Value.LikeCount);
+
+        var likeExists = await context.PostLikes.AnyAsync(l => l.PostId == post.Id && l.UserId == "liker-user");
+        Assert.False(likeExists);
+    }
+
+    [Fact]
+    public async Task ToggleLikePostHandler_Should_Be_Idempotent_When_DesiredState_Matches_Current()
+    {
+        using var context = CreateInMemoryDbContext();
+        var profile = new Profile("creator-user", "Creator", "User");
+        context.Profiles.Add(profile);
+
+        var post = new Post(profile.Id, "Liked Project");
+        post.IncrementLikes();
+        context.Posts.Add(post);
+
+        var initialLike = new PostLike(post.Id, "liker-user");
+        context.PostLikes.Add(initialLike);
+        await context.SaveChangesAsync();
+
+        _currentUserServiceMock.Setup(x => x.UserId).Returns("liker-user");
+
+        var handler = new ToggleLikePostCommandHandler(_currentUserServiceMock.Object, context, _publisherMock.Object);
+        var result = await handler.Handle(new ToggleLikePostCommand(post.Id, DesiredState: true), CancellationToken.None);
+
+        Assert.True(result.IsSuccess);
+        Assert.True(result.Value.IsLiked);
+        Assert.Equal(1, result.Value.LikeCount);
+
+        var count = await context.PostLikes.CountAsync(l => l.PostId == post.Id && l.UserId == "liker-user");
+        Assert.Equal(1, count);
+    }
+
+    #endregion
 }
+

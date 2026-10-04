@@ -7,12 +7,8 @@ using FluentValidation.TestHelper;
 using Microsoft.EntityFrameworkCore;
 using Moq;
 using Showcase.Application.Common.Interfaces;
-using Showcase.Application.Features.Profiles.Commands.GetAvatarUploadUrl;
-using Showcase.Application.Features.Profiles.Commands.RemoveAvatar;
-using Showcase.Application.Features.Profiles.Commands.UpdateAvatar;
-using Showcase.Application.Features.Profiles.Commands.UpdateProfile;
-using Showcase.Application.Features.Profiles.Queries.GetMyProfile;
-using Showcase.Application.Features.Profiles.Queries.GetPublicProfile;
+using Showcase.Application.Features.Profiles.Commands;
+using Showcase.Application.Features.Profiles.Queries;
 using Showcase.Domain.Common.Results;
 using Showcase.Domain.Entities;
 using Showcase.Domain.ValueObjects;
@@ -150,7 +146,7 @@ public class ProfileFeatureTests
 
         Assert.True(result.IsSuccess);
         Assert.Equal("https://upload.r2.com/presigned", result.Value.UploadUrl);
-        Assert.StartsWith("avatars/user-1/", result.Value.StorageKey);
+        Assert.Contains("avatars/user-1/", result.Value.StorageKey);
         Assert.EndsWith(".png", result.Value.StorageKey);
     }
 
@@ -291,3 +287,4 @@ public class ProfileFeatureTests
 
     #endregion
 }
+

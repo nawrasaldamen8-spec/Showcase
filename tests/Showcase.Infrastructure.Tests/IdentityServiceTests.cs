@@ -1,8 +1,11 @@
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Moq;
+using Showcase.Infrastructure.Data;
 using Showcase.Infrastructure.Identity;
 using Xunit;
 
@@ -17,6 +20,14 @@ public class IdentityServiceTests
             store.Object, null!, null!, null!, null!, null!, null!, null!, null!);
     }
 
+    private static ApplicationDbContext CreateDbContext()
+    {
+        var options = new DbContextOptionsBuilder<ApplicationDbContext>()
+            .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
+            .Options;
+        return new ApplicationDbContext(options);
+    }
+
     #region GetUserByUsernameAsync Tests
 
     [Fact]
@@ -27,7 +38,8 @@ public class IdentityServiceTests
             .Setup(x => x.FindByNameAsync("unknown"))
             .ReturnsAsync((ApplicationUser?)null);
 
-        var service = new IdentityService(userManagerMock.Object);
+        using var context = CreateDbContext();
+        var service = new IdentityService(userManagerMock.Object, context);
         var result = await service.GetUserByUsernameAsync("unknown", CancellationToken.None);
 
         Assert.True(result.IsFailure);
@@ -52,7 +64,8 @@ public class IdentityServiceTests
             .Setup(x => x.GetRolesAsync(user))
             .ReturnsAsync(new List<string> { "Creator" });
 
-        var service = new IdentityService(userManagerMock.Object);
+        using var context = CreateDbContext();
+        var service = new IdentityService(userManagerMock.Object, context);
         var result = await service.GetUserByUsernameAsync("creator_pro", CancellationToken.None);
 
         Assert.True(result.IsSuccess);
@@ -74,7 +87,8 @@ public class IdentityServiceTests
             .Setup(x => x.FindByIdAsync("non-existent"))
             .ReturnsAsync((ApplicationUser?)null);
 
-        var service = new IdentityService(userManagerMock.Object);
+        using var context = CreateDbContext();
+        var service = new IdentityService(userManagerMock.Object, context);
         var result = await service.ChangePasswordAsync("non-existent", "OldPass1!", "NewPass2!", CancellationToken.None);
 
         Assert.True(result.IsFailure);
@@ -93,7 +107,8 @@ public class IdentityServiceTests
             .Setup(x => x.ChangePasswordAsync(user, "WrongOldPass!", "NewPass2!"))
             .ReturnsAsync(IdentityResult.Failed(new IdentityError { Description = "Incorrect password." }));
 
-        var service = new IdentityService(userManagerMock.Object);
+        using var context = CreateDbContext();
+        var service = new IdentityService(userManagerMock.Object, context);
         var result = await service.ChangePasswordAsync("user-1", "WrongOldPass!", "NewPass2!", CancellationToken.None);
 
         Assert.True(result.IsFailure);
@@ -112,7 +127,8 @@ public class IdentityServiceTests
             .Setup(x => x.ChangePasswordAsync(user, "OldPass1!", "NewPass2!"))
             .ReturnsAsync(IdentityResult.Success);
 
-        var service = new IdentityService(userManagerMock.Object);
+        using var context = CreateDbContext();
+        var service = new IdentityService(userManagerMock.Object, context);
         var result = await service.ChangePasswordAsync("user-1", "OldPass1!", "NewPass2!", CancellationToken.None);
 
         Assert.True(result.IsSuccess);
@@ -134,7 +150,8 @@ public class IdentityServiceTests
             .Setup(x => x.CheckPasswordAsync(user, "WrongPass!"))
             .ReturnsAsync(false);
 
-        var service = new IdentityService(userManagerMock.Object);
+        using var context = CreateDbContext();
+        var service = new IdentityService(userManagerMock.Object, context);
         var result = await service.ChangeEmailAsync("user-1", "new@test.com", "WrongPass!", CancellationToken.None);
 
         Assert.True(result.IsFailure);
@@ -157,7 +174,8 @@ public class IdentityServiceTests
             .Setup(x => x.FindByEmailAsync("new@test.com"))
             .ReturnsAsync(otherUser);
 
-        var service = new IdentityService(userManagerMock.Object);
+        using var context = CreateDbContext();
+        var service = new IdentityService(userManagerMock.Object, context);
         var result = await service.ChangeEmailAsync("user-1", "new@test.com", "CorrectPass!", CancellationToken.None);
 
         Assert.True(result.IsFailure);
@@ -185,7 +203,8 @@ public class IdentityServiceTests
             .Setup(x => x.ChangeEmailAsync(user, "new@test.com", "valid-token"))
             .ReturnsAsync(IdentityResult.Success);
 
-        var service = new IdentityService(userManagerMock.Object);
+        using var context = CreateDbContext();
+        var service = new IdentityService(userManagerMock.Object, context);
         var result = await service.ChangeEmailAsync("user-1", "new@test.com", "CorrectPass!", CancellationToken.None);
 
         Assert.True(result.IsSuccess);
@@ -207,7 +226,8 @@ public class IdentityServiceTests
             .Setup(x => x.CheckPasswordAsync(user, "WrongPass!"))
             .ReturnsAsync(false);
 
-        var service = new IdentityService(userManagerMock.Object);
+        using var context = CreateDbContext();
+        var service = new IdentityService(userManagerMock.Object, context);
         var result = await service.ChangeUsernameAsync("user-1", "newname", "WrongPass!", CancellationToken.None);
 
         Assert.True(result.IsFailure);
@@ -230,7 +250,8 @@ public class IdentityServiceTests
             .Setup(x => x.FindByNameAsync("newname"))
             .ReturnsAsync(otherUser);
 
-        var service = new IdentityService(userManagerMock.Object);
+        using var context = CreateDbContext();
+        var service = new IdentityService(userManagerMock.Object, context);
         var result = await service.ChangeUsernameAsync("user-1", "newname", "CorrectPass!", CancellationToken.None);
 
         Assert.True(result.IsFailure);
@@ -255,7 +276,8 @@ public class IdentityServiceTests
             .Setup(x => x.SetUserNameAsync(user, "newname"))
             .ReturnsAsync(IdentityResult.Success);
 
-        var service = new IdentityService(userManagerMock.Object);
+        using var context = CreateDbContext();
+        var service = new IdentityService(userManagerMock.Object, context);
         var result = await service.ChangeUsernameAsync("user-1", "newname", "CorrectPass!", CancellationToken.None);
 
         Assert.True(result.IsSuccess);
@@ -273,7 +295,8 @@ public class IdentityServiceTests
             .Setup(x => x.FindByIdAsync("non-existent"))
             .ReturnsAsync((ApplicationUser?)null);
 
-        var service = new IdentityService(userManagerMock.Object);
+        using var context = CreateDbContext();
+        var service = new IdentityService(userManagerMock.Object, context);
         var result = await service.RevokeRefreshTokenAsync("non-existent", CancellationToken.None);
 
         Assert.True(result.IsFailure);
@@ -287,7 +310,7 @@ public class IdentityServiceTests
         {
             Id = "user-1",
             RefreshToken = "existing-refresh-token",
-            RefreshTokenExpiryTime = System.DateTime.UtcNow.AddDays(7)
+            RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7)
         };
 
         var userManagerMock = CreateMockUserManager();
@@ -298,13 +321,76 @@ public class IdentityServiceTests
             .Setup(x => x.UpdateAsync(user))
             .ReturnsAsync(IdentityResult.Success);
 
-        var service = new IdentityService(userManagerMock.Object);
+        using var context = CreateDbContext();
+        var service = new IdentityService(userManagerMock.Object, context);
         var result = await service.RevokeRefreshTokenAsync("user-1", CancellationToken.None);
 
         Assert.True(result.IsSuccess);
         Assert.Null(user.RefreshToken);
         Assert.Null(user.RefreshTokenExpiryTime);
         userManagerMock.Verify(x => x.UpdateAsync(user), Times.Once);
+    }
+
+    #endregion
+
+    #region RefreshToken Grace Period and Direct Validation Tests
+
+    [Fact]
+    public async Task ValidateRefreshTokenAsync_Should_Accept_PreviousRefreshToken_Within_GracePeriod()
+    {
+        var user = new ApplicationUser
+        {
+            Id = "user-1",
+            UserName = "creator_pro",
+            RefreshToken = "new-refresh-token",
+            RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7),
+            PreviousRefreshToken = "old-refresh-token",
+            PreviousRefreshTokenExpiryTime = DateTime.UtcNow.AddSeconds(30)
+        };
+
+        var userManagerMock = CreateMockUserManager();
+        userManagerMock
+            .Setup(x => x.FindByIdAsync("user-1"))
+            .ReturnsAsync(user);
+        userManagerMock
+            .Setup(x => x.GetRolesAsync(user))
+            .ReturnsAsync(new List<string> { "Member" });
+
+        using var context = CreateDbContext();
+        var service = new IdentityService(userManagerMock.Object, context);
+        var result = await service.ValidateRefreshTokenAsync("user-1", "old-refresh-token", CancellationToken.None);
+
+        Assert.True(result.IsSuccess);
+        Assert.Equal("user-1", result.Value.Id);
+    }
+
+    [Fact]
+    public async Task UpdateRefreshTokenAsync_Should_Store_PreviousRefreshToken_With_GracePeriod()
+    {
+        var user = new ApplicationUser
+        {
+            Id = "user-1",
+            RefreshToken = "current-refresh-token",
+            RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7)
+        };
+
+        var userManagerMock = CreateMockUserManager();
+        userManagerMock
+            .Setup(x => x.FindByIdAsync("user-1"))
+            .ReturnsAsync(user);
+        userManagerMock
+            .Setup(x => x.UpdateAsync(user))
+            .ReturnsAsync(IdentityResult.Success);
+
+        using var context = CreateDbContext();
+        var service = new IdentityService(userManagerMock.Object, context);
+        var result = await service.UpdateRefreshTokenAsync("user-1", "new-brand-refresh-token", DateTime.UtcNow.AddDays(7), CancellationToken.None);
+
+        Assert.True(result.IsSuccess);
+        Assert.Equal("new-brand-refresh-token", user.RefreshToken);
+        Assert.Equal("current-refresh-token", user.PreviousRefreshToken);
+        Assert.NotNull(user.PreviousRefreshTokenExpiryTime);
+        Assert.True(user.PreviousRefreshTokenExpiryTime > DateTime.UtcNow);
     }
 
     #endregion

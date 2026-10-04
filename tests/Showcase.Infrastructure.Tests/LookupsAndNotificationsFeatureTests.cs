@@ -6,8 +6,9 @@ using Microsoft.EntityFrameworkCore;
 using Moq;
 using Showcase.Application.Common.Interfaces;
 using Showcase.Application.Features.Analytics;
-using Showcase.Application.Features.Lookups;
-using Showcase.Application.Features.Notifications;
+using Showcase.Application.Features.Lookups.Queries;
+using Showcase.Application.Features.Notifications.Commands;
+using Showcase.Application.Features.Notifications.Queries;
 using Showcase.Domain.Entities;
 using Showcase.Domain.Enums;
 using Showcase.Domain.ValueObjects;
@@ -102,8 +103,8 @@ public class LookupsAndNotificationsFeatureTests
         var visitorService = new Mock<ICurrentUserService>();
         visitorService.Setup(s => s.UserId).Returns("visitor-id");
 
-        var realtimeNotifier = new Mock<IRealtimeNotifier>();
-        var trackHandler = new TrackProfileVisitCommandHandler(visitorService.Object, dbContext, realtimeNotifier.Object);
+        var publisher = new Mock<MediatR.IPublisher>();
+        var trackHandler = new TrackProfileVisitCommandHandler(visitorService.Object, dbContext, publisher.Object);
         var trackResult = await trackHandler.Handle(new TrackProfileVisitCommand(profile.Id, "hashed-ip-123"), CancellationToken.None);
         Assert.True(trackResult.IsSuccess);
 
