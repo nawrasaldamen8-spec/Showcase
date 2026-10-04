@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Showcase.Api.Common.Results;
 using Showcase.Application.Common.Models;
-using Showcase.Application.Features.Notifications;
+using Showcase.Application.Features.Notifications.Queries;
 using Showcase.Application.Features.Notifications.Common;
 
 namespace Showcase.Api.Endpoints.Notifications;

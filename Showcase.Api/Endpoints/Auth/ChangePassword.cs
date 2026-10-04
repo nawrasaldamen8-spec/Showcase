@@ -4,7 +4,8 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Showcase.Api.Common.Results;
-using Showcase.Application.Features.Auth.Commands.ChangePassword;
+using Showcase.Application.Features.Auth.Commands;
+using Showcase.Application.Features.Auth.Common;
 
 namespace Showcase.Api.Endpoints.Auth;
 
@@ -22,7 +23,7 @@ public class ChangePassword : IEndpoint
         })
         .WithTags("Auth")
         .WithName(nameof(ChangePassword))
-        .Produces(StatusCodes.Status200OK)
+        .Produces<AuthResponse>(StatusCodes.Status200OK)
         .ProducesProblem(StatusCodes.Status400BadRequest)
         .ProducesProblem(StatusCodes.Status401Unauthorized)
         .ProducesProblem(StatusCodes.Status429TooManyRequests)
@@ -30,3 +31,4 @@ public class ChangePassword : IEndpoint
         .RequireRateLimiting("auth-policy");
     }
 }
+

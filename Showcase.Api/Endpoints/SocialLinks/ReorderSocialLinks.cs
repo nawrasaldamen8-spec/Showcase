@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Showcase.Api.Common.Results;
-using Showcase.Application.Features.SocialLinks.Commands.ReorderSocialLinks;
+using Showcase.Application.Features.SocialLinks.Commands;
 
 namespace Showcase.Api.Endpoints.SocialLinks;
 
@@ -29,3 +29,4 @@ public class ReorderSocialLinks : IEndpoint
         .RequireAuthorization();
     }
 }
+

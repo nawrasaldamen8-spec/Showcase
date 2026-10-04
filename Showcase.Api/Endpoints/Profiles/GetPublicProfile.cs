@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Showcase.Api.Common.Results;
 using Showcase.Application.Features.Profiles.Common;
-using Showcase.Application.Features.Profiles.Queries.GetPublicProfile;
+using Showcase.Application.Features.Profiles.Queries;
 
 namespace Showcase.Api.Endpoints.Profiles;
 
@@ -29,3 +29,4 @@ public class GetPublicProfile : IEndpoint
         .AllowAnonymous();
     }
 }
+

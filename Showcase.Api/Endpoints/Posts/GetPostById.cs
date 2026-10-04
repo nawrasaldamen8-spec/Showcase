@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Showcase.Api.Common.Results;
 using Showcase.Application.Features.Posts.Common;
-using Showcase.Application.Features.Posts.Queries.GetPostById;
+using Showcase.Application.Features.Posts.Queries;
 
 namespace Showcase.Api.Endpoints.Posts;
 
@@ -29,3 +29,4 @@ public class GetPostById : IEndpoint
         .AllowAnonymous();
     }
 }
+

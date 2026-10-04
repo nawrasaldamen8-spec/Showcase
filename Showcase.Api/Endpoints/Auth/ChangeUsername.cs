@@ -4,7 +4,8 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Showcase.Api.Common.Results;
-using Showcase.Application.Features.Auth.Commands.ChangeUsername;
+using Showcase.Application.Features.Auth.Commands;
+using Showcase.Application.Features.Auth.Common;
 
 namespace Showcase.Api.Endpoints.Auth;
 
@@ -22,7 +23,7 @@ public class ChangeUsername : IEndpoint
         })
         .WithTags("Auth")
         .WithName(nameof(ChangeUsername))
-        .Produces(StatusCodes.Status200OK)
+        .Produces<AuthResponse>(StatusCodes.Status200OK)
         .ProducesProblem(StatusCodes.Status400BadRequest)
         .ProducesProblem(StatusCodes.Status401Unauthorized)
         .ProducesProblem(StatusCodes.Status409Conflict)
@@ -31,3 +32,4 @@ public class ChangeUsername : IEndpoint
         .RequireRateLimiting("auth-policy");
     }
 }
+

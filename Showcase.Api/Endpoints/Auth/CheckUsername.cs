@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Showcase.Api.Common.Results;
-using Showcase.Application.Features.Auth.Queries.CheckUsername;
+using Showcase.Application.Features.Auth.Queries;
 
 namespace Showcase.Api.Endpoints.Auth;
 
@@ -29,3 +29,4 @@ public class CheckUsername : IEndpoint
         .RequireRateLimiting("auth-policy");
     }
 }
+

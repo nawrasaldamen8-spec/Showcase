@@ -7,7 +7,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Showcase.Api.Common.Results;
 using Showcase.Application.Features.Career.Common;
-using Showcase.Application.Features.Career.Experiences;
+using Showcase.Application.Features.Career.Commands;
+using Showcase.Application.Features.Career.Queries;
 
 namespace Showcase.Api.Endpoints.Career.Experiences;
 
@@ -58,3 +59,4 @@ public class UpdateExperience : IEndpoint
         .RequireAuthorization();
     }
 }
+

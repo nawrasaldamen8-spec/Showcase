@@ -4,26 +4,24 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Showcase.Api.Common.Results;
-using Showcase.Application.Features.Profiles.Commands;
+using Showcase.Application.Features.Auth.Commands;
 
-namespace Showcase.Api.Endpoints.Profiles;
+namespace Showcase.Api.Endpoints.Auth;
 
-public class UpdatePhone : IEndpoint
+public class DevToggleBan : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app)
     {
-        app.MapPut("api/profiles/me/phone", async (
-            UpdatePhoneCommand command,
+        app.MapPost("api/auth/dev-toggle-ban", async (
             ISender sender,
             CancellationToken ct) =>
         {
-            var result = await sender.Send(command, ct);
+            var result = await sender.Send(new ToggleDevBanCommand(), ct);
             return result.ToResponse();
         })
-        .WithTags("Profiles")
-        .WithName(nameof(UpdatePhone))
-        .Produces(StatusCodes.Status200OK)
-        .ProducesProblem(StatusCodes.Status400BadRequest)
+        .WithTags("Auth")
+        .WithName(nameof(DevToggleBan))
+        .Produces<DevToggleBanResponse>(StatusCodes.Status200OK)
         .ProducesProblem(StatusCodes.Status401Unauthorized)
         .ProducesProblem(StatusCodes.Status404NotFound)
         .RequireAuthorization();

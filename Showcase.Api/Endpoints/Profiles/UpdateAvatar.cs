@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Showcase.Api.Common.Results;
-using Showcase.Application.Features.Profiles.Commands.UpdateAvatar;
+using Showcase.Application.Features.Profiles.Commands;
 
 namespace Showcase.Api.Endpoints.Profiles;
 
@@ -29,3 +29,4 @@ public class UpdateAvatar : IEndpoint
         .RequireAuthorization();
     }
 }
+

@@ -5,7 +5,8 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Showcase.Api.Common.Results;
-using Showcase.Application.Features.Career.Academics;
+using Showcase.Application.Features.Career.Commands;
+using Showcase.Application.Features.Career.Queries;
 using Showcase.Application.Features.Career.Common;
 
 namespace Showcase.Api.Endpoints.Career.Academics;
@@ -29,3 +30,4 @@ public class GetAcademics : IEndpoint
         .RequireAuthorization();
     }
 }
+

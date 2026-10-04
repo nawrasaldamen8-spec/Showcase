@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Showcase.Api.Common.Results;
 using Showcase.Application.Features.Profiles.Common;
-using Showcase.Application.Features.SocialLinks.Queries.GetSocialLinks;
+using Showcase.Application.Features.SocialLinks.Queries;
 
 namespace Showcase.Api.Endpoints.SocialLinks;
 
@@ -30,3 +30,4 @@ public class GetSocialLinks : IEndpoint
         .RequireAuthorization();
     }
 }
+

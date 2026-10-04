@@ -4,8 +4,9 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Showcase.Api.Common.Results;
+using Showcase.Application.Common.Models;
 using Showcase.Application.Features.Posts.Common;
-using Showcase.Application.Features.Posts.Queries.GetMyPosts;
+using Showcase.Application.Features.Posts.Queries;
 using Showcase.Domain.Enums;
 
 namespace Showcase.Api.Endpoints.Posts;
@@ -33,3 +34,4 @@ public class GetMyPosts : IEndpoint
         .RequireAuthorization();
     }
 }
+

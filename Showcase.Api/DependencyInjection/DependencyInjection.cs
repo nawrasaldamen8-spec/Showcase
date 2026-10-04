@@ -1,10 +1,7 @@
-using System;
 using System.Reflection;
-using System.Security.Claims;
-using System.Threading.RateLimiting;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.RateLimiting;
-using Microsoft.OpenApi;
+using Microsoft.AspNetCore.Http.Json;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Showcase.Api.Common.Errors;
 using Showcase.Api.Endpoints;
 
@@ -16,32 +13,16 @@ public static class DependencyInjection
         this IServiceCollection services,
         IConfiguration configuration)
     {
-        services.AddEndpointsApiExplorer();
-        services.AddSwaggerGen(options =>
-        {
-            options.SwaggerDoc("v1", new OpenApiInfo
-            {
-                Title = "Showcase Portfolio API",
-                Version = "v1",
-                Description = "Showcase Portfolio Platform Backend API (.NET 10)"
-            });
+        services.AddOpenApiDocumentation();
+        services.AddWebConfiguration();
+        services.AddCorsPolicy(configuration);
+        services.AddRateLimitingPolicies();
 
-            options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-            {
-                Name = "Authorization",
-                Description = "Enter JWT Bearer token like: Bearer {your token}",
-                In = ParameterLocation.Header,
-                Type = SecuritySchemeType.Http,
-                Scheme = "bearer",
-                BearerFormat = "JWT"
-            });
+        return services;
+    }
 
-            options.AddSecurityRequirement(document => new OpenApiSecurityRequirement
-            {
-                [new OpenApiSecuritySchemeReference("Bearer", document)] = []
-            });
-        });
-
+    private static void AddWebConfiguration(this IServiceCollection services)
+    {
         services.AddExceptionHandler<GlobalExceptionHandler>();
         services.AddProblemDetails();
 
@@ -53,90 +34,5 @@ public static class DependencyInjection
         });
 
         services.AddEndpoints(Assembly.GetExecutingAssembly());
-
-        services.AddCors(options =>
-        {
-            options.AddPolicy("AllowAll", policy =>
-            {
-                policy.SetIsOriginAllowed(origin =>
-                      {
-                          if (string.IsNullOrWhiteSpace(origin)) return false;
-                          if (Uri.TryCreate(origin, UriKind.Absolute, out var uri))
-                          {
-                              return uri.Host == "localhost" || uri.Host == "127.0.0.1";
-                          }
-                          return false;
-                      })
-                      .AllowAnyMethod()
-                      .AllowAnyHeader()
-                      .AllowCredentials();
-            });
-        });
-
-        services.AddRateLimiter(options =>
-        {
-            options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
-
-            options.OnRejected = async (context, token) =>
-            {
-                context.HttpContext.Response.ContentType = "application/problem+json";
-                var problemDetails = new ProblemDetails
-                {
-                    Status = StatusCodes.Status429TooManyRequests,
-                    Title = "Too Many Requests",
-                    Detail = "Rate limit exceeded. Please wait a moment and try again.",
-                    Type = "https://tools.ietf.org/html/rfc6585#section-4"
-                };
-                await context.HttpContext.Response.WriteAsJsonAsync(problemDetails, cancellationToken: token);
-            };
-
-            // Auth Policy: 10 requests per minute partitioned by IP
-            options.AddPolicy("auth-policy", httpContext =>
-            {
-                var ip = httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown-ip";
-                return RateLimitPartition.GetFixedWindowLimiter(
-                    partitionKey: ip,
-                    factory: _ => new FixedWindowRateLimiterOptions
-                    {
-                        PermitLimit = 10,
-                        Window = TimeSpan.FromMinutes(1),
-                        QueueLimit = 0
-                    });
-            });
-
-            // Upload Policy: 15 requests per minute partitioned by User ID or IP
-            options.AddPolicy("upload-policy", httpContext =>
-            {
-                var userOrIp = httpContext.User.Identity?.IsAuthenticated == true
-                    ? httpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "auth-user"
-                    : httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown-ip";
-
-                return RateLimitPartition.GetFixedWindowLimiter(
-                    partitionKey: userOrIp,
-                    factory: _ => new FixedWindowRateLimiterOptions
-                    {
-                        PermitLimit = 15,
-                        Window = TimeSpan.FromMinutes(1),
-                        QueueLimit = 0
-                    });
-            });
-
-            // General Policy: 100 requests per minute partitioned by IP
-            options.AddPolicy("general-policy", httpContext =>
-            {
-                var ip = httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown-ip";
-                return RateLimitPartition.GetFixedWindowLimiter(
-                    partitionKey: ip,
-                    factory: _ => new FixedWindowRateLimiterOptions
-                    {
-                        PermitLimit = 100,
-                        Window = TimeSpan.FromMinutes(1),
-                        QueueLimit = 2,
-                        QueueProcessingOrder = QueueProcessingOrder.OldestFirst
-                    });
-            });
-        });
-
-        return services;
     }
 }

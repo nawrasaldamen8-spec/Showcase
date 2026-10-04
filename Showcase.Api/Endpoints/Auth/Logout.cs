@@ -3,11 +3,8 @@ using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Hosting;
-using Showcase.Api.Common.Auth;
 using Showcase.Api.Common.Results;
-using Showcase.Application.Features.Auth.Commands.Logout;
+using Showcase.Application.Features.Auth.Commands;
 
 namespace Showcase.Api.Endpoints.Auth;
 
@@ -17,27 +14,10 @@ public class Logout : IEndpoint
     {
         app.MapPost("api/auth/logout", async (
             ISender sender,
-            HttpContext httpContext,
-            IWebHostEnvironment env,
             CancellationToken ct) =>
         {
-            if (httpContext.User.Identity?.IsAuthenticated == true)
-            {
-                await sender.Send(new LogoutCommand(), ct);
-            }
-
-            var isDev = env.IsDevelopment();
-            httpContext.Response.Cookies.Append(
-                AuthCookieHelper.AccessTokenCookieName,
-                "",
-                AuthCookieHelper.GetDeleteCookieOptions(isDev));
-
-            httpContext.Response.Cookies.Append(
-                AuthCookieHelper.RefreshTokenCookieName,
-                "",
-                AuthCookieHelper.GetDeleteCookieOptions(isDev));
-
-            return Results.Ok();
+            var result = await sender.Send(new LogoutCommand(), ct);
+            return result.ToResponse();
         })
         .WithTags("Auth")
         .WithName(nameof(Logout))
@@ -47,3 +27,4 @@ public class Logout : IEndpoint
         .AllowAnonymous();
     }
 }
+

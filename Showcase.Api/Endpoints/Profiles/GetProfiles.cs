@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Routing;
 using Showcase.Api.Common.Results;
 using Showcase.Application.Common.Models;
 using Showcase.Application.Features.Profiles.Common;
-using Showcase.Application.Features.Profiles.Queries.GetProfiles;
+using Showcase.Application.Features.Profiles.Queries;
 
 namespace Showcase.Api.Endpoints.Profiles;
 
@@ -33,3 +33,4 @@ public class GetProfiles : IEndpoint
         .AllowAnonymous();
     }
 }
+

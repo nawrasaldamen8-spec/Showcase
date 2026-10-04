@@ -6,7 +6,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Showcase.Api.Common.Results;
 using Showcase.Application.Features.Career.Common;
-using Showcase.Application.Features.Career.Languages;
+using Showcase.Application.Features.Career.Commands;
+using Showcase.Application.Features.Career.Queries;
 
 namespace Showcase.Api.Endpoints.Career.Languages;
 
@@ -37,3 +38,4 @@ public class UpdateLanguage : IEndpoint
         .RequireAuthorization();
     }
 }
+

@@ -4,30 +4,30 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Showcase.Api.Common.Results;
-using Showcase.Application.Features.Career.Commands;
-using Showcase.Application.Features.Career.Queries;
-using Showcase.Application.Features.Career.Common;
+using Showcase.Application.Features.Auth.Commands;
+using Showcase.Application.Features.Auth.Common;
 
-namespace Showcase.Api.Endpoints.Career.Achievements;
+namespace Showcase.Api.Endpoints.Auth;
 
-public class CreateAchievement : IEndpoint
+public class RegisterGoogle : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app)
     {
-        app.MapPost("api/career/achievements", async (
-            CreateAchievementCommand command,
+        app.MapPost("api/auth/register-google", async (
+            RegisterGoogleCommand command,
             ISender sender,
             CancellationToken ct) =>
         {
             var result = await sender.Send(command, ct);
             return result.ToResponse();
         })
-        .WithTags("Career - Achievements")
-        .WithName(nameof(CreateAchievement))
-        .Produces<CareerAchievementDto>(StatusCodes.Status200OK)
+        .WithTags("Auth")
+        .WithName(nameof(RegisterGoogle))
+        .Produces<AuthResponse>(StatusCodes.Status200OK)
         .ProducesProblem(StatusCodes.Status400BadRequest)
         .ProducesProblem(StatusCodes.Status401Unauthorized)
-        .RequireAuthorization();
+        .ProducesProblem(StatusCodes.Status409Conflict)
+        .AllowAnonymous();
     }
 }
 

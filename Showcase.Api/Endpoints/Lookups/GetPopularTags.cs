@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Showcase.Api.Common.Results;
-using Showcase.Application.Features.Lookups;
+using Showcase.Application.Features.Lookups.Queries;
 
 namespace Showcase.Api.Endpoints.Lookups;
 

@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Showcase.Api.Common.Results;
-using Showcase.Application.Features.SocialLinks.Commands.UpdateSocialLink;
+using Showcase.Application.Features.SocialLinks.Commands;
 
 namespace Showcase.Api.Endpoints.SocialLinks;
 
@@ -34,3 +34,4 @@ public class UpdateSocialLink : IEndpoint
         .RequireAuthorization();
     }
 }
+

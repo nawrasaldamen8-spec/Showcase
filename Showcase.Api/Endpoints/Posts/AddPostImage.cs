@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Showcase.Api.Common.Results;
-using Showcase.Application.Features.Posts.Commands.AddPostImage;
+using Showcase.Application.Features.Posts.Commands;
 using Showcase.Application.Features.Posts.Common;
 
 namespace Showcase.Api.Endpoints.Posts;
@@ -36,3 +36,4 @@ public class AddPostImage : IEndpoint
         .RequireAuthorization();
     }
 }
+

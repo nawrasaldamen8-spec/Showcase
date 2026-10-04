@@ -5,7 +5,8 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Showcase.Api.Common.Results;
-using Showcase.Application.Features.Career.Languages;
+using Showcase.Application.Features.Career.Commands;
+using Showcase.Application.Features.Career.Queries;
 
 namespace Showcase.Api.Endpoints.Career.Languages;
 
@@ -30,3 +31,4 @@ public class DeleteLanguage : IEndpoint
         .RequireAuthorization();
     }
 }
+

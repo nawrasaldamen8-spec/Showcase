@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Showcase.Api.Common.Results;
-using Showcase.Application.Features.Auth.Commands.ChangeEmail;
+using Showcase.Application.Features.Auth.Commands;
 
 namespace Showcase.Api.Endpoints.Auth;
 
@@ -31,3 +31,4 @@ public class ChangeEmail : IEndpoint
         .RequireRateLimiting("auth-policy");
     }
 }
+
