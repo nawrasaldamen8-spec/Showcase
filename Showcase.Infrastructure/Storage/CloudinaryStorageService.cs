@@ -4,8 +4,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using CloudinaryDotNet;
 using CloudinaryDotNet.Actions;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Showcase.Application.Common.Interfaces;
+using Showcase.Domain.Common.Results;
 
 namespace Showcase.Infrastructure.Storage;
 
@@ -13,10 +15,14 @@ public class CloudinaryStorageService : IStorageService
 {
     private readonly Cloudinary _cloudinary;
     private readonly CloudinarySettings _settings;
+    private readonly ILogger<CloudinaryStorageService> _logger;
 
-    public CloudinaryStorageService(IOptions<CloudinarySettings> options)
+    public CloudinaryStorageService(
+        IOptions<CloudinarySettings> options,
+        ILogger<CloudinaryStorageService> logger)
     {
         ArgumentNullException.ThrowIfNull(options);
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _settings = options.Value ?? new CloudinarySettings();
 
         var account = new Account(
@@ -100,7 +106,12 @@ public class CloudinaryStorageService : IStorageService
             ResourceType = ResourceType.Image
         };
 
-        await _cloudinary.DestroyAsync(deletionParams);
+        var result = await _cloudinary.DestroyAsync(deletionParams);
+        if (result is not null && !string.Equals(result.Result, "ok", StringComparison.OrdinalIgnoreCase))
+        {
+            _logger.LogWarning("Cloudinary asset deletion returned unexpected result '{Result}' for publicId '{PublicId}'. Error: {Error}",
+                result.Result, publicId, result.Error?.Message);
+        }
     }
 
     public async Task<StorageUsageTelemetry> GetUsageTelemetryAsync(CancellationToken ct = default)
@@ -155,6 +166,12 @@ public class CloudinaryStorageService : IStorageService
             0L,
             0L,
             0L);
+    }
+
+    public Task<Result<string>> SaveAsync(string storageKey, System.IO.Stream contentStream, CancellationToken ct = default)
+    {
+        return Task.FromResult(Result.Failure<string>(
+            Showcase.Domain.Common.Results.Error.Failure("Storage.LocalDisabled", "Local upload is not available in this environment.")));
     }
 }
 

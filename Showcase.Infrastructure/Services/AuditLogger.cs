@@ -10,17 +10,35 @@ namespace Showcase.Infrastructure.Services;
 public class AuditLogger : IAuditLogger
 {
     private readonly IApplicationDbContext _context;
+    private readonly ICurrentUserService _currentUserService;
     private readonly ILogger<AuditLogger> _logger;
 
     public AuditLogger(
         IApplicationDbContext context,
+        ICurrentUserService currentUserService,
         ILogger<AuditLogger> logger)
     {
         _context = context;
+        _currentUserService = currentUserService;
         _logger = logger;
     }
 
-    public async Task LogAsync(
+    public Task LogAsync(
+        string action,
+        string targetEntity,
+        string targetId,
+        string targetLabel,
+        string? reason = null,
+        string? metadataJson = null,
+        CancellationToken ct = default)
+    {
+        var adminUserId = _currentUserService.UserId ?? "admin-system";
+        var adminUsername = _currentUserService.Username ?? "admin";
+
+        return LogExplicitAsync(adminUserId, adminUsername, action, targetEntity, targetId, targetLabel, reason, metadataJson, ct);
+    }
+
+    public async Task LogExplicitAsync(
         string adminUserId,
         string adminUsername,
         string action,

@@ -33,8 +33,19 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>, IApplica
     public DbSet<CareerVisibility> CareerVisibilities => Set<CareerVisibility>();
     public DbSet<Country> Countries => Set<Country>();
     public DbSet<LanguageReference> LanguageReferences => Set<LanguageReference>();
+    public DbSet<SpecialtyReference> SpecialtyReferences => Set<SpecialtyReference>();
     public DbSet<ContentReport> ContentReports => Set<ContentReport>();
     public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
+
+    public async Task<Microsoft.EntityFrameworkCore.Storage.IDbContextTransaction> BeginTransactionAsync(CancellationToken cancellationToken = default)
+    {
+        if (!Database.IsRelational())
+        {
+            return new NullDbContextTransaction();
+        }
+
+        return await Database.BeginTransactionAsync(cancellationToken);
+    }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

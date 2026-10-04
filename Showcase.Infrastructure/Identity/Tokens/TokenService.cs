@@ -131,4 +131,107 @@ public class TokenService : ITokenService
             return null;
         }
     }
+
+    public string GenerateOnboardingToken(string provider, string providerKey, string email, string? name = null, string? pictureUrl = null)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(provider);
+        ArgumentException.ThrowIfNullOrWhiteSpace(providerKey);
+        ArgumentException.ThrowIfNullOrWhiteSpace(email);
+
+        var claims = new List<Claim>
+        {
+            new("purpose", "oauth_onboarding"),
+            new("provider", provider),
+            new("provider_key", providerKey),
+            new(JwtRegisteredClaimNames.Email, email.Trim()),
+            new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+        };
+
+        if (!string.IsNullOrWhiteSpace(name))
+        {
+            claims.Add(new Claim("name", name.Trim()));
+        }
+
+        if (!string.IsNullOrWhiteSpace(pictureUrl))
+        {
+            claims.Add(new Claim("picture", pictureUrl.Trim()));
+        }
+
+        var secret = !string.IsNullOrWhiteSpace(_jwtSettings.Secret) && Encoding.UTF8.GetByteCount(_jwtSettings.Secret.Trim()) >= 32
+            ? _jwtSettings.Secret.Trim()
+            : JwtSettings.DefaultDevelopmentSecret;
+
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret));
+        var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+        var now = DateTime.UtcNow;
+
+        var token = new JwtSecurityToken(
+            issuer: string.IsNullOrWhiteSpace(_jwtSettings.Issuer) ? null : _jwtSettings.Issuer,
+            audience: string.IsNullOrWhiteSpace(_jwtSettings.Audience) ? null : _jwtSettings.Audience,
+            claims: claims,
+            notBefore: now.AddSeconds(-5),
+            expires: now.AddMinutes(30),
+            signingCredentials: creds);
+
+        return new JwtSecurityTokenHandler().WriteToken(token);
+    }
+
+    public OnboardingTokenPayload? ValidateOnboardingToken(string token)
+    {
+        if (string.IsNullOrWhiteSpace(token))
+            return null;
+
+        var secret = !string.IsNullOrWhiteSpace(_jwtSettings.Secret) && Encoding.UTF8.GetByteCount(_jwtSettings.Secret.Trim()) >= 32
+            ? _jwtSettings.Secret.Trim()
+            : JwtSettings.DefaultDevelopmentSecret;
+
+        var tokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret)),
+            ValidateIssuer = !string.IsNullOrWhiteSpace(_jwtSettings.Issuer),
+            ValidIssuer = string.IsNullOrWhiteSpace(_jwtSettings.Issuer) ? null : _jwtSettings.Issuer,
+            ValidateAudience = !string.IsNullOrWhiteSpace(_jwtSettings.Audience),
+            ValidAudience = string.IsNullOrWhiteSpace(_jwtSettings.Audience) ? null : _jwtSettings.Audience,
+            ValidateLifetime = true,
+            ClockSkew = TimeSpan.FromMinutes(1),
+            ValidAlgorithms = new[] { SecurityAlgorithms.HmacSha256 }
+        };
+
+        var tokenHandler = new JwtSecurityTokenHandler();
+
+        try
+        {
+            var principal = tokenHandler.ValidateToken(token, tokenValidationParameters, out var securityToken);
+
+            if (securityToken is not JwtSecurityToken jwtSecurityToken ||
+                !jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.OrdinalIgnoreCase))
+            {
+                return null;
+            }
+
+            var purpose = principal.FindFirst("purpose")?.Value;
+            if (!string.Equals(purpose, "oauth_onboarding", StringComparison.Ordinal))
+            {
+                return null;
+            }
+
+            var provider = principal.FindFirst("provider")?.Value;
+            var providerKey = principal.FindFirst("provider_key")?.Value;
+            var email = principal.FindFirst(JwtRegisteredClaimNames.Email)?.Value ?? principal.FindFirst(ClaimTypes.Email)?.Value;
+            var name = principal.FindFirst("name")?.Value;
+            var picture = principal.FindFirst("picture")?.Value;
+
+            if (string.IsNullOrWhiteSpace(provider) || string.IsNullOrWhiteSpace(providerKey) || string.IsNullOrWhiteSpace(email))
+            {
+                return null;
+            }
+
+            return new OnboardingTokenPayload(provider, providerKey, email, name, picture);
+        }
+        catch
+        {
+            return null;
+        }
+    }
 }

@@ -8,6 +8,8 @@ public class ApplicationUser : IdentityUser
 {
     public string? RefreshToken { get; set; }
     public DateTime? RefreshTokenExpiryTime { get; set; }
+    public string? PreviousRefreshToken { get; set; }
+    public DateTime? PreviousRefreshTokenExpiryTime { get; set; }
 
     // Mirrors Profile moderation state. Identity does not read the Profile aggregate, so without this copy
     // a ban could never be enforced at sign-in.

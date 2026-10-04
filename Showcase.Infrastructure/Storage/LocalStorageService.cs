@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Showcase.Application.Common.Interfaces;
+using Showcase.Domain.Common.Results;
 
 namespace Showcase.Infrastructure.Storage;
 
@@ -110,6 +111,32 @@ public class LocalStorageService : IStorageService
             (long)(usedBytes * 0.7),
             (long)(usedBytes * 0.1),
             (long)(usedBytes * 0.2)));
+    }
+
+    public async Task<Result<string>> SaveAsync(string storageKey, Stream contentStream, CancellationToken ct = default)
+    {
+        if (string.IsNullOrWhiteSpace(storageKey))
+        {
+            return Error.Validation("Storage.KeyRequired", "Storage key is required.");
+        }
+
+        var normalizedKey = storageKey.Trim().Replace('\\', '/').TrimStart('/');
+        if (normalizedKey.Contains(".."))
+        {
+            return Error.Validation("Storage.InvalidKey", "Invalid storage key.");
+        }
+
+        var targetFilePath = Path.Combine(_uploadDirectory, normalizedKey);
+        var fileDirectory = Path.GetDirectoryName(targetFilePath);
+        if (!string.IsNullOrEmpty(fileDirectory) && !Directory.Exists(fileDirectory))
+        {
+            Directory.CreateDirectory(fileDirectory);
+        }
+
+        await using var fileStream = new FileStream(targetFilePath, FileMode.Create, FileAccess.Write, FileShare.None);
+        await contentStream.CopyToAsync(fileStream, ct);
+
+        return normalizedKey;
     }
 }
 

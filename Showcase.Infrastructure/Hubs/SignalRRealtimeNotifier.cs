@@ -26,14 +26,4 @@ public class SignalRRealtimeNotifier : IRealtimeNotifier
         await _hubContext.Clients.User(userId).SendAsync("NotificationReceived", data, ct);
         await _hubContext.Clients.Group($"user_{userId}").SendAsync("NotificationReceived", data, ct);
     }
-
-    public async Task BroadcastAsync(string title, string message, string severity, CancellationToken ct = default)
-    {
-        await _hubContext.Clients.All.SendAsync("BroadcastReceived", new
-        {
-            title,
-            message,
-            severity
-        }, ct);
-    }
 }

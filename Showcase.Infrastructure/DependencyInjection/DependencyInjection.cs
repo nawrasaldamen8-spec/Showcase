@@ -25,12 +25,23 @@ public static class DependencyInjection
         ArgumentNullException.ThrowIfNull(services);
         ArgumentNullException.ThrowIfNull(configuration);
 
+        AddDatabase(services, configuration);
+        AddJwtAuthentication(services, configuration);
+        AddApplicationServices(services, configuration);
+        AddInfrastructureHealthChecks(services);
+
+        return services;
+    }
+
+    private static void AddDatabase(IServiceCollection services, IConfiguration configuration)
+    {
         var connectionString = configuration.GetConnectionString("DefaultConnection")
             ?? "Host=localhost;Database=showcase_db;Username=postgres;Password=postgres";
 
         services.AddDbContext<ApplicationDbContext>(options =>
         {
             options.UseNpgsql(connectionString);
+            options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
         });
 
         services.AddScoped<IApplicationDbContext>(sp => sp.GetRequiredService<ApplicationDbContext>());
@@ -47,7 +58,10 @@ public static class DependencyInjection
         .AddRoles<IdentityRole>()
         .AddEntityFrameworkStores<ApplicationDbContext>()
         .AddDefaultTokenProviders();
+    }
 
+    private static void AddJwtAuthentication(IServiceCollection services, IConfiguration configuration)
+    {
         // Options pattern binding
         services.Configure<JwtSettings>(configuration.GetSection(JwtSettings.SectionName));
         services.Configure<CloudinarySettings>(configuration.GetSection(CloudinarySettings.SectionName));
@@ -109,11 +123,16 @@ public static class DependencyInjection
         services.AddAuthorization();
         services.AddSignalR();
         services.AddSingleton<IUserIdProvider, CustomUserIdProvider>();
+    }
 
-        // Application service registrations
+    private static void AddApplicationServices(IServiceCollection services, IConfiguration configuration)
+    {
         services.AddHttpContextAccessor();
         services.AddScoped<IIdentityService, IdentityService>();
         services.AddScoped<ITokenService, TokenService>();
+        services.AddHttpClient<IGoogleAuthService, GoogleAuthService>();
+        services.AddScoped<IAuthCookieService, AuthCookieService>();
+        services.AddScoped<IAuthSessionOrchestrator, AuthSessionOrchestrator>();
         services.AddScoped<ICurrentUserService, CurrentUserService>();
         services.AddScoped<IRealtimeNotifier, SignalRRealtimeNotifier>();
         services.AddScoped<IAuditLogger, Showcase.Infrastructure.Services.AuditLogger>();
@@ -136,11 +155,11 @@ public static class DependencyInjection
         {
             services.AddScoped<IStorageService, LocalStorageService>();
         }
+    }
 
-        // Health Checks
+    private static void AddInfrastructureHealthChecks(IServiceCollection services)
+    {
         services.AddHealthChecks()
             .AddCheck<PostgreSqlHealthCheck>("postgresql", tags: ["db", "ready"]);
-
-        return services;
     }
 }
