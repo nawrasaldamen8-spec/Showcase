@@ -16,6 +16,7 @@
 # ASP.NET Core Secrets and Local Configurations
 secrets.json
 *.secrets.json
+*.local.json
 appsettings.*.local.json
 appsettings.Local.json
 appsettings.Production.json
@@ -30,8 +31,21 @@ appsettings.staging.json
 *.crt
 *.pubxml.user
 
-# dotenv files
-.env
+# User Uploads and Media
+wwwroot/uploads/
+uploads/
+
+# Frontend / ClientApp Build & Cache
+node_modules/
+dist/
+build/
+.vite/
+.eslintcache
+.stylelintcache
+
+# AI & Workspace Tooling
+.antigravity/
+.gemini/
 
 # User-specific files
 *.rsuser
