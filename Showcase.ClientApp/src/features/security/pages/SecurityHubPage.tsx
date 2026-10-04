@@ -1,13 +1,18 @@
-import { AlertTriangle, ArrowLeft, AtSign, CheckCircle2, Clock, KeyRound, Mail, Phone, ShieldAlert, ShieldCheck, Sparkles } from "lucide-react";
-import React from "react";
-import { Link } from "react-router-dom";
+import { AlertTriangle, AtSign, CheckCircle2, Clock, KeyRound, LogOut, Mail, Phone, ShieldAlert, ShieldCheck, Sparkles } from "lucide-react";
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { apiClient } from "@shared/api/apiClient.ts";
+import { Button } from "@shared/components/Button.tsx";
+import { Modal } from "@shared/components/Modal.tsx";
 import { useAuth } from "@shared/context/useAuth.ts";
 import { useAsyncData } from "@shared/hooks/index.ts";
 import { SecurityNavRow } from "../components/SecurityNavRow.tsx";
 
 export const SecurityHubPage: React.FC = () => {
-  const { currentUser } = useAuth();
+  const { currentUser, logout } = useAuth();
+  const navigate = useNavigate();
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const { data: profile } = useAsyncData(() => apiClient.getMyProfile());
 
   const displayUsername = profile?.username || currentUser?.username || "user";
@@ -20,17 +25,6 @@ export const SecurityHubPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-ivory-medium py-6 sm:py-10 px-4 sm:px-6 lg:px-8 pb-24">
       <div className="max-w-2xl mx-auto space-y-8">
-        {/* Back Link to Creator Studio */}
-        <div>
-          <Link
-            to="/studio"
-            className="inline-flex items-center gap-2 font-gothic text-xs font-semibold uppercase tracking-[0.14em] text-cloud-dark hover:text-slate-dark transition-colors group text-decoration-none"
-          >
-            <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
-            <span>Studio</span>
-          </Link>
-        </div>
-
         {/* Page Header */}
         <div className="border-b border-stone pb-6 space-y-2">
           <div className="flex items-center gap-2">
@@ -70,11 +64,6 @@ export const SecurityHubPage: React.FC = () => {
               icon={AtSign}
               title="Change Username"
               description={`@${displayUsername}`}
-              badge={
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-gothic font-bold uppercase tracking-wider bg-ivory-light border border-stone text-slate-dark">
-                  Handle
-                </span>
-              }
             />
 
             {/* 2. Change Email */}
@@ -82,11 +71,17 @@ export const SecurityHubPage: React.FC = () => {
               to="/settings/security/email"
               icon={Mail}
               title="Email Address"
-              description={displayEmail}
+              description={displayEmail || "Add email address"}
               badge={
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-gothic font-bold uppercase tracking-wider bg-[#2e7d32]/10 text-[#2e7d32] border border-[#2e7d32]/30">
-                  Verified
-                </span>
+                displayEmail ? (
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-gothic font-bold uppercase tracking-wider bg-[#2e7d32]/10 text-[#2e7d32] border border-[#2e7d32]/30">
+                    Verified
+                  </span>
+                ) : (
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-gothic font-bold uppercase tracking-wider bg-ivory-light border border-stone text-cloud-dark">
+                    Optional
+                  </span>
+                )
               }
             />
 
@@ -101,11 +96,7 @@ export const SecurityHubPage: React.FC = () => {
                   <span className="px-2 py-0.5 rounded-full text-[10px] font-gothic font-bold uppercase tracking-wider bg-[#2e7d32]/10 text-[#2e7d32] border border-[#2e7d32]/30">
                     Linked
                   </span>
-                ) : (
-                  <span className="px-2 py-0.5 rounded-full text-[10px] font-gothic font-bold uppercase tracking-wider bg-stone/30 text-cloud-dark border border-stone">
-                    Optional
-                  </span>
-                )
+                ) : undefined
               }
             />
 
@@ -115,11 +106,6 @@ export const SecurityHubPage: React.FC = () => {
               icon={KeyRound}
               title="Change Password"
               description="Update your secret credentials"
-              badge={
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-gothic font-bold uppercase tracking-wider bg-[#2e7d32]/10 text-[#2e7d32] border border-[#2e7d32]/30">
-                  Secured
-                </span>
-              }
             />
           </div>
         </section>
@@ -214,7 +200,80 @@ export const SecurityHubPage: React.FC = () => {
             }
           />
         </section>
+
+        {/* Section 4: Session & Sign Out */}
+        <section className="space-y-3.5 pt-6 border-t border-stone/60" aria-labelledby="session-heading">
+          <div className="px-1">
+            <h2
+              id="session-heading"
+              className="font-gothic text-xs font-bold uppercase tracking-[0.14em] text-cloud-dark"
+            >
+              Session Management
+            </h2>
+          </div>
+
+          <div className="bg-ivory-light border border-stone rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div>
+              <h3 className="font-gothic font-bold text-sm text-slate-dark">
+                Signed in as @{displayUsername}
+              </h3>
+              <p className="font-serif text-xs text-cloud-dark mt-0.5">
+                Sign out of your active session on this device.
+              </p>
+            </div>
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowLogoutConfirm(true)}
+              leftIcon={<LogOut className="h-3.5 w-3.5" />}
+              className="w-full sm:w-auto justify-center hover:bg-slate-dark hover:text-ivory-light hover:border-slate-dark"
+            >
+              Log Out
+            </Button>
+          </div>
+        </section>
       </div>
+
+      {/* Sign Out Confirmation Modal */}
+      <Modal
+        isOpen={showLogoutConfirm}
+        onClose={() => setShowLogoutConfirm(false)}
+        title="Confirm Sign Out"
+      >
+        <div className="space-y-4">
+          <p className="font-serif text-sm text-slate-dark/80 leading-relaxed">
+            Are you sure you want to log out of Pority on this device?
+          </p>
+          <div className="flex items-center justify-end gap-3 pt-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowLogoutConfirm(false)}
+              disabled={isLoggingOut}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="clay"
+              size="sm"
+              onClick={async () => {
+                setIsLoggingOut(true);
+                try {
+                  await logout();
+                  navigate("/login", { replace: true });
+                } finally {
+                  setIsLoggingOut(false);
+                  setShowLogoutConfirm(false);
+                }
+              }}
+              isLoading={isLoggingOut}
+            >
+              Log Out
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 };

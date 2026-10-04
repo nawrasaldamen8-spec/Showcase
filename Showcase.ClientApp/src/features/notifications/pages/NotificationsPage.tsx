@@ -1,6 +1,5 @@
-import { ArrowLeft, Bell, CheckCheck } from "lucide-react";
+import { Bell, CheckCheck } from "lucide-react";
 import React, { useEffect } from "react";
-import { Link } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { apiClient, queryKeys } from "@shared/api/index.ts";
 import { useInfiniteScroll } from "@shared/hooks/index.ts";
@@ -35,18 +34,17 @@ export const NotificationsPage: React.FC = () => {
     fetchNextPage,
   });
 
-  // Automatically mark unread notifications as seen/read in the background
+  // Automatically mark unread notifications as seen/read in the background using a single batch call
   useEffect(() => {
     if (notifications.length === 0) return;
 
     const unreadList = notifications.filter((n) => !n.isRead);
     if (unreadList.length === 0) return;
 
-    unreadList.forEach((n) => {
-      apiClient.markNotificationAsRead(n.id).catch(() => {});
-    });
+    // Send single batch request
+    apiClient.markAllNotificationsAsRead().catch(() => {});
 
-    // Update query cache so rows and badges reflect read state without full refetch
+    // Optimistically update query cache so rows and badges reflect read state without full refetch
     queryClient.setQueriesData({ queryKey: queryKeys.notifications.all }, (oldData: unknown) => {
       if (!oldData || typeof oldData !== "object") return oldData;
       if ("pages" in (oldData as { pages: unknown[] })) {
@@ -61,6 +59,8 @@ export const NotificationsPage: React.FC = () => {
       }
       return oldData;
     });
+
+    queryClient.setQueryData(queryKeys.notifications.unreadCount(), { count: 0 });
   }, [notifications, queryClient]);
 
   const handleMarkAllAsRead = () => {
@@ -70,17 +70,6 @@ export const NotificationsPage: React.FC = () => {
   return (
     <div className="min-h-[85vh] bg-ivory-medium py-6 sm:py-10 px-4 sm:px-6 lg:px-8 pb-24">
       <div className="max-w-2xl mx-auto space-y-6">
-        {/* Navigation Breadcrumb */}
-        <nav aria-label="Breadcrumb navigation">
-          <Link
-            to="/studio"
-            className="inline-flex items-center gap-2 font-gothic text-xs font-semibold uppercase tracking-[0.14em] text-cloud-dark hover:text-slate-dark transition-colors group text-decoration-none"
-          >
-            <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
-            <span>Studio</span>
-          </Link>
-        </nav>
-
         {/* Minimalist Page Header with Mark All as Read Action */}
         <header className="border-b border-stone/50 pb-4 flex items-center justify-between gap-4">
           <div>
@@ -88,8 +77,8 @@ export const NotificationsPage: React.FC = () => {
               Notifications
             </h1>
             {notifications.length > 0 && (
-              <p className="font-serif text-xs text-cloud-dark mt-1">
-                Tip: Swipe right on any notification to delete.
+              <p className="font-serif text-xs text-cloud-dark mt-1 sm:hidden">
+                Swipe right to dismiss notification.
               </p>
             )}
           </div>

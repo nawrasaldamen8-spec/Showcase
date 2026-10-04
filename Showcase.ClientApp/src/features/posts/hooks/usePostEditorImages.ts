@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { apiClient } from "@shared/api/apiClient.ts";
 import { PostStatus } from "@shared/types/index.ts";
 import type { UploadedImageData } from "../components/ImageDropzone.tsx";
@@ -19,10 +19,27 @@ export function usePostEditorImages({
 }: UsePostEditorImagesOptions) {
   const [images, setImages] = useState<ImageGridItem[]>([]);
   const [imageInvariantError, setImageInvariantError] = useState<string | null>(null);
+  const stagedBlobUrlsRef = useRef<Set<string>>(new Set());
+
+  // Memory leak protection: Revoke all remaining local staged blob URLs on unmount
+  useEffect(() => {
+    const urls = stagedBlobUrlsRef.current;
+    return () => {
+      urls.forEach((url) => {
+        URL.revokeObjectURL(url);
+      });
+      urls.clear();
+    };
+  }, []);
 
   const handleImagesUploaded = (newImages: UploadedImageData[]) => {
     setImageInvariantError(null);
     setIsDirty(true);
+    newImages.forEach((img) => {
+      if (img.url && img.url.startsWith("blob:")) {
+        stagedBlobUrlsRef.current.add(img.url);
+      }
+    });
     setImages((prev) => {
       const startOrder = prev.length;
       const formatted: ImageGridItem[] = newImages.map((img, index) => ({
@@ -71,6 +88,11 @@ export function usePostEditorImages({
     }
 
     setImages((prev) => {
+      const target = prev.find((img) => img.id === imageId);
+      if (target?.url && target.url.startsWith("blob:")) {
+        URL.revokeObjectURL(target.url);
+        stagedBlobUrlsRef.current.delete(target.url);
+      }
       const remaining = prev.filter((img) => img.id !== imageId);
       return remaining.map((img, idx) => ({ ...img, displayOrder: idx }));
     });

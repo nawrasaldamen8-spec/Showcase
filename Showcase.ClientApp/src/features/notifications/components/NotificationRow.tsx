@@ -1,5 +1,5 @@
 import { AlertTriangle, Bell, Heart, ShieldCheck, Sparkles, Trash2, User as UserIcon } from "lucide-react";
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import type { NotificationDto } from "@shared/api/apiClient.notifications.ts";
 
@@ -41,6 +41,15 @@ export const NotificationRow: React.FC<NotificationRowProps> = ({
   const currentOffsetRef = useRef(0);
   const isDraggingRef = useRef(false);
   const isHorizontalSwipeRef = useRef<boolean | null>(null);
+  const deleteTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (deleteTimerRef.current) {
+        clearTimeout(deleteTimerRef.current);
+      }
+    };
+  }, []);
 
   const typeLower = notification.type.toLowerCase();
   const isLike = typeLower === "like";
@@ -119,7 +128,11 @@ export const NotificationRow: React.FC<NotificationRowProps> = ({
       // Threshold crossed: trigger Instagram-style delete
       setIsDeleting(true);
       setOffsetX(350);
-      setTimeout(() => {
+      if (deleteTimerRef.current) {
+        clearTimeout(deleteTimerRef.current);
+      }
+      deleteTimerRef.current = setTimeout(() => {
+        deleteTimerRef.current = null;
         onDelete?.(notification.id);
       }, 260);
     } else {
@@ -344,27 +357,48 @@ export const NotificationRow: React.FC<NotificationRowProps> = ({
           </div>
         </div>
 
-        {/* Far Right: Post Thumbnail (for Like) or subtle action */}
-        {isLike && notification.sourcePostId && (
-          <Link
-            to={`/posts/${notification.sourcePostId}`}
-            className="shrink-0 block rounded-lg overflow-hidden border border-stone/70 hover:border-clay transition-all duration-150 group/thumb"
-            title={notification.postTitle ? `View post: ${notification.postTitle}` : "View post"}
-            onClick={(e) => e.stopPropagation()}
-          >
-            {notification.postCoverUrl ? (
-              <img
-                src={notification.postCoverUrl}
-                alt={notification.postTitle || "Post thumbnail"}
-                className="w-11 h-11 sm:w-12 sm:h-12 object-cover group-hover/thumb:scale-105 transition-transform"
-              />
-            ) : (
-              <div className="w-11 h-11 sm:w-12 sm:h-12 bg-ivory-medium flex items-center justify-center text-cloud-dark">
-                <Heart className="w-4 h-4 text-clay fill-clay/20" />
-              </div>
-            )}
-          </Link>
-        )}
+        {/* Actions on Desktop / Far Right */}
+        <div className="flex items-center gap-2 shrink-0">
+          {/* Post Thumbnail (for Like) */}
+          {isLike && notification.sourcePostId && (
+            <Link
+              to={`/posts/${notification.sourcePostId}`}
+              className="shrink-0 block rounded-lg overflow-hidden border border-stone/70 hover:border-clay transition-all duration-150 group/thumb"
+              title={notification.postTitle ? `View post: ${notification.postTitle}` : "View post"}
+              onClick={(e) => e.stopPropagation()}
+            >
+              {notification.postCoverUrl ? (
+                <img
+                  src={notification.postCoverUrl}
+                  alt={notification.postTitle || "Post thumbnail"}
+                  className="w-11 h-11 sm:w-12 sm:h-12 object-cover group-hover/thumb:scale-105 transition-transform"
+                />
+              ) : (
+                <div className="w-11 h-11 sm:w-12 sm:h-12 bg-ivory-medium flex items-center justify-center text-cloud-dark">
+                  <Heart className="w-4 h-4 text-clay fill-clay/20" />
+                </div>
+              )}
+            </Link>
+          )}
+
+          {/* Desktop Explicit Delete Action */}
+          {onDelete && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setIsDeleting(true);
+                setTimeout(() => onDelete(notification.id), 200);
+              }}
+              title="Delete notification"
+              aria-label="Delete notification"
+              className="hidden sm:inline-flex items-center justify-center p-2 rounded-lg text-cloud-dark hover:text-clay hover:bg-stone/30 opacity-0 group-hover:opacity-100 transition-all cursor-pointer"
+            >
+              <Trash2 className="w-4 h-4" />
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );

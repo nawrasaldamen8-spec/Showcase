@@ -5,6 +5,7 @@ import type {
   ChangeUsernameRequest,
   CurrentUserResponse,
   LoginRequest,
+  RegisterGoogleRequest,
   RegisterRequest,
 } from "../types/index.ts";
 import { httpFetch } from "./apiClient.base.ts";
@@ -21,6 +22,14 @@ export const apiAuthClient = {
 
   async register(data: RegisterRequest): Promise<AuthResponse> {
     return await httpFetch<AuthResponse>("/api/auth/register", {
+      method: "POST",
+      body: JSON.stringify(data),
+      requiresAuth: false,
+    });
+  },
+
+  async registerGoogle(data: RegisterGoogleRequest): Promise<AuthResponse> {
+    return await httpFetch<AuthResponse>("/api/auth/register-google", {
       method: "POST",
       body: JSON.stringify(data),
       requiresAuth: false,

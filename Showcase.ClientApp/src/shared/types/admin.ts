@@ -114,25 +114,15 @@ export interface AuditLogItem {
   metadata?: Record<string, unknown>;
 }
 
-export interface BroadcastAnnouncementItem {
-  id: string;
-  title: string;
-  message: string;
-  scope: "all_users" | "creators_only" | "direct_user";
-  targetUserId?: string;
-  severity: "info" | "update" | "contest" | "warning";
-  publishedAt: string;
-  adminUsername: string;
-}
-
 export interface AdminDashboardMetricsDto {
   totalUsersCount: number;
   activeCreatorsCount: number;
+  totalPublishedPosts?: number;
   pendingVerificationsCount: number;
   pendingReportsCount: number;
   curatedPinnedCount: number;
   storageUsedBytes: number;
   storageCapacityBytes: number;
   recentAuditLogs: AuditLogItem[];
-  recentBroadcasts: BroadcastAnnouncementItem[];
 }
+

@@ -14,6 +14,7 @@ import {
   WizardStepMedia,
   WizardStepReview,
   WizardStepper,
+  WizardStepTags,
 } from "../components/index.ts";
 import { usePostEditor } from "../hooks/usePostEditor.ts";
 
@@ -23,7 +24,6 @@ export const PostEditorPage: React.FC = () => {
   const { currentUser } = useAuth();
 
   const editor = usePostEditor(id);
-
 
   if (editor.isLoading) {
     return (
@@ -40,7 +40,7 @@ export const PostEditorPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-ivory-medium pb-32">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 sm:pt-12">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-10">
         <WizardStepper
           currentStep={editor.currentStep}
           maxReachedStep={editor.maxReachedStep}
@@ -51,13 +51,13 @@ export const PostEditorPage: React.FC = () => {
         />
 
         <div className="py-6 sm:py-8 space-y-1.5">
-          <span className="font-gothic text-[11px] font-bold uppercase tracking-[0.16em] text-clay">
-            Step {editor.currentStep} of 4 &bull; {WIZARD_STEPS[editor.currentStep - 1]?.title}
+          <span className="font-gothic text-xs font-bold uppercase tracking-[0.16em] text-clay">
+            Project Studio &bull; Step {editor.currentStep} of {WIZARD_STEPS.length}
           </span>
           <h1 className="font-gothic text-2xl sm:text-3xl lg:text-4xl font-extrabold uppercase tracking-tight text-slate-dark">
             {WIZARD_STEPS[editor.currentStep - 1]?.title}
           </h1>
-          <p className="font-serif text-base text-slate-dark/70 leading-relaxed max-w-2xl">
+          <p className="font-serif text-sm sm:text-base text-slate-dark/75 leading-relaxed max-w-2xl">
             {WIZARD_STEPS[editor.currentStep - 1]?.description}
           </p>
         </div>
@@ -71,6 +71,7 @@ export const PostEditorPage: React.FC = () => {
         )}
 
         <div className="space-y-8">
+          {/* Step 1: Media (Visual Assets & Primary Cover) */}
           {editor.currentStep === 1 && (
             <WizardStepMedia
               images={editor.images}
@@ -87,6 +88,7 @@ export const PostEditorPage: React.FC = () => {
             />
           )}
 
+          {/* Step 2: Project Identity (Title & External Link) */}
           {editor.currentStep === 2 && (
             <WizardStepIdentity
               title={editor.title}
@@ -101,12 +103,20 @@ export const PostEditorPage: React.FC = () => {
             />
           )}
 
+          {/* Step 3: Curatorial Narrative (Editorial Description) */}
           {editor.currentStep === 3 && (
             <WizardStepEditorial
               description={editor.description}
               setDescription={editor.setDescription}
               descriptionError={editor.descriptionError}
               setDescriptionError={editor.setDescriptionError}
+              setIsDirty={editor.setIsDirty}
+            />
+          )}
+
+          {/* Step 4: Taxonomy & Tags (Dedicated Step) */}
+          {editor.currentStep === 4 && (
+            <WizardStepTags
               tags={editor.tags}
               tagDraft={editor.tagDraft}
               setTagDraft={editor.setTagDraft}
@@ -117,7 +127,8 @@ export const PostEditorPage: React.FC = () => {
             />
           )}
 
-          {editor.currentStep === 4 && (
+          {/* Step 5: Exhibition Review (Preview Before Publish) */}
+          {editor.currentStep === 5 && (
             <WizardStepReview
               images={editor.images}
               title={editor.title}

@@ -2,7 +2,6 @@ import type {
   AdminDashboardMetricsDto,
   AdminUserListItem,
   AuditLogItem,
-  BroadcastAnnouncementItem,
   ContentReportItem,
   FeaturedRecommendationItem,
   StorageTelemetryDto,
@@ -117,17 +116,5 @@ export const apiAdminClient = {
   async getAuditLogs(): Promise<AuditLogItem[]> {
     return httpFetch<AuditLogItem[]>("/api/admin/audit-logs");
   },
-
-  async getBroadcasts(): Promise<BroadcastAnnouncementItem[]> {
-    return httpFetch<BroadcastAnnouncementItem[]>("/api/admin/broadcasts");
-  },
-
-  async createBroadcast(
-    item: Omit<BroadcastAnnouncementItem, "id" | "publishedAt" | "adminUsername">
-  ): Promise<void> {
-    return httpFetch<void>("/api/admin/broadcasts", {
-      method: "POST",
-      body: JSON.stringify(item),
-    });
-  },
 };
+

@@ -20,8 +20,8 @@ export const AdminFeaturedPage: React.FC = () => {
     showToast(
       "success",
       !currentlyPinned
-        ? "Creator pinned to curated showcase spotlight."
-        : "Creator unpinned from curated showcase."
+        ? "Creator pinned to curated spotlight."
+        : "Creator unpinned from curated spotlight."
     );
     loadData();
   };
@@ -48,7 +48,7 @@ export const AdminFeaturedPage: React.FC = () => {
 
   return (
     <AdminLayout
-      title="Curated Showcase &amp; Featured Suggestions"
+      title="Curated Spotlight &amp; Featured Suggestions"
       subtitle="Select outstanding architectural portfolios to appear in the discovery highlights feed."
     >
       <div className="space-y-8">
@@ -83,7 +83,7 @@ export const AdminFeaturedPage: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {pinnedItems.map((item) => {
                 const displayName = item.name || item.fullName || item.username;
-                const headline = item.specialty || item.headline || "Architecture & Spatial Design";
+                const headline = item.specialty || item.headline || "";
 
                 return (
                   <div
@@ -171,7 +171,7 @@ export const AdminFeaturedPage: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
               {candidateItems.map((item) => {
                 const displayName = item.name || item.fullName || item.username;
-                const headline = item.specialty || item.headline || "Architecture & Spatial Design";
+                const headline = item.specialty || item.headline || "";
 
                 return (
                   <div

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo, type ReactNode } from 'react';
+import { toast } from 'sonner';
 import type {
   CurrentUserResponse,
   LoginRequest,
@@ -53,6 +54,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       tokenStorage.clear();
       setCurrentUser(null);
       setIsLoading(false);
+      toast.info("Session expired. Please sign in again to continue.");
     };
 
     window.addEventListener('showcase:auth-expired', handleAuthExpired);

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { apiClient, queryKeys } from "@shared/api/index.ts";
 import { useToast } from "@shared/context/index.ts";
+import { isPostPublished } from "../utils.ts";
 import { PostStatus, type PostSummaryResponse } from "@shared/types/index.ts";
 
 export interface UsePostActionsProps {
@@ -17,7 +18,7 @@ export function usePostActions({ setPosts }: UsePostActionsProps) {
   const [isDeleting, setIsDeleting] = useState<boolean>(false);
 
   const handleTogglePublish = async (post: PostSummaryResponse) => {
-    const isCurrentlyPublished = Number(post.status) === PostStatus.Published;
+    const isCurrentlyPublished = isPostPublished(post.status);
 
     if (isCurrentlyPublished) {
       setActionInProgressId(post.id);
@@ -27,6 +28,7 @@ export function usePostActions({ setPosts }: UsePostActionsProps) {
           prev.map((p) => (p.id === post.id ? { ...p, status: PostStatus.Unpublished } : p))
         );
         showToast("success", `"${post.title}" moved to Unpublished.`);
+        queryClient.invalidateQueries({ queryKey: queryKeys.posts.all });
       } catch (err) {
         console.error("Failed to unpublish post:", err);
         showToast("error", "Failed to unpublish post.");

@@ -17,6 +17,15 @@ export const DeleteAccountPage: React.FC = () => {
   const [confirmText, setConfirmText] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const deleteTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  React.useEffect(() => {
+    return () => {
+      if (deleteTimerRef.current) {
+        clearTimeout(deleteTimerRef.current);
+      }
+    };
+  }, []);
 
   const handleDelete = (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,7 +43,11 @@ export const DeleteAccountPage: React.FC = () => {
 
     setIsDeleting(true);
 
-    setTimeout(async () => {
+    if (deleteTimerRef.current) {
+      clearTimeout(deleteTimerRef.current);
+    }
+    deleteTimerRef.current = setTimeout(async () => {
+      deleteTimerRef.current = null;
       setIsDeleting(false);
       await logout();
       showToast("info", "Your account and data have been permanently deleted.");

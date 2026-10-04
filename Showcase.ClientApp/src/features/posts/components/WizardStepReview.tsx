@@ -1,4 +1,4 @@
-import { ExternalLink, Globe, Save } from "lucide-react";
+import { ExternalLink, Globe } from "lucide-react";
 import React from "react";
 import { Badge } from "@shared/components/Badge.tsx";
 import type { ImageGridItem } from "./ImageReorderGrid.tsx";
@@ -127,28 +127,6 @@ export const WizardStepReview: React.FC<WizardStepReviewProps> = ({
             </a>
           </div>
         )}
-      </div>
-
-      {/* Decision Guidance Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
-        <div className="p-4 rounded-2xl bg-ivory-light/80 border border-stone/50 space-y-1">
-          <div className="flex items-center gap-2 font-gothic text-xs font-bold uppercase tracking-wider text-slate-dark">
-            <Save className="h-3.5 w-3.5 text-cloud-dark" />
-            <span>Save as Draft</span>
-          </div>
-          <p className="font-serif text-xs text-cloud-dark leading-relaxed">
-            Saves your project privately to your Studio workspace without publishing it.
-          </p>
-        </div>
-        <div className="p-4 rounded-2xl bg-ivory-light/80 border border-stone/50 space-y-1">
-          <div className="flex items-center gap-2 font-gothic text-xs font-bold uppercase tracking-wider text-clay">
-            <Globe className="h-3.5 w-3.5 text-clay" />
-            <span>Publish Work</span>
-          </div>
-          <p className="font-serif text-xs text-cloud-dark leading-relaxed">
-            Publishes your project to the public feed and your profile.
-          </p>
-        </div>
       </div>
     </div>
   );

@@ -100,7 +100,7 @@ export const FeedPage: React.FC = () => {
           <EmptyState
             icon={Sparkles}
             title="No Featured Creators Yet"
-            description="Only creator profiles approved by platform moderation are featured in this showcase. Submit a request to get your portfolio spotlighted in the community feed, or search for members above."
+            description="Approved creators appear here. Request a spotlight or search members."
             eyebrow="Community Spotlight"
             actionLabel="Request Featured Spotlight"
             onAction={() => navigate("/settings/security/featured")}
@@ -110,8 +110,8 @@ export const FeedPage: React.FC = () => {
           <EmptyState
             icon={UserIcon}
             title="No Featured Creators Yet"
-            description="The featured directory showcases platform creators approved by platform moderation. Use the search bar to discover all members or register to build your portfolio."
-            eyebrow="Community Showcase"
+            description="Explore verified practitioners and studios across the Pority community."
+            eyebrow="Community Directory"
             actionLabel="Register New Profile"
             onAction={() => navigate("/register")}
             actionVariant="clay"

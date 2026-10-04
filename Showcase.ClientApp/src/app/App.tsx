@@ -42,6 +42,8 @@ const StudioDashboardPage = lazy(() => import("@features/posts/pages/StudioDashb
 const EditProfilePage = lazy(() => import("@features/profile/pages/EditProfilePage.tsx").then((m) => ({ default: m.EditProfilePage })));
 const EditSocialLinksPage = lazy(() => import("@features/profile/pages/EditSocialLinksPage.tsx").then((m) => ({ default: m.EditSocialLinksPage })));
 const PublicProfilePage = lazy(() => import("@features/profile/pages/PublicProfilePage.tsx").then((m) => ({ default: m.PublicProfilePage })));
+const SelectSpecialtyPage = lazy(() => import("@features/profile/pages/SelectSpecialtyPage.tsx").then((m) => ({ default: m.SelectSpecialtyPage })));
+const SelectCountryPage = lazy(() => import("@features/profile/pages/SelectCountryPage.tsx").then((m) => ({ default: m.SelectCountryPage })));
 
 // Security Pages
 const ChangePasswordPage = lazy(() => import("@features/security/pages/ChangePasswordPage.tsx").then((m) => ({ default: m.ChangePasswordPage })));
@@ -61,7 +63,6 @@ const RegisterWizardPage = lazy(() => import("@features/auth/pages/RegisterWizar
 
 // Admin Pages
 const AdminAuditLogsPage = lazy(() => import("@features/admin/pages/AdminAuditLogsPage.tsx").then((m) => ({ default: m.AdminAuditLogsPage })));
-const AdminBroadcastsPage = lazy(() => import("@features/admin/pages/AdminBroadcastsPage.tsx").then((m) => ({ default: m.AdminBroadcastsPage })));
 const AdminDashboardPage = lazy(() => import("@features/admin/pages/AdminDashboardPage.tsx").then((m) => ({ default: m.AdminDashboardPage })));
 const AdminFeaturedPage = lazy(() => import("@features/admin/pages/AdminFeaturedPage.tsx").then((m) => ({ default: m.AdminFeaturedPage })));
 const AdminReportsPage = lazy(() => import("@features/admin/pages/AdminReportsPage.tsx").then((m) => ({ default: m.AdminReportsPage })));
@@ -114,6 +115,8 @@ export const AppRoutes: React.FC = () => {
 
           {/* Profiles Management */}
           <Route path="/profile/edit" element={<EditProfilePage />} />
+          <Route path="/profile/edit/specialty" element={<SelectSpecialtyPage />} />
+          <Route path="/profile/edit/country" element={<SelectCountryPage />} />
           <Route path="/profile/social-links" element={<EditSocialLinksPage />} />
 
           {/* Notifications */}
@@ -170,7 +173,6 @@ export const AppRoutes: React.FC = () => {
           <Route path="featured" element={<AdminFeaturedPage />} />
           <Route path="storage" element={<AdminStoragePage />} />
           <Route path="audit-logs" element={<AdminAuditLogsPage />} />
-          <Route path="broadcasts" element={<AdminBroadcastsPage />} />
         </Route>
 
         {/* 5. System Error & 404 */}

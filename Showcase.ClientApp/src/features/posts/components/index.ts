@@ -12,6 +12,7 @@ export * from "./WizardBottomBar.tsx";
 export * from "./WizardStepEditorial.tsx";
 export * from "./WizardStepIdentity.tsx";
 export * from "./WizardStepMedia.tsx";
+export * from "./WizardStepTags.tsx";
 export * from "./WizardStepper.tsx";
 export * from "./WizardStepReview.tsx";
 export * from "./PostCard.tsx";

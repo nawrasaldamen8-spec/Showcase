@@ -21,9 +21,17 @@ export const WizardStepper: React.FC<WizardStepperProps> = ({
   onCancelClick,
   onJumpToStep,
 }) => {
+  const currentStepMeta = WIZARD_STEPS.find((s) => s.step === currentStep) ?? WIZARD_STEPS[0] ?? {
+    step: 1 as WizardStepNumber,
+    label: "Step",
+    title: "Details",
+    description: "",
+  };
+
   return (
-    <div className="pb-6 border-b border-stone">
-      <div className="flex items-center justify-between gap-4 mb-4">
+    <div className="pb-6 border-b border-stone/60 space-y-4">
+      {/* Top Bar: Return link & Status Badge */}
+      <div className="flex items-center justify-between gap-4">
         <button
           type="button"
           onClick={onCancelClick}
@@ -35,13 +43,17 @@ export const WizardStepper: React.FC<WizardStepperProps> = ({
 
         <div className="flex items-center gap-3">
           {isEditing && <PostStatusBadge status={postStatus} size="sm" />}
-          <span className="font-gothic text-[11px] font-bold uppercase tracking-wider text-cloud-dark">
-            Step {currentStep} of 4
+          <span className="font-gothic text-[11px] font-bold uppercase tracking-wider text-clay">
+            Step {currentStep} of {WIZARD_STEPS.length}
           </span>
         </div>
       </div>
 
-      <div className="grid grid-cols-4 gap-2 sm:gap-4 items-center">
+      {/* Stepper Grid (Responsive: 5 Columns) */}
+      <div
+        className="grid gap-2 sm:gap-3 items-center"
+        style={{ gridTemplateColumns: `repeat(${WIZARD_STEPS.length}, minmax(0, 1fr))` }}
+      >
         {WIZARD_STEPS.map((s) => {
           const isCurrent = currentStep === s.step;
           const isCompleted = currentStep > s.step;
@@ -53,24 +65,25 @@ export const WizardStepper: React.FC<WizardStepperProps> = ({
               type="button"
               disabled={!isAccessible}
               onClick={() => onJumpToStep(s.step)}
-              className={`group flex flex-col text-left py-1.5 px-1 transition-all ${
+              className={`group flex flex-col text-left py-1.5 px-0.5 sm:px-1 transition-all ${
                 isAccessible ? "cursor-pointer" : "cursor-not-allowed opacity-40"
               }`}
+              aria-current={isCurrent ? "step" : undefined}
             >
               <div className="flex items-center gap-1.5 sm:gap-2 mb-2 min-w-0">
                 <span
                   className={`h-5 w-5 sm:h-6 sm:w-6 rounded-full flex items-center justify-center font-gothic text-[10px] sm:text-xs font-bold transition-all shrink-0 ${
                     isCurrent
-                      ? "bg-slate-dark text-ivory-light"
+                      ? "bg-slate-dark text-ivory-light ring-2 ring-slate-dark/20"
                       : isCompleted
-                        ? "bg-stone text-slate-dark"
+                        ? "bg-[#2e7d32] text-ivory-light"
                         : "bg-[#e8e5dc] text-cloud-dark"
                   }`}
                 >
                   {isCompleted ? <Check className="h-3 w-3 sm:h-3.5 sm:w-3.5" /> : s.step}
                 </span>
                 <span
-                  className={`font-gothic text-[10px] sm:text-[11px] font-semibold uppercase tracking-[0.08em] sm:tracking-[0.12em] truncate transition-colors ${
+                  className={`font-gothic text-[10px] sm:text-[11px] font-semibold uppercase tracking-[0.06em] sm:tracking-[0.10em] truncate transition-colors hidden sm:inline ${
                     isCurrent
                       ? "text-slate-dark"
                       : isCompleted
@@ -82,13 +95,20 @@ export const WizardStepper: React.FC<WizardStepperProps> = ({
                 </span>
               </div>
               <div
-                className={`h-1 w-full rounded-full transition-all duration-300 ${
-                  isCurrent ? "bg-slate-dark" : isCompleted ? "bg-stone" : "bg-stone/30"
+                className={`h-1.5 w-full rounded-full transition-all duration-300 ${
+                  isCurrent ? "bg-slate-dark" : isCompleted ? "bg-[#2e7d32]" : "bg-stone/40"
                 }`}
               />
             </button>
           );
         })}
+      </div>
+
+      {/* Mobile-only Step Context Indicator */}
+      <div className="sm:hidden flex items-center justify-between text-xs font-gothic pt-1">
+        <span className="font-bold uppercase tracking-wider text-slate-dark truncate">
+          {currentStepMeta.label}: {currentStepMeta.title}
+        </span>
       </div>
     </div>
   );

@@ -1,8 +1,7 @@
-import { LogOut, Settings as SettingsIcon, Shield, Sparkles, User as UserIcon } from "lucide-react";
-import React, { useRef, useState } from "react";
+import { LogOut, User as UserIcon } from "lucide-react";
+import React from "react";
 import { Link } from "react-router-dom";
 import { VerifiedBadge } from "../components/VerifiedBadge.tsx";
-import { useClickOutside } from "../hooks/useClickOutside.ts";
 import type { SidebarUser } from "./SidebarNavLinks.tsx";
 
 export interface SidebarUserMenuProps {
@@ -11,129 +10,71 @@ export interface SidebarUserMenuProps {
 }
 
 export const SidebarUserMenu: React.FC<SidebarUserMenuProps> = ({ user, onLogout }) => {
-  const [userMenuOpen, setUserMenuOpen] = useState(false);
-  const userMenuRef = useRef<HTMLDivElement>(null);
-
-  useClickOutside(userMenuRef, () => setUserMenuOpen(false), userMenuOpen);
-
-  return (
-    <div className="relative pt-1" ref={userMenuRef}>
-      <button
-        type="button"
-        onClick={() => setUserMenuOpen((prev) => !prev)}
-        aria-expanded={userMenuOpen}
-        aria-haspopup="true"
-        aria-label="User Account Options"
-        className="w-full flex items-center justify-between p-2 rounded-xl border border-[#262624] bg-[#1a1a19] hover:bg-[#262624] transition-colors cursor-pointer text-left"
-      >
-        <div className="flex items-center gap-3 min-w-0">
-          {user?.avatarUrl ? (
-            <img
-              src={user.avatarUrl}
-              alt={user.username || "User avatar"}
-              className="h-8 w-8 rounded-full object-cover shrink-0 border border-[#262624]"
-            />
-          ) : (
-            <div className="h-8 w-8 rounded-full bg-[#262624] text-ivory-light flex items-center justify-center font-gothic text-xs font-bold uppercase shrink-0 border border-ivory-light/20">
-              {user?.name?.[0] || user?.username?.[0] || <UserIcon className="h-4 w-4" />}
-            </div>
-          )}
+  if (!user) {
+    return (
+      <div className="w-full flex items-center justify-between p-2 rounded-xl border border-[#262624] bg-[#1a1a19]">
+        <Link
+          to="/login"
+          className="flex items-center gap-2.5 min-w-0 flex-1 hover:opacity-85 transition-opacity text-decoration-none text-ivory-light"
+        >
+          <div className="h-8 w-8 rounded-full bg-[#262624] text-ivory-light flex items-center justify-center font-gothic text-xs font-bold uppercase shrink-0 border border-ivory-light/20">
+            <UserIcon className="h-4 w-4" />
+          </div>
           <div className="min-w-0">
-            <div className="flex items-center gap-1.5 min-w-0">
-              <p className="font-gothic text-xs font-bold uppercase tracking-wider text-ivory-light truncate">
-                {user ? (user.name || user.username) : "Visitor"}
-              </p>
-              {user?.isVerified && <VerifiedBadge size="xs" className="shrink-0" />}
-            </div>
+            <p className="font-gothic text-xs font-bold uppercase tracking-wider text-ivory-light truncate">
+              Visitor
+            </p>
             <p className="font-serif text-[11px] text-cloud-dark truncate">
-              {user ? `@${user.username}` : "Public Gallery"}
+              Sign In
             </p>
           </div>
-        </div>
-        <SettingsIcon className="h-4 w-4 text-cloud-dark shrink-0 ml-1" />
-      </button>
+        </Link>
+      </div>
+    );
+  }
 
-      {userMenuOpen && (
-        <div
-          role="menu"
-          className="absolute bottom-full left-0 right-0 mb-2 bg-[#1a1a19] border border-[#262624] rounded-xl py-2 z-50 animate-in fade-in zoom-in-95 duration-100 shadow-none text-ivory-light"
+  return (
+    <div className="w-full flex items-center justify-between p-2 rounded-xl border border-[#262624] bg-[#1a1a19] text-left">
+      <Link
+        to={`/u/${user.username}`}
+        className="flex items-center gap-2.5 min-w-0 flex-1 hover:opacity-85 transition-opacity text-decoration-none group"
+        title={`View @${user.username} Profile`}
+      >
+        {user.avatarUrl ? (
+          <img
+            src={user.avatarUrl}
+            alt={user.username}
+            className="h-8 w-8 rounded-full object-cover shrink-0 border border-[#262624]"
+          />
+        ) : (
+          <div className="h-8 w-8 rounded-full bg-[#262624] text-ivory-light flex items-center justify-center font-gothic text-xs font-bold uppercase shrink-0 border border-ivory-light/20">
+            {user.name?.[0] || user.username[0] || <UserIcon className="h-4 w-4" />}
+          </div>
+        )}
+        <div className="min-w-0">
+          <div className="flex items-center gap-1.5 min-w-0">
+            <p className="font-gothic text-xs font-bold uppercase tracking-wider text-ivory-light truncate group-hover:text-clay transition-colors">
+              {user.name || user.username}
+            </p>
+            {user.isVerified && <VerifiedBadge size="xs" className="shrink-0" />}
+          </div>
+          <p className="font-serif text-[11px] text-cloud-dark truncate">
+            @{user.username}
+          </p>
+        </div>
+      </Link>
+
+      {/* Direct Log Out Button replacing gear icon */}
+      {onLogout && (
+        <button
+          type="button"
+          onClick={onLogout}
+          title="Sign Out"
+          aria-label="Sign Out"
+          className="p-1.5 rounded-lg text-cloud-dark hover:text-clay hover:bg-[#262624] transition-colors cursor-pointer shrink-0 ml-1.5"
         >
-          {user ? (
-            <>
-              <div className="px-4 py-2 border-b border-[#262624]">
-                <div className="flex items-center gap-1.5 min-w-0">
-                  <p className="font-gothic text-xs font-bold uppercase tracking-wider text-ivory-light truncate">
-                    {user.name || user.username}
-                  </p>
-                  {user.isVerified && <VerifiedBadge size="xs" className="shrink-0" />}
-                </div>
-                <p className="font-serif text-xs text-cloud-dark truncate">@{user.username}</p>
-              </div>
-
-              <div className="py-1">
-                {user?.roles?.includes("Admin") && (
-                  <Link
-                    to="/admin"
-                    onClick={() => setUserMenuOpen(false)}
-                    className="flex items-center gap-2.5 px-4 py-2 text-xs font-gothic uppercase tracking-wider text-clay hover:bg-[#262624] transition-colors text-decoration-none"
-                    role="menuitem"
-                  >
-                    <Shield className="h-3.5 w-3.5 text-clay" />
-                    <span>Admin Console</span>
-                  </Link>
-                )}
-
-                <Link
-                  to="/settings"
-                  onClick={() => setUserMenuOpen(false)}
-                  className="flex items-center gap-2.5 px-4 py-2 text-xs font-gothic uppercase tracking-wider text-ivory-light hover:bg-[#262624] transition-colors text-decoration-none"
-                  role="menuitem"
-                >
-                  <SettingsIcon className="h-3.5 w-3.5 text-cloud-dark" />
-                  <span>Account Settings</span>
-                </Link>
-              </div>
-
-              {onLogout && (
-                <div className="border-t border-[#262624] pt-1">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setUserMenuOpen(false);
-                      onLogout();
-                    }}
-                    className="w-full flex items-center gap-2.5 px-4 py-2 text-xs font-gothic uppercase tracking-wider text-clay hover:bg-[#262624] transition-colors text-left cursor-pointer bg-transparent border-none"
-                    role="menuitem"
-                  >
-                    <LogOut className="h-3.5 w-3.5" />
-                    <span>Sign Out</span>
-                  </button>
-                </div>
-              )}
-            </>
-          ) : (
-            <div className="p-2 space-y-1">
-              <Link
-                to="/login"
-                onClick={() => setUserMenuOpen(false)}
-                className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-gothic uppercase tracking-wider text-ivory-light hover:bg-[#262624] rounded-lg transition-colors text-left text-decoration-none"
-                role="menuitem"
-              >
-                <UserIcon className="h-3.5 w-3.5 text-cloud-dark" />
-                <span>Sign In</span>
-              </Link>
-              <Link
-                to="/register"
-                onClick={() => setUserMenuOpen(false)}
-                className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-gothic uppercase tracking-wider text-clay hover:bg-[#262624] rounded-lg transition-colors text-left text-decoration-none"
-                role="menuitem"
-              >
-                <Sparkles className="h-3.5 w-3.5 text-clay" />
-                <span>Create Account</span>
-              </Link>
-            </div>
-          )}
-        </div>
+          <LogOut className="h-4 w-4" />
+        </button>
       )}
     </div>
   );

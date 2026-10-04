@@ -16,7 +16,7 @@ export interface ReportPostModalProps {
 
 const REPORT_REASONS = [
   { id: "copyright", label: "Copyright / Intellectual Property", desc: "Contains work, architectural drawings, or renders used without permission." },
-  { id: "inappropriate", label: "Inappropriate or Offensive Material", desc: "Violates architectural showcase standards or terms." },
+  { id: "inappropriate", label: "Inappropriate or Offensive Material", desc: "Violates architectural exhibition standards or Pority terms." },
   { id: "misleading", label: "Misleading Information / Fake Work", desc: "Falsely attributes credit or claims authorship of other studios' work." },
   { id: "spam", label: "Spam or Commercial Promotion", desc: "Unsolicited advertising, spam links, or irrelevant content." },
   { id: "other", label: "Other Policy Violation", desc: "Any other violation of platform community rules." },

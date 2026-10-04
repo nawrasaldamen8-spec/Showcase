@@ -92,7 +92,7 @@ export const AccountBannedPage: React.FC = () => {
           </Button>
 
           <a
-            href="mailto:support@showcase.local?subject=Account%20Suspension%20Appeal"
+            href="mailto:support@pority.com?subject=Account%20Suspension%20Appeal"
             className="inline-flex items-center justify-center gap-2 w-full py-2.5 px-4 rounded-xl border border-stone/80 text-cloud-dark font-gothic text-xs font-bold uppercase tracking-wider hover:text-slate-dark hover:border-slate-dark transition-colors text-decoration-none"
           >
             <Mail className="w-4 h-4" />

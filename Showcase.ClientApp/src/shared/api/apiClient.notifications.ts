@@ -41,4 +41,8 @@ export const apiNotificationsClient = {
       method: "DELETE",
     });
   },
+
+  async getUnreadNotificationsCount(): Promise<{ count: number }> {
+    return httpFetch<{ count: number }>("/api/notifications/unread-count");
+  },
 };

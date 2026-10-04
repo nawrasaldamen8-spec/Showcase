@@ -47,6 +47,13 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
       }
     : null;
 
+  const isWorkspaceRoute =
+    location.pathname.startsWith("/studio") ||
+    location.pathname.startsWith("/settings") ||
+    location.pathname.startsWith("/career") ||
+    location.pathname.startsWith("/notifications") ||
+    isEditorRoute;
+
   const content = children ?? <Outlet />;
 
   if (isStandaloneRoute) {
@@ -68,7 +75,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
       <div className="flex-1 flex flex-col min-w-0 md:pl-60 lg:pl-64 transition-all">
         <MobileTopBar />
         <main className={`flex-1 ${isEditorRoute ? "" : "pb-16 md:pb-0"}`}>{content}</main>
-        <Footer />
+        {!isWorkspaceRoute && <Footer />}
       </div>
       {!isEditorRoute && <MobileBottomNav user={layoutUser} />}
     </div>

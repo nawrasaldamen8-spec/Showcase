@@ -15,7 +15,7 @@ export const FeaturedRequestPage: React.FC = () => {
       successMessage="Featured suggestions request submitted successfully."
       approvedTitle="Profile Actively Featured"
       approvedDescription="Your profile and portfolio are featured in creator discovery recommendations and suggestions across Pority."
-      approvedFooter="No further action required. Your showcase is in active rotation."
+      approvedFooter="No further action required. Your portfolio is in active rotation."
       approvedRenderIcon={() => (
         <div className="w-9 h-9 rounded-full bg-[#2e7d32]/20 flex items-center justify-center shrink-0">
           <Sparkles className="w-5 h-5 text-[#2e7d32]" />

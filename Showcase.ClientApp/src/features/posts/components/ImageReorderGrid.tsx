@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { AlertTriangle, Star, Trash2 } from 'lucide-react';
+import { AlertTriangle, GripVertical, Star, Trash2 } from 'lucide-react';
 import { MAX_POST_IMAGES } from '../constants.ts';
 
 export interface ImageGridItem {
@@ -32,6 +32,8 @@ export const ImageReorderGrid: React.FC<ImageReorderGridProps> = ({
   renderAddTile,
 }) => {
   const [invariantWarning, setInvariantWarning] = useState<string | null>(null);
+  const [draggedIdx, setDraggedIdx] = useState<number | null>(null);
+  const [dragOverIdx, setDragOverIdx] = useState<number | null>(null);
 
   if (!images || images.length === 0) {
     return null;
@@ -39,6 +41,53 @@ export const ImageReorderGrid: React.FC<ImageReorderGridProps> = ({
 
   // Ensure items are sorted by displayOrder so index 0 is always the Thumbnail / Cover
   const sortedImages = [...images].sort((a, b) => a.displayOrder - b.displayOrder);
+
+  const handleDragStart = (idx: number) => (e: React.DragEvent) => {
+    if (disabled || !onReorder) return;
+    setDraggedIdx(idx);
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', `${idx}`);
+  };
+
+  const handleDragOver = (idx: number) => (e: React.DragEvent) => {
+    if (disabled || !onReorder) return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    if (dragOverIdx !== idx) {
+      setDragOverIdx(idx);
+    }
+  };
+
+  const handleDragLeave = (idx: number) => () => {
+    if (dragOverIdx === idx) {
+      setDragOverIdx(null);
+    }
+  };
+
+  const handleDrop = (targetIdx: number) => (e: React.DragEvent) => {
+    e.preventDefault();
+    setDragOverIdx(null);
+    if (disabled || draggedIdx === null || draggedIdx === targetIdx || !onReorder) {
+      setDraggedIdx(null);
+      return;
+    }
+    const nextList = [...sortedImages];
+    const removed = nextList[draggedIdx];
+    if (!removed) {
+      setDraggedIdx(null);
+      return;
+    }
+    nextList.splice(draggedIdx, 1);
+    nextList.splice(targetIdx, 0, removed);
+    const reordered = nextList.map((img, i) => ({ ...img, displayOrder: i }));
+    onReorder(reordered);
+    setDraggedIdx(null);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedIdx(null);
+    setDragOverIdx(null);
+  };
 
   const handleMakeCover = (imageId: string) => {
     if (disabled) return;
@@ -98,10 +147,8 @@ export const ImageReorderGrid: React.FC<ImageReorderGridProps> = ({
             Project Images ({sortedImages.length}/{MAX_POST_IMAGES})
           </span>
         </div>
-        <span className="font-serif text-xs text-cloud-dark">
-          {sortedImages.length >= MAX_POST_IMAGES
-            ? `Maximum limit reached (${MAX_POST_IMAGES}/${MAX_POST_IMAGES})`
-            : 'Set any image as your cover thumbnail'}
+        <span className="font-serif text-xs text-cloud-dark hidden sm:inline">
+          Drag cards to reorder &bull; First card is thumbnail
         </span>
       </div>
 
@@ -110,14 +157,26 @@ export const ImageReorderGrid: React.FC<ImageReorderGridProps> = ({
         {sortedImages.map((image, idx) => {
           const isCover = idx === 0;
           const isDeleteDisabled = disabled || (isPublished && sortedImages.length <= 1);
+          const isDragging = draggedIdx === idx;
+          const isDragOver = dragOverIdx === idx;
 
           return (
             <div
               key={image.id}
-              className={`group relative flex flex-col bg-ivory-light rounded-[22px] overflow-hidden border transition-all duration-200 ${
-                isCover
-                  ? 'border-slate-dark ring-2 ring-slate-dark/15 shadow-sm'
-                  : 'border-stone hover:border-slate-dark/50'
+              draggable={!disabled && !!onReorder}
+              onDragStart={handleDragStart(idx)}
+              onDragOver={handleDragOver(idx)}
+              onDragLeave={handleDragLeave(idx)}
+              onDrop={handleDrop(idx)}
+              onDragEnd={handleDragEnd}
+              className={`group relative flex flex-col bg-ivory-light rounded-2xl overflow-hidden border transition-all duration-200 ${
+                isDragging
+                  ? 'opacity-40 scale-95 border-clay'
+                  : isDragOver
+                    ? 'border-clay ring-2 ring-clay/40 scale-[1.02]'
+                    : isCover
+                      ? 'border-slate-dark ring-2 ring-slate-dark/15 shadow-xs'
+                      : 'border-stone hover:border-slate-dark/50'
               }`}
             >
               {/* Image Preview Canvas */}
@@ -132,12 +191,22 @@ export const ImageReorderGrid: React.FC<ImageReorderGridProps> = ({
                   }}
                 />
 
-                {/* Badge Tag */}
+                {/* Badge Tag & Drag Handle */}
                 <div className="absolute top-3 left-3 flex items-center gap-1.5">
+                  {onReorder && !disabled && (
+                    <div
+                      className="p-1 rounded-md bg-slate-dark/75 backdrop-blur-xs text-ivory-light cursor-grab active:cursor-grabbing hover:bg-slate-dark transition-colors"
+                      title="Drag to reorder"
+                      aria-label="Drag to reorder"
+                    >
+                      <GripVertical className="h-3.5 w-3.5" />
+                    </div>
+                  )}
+
                   {isCover ? (
                     <span className="inline-flex items-center gap-1 font-gothic text-[11px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-clay text-ivory-light shadow-xs">
                       <Star className="h-3 w-3 fill-current" />
-                      <span>Thumbnail Cover</span>
+                      <span>Thumbnail</span>
                     </span>
                   ) : (
                     <span className="font-gothic text-[11px] font-semibold uppercase tracking-wider px-2.5 py-1 rounded-full bg-slate-dark/75 backdrop-blur-xs text-ivory-light">
@@ -186,7 +255,7 @@ export const ImageReorderGrid: React.FC<ImageReorderGridProps> = ({
                   </button>
                 )}
 
-                <span className="font-serif text-xs text-cloud-dark">
+                <span className="font-serif text-xs text-cloud-dark font-medium">
                   #{idx + 1}
                 </span>
               </div>

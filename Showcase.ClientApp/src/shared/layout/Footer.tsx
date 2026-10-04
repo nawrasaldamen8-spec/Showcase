@@ -13,7 +13,7 @@ export const Footer: React.FC = () => {
           {/* Brand Statement (Left 7-8 cols) */}
           <div className="md:col-span-7 lg:col-span-8 space-y-3">
             <p className="font-serif text-base sm:text-lg leading-relaxed text-slate-dark/85 max-w-md">
-              A modern platform for professionals and creatives to showcase their work, career milestones, and projects.
+              A modern digital gallery for architectural practices, researchers, and creators to publish their work.
             </p>
           </div>
 

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { apiClient } from "@shared/api/apiClient.ts";
 import { PostStatus } from "@shared/types/index.ts";
@@ -28,6 +28,15 @@ export function usePostEditorSubmit(options: UsePostEditorSubmitOptions) {
   const [isSaving, setIsSaving] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
   const [generalError, setGeneralError] = useState<string | null>(null);
+  const navTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (navTimerRef.current) {
+        clearTimeout(navTimerRef.current);
+      }
+    };
+  }, []);
 
   const handleSaveDraft = async () => {
     if (!options.validateFullForm()) return;
@@ -49,8 +58,13 @@ export function usePostEditorSubmit(options: UsePostEditorSubmitOptions) {
       }
 
       options.setIsDirty(false);
-      options.showToast("success", options.id ? "Draft saved successfully." : "Draft created successfully.");
-      setTimeout(() => navigate("/studio"), 800);
+      if (navTimerRef.current) {
+        clearTimeout(navTimerRef.current);
+      }
+      navTimerRef.current = setTimeout(() => {
+        navTimerRef.current = null;
+        navigate("/studio");
+      }, 800);
     } catch (err) {
       console.error("Failed to save draft:", err);
       setGeneralError("Failed to save draft. Please check your connection and try again.");
@@ -84,7 +98,13 @@ export function usePostEditorSubmit(options: UsePostEditorSubmitOptions) {
       options.setPostStatus(PostStatus.Published);
       options.setIsDirty(false);
       options.showToast("success", "Project published successfully!");
-      setTimeout(() => navigate(`/posts/${targetPostId}`), 900);
+      if (navTimerRef.current) {
+        clearTimeout(navTimerRef.current);
+      }
+      navTimerRef.current = setTimeout(() => {
+        navTimerRef.current = null;
+        navigate(`/posts/${targetPostId}`);
+      }, 900);
     } catch (err) {
       console.error("Failed to publish work:", err);
       const errMsg = err instanceof Error ? err.message : "Failed to publish post. Ensure at least one image is uploaded.";

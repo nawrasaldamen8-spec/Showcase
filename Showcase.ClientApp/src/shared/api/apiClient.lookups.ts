@@ -17,6 +17,18 @@ export interface TagDto {
   usageCount: number;
 }
 
+export interface SpecialtyItemDto {
+  id: number;
+  code: string;
+  name: string;
+  subField: string;
+}
+
+export interface SpecialtyCategoryDto {
+  name: string;
+  specialties: SpecialtyItemDto[];
+}
+
 export const apiLookupsClient = {
   async getCountries(): Promise<CountryDto[]> {
     return httpFetch<CountryDto[]>("/api/lookups/countries", { requiresAuth: false });
@@ -28,5 +40,9 @@ export const apiLookupsClient = {
 
   async getPopularTags(limit = 20): Promise<TagDto[]> {
     return httpFetch<TagDto[]>(`/api/lookups/tags?limit=${limit}`, { requiresAuth: false });
+  },
+
+  async getSpecialties(): Promise<SpecialtyCategoryDto[]> {
+    return httpFetch<SpecialtyCategoryDto[]>("/api/lookups/specialties", { requiresAuth: false });
   },
 };

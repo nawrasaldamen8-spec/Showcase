@@ -7,7 +7,6 @@ export * from "./components/VerificationReviewModal.tsx";
 export * from "./components/ReportActionModal.tsx";
 export * from "./components/StorageBarChart.tsx";
 export * from "./components/AdminStorageSkeleton.tsx";
-export * from "./components/BroadcastComposeModal.tsx";
 
 export * from "./pages/AdminDashboardPage.tsx";
 export * from "./pages/AdminUsersPage.tsx";
@@ -16,4 +15,3 @@ export * from "./pages/AdminReportsPage.tsx";
 export * from "./pages/AdminFeaturedPage.tsx";
 export * from "./pages/AdminStoragePage.tsx";
 export * from "./pages/AdminAuditLogsPage.tsx";
-export * from "./pages/AdminBroadcastsPage.tsx";

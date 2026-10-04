@@ -87,11 +87,11 @@ export function useDropzoneUpload({
   const objectUrls = useRef<string[]>([]);
 
   useEffect(() => {
-    const urls = objectUrls.current;
     return () => {
-      urls.forEach((url) => {
+      objectUrls.current.forEach((url) => {
         URL.revokeObjectURL(url);
       });
+      objectUrls.current = [];
     };
   }, []);
 
@@ -192,7 +192,12 @@ export function useDropzoneUpload({
         );
 
         onImagesUploaded?.(uploadedResults);
+        // Ownership transferred to parent handler; clear dropzone ref so URLs aren't revoked prematurely on step transition
+        objectUrls.current = [];
       } catch (err) {
+        // Revoke any orphan local URLs created in this aborted batch
+        objectUrls.current.forEach((url) => URL.revokeObjectURL(url));
+        objectUrls.current = [];
         console.error("Direct upload error:", err);
         const errMsg = err instanceof Error ? err.message : "Failed to upload image.";
         setValidationError(errMsg);

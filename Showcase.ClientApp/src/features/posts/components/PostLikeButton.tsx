@@ -2,6 +2,7 @@ import { Heart } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { apiClient, queryKeys } from "@shared/api/index.ts";
+import { useAuth, useToast } from "@shared/context/index.ts";
 
 export interface PostLikeButtonProps {
   postId: string;
@@ -41,6 +42,8 @@ export const PostLikeButton: React.FC<PostLikeButtonProps> = ({
   onLikeChange,
 }) => {
   const queryClient = useQueryClient();
+  const { isAuthenticated } = useAuth();
+  const { showToast } = useToast();
   const [isLiked, setIsLiked] = useState<boolean>(initialLiked);
   const [count, setCount] = useState<number>(initialCount);
   const [isPopping, setIsPopping] = useState<boolean>(false);
@@ -58,6 +61,21 @@ export const PostLikeButton: React.FC<PostLikeButtonProps> = ({
     currentLikedRef.current = initialLiked;
   }, [initialLiked, initialCount]);
 
+  // Clean up debounce and animation timers on unmount to prevent memory retention
+  useEffect(() => {
+    return () => {
+      if (poppingTimerRef.current) {
+        clearTimeout(poppingTimerRef.current);
+      }
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+        if (syncedLikedRef.current !== currentLikedRef.current) {
+          void apiClient.toggleLikePost(postId, currentLikedRef.current).catch(() => {});
+        }
+      }
+    };
+  }, [postId]);
+
   const commitLikeState = async (desired: boolean) => {
     if (syncedLikedRef.current === desired) return;
     try {
@@ -72,8 +90,14 @@ export const PostLikeButton: React.FC<PostLikeButtonProps> = ({
           likeCount: res.likeCount,
         };
       });
-    } catch (err) {
+    } catch (err: any) {
       console.error("Failed to commit like state:", err);
+      setIsLiked(syncedLikedRef.current);
+      currentLikedRef.current = syncedLikedRef.current;
+      setCount(initialCount);
+      if (err?.response?.status === 401) {
+        showToast("warning", "Please sign in to like this project.");
+      }
     }
   };
 
@@ -98,6 +122,11 @@ export const PostLikeButton: React.FC<PostLikeButtonProps> = ({
   const handleToggleLike = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+
+    if (!isAuthenticated) {
+      showToast("warning", "Please sign in to like this project.");
+      return;
+    }
 
     // Optimistic local state update
     const nextLiked = !currentLikedRef.current;

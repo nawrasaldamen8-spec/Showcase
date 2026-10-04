@@ -34,6 +34,7 @@ export const queryKeys = {
     all: ["notifications"] as const,
     list: (params?: unknown) => [...queryKeys.notifications.all, "list", params || {}] as const,
     infinite: (pageSize = 20) => [...queryKeys.notifications.all, "infinite", pageSize] as const,
+    unreadCount: () => [...queryKeys.notifications.all, "unread-count"] as const,
   },
   lookups: {
     all: ["lookups"] as const,

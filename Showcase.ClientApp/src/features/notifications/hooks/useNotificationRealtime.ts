@@ -1,10 +1,17 @@
 import { useEffect, useRef } from "react";
 import { HubConnection, HubConnectionBuilder, LogLevel } from "@microsoft/signalr";
 import { useQueryClient } from "@tanstack/react-query";
-import { queryKeys, tokenStorage } from "@shared/api/index.ts";
+import { toast } from "sonner";
+import { apiClient, queryKeys } from "@shared/api/index.ts";
 import { useAuth } from "@shared/context/index.ts";
 
 export const NOTIFICATION_ARRIVED_EVENT = "pority_notification_arrived";
+
+interface NotificationPayload {
+  title?: string;
+  message?: string;
+  payload?: unknown;
+}
 
 export function useNotificationRealtime() {
   const { currentUser } = useAuth();
@@ -12,8 +19,7 @@ export function useNotificationRealtime() {
   const connectionRef = useRef<HubConnection | null>(null);
 
   useEffect(() => {
-    const token = tokenStorage.getToken();
-    if (!currentUser || !token) {
+    if (!currentUser) {
       if (connectionRef.current) {
         connectionRef.current.stop().catch(() => {});
         connectionRef.current = null;
@@ -23,23 +29,38 @@ export function useNotificationRealtime() {
 
     const connection = new HubConnectionBuilder()
       .withUrl("/hubs/notifications", {
-        accessTokenFactory: () => tokenStorage.getToken() || "",
+        withCredentials: true,
       })
       .withAutomaticReconnect([0, 2000, 5000, 10000, 30000])
       .configureLogging(LogLevel.Warning)
       .build();
 
-    connection.on("NotificationReceived", () => {
-      // Invalidate queries so unread count updates immediately without showing notification details
+    connection.on("NotificationReceived", (data?: NotificationPayload) => {
+      // Invalidate queries so unread count and notification list refresh
       queryClient.invalidateQueries({ queryKey: queryKeys.notifications.all });
 
-      // Dispatch single-shot event to trigger bell & badge animation
+      // Dispatch event to trigger bell animation
       window.dispatchEvent(new CustomEvent(NOTIFICATION_ARRIVED_EVENT));
+
+      // Show toast if user is not currently looking at the notifications page
+      if (typeof window !== "undefined" && window.location.pathname !== "/notifications") {
+        if (data?.message) {
+          toast.info(data.message, {
+            description: data.title,
+          });
+        }
+      }
     });
 
-    connection.on("BroadcastReceived", () => {
+    connection.on("BroadcastReceived", (data?: { title?: string; message?: string }) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.notifications.all });
       window.dispatchEvent(new CustomEvent(NOTIFICATION_ARRIVED_EVENT));
+
+      if (data?.message) {
+        toast.info(data.message, {
+          description: data.title || "Announcement",
+        });
+      }
     });
 
     connection.onreconnected(() => {
@@ -62,6 +83,9 @@ export function useNotificationRealtime() {
           .catch((err) => {
             if (isSubscribed) {
               console.warn("SignalR NotificationHub connection failed:", err);
+              if (String(err).includes("401") || String(err).includes("Unauthorized")) {
+                void apiClient.getCurrentUser().catch(() => {});
+              }
             }
           });
       }

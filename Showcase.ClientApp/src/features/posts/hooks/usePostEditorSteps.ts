@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-export type WizardStepNumber = 1 | 2 | 3 | 4;
+export type WizardStepNumber = 1 | 2 | 3 | 4 | 5;
 
 export function usePostEditorSteps(validateStep: (step: WizardStepNumber) => boolean) {
   const [currentStep, setCurrentStep] = useState<WizardStepNumber>(1);
@@ -8,7 +8,7 @@ export function usePostEditorSteps(validateStep: (step: WizardStepNumber) => boo
 
   const handleNextStep = () => {
     if (!validateStep(currentStep)) return;
-    const next = Math.min(4, currentStep + 1) as WizardStepNumber;
+    const next = Math.min(5, currentStep + 1) as WizardStepNumber;
     setCurrentStep(next);
     if (next > maxReachedStep) setMaxReachedStep(next);
     window.scrollTo({ top: 0, behavior: "smooth" });

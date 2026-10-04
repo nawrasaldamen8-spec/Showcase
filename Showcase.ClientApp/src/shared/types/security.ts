@@ -53,6 +53,16 @@ export interface RegisterRequest {
   name: string;
   email?: string | null;
   bio?: string;
+  specialty?: string | null;
+}
+
+export interface RegisterGoogleRequest {
+  token: string;
+  username: string;
+  name: string;
+  specialty?: string | null;
+  bio?: string | null;
+  pictureUrl?: string | null;
 }
 
 export interface LoginRequest {

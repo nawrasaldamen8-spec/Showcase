@@ -82,6 +82,26 @@ let failedQueue: Array<{
   reject: (error: unknown) => void;
 }> = [];
 
+const AUTH_SYNC_CHANNEL = "showcase_auth_sync";
+let authBroadcastChannel: BroadcastChannel | null = null;
+
+if (typeof window !== "undefined" && typeof BroadcastChannel !== "undefined") {
+  try {
+    authBroadcastChannel = new BroadcastChannel(AUTH_SYNC_CHANNEL);
+    authBroadcastChannel.onmessage = (event) => {
+      if (event.data === "refresh-success") {
+        processQueue(null);
+      } else if (event.data === "auth-expired") {
+        tokenStorage.clear();
+        window.dispatchEvent(new CustomEvent("showcase:auth-expired"));
+        processQueue(new Error("Session expired"));
+      }
+    };
+  } catch {
+    // BroadcastChannel unsupported or restricted in environment
+  }
+}
+
 function processQueue(error: unknown) {
   failedQueue.forEach((prom) => {
     if (error) {
@@ -135,10 +155,12 @@ axiosInstance.interceptors.response.use(
           }
         );
 
+        authBroadcastChannel?.postMessage("refresh-success");
         processQueue(null);
         return axiosInstance(originalRequest);
       } catch (refreshErr) {
         tokenStorage.clear();
+        authBroadcastChannel?.postMessage("auth-expired");
         if (typeof window !== "undefined") {
           window.dispatchEvent(new CustomEvent("showcase:auth-expired"));
         }

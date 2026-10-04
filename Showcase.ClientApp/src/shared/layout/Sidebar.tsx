@@ -1,6 +1,6 @@
-import { Plus, Sparkles } from "lucide-react";
+import { Plus, Settings, Sparkles } from "lucide-react";
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, NavLink, useLocation } from "react-router-dom";
 import { BrandLogo } from "../components/BrandLogo.tsx";
 import { Button } from "../components/Button.tsx";
 import { SidebarNavLinks, type SidebarUser } from "./SidebarNavLinks.tsx";
@@ -14,6 +14,7 @@ export interface SidebarProps {
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({ user, onLogout }) => {
+  const location = useLocation();
   return (
     <aside
       aria-label="Main Sidebar Navigation"
@@ -35,20 +36,47 @@ export const Sidebar: React.FC<SidebarProps> = ({ user, onLogout }) => {
       {/* 2. Middle Navigation Items */}
       <SidebarNavLinks user={user} />
 
-      {/* 3. Bottom Section: Action CTA & Profile Menu */}
-      <div className="p-4 border-t border-[#262624] space-y-3 bg-slate-dark">
+      {/* 3. Bottom Section: Action CTAs & Profile Area */}
+      <div className="p-4 border-t border-[#262624] space-y-2.5 bg-slate-dark">
         {user ? (
-          <Link to="/posts/new" className="block text-decoration-none">
-            <Button
-              variant="clay"
-              size="md"
-              fullWidth
-              leftIcon={<Plus className="h-4 w-4" />}
-              className="font-gothic uppercase tracking-wider text-xs shadow-none justify-center"
+          <>
+            {/* Red Area: New Post Button */}
+            <Link to="/posts/new" className="block text-decoration-none">
+              <Button
+                variant="clay"
+                size="md"
+                fullWidth
+                leftIcon={<Plus className="h-4 w-4" />}
+                className="font-gothic uppercase tracking-wider text-xs shadow-none justify-center"
+              >
+                New Post
+              </Button>
+            </Link>
+
+            {/* Green Area: Account Settings */}
+            <NavLink
+              to="/settings"
+              className={({ isActive }) => {
+                const active = isActive || location.pathname.startsWith("/settings");
+                return `flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl font-gothic text-[13px] font-semibold uppercase tracking-[0.12em] transition-all relative no-underline ${
+                  active
+                    ? "bg-[#262624] text-ivory-light"
+                    : "text-cloud-dark hover:text-ivory-light hover:bg-[#262624]/50"
+                }`;
+              }}
             >
-              New Post
-            </Button>
-          </Link>
+              {({ isActive }) => {
+                const active = isActive || location.pathname.startsWith("/settings");
+                return (
+                  <>
+                    {active && <span className="absolute left-1.5 w-1 h-4 rounded-full bg-clay" />}
+                    <Settings className={`h-4.5 w-4.5 shrink-0 ${active ? "text-clay" : "text-cloud-dark"}`} />
+                    <span>Account Settings</span>
+                  </>
+                );
+              }}
+            </NavLink>
+          </>
         ) : (
           <Link to="/register" className="block text-decoration-none">
             <Button
@@ -63,6 +91,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ user, onLogout }) => {
           </Link>
         )}
 
+        {/* User Profile Row with Direct Logout */}
         <SidebarUserMenu user={user} onLogout={onLogout} />
       </div>
     </aside>

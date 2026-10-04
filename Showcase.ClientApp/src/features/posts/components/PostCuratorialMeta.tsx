@@ -1,10 +1,11 @@
-import { ArrowRight, ExternalLink, Flag, User as UserIcon } from "lucide-react";
-import React, { useState } from "react";
+import { ArrowRight, ChevronDown, ChevronUp, ExternalLink, Flag, User as UserIcon } from "lucide-react";
+import React, { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { Badge } from "@shared/components/Badge.tsx";
 import { Button } from "@shared/components/Button.tsx";
 import { ProgressiveImage } from "@shared/components/ProgressiveImage.tsx";
 import { VerifiedBadge } from "@shared/components/VerifiedBadge.tsx";
+import { useAuth, useToast } from "@shared/context/index.ts";
 import type { PostDetailsResponse } from "@shared/types/index.ts";
 import { PostLikeButton } from "./PostLikeButton.tsx";
 import { ReportPostModal } from "./ReportPostModal.tsx";
@@ -26,8 +27,21 @@ export const PostCuratorialMeta: React.FC<PostCuratorialMetaProps> = ({
   layout = "inline",
   showCreator = layout === "sidebar",
 }) => {
+  const { currentUser } = useAuth();
+  const { showToast } = useToast();
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [canExpand, setCanExpand] = useState(false);
+  const descRef = useRef<HTMLParagraphElement>(null);
   const isSidebar = layout === "sidebar";
+
+  useEffect(() => {
+    if (!isExpanded && descRef.current) {
+      const hasOverflow = descRef.current.scrollHeight > descRef.current.clientHeight + 2;
+      const lineCount = (post.description || "").split(/\r\n|\r|\n/).length;
+      setCanExpand(hasOverflow || lineCount > 10);
+    }
+  }, [post.description, isExpanded]);
 
   return (
     <div className={isSidebar ? "space-y-6 lg:space-y-8" : "space-y-4 pt-1 px-1"}>
@@ -92,7 +106,13 @@ export const PostCuratorialMeta: React.FC<PostCuratorialMetaProps> = ({
 
         <button
           type="button"
-          onClick={() => setIsReportModalOpen(true)}
+          onClick={() => {
+            if (!currentUser) {
+              showToast("warning", "Please sign in to report content.");
+              return;
+            }
+            setIsReportModalOpen(true);
+          }}
           className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-gothic text-cloud-dark hover:text-clay hover:bg-stone/30 transition-colors border border-transparent hover:border-stone/60 cursor-pointer"
           title="Report this project"
         >
@@ -116,12 +136,36 @@ export const PostCuratorialMeta: React.FC<PostCuratorialMetaProps> = ({
       {post.description && (
         <div className="pt-1">
           <p
+            ref={descRef}
+            onClick={() => {
+              if (canExpand && !isExpanded) {
+                setIsExpanded(true);
+              }
+            }}
             className={`font-serif leading-relaxed text-slate-dark/85 whitespace-pre-line ${
               isSidebar ? "text-[16px] sm:text-[17px] max-w-prose" : "text-[15px] sm:text-[16px]"
+            } ${!isExpanded ? "line-clamp-[10]" : ""} ${
+              canExpand && !isExpanded ? "cursor-pointer hover:text-slate-dark transition-colors" : ""
             }`}
+            title={canExpand && !isExpanded ? "Click to read full description" : undefined}
           >
             {post.description}
           </p>
+
+          {canExpand && (
+            <button
+              type="button"
+              onClick={() => setIsExpanded((prev) => !prev)}
+              className="inline-flex items-center gap-1.5 font-gothic text-[11px] font-bold uppercase tracking-wider text-clay hover:text-slate-dark transition-colors mt-2 cursor-pointer bg-transparent border-none p-0 select-none"
+            >
+              <span>{isExpanded ? "Show less" : "Read more"}</span>
+              {isExpanded ? (
+                <ChevronUp className="h-3.5 w-3.5" />
+              ) : (
+                <ChevronDown className="h-3.5 w-3.5" />
+              )}
+            </button>
+          )}
         </div>
       )}
 

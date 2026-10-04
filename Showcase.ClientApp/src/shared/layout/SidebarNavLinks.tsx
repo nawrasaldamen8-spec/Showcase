@@ -1,8 +1,8 @@
-import { Briefcase, LayoutGrid, Search, User as UserIcon } from "lucide-react";
+import { Briefcase, LayoutGrid, Search, Shield, User as UserIcon } from "lucide-react";
 import React from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { NotificationBellBadge } from "@features/notifications/components/index.ts";
-import { useNotificationsQuery } from "@features/notifications/hooks/useNotificationQueries.ts";
+import { useUnreadNotificationsCountQuery } from "@features/notifications/hooks/useNotificationQueries.ts";
 
 export interface SidebarUser {
   username: string;
@@ -18,13 +18,14 @@ export interface SidebarNavLinksProps {
 
 export const SidebarNavLinks: React.FC<SidebarNavLinksProps> = ({ user }) => {
   const location = useLocation();
-  const { data: notifications } = useNotificationsQuery(1, 50, { enabled: Boolean(user) });
-  const unreadCount = notifications ? notifications.items.filter((n) => !n.isRead).length : 0;
+  const { data: unreadData } = useUnreadNotificationsCountQuery({ enabled: Boolean(user) });
+  const unreadCount = unreadData?.count ?? 0;
 
   const isLinkActive = (to: string, isActive: boolean) => {
     if (isActive) return true;
     if (to === "/studio" && (location.pathname === "/" || location.pathname === "/posts/mine")) return true;
     if (to === "/feed" && location.pathname.startsWith("/search")) return true;
+    if (to === "/admin" && location.pathname.startsWith("/admin")) return true;
     return false;
   };
 
@@ -34,6 +35,7 @@ export const SidebarNavLinks: React.FC<SidebarNavLinksProps> = ({ user }) => {
     { label: "Career", to: "/career", icon: Briefcase },
     { label: "Notifications", to: "/notifications", isNotification: true },
     ...(user ? [{ label: "Profile", to: `/u/${user.username}`, icon: UserIcon }] : []),
+    ...(user?.roles?.includes("Admin") ? [{ label: "Admin Console", to: "/admin", icon: Shield, isAdmin: true }] : []),
   ];
 
   return (
