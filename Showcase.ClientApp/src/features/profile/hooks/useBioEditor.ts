@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { apiClient } from '@shared/api/apiClient.ts';
 import { useAuth } from '@shared/context/useAuth.ts';
 
@@ -42,6 +42,15 @@ export function useBioEditor({
   }>({});
   const [generalError, setGeneralError] = useState<string | null>(null);
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const successTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (successTimerRef.current) {
+        clearTimeout(successTimerRef.current);
+      }
+    };
+  }, []);
 
   if (
     initialName !== prevProps.name ||
@@ -118,8 +127,12 @@ export function useBioEditor({
       });
       onNotify?.('Profile details updated successfully.', 'success');
 
-      setTimeout(() => {
+      if (successTimerRef.current) {
+        clearTimeout(successTimerRef.current);
+      }
+      successTimerRef.current = setTimeout(() => {
         setSaveSuccess(false);
+        successTimerRef.current = null;
       }, 4000);
     } catch (err: unknown) {
       const problem = err as { detail?: string; title?: string; errors?: Record<string, string[]> };

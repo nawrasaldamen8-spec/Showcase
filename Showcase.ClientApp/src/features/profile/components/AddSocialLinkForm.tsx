@@ -39,43 +39,41 @@ export const AddSocialLinkForm: React.FC<AddSocialLinkFormProps> = ({ onAdd, isP
       </h3>
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 items-end">
-          <div className="flex flex-col">
-            <label
-              htmlFor="platform-select"
-              className="text-label text-cloud-dark mb-1.5 font-gothic text-[12px] font-semibold uppercase tracking-[0.10em]"
-            >
-              Platform
-            </label>
-            <select
-              id="platform-select"
-              value={platform}
-              onChange={(e) => setPlatform(e.target.value as SupportedPlatform)}
-              disabled={isProcessing}
-              className="w-full bg-ivory-light text-slate-dark font-gothic text-xs font-semibold uppercase tracking-wider border border-stone rounded-lg px-3.5 py-3 outline-none transition-colors duration-150 focus:border-slate-dark disabled:opacity-50 cursor-pointer"
-            >
-              {SUPPORTED_PLATFORMS.map((plat) => (
-                <option key={plat} value={plat}>
-                  {plat}
-                </option>
-              ))}
-            </select>
-          </div>
+        <div className="flex flex-col">
+          <label
+            htmlFor="platform-select"
+            className="text-label text-cloud-dark mb-1.5 font-gothic text-[12px] font-semibold uppercase tracking-[0.10em]"
+          >
+            Platform
+          </label>
+          <select
+            id="platform-select"
+            value={platform}
+            onChange={(e) => setPlatform(e.target.value as SupportedPlatform)}
+            disabled={isProcessing}
+            className="w-full bg-ivory-light text-slate-dark font-gothic text-xs font-semibold uppercase tracking-wider border border-stone rounded-xl px-3.5 py-3 outline-none transition-colors duration-150 focus:border-slate-dark disabled:opacity-50 cursor-pointer"
+          >
+            {SUPPORTED_PLATFORMS.map((plat) => (
+              <option key={plat} value={plat}>
+                {plat}
+              </option>
+            ))}
+          </select>
+        </div>
 
-          <div className="sm:col-span-2">
-            <Input
-              label="Target URL (http:// or https://)"
-              value={url}
-              onChange={(e) => {
-                setUrl(e.target.value);
-                if (addError) setAddError(null);
-              }}
-              placeholder={PLATFORM_PLACEHOLDERS[platform] || "https://..."}
-              errorMessage={addError || undefined}
-              disabled={isProcessing}
-              leftIcon={<PlatformIcon platform={platform} className="h-4 w-4 text-cloud-dark" />}
-            />
-          </div>
+        <div>
+          <Input
+            label="Target URL (http:// or https://)"
+            value={url}
+            onChange={(e) => {
+              setUrl(e.target.value);
+              if (addError) setAddError(null);
+            }}
+            placeholder={PLATFORM_PLACEHOLDERS[platform] || "https://..."}
+            errorMessage={addError || undefined}
+            disabled={isProcessing}
+            leftIcon={<PlatformIcon platform={platform} className="h-4 w-4 text-cloud-dark" />}
+          />
         </div>
 
         <div className="flex justify-end pt-1">

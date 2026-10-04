@@ -20,7 +20,7 @@ const REPORT_REASONS = [
   { id: "copyright", label: "Copyright or Intellectual Property Violation", desc: "Displaying artwork or design without proper authorization." },
   { id: "spam", label: "Spam, Commercial Advertising, or Fraud", desc: "Unsolicited promotion, fraudulent activity, or link farming." },
   { id: "harassment", label: "Harassment or Abusive Behavior", desc: "Targeted harassment or hostile behavior." },
-  { id: "other", label: "Other Concern", desc: "Any other violation of the Showcase platform terms." },
+  { id: "other", label: "Other Concern", desc: "Any other violation of the Pority platform terms." },
 ] as const;
 
 export const ReportProfileModal: React.FC<ReportProfileModalProps> = ({
@@ -47,7 +47,7 @@ export const ReportProfileModal: React.FC<ReportProfileModalProps> = ({
         details: details.trim() || undefined,
       });
 
-      showToast("success", `Report for @${username} submitted. Thank you for keeping Showcase safe.`);
+      showToast("success", `Report for @${username} submitted. Thank you for keeping Pority safe.`);
       setSelectedReason("impersonation");
       setDetails("");
       onClose();

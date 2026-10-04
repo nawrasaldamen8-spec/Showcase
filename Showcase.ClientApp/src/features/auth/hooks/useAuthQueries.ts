@@ -35,7 +35,7 @@ export function useRegisterMutation() {
     mutationFn: (data: RegisterRequest) => apiClient.register(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.auth.all });
-      toast.success("Account created successfully! Welcome to Showcase!");
+      toast.success("Account created successfully! Welcome to Pority!");
     },
     onError: (error) => {
       toast.error(extractApiErrorMessage(error, "Registration failed. Please try again."));

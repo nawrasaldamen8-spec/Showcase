@@ -48,9 +48,21 @@ export function useAvatarUpload({ avatarUrl, onAvatarUpdated, onNotify }: UseAva
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const createdObjectUrlRef = useRef<string | null>(null);
+  const timersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
+
+  const safeTimeout = useCallback((fn: () => void, ms: number) => {
+    const timer = setTimeout(() => {
+      timersRef.current = timersRef.current.filter((t) => t !== timer);
+      fn();
+    }, ms);
+    timersRef.current.push(timer);
+    return timer;
+  }, []);
 
   useEffect(() => {
     return () => {
+      timersRef.current.forEach((t) => clearTimeout(t));
+      timersRef.current = [];
       if (createdObjectUrlRef.current) {
         URL.revokeObjectURL(createdObjectUrlRef.current);
       }
@@ -88,11 +100,11 @@ export function useAvatarUpload({ avatarUrl, onAvatarUpdated, onNotify }: UseAva
         onAvatarUpdated?.(objectUrl);
         onNotify?.("Avatar updated successfully.", "success");
 
-        setTimeout(() => {
+        safeTimeout(() => {
           setIsUploading(false);
           setUploadProgress(0);
         }, 600);
-        setTimeout(() => setSuccessMessage(null), 4000);
+        safeTimeout(() => setSuccessMessage(null), 4000);
       } catch (err: unknown) {
         console.error("Avatar upload error:", err);
         setCurrentUrl(avatarUrl || null);
@@ -163,7 +175,7 @@ export function useAvatarUpload({ avatarUrl, onAvatarUpdated, onNotify }: UseAva
       setSuccessMessage("Avatar removed.");
       onNotify?.("Avatar removed successfully.", "success");
 
-      setTimeout(() => setSuccessMessage(null), 4000);
+      safeTimeout(() => setSuccessMessage(null), 4000);
     } catch (err: unknown) {
       console.error("Avatar deletion error:", err);
       const problem = err as { detail?: string; title?: string };

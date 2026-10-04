@@ -34,23 +34,19 @@ export const CareerHeader: React.FC<CareerHeaderProps> = ({
   return (
     <div className="mb-8 pb-6 border-b border-stone/60">
       {/* Editorial Breadcrumb */}
-      <div className="flex items-center gap-2 mb-3">
+      <nav className="mb-4" aria-label="Breadcrumb navigation">
         <Link
           to={backTo}
-          className="inline-flex items-center gap-1.5 text-xs font-gothic font-bold uppercase tracking-[0.14em] text-cloud-dark hover:text-slate-dark transition-colors"
+          className="inline-flex items-center gap-1.5 text-xs font-gothic font-semibold uppercase tracking-[0.14em] text-cloud-dark hover:text-slate-dark transition-colors group text-decoration-none"
         >
-          <ArrowLeft className="w-3.5 h-3.5" />
+          <ArrowLeft className="w-3.5 h-3.5 transition-transform group-hover:-translate-x-1" />
           <span>{backLabel}</span>
         </Link>
-        <span className="text-cloud-dark text-xs">/</span>
-        <span className="text-xs font-gothic font-bold uppercase tracking-[0.14em] text-clay">
-          {sectionTitle}
-        </span>
-      </div>
+      </nav>
 
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-5">
         <div className="max-w-2xl">
-          <span className="font-gothic text-[11px] font-bold uppercase tracking-[0.18em] text-cloud-dark block mb-1">
+          <span className="font-gothic text-xs font-bold uppercase tracking-[0.16em] text-clay block mb-1">
             {badge}
           </span>
           <h1 className="font-gothic text-2xl sm:text-3xl lg:text-4xl font-extrabold uppercase tracking-tight text-slate-dark">

@@ -121,7 +121,7 @@ export const ProfileAboutTab: React.FC<ProfileAboutTabProps> = ({
           <p className="font-serif text-xs sm:text-sm text-cloud-dark mb-3">
             No links added yet.
           </p>
-          <Link to="/profile/social-links" className="text-decoration-none inline-block">
+          <Link to="/profile/edit/links" className="text-decoration-none inline-block">
             <Button variant="outline" size="sm" leftIcon={<Plus className="h-3.5 w-3.5" />} className="text-xs h-7 px-2.5">
               Add Social Links
             </Button>
@@ -129,7 +129,7 @@ export const ProfileAboutTab: React.FC<ProfileAboutTabProps> = ({
         </div>
       ) : null}
 
-      {/* 3. Location / Country Card (Bottom of About Tab, Mobile-Optimized) */}
+      {/* 3. Location Card (Bottom of About Tab, Mobile-Optimized) */}
       {country && (
         <div className="bg-ivory-light rounded-2xl sm:rounded-card border border-stone/60 p-4 sm:p-5 lg:p-6 shadow-none flex items-center justify-between gap-3">
           <div className="flex items-center gap-3 min-w-0">
@@ -138,7 +138,7 @@ export const ProfileAboutTab: React.FC<ProfileAboutTabProps> = ({
             </div>
             <div className="min-w-0">
               <span className="font-gothic text-[10px] sm:text-[11px] font-bold uppercase tracking-[0.14em] text-cloud-dark block">
-                Location / Country
+                Location
               </span>
               <p className="font-serif text-xs sm:text-sm font-semibold text-slate-dark truncate mt-0.5">
                 {country}

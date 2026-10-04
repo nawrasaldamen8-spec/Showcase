@@ -4,6 +4,7 @@ import {
   AtSign,
   CheckCircle2,
   Lock,
+  Mail,
   XCircle,
 } from "lucide-react";
 import { Button } from "@shared/components/Button.tsx";
@@ -12,6 +13,8 @@ import { PasswordStrengthMeter } from "./PasswordStrengthMeter.tsx";
 import { GoogleAuthButton } from "./GoogleAuthButton.tsx";
 
 export interface CredentialsStepProps {
+  email: string;
+  setEmail: (value: string) => void;
   username: string;
   setUsername: (value: string) => void;
   password: string;
@@ -23,6 +26,8 @@ export interface CredentialsStepProps {
 }
 
 export const CredentialsStep: React.FC<CredentialsStepProps> = ({
+  email,
+  setEmail,
   username,
   setUsername,
   password,
@@ -34,6 +39,28 @@ export const CredentialsStep: React.FC<CredentialsStepProps> = ({
 }) => {
   return (
     <form onSubmit={onSubmit} className="space-y-4" noValidate>
+      {/* Email Address */}
+      <div className="space-y-1.5">
+        <label
+          htmlFor="reg-email"
+          className="flex items-center gap-2 font-gothic text-xs font-bold uppercase tracking-wider text-slate-dark"
+        >
+          <Mail className="w-3.5 h-3.5 text-cloud-dark" />
+          <span>Email Address <span className="text-clay">*</span></span>
+        </label>
+        <Input
+          id="reg-email"
+          type="email"
+          placeholder="e.g. elena@studio-vance.design"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+          autoFocus
+          autoComplete="email"
+          enterKeyHint="next"
+        />
+      </div>
+
       {/* Username */}
       <div className="space-y-1.5">
         <div className="flex items-center justify-between">
@@ -62,7 +89,8 @@ export const CredentialsStep: React.FC<CredentialsStepProps> = ({
           value={username}
           onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ""))}
           required
-          autoFocus
+          autoComplete="username"
+          enterKeyHint="next"
         />
       </div>
 
@@ -127,7 +155,7 @@ export const CredentialsStep: React.FC<CredentialsStepProps> = ({
         </span>
       </div>
 
-      <GoogleAuthButton onClick={() => { window.location.href = "/api/auth/google"; }} text="Register with Google" />
+      <GoogleAuthButton onClick={() => { window.location.href = "/api/auth/google"; }} text="Continue with Google" />
     </form>
   );
 };

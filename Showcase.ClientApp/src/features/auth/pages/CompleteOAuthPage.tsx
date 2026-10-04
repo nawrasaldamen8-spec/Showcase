@@ -1,91 +1,12 @@
-import React, { useState } from "react";
+import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { AtSign, Sparkles } from "lucide-react";
-import { Button } from "@shared/components/Button.tsx";
-import { Input } from "@shared/components/Input.tsx";
-import { useAuth, useToast } from "@shared/context/index.ts";
-import { AuthCardLayout } from "../components/AuthCardLayout.tsx";
 
 export const CompleteOAuthPage: React.FC = () => {
   const navigate = useNavigate();
-  const { register } = useAuth();
-  const { showToast } = useToast();
 
-  const [username, setUsername] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+  useEffect(() => {
+    navigate("/register?oauth=google", { replace: true });
+  }, [navigate]);
 
-  const handleComplete = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const handle = username.trim();
-    if (!handle) {
-      showToast("error", "Please choose a valid username handle.");
-      return;
-    }
-
-    setIsLoading(true);
-
-    try {
-      // Mock OAuth stub: generate a secure random password until full OAuth provider flow is wired to backend
-      const mockPassword = `oauth_${crypto.randomUUID()}`;
-
-      await register({
-        username: handle,
-        email: `${handle}@google.user`,
-        password: mockPassword,
-        name: handle,
-      });
-      showToast("success", "Google account connected successfully.");
-      navigate("/studio");
-    } catch {
-      showToast("error", "Unable to complete Google onboarding.");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  return (
-    <AuthCardLayout
-      title="Choose Your Handle"
-      subtitle="Complete your Pority setup by choosing your unique username handle."
-      badge="OAuth Completion"
-    >
-      <form onSubmit={handleComplete} className="space-y-4" noValidate>
-        <div className="space-y-1.5">
-          <label
-            htmlFor="oauth-username"
-            className="flex items-center gap-2 font-gothic text-xs font-bold uppercase tracking-wider text-slate-dark"
-          >
-            <AtSign className="w-3.5 h-3.5 text-cloud-dark" />
-            <span>Username Handle <span className="text-clay">*</span></span>
-          </label>
-          <Input
-            id="oauth-username"
-            type="text"
-            value={username}
-            onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ""))}
-            placeholder="e.g. username"
-            required
-            autoFocus
-          />
-          <p className="font-serif text-[11px] text-cloud-dark">
-            Your permanent portfolio URL will be: pority.design/u/{username || "handle"}
-          </p>
-        </div>
-
-        <div className="pt-3">
-          <Button
-            type="submit"
-            variant="clay"
-            size="lg"
-            fullWidth
-            isLoading={isLoading}
-            leftIcon={<Sparkles className="w-4 h-4" />}
-            className="font-gothic uppercase tracking-wider text-xs justify-center"
-          >
-            Complete Registration
-          </Button>
-        </div>
-      </form>
-    </AuthCardLayout>
-  );
+  return null;
 };

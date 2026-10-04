@@ -18,7 +18,7 @@ export const CareerAcademicsPage: React.FC = () => {
       entityLabel="Education Record"
       emptyIcon={GraduationCap}
       emptyTitle="No Education Records"
-      emptyDescription="Add your degrees, diplomas, or study programs to showcase your education background."
+      emptyDescription="Add your degrees, diplomas, or study programs to display your education background."
       getItemName={(a) => a.degree}
       renderCard={(item, onEdit, onDelete) => (
         <AcademicCard key={item.id} item={item} onEdit={onEdit} onDelete={onDelete} />

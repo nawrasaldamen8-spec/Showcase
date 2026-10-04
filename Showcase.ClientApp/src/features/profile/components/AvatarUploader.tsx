@@ -110,32 +110,15 @@ export const AvatarUploader: React.FC<AvatarUploaderProps> = ({
           </div>
         </div>
 
-        {/* Informational Guidance & Interactive Controls */}
-        <div className="flex-1 space-y-4 text-center sm:text-left">
-          <div
-            onClick={triggerPicker}
-            onDragOver={handleDragOver}
-            onDragLeave={handleDragLeave}
-            onDrop={handleDrop}
-            className={`border border-dashed rounded-xl p-4 sm:p-5 transition-colors cursor-pointer select-none ${
-              isDragging
-                ? "border-clay bg-clay/5"
-                : "border-stone hover:border-slate-dark bg-ivory-medium/40 hover:bg-ivory-medium/70"
-            }`}
-          >
-            <div className="flex flex-col sm:flex-row items-center gap-3">
-              <div className="p-2.5 rounded-full bg-ivory-light border border-stone text-cloud-dark">
-                <Upload className="h-5 w-5" />
-              </div>
-              <div>
-                <p className="font-gothic text-xs font-semibold uppercase tracking-wider text-slate-dark">
-                  {isDragging ? "Drop Image Here to Upload" : "Click to Upload or Drag and Drop"}
-                </p>
-                <p className="font-serif text-xs text-cloud-dark mt-0.5">
-                  JPEG, PNG, WebP, or GIF up to 5MB.
-                </p>
-              </div>
-            </div>
+        {/* Interactive Controls & File Guidance */}
+        <div className="flex-1 space-y-3.5 text-center sm:text-left">
+          <div className="space-y-1">
+            <h3 className="font-gothic text-sm font-bold uppercase tracking-wider text-slate-dark">
+              Profile Photo
+            </h3>
+            <p className="font-serif text-xs text-cloud-dark">
+              Click the avatar or choose a file. JPEG, PNG, WebP, or GIF up to 5MB.
+            </p>
           </div>
 
           <input

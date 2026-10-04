@@ -13,53 +13,55 @@ export interface AuthCardLayoutProps {
 export const AuthCardLayout: React.FC<AuthCardLayoutProps> = ({
   title,
   subtitle,
-  badge,
+  badge = "Portfolio Access",
   children,
   footerContent,
 }) => {
   return (
-    <div className="min-h-screen bg-ivory-medium flex flex-col justify-center py-10 sm:py-16 px-4 sm:px-6 lg:px-8 selection:bg-clay selection:text-ivory-light">
-      <div className="sm:mx-auto sm:w-full sm:max-w-md text-center space-y-3">
-        {/* Brand Logo */}
-        <div className="flex justify-center">
-          <Link to="/studio" className="inline-block text-decoration-none group" aria-label="Pority Home">
-            <BrandLogo
-              variant="full"
-              theme="light"
-              size="lg"
-              className="group-hover:opacity-90 transition-opacity"
-              textClassName="text-2xl font-serif font-bold tracking-tight text-slate-dark"
-            />
-          </Link>
-        </div>
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 min-h-[85vh] selection:bg-clay selection:text-ivory-light">
+      {/* Brand Navigation Header */}
+      <div className="mb-6 flex items-center justify-between">
+        <Link to="/studio" className="inline-block text-decoration-none group" aria-label="Pority Home">
+          <BrandLogo
+            variant="full"
+            theme="light"
+            size="md"
+            className="group-hover:opacity-90 transition-opacity"
+            textClassName="text-xl font-serif font-bold tracking-tight text-slate-dark"
+          />
+        </Link>
+      </div>
 
+      {/* Screen Header */}
+      <header className="border-b border-stone pb-6 mb-8 space-y-2">
         {badge && (
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#e8e5dc] border border-stone font-gothic text-[11px] font-bold uppercase tracking-[0.14em] text-clay">
-            {badge}
+          <div className="flex items-center gap-2">
+            <span className="font-gothic text-xs font-bold uppercase tracking-[0.16em] text-clay">
+              {badge}
+            </span>
           </div>
         )}
 
-        <h1 className="font-gothic font-extrabold text-2xl sm:text-3xl uppercase tracking-tight text-slate-dark">
+        <h1 className="font-gothic font-extrabold text-3xl sm:text-4xl uppercase tracking-tight text-slate-dark">
           {title}
         </h1>
 
         {subtitle && (
-          <p className="font-serif text-sm text-slate-dark/70 max-w-sm mx-auto leading-relaxed">
+          <p className="font-serif text-sm sm:text-base text-slate-dark/75 leading-relaxed">
             {subtitle}
           </p>
         )}
-      </div>
+      </header>
 
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-lg">
-        <div className="bg-ivory-light py-8 px-6 sm:px-10 border border-stone rounded-2xl shadow-none space-y-6">
-          {children}
+      {/* Main Canvas Container */}
+      <div className="bg-ivory-light rounded-2xl sm:rounded-card border border-stone/60 p-6 sm:p-8 space-y-6">
+        {children}
 
-          {footerContent && (
-            <div className="pt-5 border-t border-stone/60 text-center font-serif text-xs text-cloud-dark">
-              {footerContent}
-            </div>
-          )}
-        </div>
+        {footerContent && (
+          <div className="pt-5 border-t border-stone/60 text-center font-serif text-xs text-cloud-dark">
+            {footerContent}
+          </div>
+        )}
       </div>
     </div>
   );

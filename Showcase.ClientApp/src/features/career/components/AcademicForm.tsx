@@ -102,55 +102,54 @@ export const AcademicForm: React.FC<AcademicFormProps> = ({
         )}
       </div>
 
-      {/* Degree Dropdown & Field of Study */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div>
-          <label className="block font-gothic text-xs font-bold uppercase tracking-[0.12em] text-slate-dark mb-1.5">
-            Degree / Stage <span className="text-red-500 font-bold">*</span>
-          </label>
-          <select
-            value={degree}
-            onChange={(e) => {
-              setDegree(e.target.value);
-              if (errors.degree) validate("degree");
-            }}
-            onBlur={() => handleBlur("degree")}
-            className={`w-full px-3.5 py-2.5 rounded-xl bg-ivory-medium border text-sm text-slate-dark focus:outline-none focus:ring-1 focus:ring-slate-dark cursor-pointer ${
-              touched.degree && errors.degree ? "border-red-500 bg-red-50/20" : "border-stone/60"
-            }`}
-          >
-            {ACADEMIC_DEGREE_OPTIONS.map((opt) => (
-              <option key={opt} value={opt}>
-                {opt}
-              </option>
-            ))}
-          </select>
-          {touched.degree && errors.degree && (
-            <p className="font-serif text-xs text-red-600 mt-1">{errors.degree}</p>
-          )}
-        </div>
+      {/* Degree Dropdown */}
+      <div>
+        <label className="block font-gothic text-xs font-bold uppercase tracking-[0.12em] text-slate-dark mb-1.5">
+          Degree / Stage <span className="text-red-500 font-bold">*</span>
+        </label>
+        <select
+          value={degree}
+          onChange={(e) => {
+            setDegree(e.target.value);
+            if (errors.degree) validate("degree");
+          }}
+          onBlur={() => handleBlur("degree")}
+          className={`w-full px-3.5 py-2.5 rounded-xl bg-ivory-medium border text-sm text-slate-dark focus:outline-none focus:ring-1 focus:ring-slate-dark cursor-pointer ${
+            touched.degree && errors.degree ? "border-red-500 bg-red-50/20" : "border-stone/60"
+          }`}
+        >
+          {ACADEMIC_DEGREE_OPTIONS.map((opt) => (
+            <option key={opt} value={opt}>
+              {opt}
+            </option>
+          ))}
+        </select>
+        {touched.degree && errors.degree && (
+          <p className="font-serif text-xs text-red-600 mt-1">{errors.degree}</p>
+        )}
+      </div>
 
-        <div>
-          <label className="block font-gothic text-xs font-bold uppercase tracking-[0.12em] text-slate-dark mb-1.5">
-            Field of Study / Major <span className="text-red-500 font-bold">*</span>
-          </label>
-          <input
-            type="text"
-            value={fieldOfStudy}
-            onChange={(e) => {
-              setFieldOfStudy(e.target.value);
-              if (errors.fieldOfStudy) validate("fieldOfStudy");
-            }}
-            onBlur={() => handleBlur("fieldOfStudy")}
-            placeholder="e.g. Computer Science, Graphic Design, or Business"
-            className={`w-full px-3.5 py-2.5 rounded-xl bg-ivory-medium border text-sm text-slate-dark focus:outline-none focus:ring-1 focus:ring-slate-dark ${
-              touched.fieldOfStudy && errors.fieldOfStudy ? "border-red-500 bg-red-50/20" : "border-stone/60"
-            }`}
-          />
-          {touched.fieldOfStudy && errors.fieldOfStudy && (
-            <p className="font-serif text-xs text-red-600 mt-1">{errors.fieldOfStudy}</p>
-          )}
-        </div>
+      {/* Field of Study */}
+      <div>
+        <label className="block font-gothic text-xs font-bold uppercase tracking-[0.12em] text-slate-dark mb-1.5">
+          Field of Study / Major <span className="text-red-500 font-bold">*</span>
+        </label>
+        <input
+          type="text"
+          value={fieldOfStudy}
+          onChange={(e) => {
+            setFieldOfStudy(e.target.value);
+            if (errors.fieldOfStudy) validate("fieldOfStudy");
+          }}
+          onBlur={() => handleBlur("fieldOfStudy")}
+          placeholder="e.g. Computer Science, Graphic Design, or Business"
+          className={`w-full px-3.5 py-2.5 rounded-xl bg-ivory-medium border text-sm text-slate-dark focus:outline-none focus:ring-1 focus:ring-slate-dark ${
+            touched.fieldOfStudy && errors.fieldOfStudy ? "border-red-500 bg-red-50/20" : "border-stone/60"
+          }`}
+        />
+        {touched.fieldOfStudy && errors.fieldOfStudy && (
+          <p className="font-serif text-xs text-red-600 mt-1">{errors.fieldOfStudy}</p>
+        )}
       </div>
 
       {/* Start Date & End Date */}

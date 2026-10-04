@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
-import { Check, AlertCircle, Save, Undo2, Sparkles, ChevronRight } from 'lucide-react';
-import { Input } from '@shared/components/Input.tsx';
-import { Textarea } from '@shared/components/Textarea.tsx';
-import { Button } from '@shared/components/Button.tsx';
-import { useBioEditor } from '../hooks/useBioEditor.ts';
-import { SpecialtyPickerModal } from './SpecialtyPickerModal.tsx';
+import React from "react";
+import { Link } from "react-router-dom";
+import { Check, AlertCircle, Save, Undo2, Sparkles, ChevronRight, Globe } from "lucide-react";
+import { Input } from "@shared/components/Input.tsx";
+import { Textarea } from "@shared/components/Textarea.tsx";
+import { Button } from "@shared/components/Button.tsx";
+import { useBioEditor } from "../hooks/useBioEditor.ts";
 
 export interface BioEditorProps {
   initialName: string;
@@ -12,7 +12,7 @@ export interface BioEditorProps {
   initialCountry?: string | null;
   initialBio?: string | null;
   onProfileUpdated?: (updated: { name: string; specialty: string | null; country: string | null; bio: string }) => void;
-  onNotify?: (message: string, type?: 'success' | 'error') => void;
+  onNotify?: (message: string, type?: "success" | "error") => void;
 }
 
 export const BioEditor: React.FC<BioEditorProps> = (props) => {
@@ -20,9 +20,7 @@ export const BioEditor: React.FC<BioEditorProps> = (props) => {
     name,
     setName,
     specialty,
-    setSpecialty,
     country,
-    setCountry,
     bio,
     setBio,
     fieldErrors,
@@ -34,8 +32,6 @@ export const BioEditor: React.FC<BioEditorProps> = (props) => {
     handleReset,
     handleSave,
   } = useBioEditor(props);
-
-  const [isSpecialtyModalOpen, setIsSpecialtyModalOpen] = useState(false);
 
   return (
     <section aria-labelledby="bio-editor-heading" className="bg-ivory-light rounded-card border border-stone/60 p-6 sm:p-8">
@@ -52,8 +48,8 @@ export const BioEditor: React.FC<BioEditorProps> = (props) => {
       </div>
 
       <form onSubmit={handleSave} className="space-y-6">
-        {/* Name & Country Fields Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+        {/* Name Field */}
+        <div>
           <Input
             label="Full Name / Brand"
             value={name}
@@ -68,56 +64,50 @@ export const BioEditor: React.FC<BioEditorProps> = (props) => {
             required
             disabled={isSaving}
           />
-
-          <Input
-            label="Country / Region (Optional)"
-            value={country || ''}
-            onChange={(e) => {
-              setCountry(e.target.value);
-              if (fieldErrors.country) {
-                setFieldErrors((prev) => ({ ...prev, country: undefined }));
-              }
-            }}
-            placeholder="e.g. Jordan, United States, Germany"
-            errorMessage={fieldErrors.country}
-            disabled={isSaving}
-          />
         </div>
 
-        {/* Creative Discipline / Specialty Selector */}
+        {/* Country Screen Selector Row (Full Width) */}
         <div>
           <label className="block font-gothic text-xs font-bold uppercase tracking-[0.12em] text-slate-dark mb-1.5">
-            Primary Specialty / Field
+            Country / Region <span className="font-serif text-[11px] font-normal text-cloud-dark">(Optional)</span>
           </label>
-          <button
-            type="button"
-            onClick={() => setIsSpecialtyModalOpen(true)}
-            disabled={isSaving}
-            className="w-full text-left px-3.5 sm:px-4 py-2.5 sm:py-3 bg-ivory-medium/60 hover:bg-ivory-medium border border-stone focus:border-clay rounded-xl flex items-center justify-between gap-2 transition-all cursor-pointer group"
+          <Link
+            to="/profile/edit/country"
+            className="w-full text-left px-4 py-3 bg-ivory-medium/60 hover:bg-ivory-medium border border-stone focus:border-clay rounded-xl flex items-center justify-between gap-3 transition-all group text-decoration-none"
           >
-            <div className="flex items-center gap-2.5 min-w-0 flex-1">
-              <Sparkles className={`w-4 h-4 shrink-0 ${specialty ? 'text-clay' : 'text-cloud-dark'}`} />
-              <span className={`font-serif text-xs sm:text-sm truncate ${specialty ? 'text-slate-dark font-semibold' : 'text-cloud-dark'}`}>
-                {specialty || 'Select your specialty (e.g. Software Engineering, Architecture)...'}
+            <div className="flex items-center gap-3 min-w-0 flex-1">
+              <Globe className={`w-4 h-4 shrink-0 ${country ? "text-clay" : "text-cloud-dark"}`} />
+              <span className={`font-serif text-sm truncate ${country ? "text-slate-dark font-semibold" : "text-cloud-dark"}`}>
+                {country || "Select country / region..."}
               </span>
             </div>
-            <div className="flex items-center gap-1 text-xs font-gothic font-bold uppercase tracking-wider text-cloud-dark group-hover:text-slate-dark transition-colors shrink-0">
-              <span>{specialty ? 'Change' : 'Choose'}</span>
-              <ChevronRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+            <div className="flex items-center gap-1.5 text-xs font-gothic font-bold uppercase tracking-wider text-cloud-dark group-hover:text-slate-dark transition-colors shrink-0">
+              <span>{country ? "Change" : "Choose"}</span>
+              <ChevronRight className="w-4 h-4 text-clay group-hover:translate-x-0.5 transition-transform" />
             </div>
-          </button>
-          <p className="mt-1.5 font-serif text-xs text-cloud-dark">
-            Displayed in your profile header and across searches.
-          </p>
+          </Link>
+        </div>
 
-          <SpecialtyPickerModal
-            isOpen={isSpecialtyModalOpen}
-            onClose={() => setIsSpecialtyModalOpen(false)}
-            selectedSpecialty={specialty}
-            onSelect={(newSpecialty) => {
-              setSpecialty(newSpecialty);
-            }}
-          />
+        {/* Specialty Screen Selector Row (Full Width) */}
+        <div>
+          <label className="block font-gothic text-xs font-bold uppercase tracking-[0.12em] text-slate-dark mb-1.5">
+            Primary Specialty <span className="font-serif text-[11px] font-normal text-cloud-dark">(Optional)</span>
+          </label>
+          <Link
+            to="/profile/edit/specialty"
+            className="w-full text-left px-4 py-3 bg-ivory-medium/60 hover:bg-ivory-medium border border-stone focus:border-clay rounded-xl flex items-center justify-between gap-3 transition-all group text-decoration-none"
+          >
+            <div className="flex items-center gap-3 min-w-0 flex-1">
+              <Sparkles className={`w-4 h-4 shrink-0 ${specialty ? "text-clay" : "text-cloud-dark"}`} />
+              <span className={`font-serif text-sm truncate ${specialty ? "text-slate-dark font-semibold" : "text-cloud-dark"}`}>
+                {specialty || "Select primary specialty..."}
+              </span>
+            </div>
+            <div className="flex items-center gap-1.5 text-xs font-gothic font-bold uppercase tracking-wider text-cloud-dark group-hover:text-slate-dark transition-colors shrink-0">
+              <span>{specialty ? "Change" : "Choose"}</span>
+              <ChevronRight className="w-4 h-4 text-clay group-hover:translate-x-0.5 transition-transform" />
+            </div>
+          </Link>
         </div>
 
         {/* Bio Textarea with live character counter */}
@@ -190,14 +180,14 @@ export const BioEditor: React.FC<BioEditorProps> = (props) => {
 
             <Button
               type="submit"
-              variant="clay"
+              variant={hasChanges ? "clay" : "outline"}
               size="md"
               isLoading={isSaving}
               disabled={!hasChanges && !saveSuccess}
               leftIcon={<Save className="h-4 w-4" />}
-              className="w-full sm:w-auto justify-center"
+              className={`w-full sm:w-auto justify-center ${hasChanges ? "shadow-sm text-ivory-light font-bold" : ""}`}
             >
-              Save Profile
+              {saveSuccess ? "Profile Saved" : "Save Profile"}
             </Button>
           </div>
         </div>

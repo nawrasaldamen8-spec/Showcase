@@ -10,4 +10,3 @@ export * from "./ProfileSkeleton.tsx";
 export * from "./ReportProfileModal.tsx";
 export * from "./SocialLinkRow.tsx";
 export * from "./SocialLinksManager.tsx";
-export * from "./SpecialtyPickerModal.tsx";

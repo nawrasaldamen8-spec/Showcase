@@ -22,24 +22,209 @@ export const PLATFORM_PLACEHOLDERS: Record<string, string> = {
   Custom: "https://example.com/profile",
 };
 
-export const CREATIVE_SPECIALTIES = [
-  "Software Engineering & Architecture",
-  "UI/UX & Product Design",
-  "Frontend & Web Development",
-  "Backend & Distributed Systems",
-  "Graphic & Brand Design",
-  "Architecture & Spatial Design",
-  "Architectural Photography",
-  "Documentary Photography",
-  "Data Science & Machine Learning",
-  "Creative Technology",
-  "Product Management",
-  "Content Writing & Editorial",
-  "3D Motion & Visual Effects",
-  "Industrial & Hardware Design",
-  "Sound Design & Audio Engineering",
-  "Fine Art & Illustration",
-] as const;
+export interface SpecialtyCategory {
+  id: string;
+  name: string;
+  description: string;
+  specialties: string[];
+}
 
-export type CreativeSpecialty = (typeof CREATIVE_SPECIALTIES)[number];
+export const SPECIALTY_CATEGORIES: SpecialtyCategory[] = [
+  {
+    id: "architecture_construction",
+    name: "Architecture & Construction",
+    description: "Architectural design, urban planning, BIM, and structural civil engineering",
+    specialties: [
+      "Architecture & Spatial Design",
+      "Architectural Photography",
+      "Building and Civil Engineering",
+      "Interior, Exhibition & Display Design",
+      "Landscape & Urban Planning",
+      "BIM & Computational Architecture",
+      "Historic Preservation & Restoration",
+      "Environmental & Climate Design",
+      "Structural Engineering & Drafting",
+      "Construction Management & Site Work",
+      "Surveying & Spatial Mapping",
+    ],
+  },
+  {
+    id: "software_tech",
+    name: "Software, ICT & Data",
+    description: "Software engineering, artificial intelligence, cloud, systems, and security",
+    specialties: [
+      "Software Engineering & Architecture",
+      "Frontend & Web Development",
+      "Backend & Distributed Systems",
+      "Full-Stack Engineering",
+      "Mobile App Development",
+      "Database & Systems Administration",
+      "Data Science & Machine Learning",
+      "Artificial Intelligence & NLP",
+      "Creative Technology & Creative Coding",
+      "Cloud & DevOps Engineering",
+      "Cybersecurity & Information Security",
+      "Computer Systems & Network Architecture",
+      "Embedded Systems & Robotics",
+    ],
+  },
+  {
+    id: "medicine_healthcare",
+    name: "Medicine & Healthcare",
+    description: "Clinical medicine, nursing, pharmacy, surgery, and health sciences",
+    specialties: [
+      "General Medicine & Clinical Practice",
+      "Surgery & Surgical Specialties",
+      "Nursing & Midwifery",
+      "Pharmacy & Pharmacology",
+      "Dental Studies & Oral Surgery",
+      "Medical Diagnostic & Imaging Technology",
+      "Therapy & Physical Rehabilitation",
+      "Public Health & Epidemiology",
+      "Biomedical Engineering & Health Informatics",
+      "Psychiatry & Mental Health Care",
+      "Pediatrics & Child Healthcare",
+    ],
+  },
+  {
+    id: "law_governance",
+    name: "Law, Legal & Governance",
+    description: "Corporate law, litigation, policy, criminology, and public administration",
+    specialties: [
+      "Corporate & Commercial Law",
+      "Civil Litigation & Dispute Resolution",
+      "Criminal Law & Criminology",
+      "Constitutional & Public Law",
+      "Intellectual Property & Patent Law",
+      "International Law & Human Rights",
+      "Public Policy & Political Governance",
+      "Legal Tech & Compliance",
+    ],
+  },
+  {
+    id: "business_finance",
+    name: "Business, Finance & Management",
+    description: "Executive management, finance, banking, economics, and marketing",
+    specialties: [
+      "Product Management & Strategy",
+      "Management & Business Administration",
+      "Finance, Banking & Investment",
+      "Accounting, Auditing & Taxation",
+      "Marketing, Brand Strategy & Advertising",
+      "Economics & Market Analysis",
+      "Operations & Supply Chain Management",
+      "Human Resources & Talent Leadership",
+      "Entrepreneurship & Venture Capital",
+    ],
+  },
+  {
+    id: "visual_arts_design",
+    name: "Visual Arts, Product & Design",
+    description: "UI/UX, graphic design, illustration, 3D modeling, and fashion",
+    specialties: [
+      "UI/UX & Product Design",
+      "Graphic & Brand Identity Design",
+      "Fine Arts & Visual Expression",
+      "3D Modeling, Motion & Visual Effects",
+      "Industrial, Hardware & Product Design",
+      "Typography & Editorial Design",
+      "Fashion, Textiles & Apparel Design",
+      "Game Design & Interactive Media",
+      "Concept Art & Digital Illustration",
+      "Ceramics, Glass & Artisan Craft",
+    ],
+  },
+  {
+    id: "media_audio_film",
+    name: "Media, Film & Audio",
+    description: "Cinematography, audio engineering, music, journalism, and broadcasting",
+    specialties: [
+      "Audio-Visual Techniques & Media Production",
+      "Documentary & Street Photography",
+      "Commercial & Portrait Photography",
+      "Sound Design & Audio Engineering",
+      "Music Composition & Performance",
+      "Cinematography, Directing & Editing",
+      "Journalism, Reporting & Editorial Media",
+      "Animation & Storyboarding",
+      "Podcast Production & Sound Art",
+    ],
+  },
+  {
+    id: "engineering_industry",
+    name: "Engineering & Industry",
+    description: "Mechanical, electrical, chemical, materials, and aerospace engineering",
+    specialties: [
+      "Mechanical Engineering & Metal Trades",
+      "Electrical & Electronic Engineering",
+      "Automation, Mechatronics & Control Systems",
+      "Chemical & Process Engineering",
+      "Materials & Polymer Science",
+      "Aerospace & Automotive Engineering",
+      "Renewable Energy & Power Systems",
+      "Industrial & Manufacturing Operations",
+      "Environmental Protection Technology",
+    ],
+  },
+  {
+    id: "education_pedagogy",
+    name: "Education & Pedagogy",
+    description: "Academic research, teaching, curriculum design, and educational leadership",
+    specialties: [
+      "Higher Education & Academic Research",
+      "Secondary & Primary Education",
+      "Educational Technology & Instructional Design",
+      "Curriculum Development & Pedagogy",
+      "Special Education & Learning Support",
+      "Corporate Training & Professional Coaching",
+    ],
+  },
+  {
+    id: "natural_sciences",
+    name: "Natural Sciences & Mathematics",
+    description: "Physics, chemistry, biology, earth sciences, and mathematics",
+    specialties: [
+      "Physics & Quantum Mechanics",
+      "Chemistry & Biochemistry",
+      "Biology, Genetics & Microbiology",
+      "Earth Sciences & Geology",
+      "Mathematics & Theoretical Modeling",
+      "Statistics & Quantitative Research",
+      "Environmental Science & Ecology",
+      "Astronomy & Astrophysics",
+    ],
+  },
+  {
+    id: "social_humanities",
+    name: "Social Sciences & Humanities",
+    description: "Sociology, psychology, philosophy, literature, and history",
+    specialties: [
+      "Psychology & Behavioral Science",
+      "Sociology & Cultural Anthropology",
+      "Philosophy, Ethics & Critical Theory",
+      "History & Archaeology",
+      "Literature, Linguistics & Creative Writing",
+      "Social Work & Community Development",
+      "International Relations & Diplomacy",
+    ],
+  },
+  {
+    id: "agriculture_veterinary",
+    name: "Agriculture, Bio & Veterinary",
+    description: "Agricultural science, veterinary medicine, forestry, and ecology",
+    specialties: [
+      "Veterinary Medicine & Animal Care",
+      "Agricultural Science & Crop Production",
+      "Horticulture & Plant Science",
+      "Forestry & Natural Resource Management",
+      "Marine Biology & Fisheries Science",
+      "Wildlife Conservation & Ecology",
+    ],
+  },
+];
 
+export const ALL_SPECIALTIES: string[] = SPECIALTY_CATEGORIES.flatMap((c) => c.specialties);
+
+// Legacy export retained for backwards compatibility
+export const CREATIVE_SPECIALTIES = ALL_SPECIALTIES;
+export type CreativeSpecialty = string;

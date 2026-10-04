@@ -113,31 +113,30 @@ export const CredentialForm: React.FC<CredentialFormProps> = ({
         )}
       </div>
 
-      {/* Issue Date & Expiration Date */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div>
-          <label className="block font-gothic text-xs font-bold uppercase tracking-[0.12em] text-slate-dark mb-1.5">
-            Issue Date
-          </label>
-          <input
-            type="month"
-            value={issueDate}
-            onChange={(e) => setIssueDate(e.target.value)}
-            className="w-full px-3.5 py-2.5 rounded-xl bg-ivory-medium border border-stone/60 text-sm text-slate-dark focus:outline-none focus:ring-1 focus:ring-slate-dark"
-          />
-        </div>
+      {/* Issue Date */}
+      <div>
+        <label className="block font-gothic text-xs font-bold uppercase tracking-[0.12em] text-slate-dark mb-1.5">
+          Issue Date
+        </label>
+        <input
+          type="month"
+          value={issueDate}
+          onChange={(e) => setIssueDate(e.target.value)}
+          className="w-full px-3.5 py-2.5 rounded-xl bg-ivory-medium border border-stone/60 text-sm text-slate-dark focus:outline-none focus:ring-1 focus:ring-slate-dark"
+        />
+      </div>
 
-        <div>
-          <label className="block font-gothic text-xs font-bold uppercase tracking-[0.12em] text-slate-dark mb-1.5">
-            Expiration Date
-          </label>
-          <input
-            type="month"
-            value={expiryDate}
-            onChange={(e) => setExpiryDate(e.target.value)}
-            className="w-full px-3.5 py-2.5 rounded-xl bg-ivory-medium border border-stone/60 text-sm text-slate-dark focus:outline-none focus:ring-1 focus:ring-slate-dark"
-          />
-        </div>
+      {/* Expiration Date */}
+      <div>
+        <label className="block font-gothic text-xs font-bold uppercase tracking-[0.12em] text-slate-dark mb-1.5">
+          Expiration Date
+        </label>
+        <input
+          type="month"
+          value={expiryDate}
+          onChange={(e) => setExpiryDate(e.target.value)}
+          className="w-full px-3.5 py-2.5 rounded-xl bg-ivory-medium border border-stone/60 text-sm text-slate-dark focus:outline-none focus:ring-1 focus:ring-slate-dark"
+        />
       </div>
 
       {/* Credential ID */}

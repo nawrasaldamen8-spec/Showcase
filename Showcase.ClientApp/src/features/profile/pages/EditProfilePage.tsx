@@ -76,7 +76,7 @@ export const EditProfilePage: React.FC = () => {
         </h1>
 
         <p className="font-serif text-sm sm:text-base text-slate-dark/75 leading-relaxed">
-          Update your photo, name, specialty, and bio shown across Showcase.
+          Update your portrait, identity, specialty, and biography across Pority.
         </p>
       </header>
 
@@ -149,12 +149,11 @@ export const EditProfilePage: React.FC = () => {
             onNotify={handleNotify}
           />
 
-          <div className="pt-6 border-t border-stone/50 flex flex-col sm:flex-row items-center justify-between gap-4 font-serif text-xs text-cloud-dark">
+          <div className="pt-6 border-t border-stone/50 flex items-center justify-between font-serif text-xs text-cloud-dark">
             <div className="flex items-center gap-2">
               <UserCheck className="h-4 w-4 text-cloud-dark" />
               <span>Signed in as: @{profile.username}</span>
             </div>
-            <span>Changes persist immediately</span>
           </div>
         </div>
       ) : null}

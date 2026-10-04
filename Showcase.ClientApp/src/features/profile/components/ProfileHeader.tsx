@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { Badge } from "@shared/components/Badge.tsx";
 import { ProgressiveImage } from "@shared/components/ProgressiveImage.tsx";
 import { VerifiedBadge } from "@shared/components/VerifiedBadge.tsx";
+import { useAuth, useToast } from "@shared/context/index.ts";
 import type { PublicProfileResponse } from "@shared/types/index.ts";
 import { ReportProfileModal } from "./ReportProfileModal.tsx";
 
@@ -15,6 +16,8 @@ export interface ProfileHeaderProps {
 
 export const ProfileHeader: React.FC<ProfileHeaderProps> = ({ profile, isOwnProfile, onShare }) => {
   const fullName = profile.name || `@${profile.username}`;
+  const { currentUser } = useAuth();
+  const { showToast } = useToast();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -65,11 +68,13 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({ profile, isOwnProf
               </h1>
               {profile.isVerified && <VerifiedBadge size="md" className="shrink-0" />}
             </div>
-            <div className="mt-1.5 sm:mt-2 flex items-center gap-2">
-              <Badge variant="stone" size="sm" className="max-w-[160px] truncate">
-                {profile.specialty || "Professional"}
-              </Badge>
-            </div>
+            {profile.specialty && profile.specialty.trim() !== "" && (
+              <div className="mt-1.5 sm:mt-2 flex items-center gap-2">
+                <Badge variant="stone" size="sm" className="max-w-[200px] truncate">
+                  {profile.specialty}
+                </Badge>
+              </div>
+            )}
           </div>
         </div>
 
@@ -132,6 +137,10 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({ profile, isOwnProf
                     type="button"
                     onClick={() => {
                       setIsMenuOpen(false);
+                      if (!currentUser) {
+                        showToast("warning", "Please sign in to report profiles.");
+                        return;
+                      }
                       setIsReportModalOpen(true);
                     }}
                     className="flex items-center gap-2.5 w-full px-3.5 py-2.5 rounded-xl font-gothic text-xs font-bold uppercase tracking-wider text-clay hover:bg-clay hover:text-ivory-light transition-colors cursor-pointer text-left"

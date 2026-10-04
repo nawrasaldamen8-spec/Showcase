@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Briefcase, Calendar, FileText } from "lucide-react";
 import { Button } from "@shared/components/Button.tsx";
 import type { CareerExperience } from "@shared/types/index.ts";
 
@@ -32,11 +33,11 @@ export const ExperienceForm: React.FC<ExperienceFormProps> = ({
     const errs: Record<string, string> = { ...errors };
 
     if (!field || field === "jobTitle") {
-      if (!jobTitle.trim()) errs.jobTitle = "Job title or role is required.";
+      if (!jobTitle.trim()) errs.jobTitle = "Role or title is required.";
       else delete errs.jobTitle;
     }
     if (!field || field === "company") {
-      if (!company.trim()) errs.company = "Company or studio name is required.";
+      if (!company.trim()) errs.company = "Studio or practice name is required.";
       else delete errs.company;
     }
     if (!field || field === "startDate") {
@@ -71,142 +72,171 @@ export const ExperienceForm: React.FC<ExperienceFormProps> = ({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5">
-      {/* Job Title */}
-      <div>
-        <label className="block font-gothic text-xs font-bold uppercase tracking-[0.12em] text-slate-dark mb-1.5">
-          Job Title / Role <span className="text-red-500 font-bold">*</span>
-        </label>
-        <input
-          type="text"
-          value={jobTitle}
-          onChange={(e) => {
-            setJobTitle(e.target.value);
-            if (errors.jobTitle) validate("jobTitle");
-          }}
-          onBlur={() => handleBlur("jobTitle")}
-          placeholder="e.g. Senior Software Engineer or Product Designer"
-          className={`w-full px-3.5 py-2.5 rounded-xl bg-ivory-medium border text-sm text-slate-dark focus:outline-none focus:ring-1 focus:ring-slate-dark ${
-            touched.jobTitle && errors.jobTitle ? "border-red-500 bg-red-50/20" : "border-stone/60"
-          }`}
-        />
-        {touched.jobTitle && errors.jobTitle && (
-          <p className="font-serif text-xs text-red-600 mt-1">{errors.jobTitle}</p>
-        )}
-      </div>
-
-      {/* Company / Studio */}
-      <div>
-        <label className="block font-gothic text-xs font-bold uppercase tracking-[0.12em] text-slate-dark mb-1.5">
-          Company / Organization <span className="text-red-500 font-bold">*</span>
-        </label>
-        <input
-          type="text"
-          value={company}
-          onChange={(e) => {
-            setCompany(e.target.value);
-            if (errors.company) validate("company");
-          }}
-          onBlur={() => handleBlur("company")}
-          placeholder="e.g. Acme Corp or TechStudio"
-          className={`w-full px-3.5 py-2.5 rounded-xl bg-ivory-medium border text-sm text-slate-dark focus:outline-none focus:ring-1 focus:ring-slate-dark ${
-            touched.company && errors.company ? "border-red-500 bg-red-50/20" : "border-stone/60"
-          }`}
-        />
-        {touched.company && errors.company && (
-          <p className="font-serif text-xs text-red-600 mt-1">{errors.company}</p>
-        )}
-      </div>
-
-      {/* Start Date & End Date */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div>
-          <label className="block font-gothic text-xs font-bold uppercase tracking-[0.12em] text-slate-dark mb-1.5">
-            Start Date <span className="text-red-500 font-bold">*</span>
-          </label>
-          <input
-            type="month"
-            value={startDate}
-            onChange={(e) => {
-              setStartDate(e.target.value);
-              if (errors.startDate) validate("startDate");
-            }}
-            onBlur={() => handleBlur("startDate")}
-            className={`w-full px-3.5 py-2.5 rounded-xl bg-ivory-medium border text-sm text-slate-dark focus:outline-none focus:ring-1 focus:ring-slate-dark ${
-              touched.startDate && errors.startDate ? "border-red-500 bg-red-50/20" : "border-stone/60"
-            }`}
-          />
-          {touched.startDate && errors.startDate && (
-            <p className="font-serif text-xs text-red-600 mt-1">{errors.startDate}</p>
-          )}
+    <form onSubmit={handleSubmit} className="space-y-8" noValidate>
+      {/* Phase 1: Role & Organization */}
+      <section className="space-y-4">
+        <div className="flex items-center gap-2 border-b border-stone/50 pb-2.5">
+          <Briefcase className="w-4 h-4 text-clay" />
+          <h3 className="font-gothic text-xs font-bold uppercase tracking-wider text-slate-dark">
+            Phase 1 &bull; Organization &amp; Role Identity
+          </h3>
         </div>
 
-        <div>
-          <label className="block font-gothic text-xs font-bold uppercase tracking-[0.12em] text-slate-dark mb-1.5">
-            End Date
-          </label>
-          <input
-            type="month"
-            value={endDate}
-            disabled={currentlyWorking}
-            onChange={(e) => setEndDate(e.target.value)}
-            className="w-full px-3.5 py-2.5 rounded-xl bg-ivory-medium border border-stone/60 text-sm text-slate-dark focus:outline-none focus:ring-1 focus:ring-slate-dark disabled:opacity-40 disabled:cursor-not-allowed"
-          />
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label className="block font-gothic text-xs font-bold uppercase tracking-[0.10em] text-slate-dark mb-1.5">
+              Role Title <span className="text-clay font-bold">*</span>
+            </label>
+            <input
+              type="text"
+              value={jobTitle}
+              onChange={(e) => {
+                setJobTitle(e.target.value);
+                if (errors.jobTitle) validate("jobTitle");
+              }}
+              onBlur={() => handleBlur("jobTitle")}
+              placeholder="e.g. Lead Architect, Urban Researcher"
+              className={`w-full px-4 py-2.5 rounded-xl bg-ivory-light border text-sm text-slate-dark focus:outline-none focus:ring-1 focus:ring-slate-dark min-h-[46px] ${
+                touched.jobTitle && errors.jobTitle ? "border-clay bg-clay/5" : "border-stone/70"
+              }`}
+            />
+            {touched.jobTitle && errors.jobTitle && (
+              <p className="font-serif text-xs text-clay mt-1">{errors.jobTitle}</p>
+            )}
+          </div>
+
+          <div>
+            <label className="block font-gothic text-xs font-bold uppercase tracking-[0.10em] text-slate-dark mb-1.5">
+              Practice or Studio <span className="text-clay font-bold">*</span>
+            </label>
+            <input
+              type="text"
+              value={company}
+              onChange={(e) => {
+                setCompany(e.target.value);
+                if (errors.company) validate("company");
+              }}
+              onBlur={() => handleBlur("company")}
+              placeholder="e.g. Studio Vance, Foster + Partners"
+              className={`w-full px-4 py-2.5 rounded-xl bg-ivory-light border text-sm text-slate-dark focus:outline-none focus:ring-1 focus:ring-slate-dark min-h-[46px] ${
+                touched.company && errors.company ? "border-clay bg-clay/5" : "border-stone/70"
+              }`}
+            />
+            {touched.company && errors.company && (
+              <p className="font-serif text-xs text-clay mt-1">{errors.company}</p>
+            )}
+          </div>
         </div>
-      </div>
+      </section>
 
-      {/* Currently Working Checkbox */}
-      <div className="pt-0.5">
-        <label className="inline-flex items-center gap-2.5 cursor-pointer select-none">
-          <input
-            type="checkbox"
-            checked={currentlyWorking}
-            onChange={(e) => setCurrentlyWorking(e.target.checked)}
-            className="w-4 h-4 rounded text-clay focus:ring-0 focus:ring-offset-0 cursor-pointer"
-          />
-          <span className="font-gothic text-xs font-semibold text-slate-dark">
-            I currently work in this role
-          </span>
-        </label>
-      </div>
+      {/* Phase 2: Duration & Timeline */}
+      <section className="space-y-4">
+        <div className="flex items-center gap-2 border-b border-stone/50 pb-2.5">
+          <Calendar className="w-4 h-4 text-clay" />
+          <h3 className="font-gothic text-xs font-bold uppercase tracking-wider text-slate-dark">
+            Phase 2 &bull; Timeframe &amp; Status
+          </h3>
+        </div>
 
-      {/* Description */}
-      <div>
-        <label className="block font-gothic text-xs font-bold uppercase tracking-[0.12em] text-slate-dark mb-1.5">
-          Description
-        </label>
-        <textarea
-          rows={3}
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          placeholder="Describe your responsibilities, projects, and impact..."
-          className="w-full px-3.5 py-2.5 rounded-xl bg-ivory-medium border border-stone/60 text-sm text-slate-dark focus:outline-none focus:ring-1 focus:ring-slate-dark resize-none"
-        />
-      </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label className="block font-gothic text-xs font-bold uppercase tracking-[0.10em] text-slate-dark mb-1.5">
+              Start Date <span className="text-clay font-bold">*</span>
+            </label>
+            <input
+              type="month"
+              value={startDate}
+              onChange={(e) => {
+                setStartDate(e.target.value);
+                if (errors.startDate) validate("startDate");
+              }}
+              onBlur={() => handleBlur("startDate")}
+              className={`w-full px-4 py-2.5 rounded-xl bg-ivory-light border text-sm text-slate-dark focus:outline-none focus:ring-1 focus:ring-slate-dark min-h-[46px] ${
+                touched.startDate && errors.startDate ? "border-clay bg-clay/5" : "border-stone/70"
+              }`}
+            />
+            {touched.startDate && errors.startDate && (
+              <p className="font-serif text-xs text-clay mt-1">{errors.startDate}</p>
+            )}
+          </div>
 
-      {/* Key Achievements */}
-      <div>
-        <label className="block font-gothic text-xs font-bold uppercase tracking-[0.12em] text-slate-dark mb-1.5">
-          Key Achievements
-        </label>
-        <input
-          type="text"
-          value={achievements}
-          onChange={(e) => setAchievements(e.target.value)}
-          placeholder="e.g. Increased system performance by 40% or Led redesign initiative"
-          className="w-full px-3.5 py-2.5 rounded-xl bg-ivory-medium border border-stone/60 text-sm text-slate-dark focus:outline-none focus:ring-1 focus:ring-slate-dark"
-        />
-      </div>
+          <div>
+            <label className="block font-gothic text-xs font-bold uppercase tracking-[0.10em] text-slate-dark mb-1.5">
+              End Date
+            </label>
+            <input
+              type="month"
+              value={endDate}
+              disabled={currentlyWorking}
+              onChange={(e) => setEndDate(e.target.value)}
+              className="w-full px-4 py-2.5 rounded-xl bg-ivory-light border border-stone/70 text-sm text-slate-dark focus:outline-none focus:ring-1 focus:ring-slate-dark disabled:opacity-40 disabled:cursor-not-allowed min-h-[46px]"
+            />
+          </div>
+        </div>
 
-      {/* Form Actions */}
-      <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2.5 sm:gap-3 pt-5 border-t border-stone/40">
+        {/* Currently Working Toggle */}
+        <div className="pt-1">
+          <label className="inline-flex items-center gap-2.5 cursor-pointer select-none">
+            <input
+              type="checkbox"
+              checked={currentlyWorking}
+              onChange={(e) => setCurrentlyWorking(e.target.checked)}
+              className="w-4 h-4 rounded text-clay focus:ring-0 focus:ring-offset-0 cursor-pointer accent-clay"
+            />
+            <span className="font-gothic text-xs font-semibold uppercase tracking-wider text-slate-dark">
+              I currently practice in this role
+            </span>
+          </label>
+        </div>
+      </section>
+
+      {/* Phase 3: Curatorial Narrative & Key Contributions */}
+      <section className="space-y-4">
+        <div className="flex items-center gap-2 border-b border-stone/50 pb-2.5">
+          <FileText className="w-4 h-4 text-clay" />
+          <h3 className="font-gothic text-xs font-bold uppercase tracking-wider text-slate-dark">
+            Phase 3 &bull; Narrative &amp; Key Contributions
+          </h3>
+        </div>
+
+        <div className="space-y-4">
+          <div>
+            <label className="block font-gothic text-xs font-bold uppercase tracking-[0.10em] text-slate-dark mb-1.5">
+              Role Narrative &amp; Practice Focus <span className="font-serif text-[11px] font-normal text-cloud-dark">(Optional)</span>
+            </label>
+            <textarea
+              rows={4}
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Detail your architectural leadership, spatial responsibilities, design teams managed..."
+              className="w-full px-4 py-3 rounded-xl bg-ivory-light border border-stone/70 font-serif text-sm text-slate-dark focus:outline-none focus:ring-1 focus:ring-slate-dark resize-none leading-relaxed shadow-none"
+            />
+          </div>
+
+          <div>
+            <label className="block font-gothic text-xs font-bold uppercase tracking-[0.10em] text-slate-dark mb-1.5">
+              Key Achievements &amp; Built Milestones <span className="font-serif text-[11px] font-normal text-cloud-dark">(Optional)</span>
+            </label>
+            <input
+              type="text"
+              value={achievements}
+              onChange={(e) => setAchievements(e.target.value)}
+              placeholder="e.g. Delivered 45,000 sqm cultural pavilion; AIA Honor Award recipient"
+              className="w-full px-4 py-2.5 rounded-xl bg-ivory-light border border-stone/70 text-sm text-slate-dark focus:outline-none focus:ring-1 focus:ring-slate-dark min-h-[46px]"
+            />
+          </div>
+        </div>
+      </section>
+
+      {/* Form Action Buttons (Mobile-first full width, Desktop side-by-side) */}
+      <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-3 pt-6 border-t border-stone/50">
         <Button
           type="button"
           variant="outline"
           size="md"
           onClick={onCancel}
           disabled={isSaving}
-          className="shadow-none uppercase tracking-wider text-xs font-bold w-full sm:w-auto"
+          className="shadow-none uppercase tracking-wider text-xs font-bold w-full sm:w-auto min-h-[46px]"
         >
           Cancel
         </Button>
@@ -215,9 +245,10 @@ export const ExperienceForm: React.FC<ExperienceFormProps> = ({
           variant="clay"
           size="md"
           disabled={isSaving}
-          className="shadow-none uppercase tracking-wider text-xs font-bold w-full sm:w-auto"
+          isLoading={isSaving}
+          className="shadow-none uppercase tracking-wider text-xs font-bold w-full sm:w-auto min-h-[46px]"
         >
-          {isSaving ? "Saving..." : isEditing ? "Update Experience" : "Save Experience"}
+          {isEditing ? "Update Experience" : "Save Milestone"}
         </Button>
       </div>
     </form>

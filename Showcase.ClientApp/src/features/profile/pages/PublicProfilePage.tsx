@@ -216,16 +216,18 @@ export const PublicProfilePage: React.FC = () => {
 
   return (
     <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-10">
-      <nav className="mb-6" aria-label="Breadcrumb navigation">
-        <button
-          type="button"
-          onClick={handleBack}
-          className="inline-flex items-center gap-2 font-gothic text-xs font-semibold uppercase tracking-[0.12em] text-cloud-dark hover:text-slate-dark transition-colors group cursor-pointer bg-transparent border-none p-0"
-        >
-          <ArrowLeft className="h-3.5 w-3.5 transition-transform group-hover:-translate-x-1" />
-          <span>{backLabel}</span>
-        </button>
-      </nav>
+      {fromState?.from && (
+        <nav className="mb-6" aria-label="Breadcrumb navigation">
+          <button
+            type="button"
+            onClick={handleBack}
+            className="inline-flex items-center gap-2 font-gothic text-xs font-semibold uppercase tracking-[0.12em] text-cloud-dark hover:text-slate-dark transition-colors group cursor-pointer bg-transparent border-none p-0"
+          >
+            <ArrowLeft className="h-3.5 w-3.5 transition-transform group-hover:-translate-x-1" />
+            <span>{backLabel}</span>
+          </button>
+        </nav>
+      )}
 
       <ProfileHeader profile={profile} isOwnProfile={isOwnProfile} onShare={handleShare} />
 
