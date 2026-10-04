@@ -185,6 +185,16 @@ public class Profile : BaseEntity
         Touch();
     }
 
+    public Result ToggleCareerSection(string section, bool isVisible)
+    {
+        var result = CareerVisibility.ToggleSection(section, isVisible);
+        if (result.IsSuccess)
+        {
+            Touch();
+        }
+        return result;
+    }
+
     public SocialLink AddSocialLink(string platform, Url url, int? displayOrder = null)
     {
         var order = displayOrder ?? (_socialLinks.Count > 0 ? _socialLinks.Max(x => x.DisplayOrder) + 1 : 0);
@@ -236,9 +246,10 @@ public class Profile : BaseEntity
         string? description = null,
         string? achievements = null,
         string? employmentType = null,
-        string? location = null)
+        string? location = null,
+        IEnumerable<string>? skillsUsed = null)
     {
-        var experience = new Experience(Id, jobTitle, company, period, description, achievements, employmentType, location);
+        var experience = new Experience(Id, jobTitle, company, period, description, achievements, employmentType, location, skillsUsed);
         _experiences.Add(experience);
         Touch();
         return experience;

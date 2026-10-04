@@ -62,12 +62,29 @@ public sealed record DateRange
             return false;
 
         var trimmed = value.Trim();
-        if (trimmed.Length > MaxLength)
+        if (trimmed.Length > 50)
             return false;
 
-        // Tolerates an ISO timestamp such as "2024-01-15T10:30:00Z" by dropping the time part.
-        var datePart = trimmed.Split('T')[0].Trim();
+        // 1. Direct standard date formats (yyyy-MM-dd, yyyy-MM)
+        if (DateOnly.TryParseExact(
+            trimmed,
+            AcceptedDateFormats,
+            CultureInfo.InvariantCulture,
+            DateTimeStyles.None,
+            out parsed))
+        {
+            return true;
+        }
 
+        // 2. Full ISO 8601 strings with time and/or timezone offsets (e.g. 2024-04-30T22:00:00Z)
+        if (DateTimeOffset.TryParse(trimmed, CultureInfo.InvariantCulture, DateTimeStyles.None, out var dto))
+        {
+            parsed = DateOnly.FromDateTime(dto.UtcDateTime);
+            return true;
+        }
+
+        // 3. Fallback: extract date component before 'T'
+        var datePart = trimmed.Split('T')[0].Trim();
         return DateOnly.TryParseExact(
             datePart,
             AcceptedDateFormats,

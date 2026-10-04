@@ -39,4 +39,24 @@ public class CareerVisibility : BaseEntity
         Languages = languages;
         Achievements = achievements;
     }
+
+    public Showcase.Domain.Common.Results.Result ToggleSection(string section, bool isVisible)
+    {
+        if (string.IsNullOrWhiteSpace(section))
+            return Showcase.Domain.Common.Results.Error.Validation("CareerVisibility.InvalidSection", "Career section name is required.");
+
+        switch (section.Trim().ToLowerInvariant())
+        {
+            case "experience": Experience = isVisible; break;
+            case "academics": Academics = isVisible; break;
+            case "skills": Skills = isVisible; break;
+            case "credentials": Credentials = isVisible; break;
+            case "languages": Languages = isVisible; break;
+            case "achievements": Achievements = isVisible; break;
+            default:
+                return Showcase.Domain.Common.Results.Error.Validation("CareerVisibility.InvalidSection", $"Unknown career section: '{section}'.");
+        }
+
+        return Showcase.Domain.Common.Results.Result.Success();
+    }
 }

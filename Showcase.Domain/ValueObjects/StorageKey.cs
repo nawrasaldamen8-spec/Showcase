@@ -1,3 +1,4 @@
+using System;
 using Showcase.Domain.Common.Results;
 
 namespace Showcase.Domain.ValueObjects;
@@ -33,6 +34,30 @@ public sealed record StorageKey
         return result.IsSuccess
             ? Result.Success<StorageKey?>(result.Value)
             : Result.Failure<StorageKey?>(result.Error);
+    }
+
+    public static string GetExtensionForContentType(string contentType)
+    {
+        return (contentType ?? string.Empty).Trim().ToLowerInvariant() switch
+        {
+            "image/jpeg" => "jpg",
+            "image/png" => "png",
+            "image/webp" => "webp",
+            "image/gif" => "gif",
+            _ => "jpg"
+        };
+    }
+
+    public static StorageKey ForPostImage(string userId, Guid postId, string contentType)
+    {
+        var ext = GetExtensionForContentType(contentType);
+        return new StorageKey($"media/posts/{userId.Trim()}/{postId}/{Guid.NewGuid():N}.{ext}");
+    }
+
+    public static StorageKey ForAvatar(string userId, string contentType)
+    {
+        var ext = GetExtensionForContentType(contentType);
+        return new StorageKey($"media/avatars/{userId.Trim()}/{Guid.NewGuid():N}.{ext}");
     }
 
     public override string ToString() => Value;

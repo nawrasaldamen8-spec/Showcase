@@ -29,7 +29,8 @@ public class Experience : BaseEntity
         string? description = null,
         string? achievements = null,
         string? employmentType = null,
-        string? location = null)
+        string? location = null,
+        IEnumerable<string>? skillsUsed = null)
     {
         if (profileId == Guid.Empty)
             throw new ArgumentException("ProfileId is required.", nameof(profileId));
@@ -37,6 +38,10 @@ public class Experience : BaseEntity
         Period = period ?? throw new ArgumentNullException(nameof(period));
         ProfileId = profileId;
         Update(jobTitle, company, period, description, achievements, employmentType, location);
+        if (skillsUsed is not null)
+        {
+            SetSkillsUsed(skillsUsed);
+        }
     }
 
     public void Update(
