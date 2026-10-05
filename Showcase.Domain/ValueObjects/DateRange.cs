@@ -1,7 +1,3 @@
-using System;
-using System.Globalization;
-using Showcase.Domain.Common.Results;
-
 namespace Showcase.Domain.ValueObjects;
 
 /// <summary>

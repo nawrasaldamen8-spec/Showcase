@@ -1,5 +1,3 @@
-using System;
-
 namespace Showcase.Domain.Entities;
 
 public class Country

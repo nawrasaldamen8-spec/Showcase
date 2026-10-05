@@ -1,5 +1,3 @@
-using Showcase.Domain.Common.Results;
-
 namespace Showcase.Domain.Common.Errors;
 
 public static class AdminErrors

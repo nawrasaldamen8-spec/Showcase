@@ -1,0 +1,13 @@
+global using System;
+global using System.Collections.Generic;
+global using System.Diagnostics.CodeAnalysis;
+global using System.Globalization;
+global using System.Linq;
+global using System.Threading;
+global using System.Threading.Tasks;
+global using Showcase.Domain.Common.BaseEntity;
+global using Showcase.Domain.Common.Errors;
+global using Showcase.Domain.Common.Results;
+global using Showcase.Domain.Constants;
+global using Showcase.Domain.Enums;
+global using Showcase.Domain.ValueObjects;

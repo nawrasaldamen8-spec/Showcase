@@ -1,7 +1,3 @@
-using System;
-using Showcase.Domain.Common.BaseEntity;
-using Showcase.Domain.ValueObjects;
-
 namespace Showcase.Domain.Entities;
 
 public class Achievement : BaseEntity

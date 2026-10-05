@@ -1,7 +1,3 @@
-using System;
-using Showcase.Domain.Common.Results;
-using Showcase.Domain.Enums;
-
 namespace Showcase.Domain.Entities;
 
 public static class ProfileErrors

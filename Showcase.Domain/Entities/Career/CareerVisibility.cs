@@ -1,6 +1,3 @@
-using System;
-using Showcase.Domain.Common.BaseEntity;
-
 namespace Showcase.Domain.Entities;
 
 /// <summary>Per-section visibility switches for the public profile. Defaults to visible everywhere.</summary>

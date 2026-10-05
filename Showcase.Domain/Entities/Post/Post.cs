@@ -1,11 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using Showcase.Domain.Common.BaseEntity;
-using Showcase.Domain.Common.Results;
-using Showcase.Domain.Enums;
-using Showcase.Domain.ValueObjects;
-
 namespace Showcase.Domain.Entities;
 
 public class Post : BaseEntity

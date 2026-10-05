@@ -1,8 +1,3 @@
-using System;
-using Showcase.Domain.Common.BaseEntity;
-using Showcase.Domain.Common.Results;
-using Showcase.Domain.Enums;
-
 namespace Showcase.Domain.Entities;
 
 public class FeaturedRequest : BaseEntity

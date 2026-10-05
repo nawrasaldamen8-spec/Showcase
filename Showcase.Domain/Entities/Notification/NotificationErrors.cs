@@ -1,6 +1,3 @@
-using System;
-using Showcase.Domain.Common.Results;
-
 namespace Showcase.Domain.Entities;
 
 public static class NotificationErrors

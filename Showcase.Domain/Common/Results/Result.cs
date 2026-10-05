@@ -1,5 +1,3 @@
-using System.Diagnostics.CodeAnalysis;
-
 namespace Showcase.Domain.Common.Results;
 
 public class Result

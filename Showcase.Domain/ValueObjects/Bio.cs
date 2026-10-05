@@ -1,5 +1,3 @@
-using Showcase.Domain.Common.Results;
-
 namespace Showcase.Domain.ValueObjects;
 
 public sealed record Bio

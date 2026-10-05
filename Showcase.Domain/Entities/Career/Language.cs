@@ -1,7 +1,3 @@
-using System;
-using Showcase.Domain.Common.BaseEntity;
-using Showcase.Domain.Enums;
-
 namespace Showcase.Domain.Entities;
 
 public class Language : BaseEntity

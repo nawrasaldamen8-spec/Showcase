@@ -1,6 +1,3 @@
-using System;
-using Showcase.Domain.Common.BaseEntity;
-
 namespace Showcase.Domain.Entities;
 
 public class Tag : BaseEntity
