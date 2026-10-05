@@ -1,8 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using Showcase.Domain.Entities;
-
 namespace Showcase.Application.Features.Career.Common;
 
 public static class CareerMappingExtensions

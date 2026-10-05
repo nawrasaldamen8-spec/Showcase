@@ -1,16 +1,7 @@
-using System;
-using System.Threading;
-using System.Threading.Tasks;
-using FluentValidation;
-using MediatR;
-using Microsoft.EntityFrameworkCore;
-using Showcase.Application.Common.Extensions;
-using Showcase.Application.Common.Interfaces;
 using Showcase.Application.Features.Career.Common;
-using Showcase.Domain.Common.Results;
-using Showcase.Domain.Entities;
 
 namespace Showcase.Application.Features.Career.Commands;
+
 using Showcase.Application.Features.Career.Common;
 
 public record CreateSkillCommand(
@@ -27,18 +18,12 @@ public class CreateSkillCommandValidator : AbstractValidator<CreateSkillCommand>
     }
 }
 
-public class CreateSkillCommandHandler : IRequestHandler<CreateSkillCommand, Result<CareerSkillDto>>
+public class CreateSkillCommandHandler(
+    ICurrentUserService currentUserService,
+    IApplicationDbContext context) : IRequestHandler<CreateSkillCommand, Result<CareerSkillDto>>
 {
-    private readonly ICurrentUserService _currentUserService;
-    private readonly IApplicationDbContext _context;
-
-    public CreateSkillCommandHandler(
-        ICurrentUserService currentUserService,
-        IApplicationDbContext context)
-    {
-        _currentUserService = currentUserService;
-        _context = context;
-    }
+    private readonly ICurrentUserService _currentUserService = currentUserService;
+    private readonly IApplicationDbContext _context = context;
 
     public async Task<Result<CareerSkillDto>> Handle(CreateSkillCommand request, CancellationToken ct)
     {

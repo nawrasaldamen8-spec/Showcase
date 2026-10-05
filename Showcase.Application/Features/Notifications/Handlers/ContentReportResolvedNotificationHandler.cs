@@ -1,28 +1,14 @@
-using System;
-using System.Threading;
-using System.Threading.Tasks;
-using MediatR;
-using Microsoft.EntityFrameworkCore;
-using Showcase.Application.Common.Interfaces;
 using Showcase.Application.Features.Notifications.Common;
 using Showcase.Application.Features.Notifications.Events;
-using Showcase.Domain.Entities;
-using Showcase.Domain.Enums;
 
 namespace Showcase.Application.Features.Notifications.Handlers;
 
-public class ContentReportResolvedNotificationHandler : INotificationHandler<ContentReportResolvedNotificationEvent>
+public class ContentReportResolvedNotificationHandler(
+    IApplicationDbContext context,
+    IRealtimeNotifier realtimeNotifier) : INotificationHandler<ContentReportResolvedNotificationEvent>
 {
-    private readonly IApplicationDbContext _context;
-    private readonly IRealtimeNotifier _realtimeNotifier;
-
-    public ContentReportResolvedNotificationHandler(
-        IApplicationDbContext context,
-        IRealtimeNotifier realtimeNotifier)
-    {
-        _context = context;
-        _realtimeNotifier = realtimeNotifier;
-    }
+    private readonly IApplicationDbContext _context = context;
+    private readonly IRealtimeNotifier _realtimeNotifier = realtimeNotifier;
 
     public async Task Handle(ContentReportResolvedNotificationEvent notification, CancellationToken ct)
     {

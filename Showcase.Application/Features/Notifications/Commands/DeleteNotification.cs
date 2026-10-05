@@ -1,28 +1,15 @@
-using System;
-using System.Threading;
-using System.Threading.Tasks;
-using MediatR;
-using Microsoft.EntityFrameworkCore;
-using Showcase.Application.Common.Interfaces;
-using Showcase.Domain.Common.Results;
-
 namespace Showcase.Application.Features.Notifications.Commands;
+
 using Showcase.Application.Features.Notifications.Common;
 
 public record DeleteNotificationCommand(Guid Id) : IRequest<Result>;
 
-public class DeleteNotificationCommandHandler : IRequestHandler<DeleteNotificationCommand, Result>
+public class DeleteNotificationCommandHandler(
+    ICurrentUserService currentUserService,
+    IApplicationDbContext context) : IRequestHandler<DeleteNotificationCommand, Result>
 {
-    private readonly ICurrentUserService _currentUserService;
-    private readonly IApplicationDbContext _context;
-
-    public DeleteNotificationCommandHandler(
-        ICurrentUserService currentUserService,
-        IApplicationDbContext context)
-    {
-        _currentUserService = currentUserService;
-        _context = context;
-    }
+    private readonly ICurrentUserService _currentUserService = currentUserService;
+    private readonly IApplicationDbContext _context = context;
 
     public async Task<Result> Handle(DeleteNotificationCommand request, CancellationToken ct)
     {

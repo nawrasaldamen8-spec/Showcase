@@ -1,13 +1,3 @@
-using FluentValidation;
-using MediatR;
-using Microsoft.EntityFrameworkCore;
-using Showcase.Application.Common.Interfaces;
-using Showcase.Domain.Common.Results;
-using Showcase.Domain.Entities;
-using Showcase.Domain.ValueObjects;
-using System.Threading;
-using System.Threading.Tasks;
-
 namespace Showcase.Application.Features.Profiles.Commands;
 
 
@@ -20,18 +10,12 @@ public record UpdateProfileCommand(
 
 
 
-public class UpdateProfileCommandHandler : IRequestHandler<UpdateProfileCommand, Result>
+public class UpdateProfileCommandHandler(
+    IApplicationDbContext context,
+    ICurrentUserService currentUserService) : IRequestHandler<UpdateProfileCommand, Result>
 {
-    private readonly IApplicationDbContext _context;
-    private readonly ICurrentUserService _currentUserService;
-
-    public UpdateProfileCommandHandler(
-        IApplicationDbContext context,
-        ICurrentUserService currentUserService)
-    {
-        _context = context;
-        _currentUserService = currentUserService;
-    }
+    private readonly IApplicationDbContext _context = context;
+    private readonly ICurrentUserService _currentUserService = currentUserService;
 
     public async Task<Result> Handle(UpdateProfileCommand request, CancellationToken ct)
     {

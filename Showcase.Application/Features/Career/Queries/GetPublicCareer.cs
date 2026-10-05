@@ -1,35 +1,19 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using MediatR;
-using Microsoft.EntityFrameworkCore;
-using Showcase.Application.Common.Interfaces;
 using Showcase.Application.Features.Career.Common;
-using Showcase.Domain.Common.Results;
-using Showcase.Domain.Entities;
 
 namespace Showcase.Application.Features.Career.Queries;
+
 using Showcase.Application.Features.Career.Common;
 
 public record GetPublicCareerQuery(string? Username = null) : IRequest<Result<PublicCareerDataResponse>>;
 
-public class GetPublicCareerQueryHandler : IRequestHandler<GetPublicCareerQuery, Result<PublicCareerDataResponse>>
+public class GetPublicCareerQueryHandler(
+    ICurrentUserService currentUserService,
+    IIdentityService identityService,
+    IApplicationDbContext context) : IRequestHandler<GetPublicCareerQuery, Result<PublicCareerDataResponse>>
 {
-    private readonly ICurrentUserService _currentUserService;
-    private readonly IIdentityService _identityService;
-    private readonly IApplicationDbContext _context;
-
-    public GetPublicCareerQueryHandler(
-        ICurrentUserService currentUserService,
-        IIdentityService identityService,
-        IApplicationDbContext context)
-    {
-        _currentUserService = currentUserService;
-        _identityService = identityService;
-        _context = context;
-    }
+    private readonly ICurrentUserService _currentUserService = currentUserService;
+    private readonly IIdentityService _identityService = identityService;
+    private readonly IApplicationDbContext _context = context;
 
     public async Task<Result<PublicCareerDataResponse>> Handle(GetPublicCareerQuery request, CancellationToken ct)
     {

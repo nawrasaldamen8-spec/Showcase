@@ -1,14 +1,3 @@
-using System;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using MediatR;
-using Microsoft.EntityFrameworkCore;
-using Showcase.Application.Common.Interfaces;
-using Showcase.Domain.Common.Results;
-using Showcase.Domain.Entities;
-using Showcase.Domain.Enums;
-
 namespace Showcase.Application.Features.Analytics;
 
 public record ProfileAnalyticsDto(
@@ -19,18 +8,12 @@ public record ProfileAnalyticsDto(
 
 public record GetProfileAnalyticsQuery : IRequest<Result<ProfileAnalyticsDto>>;
 
-public class GetProfileAnalyticsQueryHandler : IRequestHandler<GetProfileAnalyticsQuery, Result<ProfileAnalyticsDto>>
+public class GetProfileAnalyticsQueryHandler(
+    ICurrentUserService currentUserService,
+    IApplicationDbContext context) : IRequestHandler<GetProfileAnalyticsQuery, Result<ProfileAnalyticsDto>>
 {
-    private readonly ICurrentUserService _currentUserService;
-    private readonly IApplicationDbContext _context;
-
-    public GetProfileAnalyticsQueryHandler(
-        ICurrentUserService currentUserService,
-        IApplicationDbContext context)
-    {
-        _currentUserService = currentUserService;
-        _context = context;
-    }
+    private readonly ICurrentUserService _currentUserService = currentUserService;
+    private readonly IApplicationDbContext _context = context;
 
     public async Task<Result<ProfileAnalyticsDto>> Handle(GetProfileAnalyticsQuery request, CancellationToken ct)
     {

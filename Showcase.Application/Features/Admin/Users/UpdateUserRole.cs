@@ -1,15 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using FluentValidation;
-using MediatR;
-using Showcase.Application.Common.Interfaces;
-using Showcase.Domain.Common.Errors;
-using Showcase.Domain.Common.Results;
-using Showcase.Domain.Constants;
-
 namespace Showcase.Application.Features.Admin.Users;
 
 public record UpdateUserRoleCommand(
@@ -29,21 +17,14 @@ public class UpdateUserRoleCommandValidator : AbstractValidator<UpdateUserRoleCo
     }
 }
 
-public class UpdateUserRoleCommandHandler : IRequestHandler<UpdateUserRoleCommand, Result>
+public class UpdateUserRoleCommandHandler(
+    IIdentityService identityService,
+    ICurrentUserService currentUserService,
+    IAuditLogger auditLogger) : IRequestHandler<UpdateUserRoleCommand, Result>
 {
-    private readonly IIdentityService _identityService;
-    private readonly ICurrentUserService _currentUserService;
-    private readonly IAuditLogger _auditLogger;
-
-    public UpdateUserRoleCommandHandler(
-        IIdentityService identityService,
-        ICurrentUserService currentUserService,
-        IAuditLogger auditLogger)
-    {
-        _identityService = identityService;
-        _currentUserService = currentUserService;
-        _auditLogger = auditLogger;
-    }
+    private readonly IIdentityService _identityService = identityService;
+    private readonly ICurrentUserService _currentUserService = currentUserService;
+    private readonly IAuditLogger _auditLogger = auditLogger;
 
     public async Task<Result> Handle(UpdateUserRoleCommand request, CancellationToken ct)
     {

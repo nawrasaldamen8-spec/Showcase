@@ -1,32 +1,17 @@
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using MediatR;
-using Microsoft.EntityFrameworkCore;
-using Showcase.Application.Common.Interfaces;
 using Showcase.Application.Features.Admin.Common;
-using Showcase.Domain.Common.Results;
 
 namespace Showcase.Application.Features.Admin.Verifications;
 
 public record GetVerificationRequestsQuery : IRequest<Result<IReadOnlyList<VerificationRequestItemDto>>>;
 
-public class GetVerificationRequestsQueryHandler : IRequestHandler<GetVerificationRequestsQuery, Result<IReadOnlyList<VerificationRequestItemDto>>>
+public class GetVerificationRequestsQueryHandler(
+    IApplicationDbContext context,
+    IIdentityService identityService,
+    IStorageService storageService) : IRequestHandler<GetVerificationRequestsQuery, Result<IReadOnlyList<VerificationRequestItemDto>>>
 {
-    private readonly IApplicationDbContext _context;
-    private readonly IIdentityService _identityService;
-    private readonly IStorageService _storageService;
-
-    public GetVerificationRequestsQueryHandler(
-        IApplicationDbContext context,
-        IIdentityService identityService,
-        IStorageService storageService)
-    {
-        _context = context;
-        _identityService = identityService;
-        _storageService = storageService;
-    }
+    private readonly IApplicationDbContext _context = context;
+    private readonly IIdentityService _identityService = identityService;
+    private readonly IStorageService _storageService = storageService;
 
     public async Task<Result<IReadOnlyList<VerificationRequestItemDto>>> Handle(GetVerificationRequestsQuery request, CancellationToken ct)
     {

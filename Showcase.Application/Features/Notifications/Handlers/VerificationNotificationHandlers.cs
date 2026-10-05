@@ -1,27 +1,14 @@
-using System.Threading;
-using System.Threading.Tasks;
-using MediatR;
-using Microsoft.EntityFrameworkCore;
-using Showcase.Application.Common.Interfaces;
 using Showcase.Application.Features.Notifications.Common;
 using Showcase.Application.Features.Notifications.Events;
-using Showcase.Domain.Entities;
-using Showcase.Domain.Enums;
 
 namespace Showcase.Application.Features.Notifications.Handlers;
 
-public class VerificationApprovedNotificationHandler : INotificationHandler<VerificationApprovedNotificationEvent>
+public class VerificationApprovedNotificationHandler(
+    IApplicationDbContext context,
+    IRealtimeNotifier realtimeNotifier) : INotificationHandler<VerificationApprovedNotificationEvent>
 {
-    private readonly IApplicationDbContext _context;
-    private readonly IRealtimeNotifier _realtimeNotifier;
-
-    public VerificationApprovedNotificationHandler(
-        IApplicationDbContext context,
-        IRealtimeNotifier realtimeNotifier)
-    {
-        _context = context;
-        _realtimeNotifier = realtimeNotifier;
-    }
+    private readonly IApplicationDbContext _context = context;
+    private readonly IRealtimeNotifier _realtimeNotifier = realtimeNotifier;
 
     public async Task Handle(VerificationApprovedNotificationEvent notification, CancellationToken ct)
     {
@@ -43,18 +30,12 @@ public class VerificationApprovedNotificationHandler : INotificationHandler<Veri
     }
 }
 
-public class VerificationRejectedNotificationHandler : INotificationHandler<VerificationRejectedNotificationEvent>
+public class VerificationRejectedNotificationHandler(
+    IApplicationDbContext context,
+    IRealtimeNotifier realtimeNotifier) : INotificationHandler<VerificationRejectedNotificationEvent>
 {
-    private readonly IApplicationDbContext _context;
-    private readonly IRealtimeNotifier _realtimeNotifier;
-
-    public VerificationRejectedNotificationHandler(
-        IApplicationDbContext context,
-        IRealtimeNotifier realtimeNotifier)
-    {
-        _context = context;
-        _realtimeNotifier = realtimeNotifier;
-    }
+    private readonly IApplicationDbContext _context = context;
+    private readonly IRealtimeNotifier _realtimeNotifier = realtimeNotifier;
 
     public async Task Handle(VerificationRejectedNotificationEvent notification, CancellationToken ct)
     {

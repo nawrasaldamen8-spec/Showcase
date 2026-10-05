@@ -1,33 +1,17 @@
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using MediatR;
-using Microsoft.EntityFrameworkCore;
-using Showcase.Application.Common.Interfaces;
 using Showcase.Application.Features.Admin.Common;
-using Showcase.Domain.Common.Results;
-using Showcase.Domain.Enums;
 
 namespace Showcase.Application.Features.Admin.Featured;
 
 public record GetFeaturedRecommendationsQuery : IRequest<Result<IReadOnlyList<FeaturedRecommendationItemDto>>>;
 
-public class GetFeaturedRecommendationsQueryHandler : IRequestHandler<GetFeaturedRecommendationsQuery, Result<IReadOnlyList<FeaturedRecommendationItemDto>>>
+public class GetFeaturedRecommendationsQueryHandler(
+    IApplicationDbContext context,
+    IIdentityService identityService,
+    IStorageService storageService) : IRequestHandler<GetFeaturedRecommendationsQuery, Result<IReadOnlyList<FeaturedRecommendationItemDto>>>
 {
-    private readonly IApplicationDbContext _context;
-    private readonly IIdentityService _identityService;
-    private readonly IStorageService _storageService;
-
-    public GetFeaturedRecommendationsQueryHandler(
-        IApplicationDbContext context,
-        IIdentityService identityService,
-        IStorageService storageService)
-    {
-        _context = context;
-        _identityService = identityService;
-        _storageService = storageService;
-    }
+    private readonly IApplicationDbContext _context = context;
+    private readonly IIdentityService _identityService = identityService;
+    private readonly IStorageService _storageService = storageService;
 
     public async Task<Result<IReadOnlyList<FeaturedRecommendationItemDto>>> Handle(GetFeaturedRecommendationsQuery request, CancellationToken ct)
     {

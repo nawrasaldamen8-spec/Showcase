@@ -1,31 +1,15 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using MediatR;
-using Microsoft.EntityFrameworkCore;
-using Showcase.Application.Common.Interfaces;
 using Showcase.Application.Features.Admin.Common;
-using Showcase.Domain.Common.Results;
-using Showcase.Domain.Enums;
 
 namespace Showcase.Application.Features.Admin.Reports;
 
 public record GetContentReportsQuery(string? Status = null) : IRequest<Result<IReadOnlyList<ContentReportItemDto>>>;
 
-public class GetContentReportsQueryHandler : IRequestHandler<GetContentReportsQuery, Result<IReadOnlyList<ContentReportItemDto>>>
+public class GetContentReportsQueryHandler(
+    IApplicationDbContext context,
+    IIdentityService identityService) : IRequestHandler<GetContentReportsQuery, Result<IReadOnlyList<ContentReportItemDto>>>
 {
-    private readonly IApplicationDbContext _context;
-    private readonly IIdentityService _identityService;
-
-    public GetContentReportsQueryHandler(
-        IApplicationDbContext context,
-        IIdentityService identityService)
-    {
-        _context = context;
-        _identityService = identityService;
-    }
+    private readonly IApplicationDbContext _context = context;
+    private readonly IIdentityService _identityService = identityService;
 
     public async Task<Result<IReadOnlyList<ContentReportItemDto>>> Handle(GetContentReportsQuery request, CancellationToken ct)
     {

@@ -1,18 +1,7 @@
-using System;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using FluentValidation;
-using MediatR;
-using Microsoft.EntityFrameworkCore;
-using Showcase.Application.Common.Extensions;
-using Showcase.Application.Common.Interfaces;
 using Showcase.Application.Features.Career.Common;
-using Showcase.Domain.Common.Results;
-using Showcase.Domain.Entities;
-using Showcase.Domain.Enums;
 
 namespace Showcase.Application.Features.Career.Commands;
+
 using Showcase.Application.Features.Career.Common;
 
 public record UpdateLanguageCommand(
@@ -36,18 +25,12 @@ public class UpdateLanguageCommandValidator : AbstractValidator<UpdateLanguageCo
     }
 }
 
-public class UpdateLanguageCommandHandler : IRequestHandler<UpdateLanguageCommand, Result<CareerLanguageDto>>
+public class UpdateLanguageCommandHandler(
+    ICurrentUserService currentUserService,
+    IApplicationDbContext context) : IRequestHandler<UpdateLanguageCommand, Result<CareerLanguageDto>>
 {
-    private readonly ICurrentUserService _currentUserService;
-    private readonly IApplicationDbContext _context;
-
-    public UpdateLanguageCommandHandler(
-        ICurrentUserService currentUserService,
-        IApplicationDbContext context)
-    {
-        _currentUserService = currentUserService;
-        _context = context;
-    }
+    private readonly ICurrentUserService _currentUserService = currentUserService;
+    private readonly IApplicationDbContext _context = context;
 
     public async Task<Result<CareerLanguageDto>> Handle(UpdateLanguageCommand request, CancellationToken ct)
     {

@@ -1,13 +1,3 @@
-using MediatR;
-using Microsoft.EntityFrameworkCore;
-using Showcase.Application.Common.Interfaces;
-using Showcase.Domain.Common.Results;
-using Showcase.Domain.Entities;
-using System;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-
 namespace Showcase.Application.Features.Posts.Commands;
 
 
@@ -18,21 +8,14 @@ public record RemovePostImageCommand(
 
 
 
-public class RemovePostImageCommandHandler : IRequestHandler<RemovePostImageCommand, Result>
+public class RemovePostImageCommandHandler(
+    IApplicationDbContext context,
+    ICurrentUserService currentUserService,
+    IStorageService storageService) : IRequestHandler<RemovePostImageCommand, Result>
 {
-    private readonly IApplicationDbContext _context;
-    private readonly ICurrentUserService _currentUserService;
-    private readonly IStorageService _storageService;
-
-    public RemovePostImageCommandHandler(
-        IApplicationDbContext context,
-        ICurrentUserService currentUserService,
-        IStorageService storageService)
-    {
-        _context = context;
-        _currentUserService = currentUserService;
-        _storageService = storageService;
-    }
+    private readonly IApplicationDbContext _context = context;
+    private readonly ICurrentUserService _currentUserService = currentUserService;
+    private readonly IStorageService _storageService = storageService;
 
     public async Task<Result> Handle(RemovePostImageCommand request, CancellationToken ct)
     {

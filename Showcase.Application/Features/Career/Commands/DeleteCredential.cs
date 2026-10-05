@@ -1,30 +1,15 @@
-using System;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using MediatR;
-using Microsoft.EntityFrameworkCore;
-using Showcase.Application.Common.Interfaces;
-using Showcase.Domain.Common.Results;
-using Showcase.Domain.Entities;
-
 namespace Showcase.Application.Features.Career.Commands;
+
 using Showcase.Application.Features.Career.Common;
 
 public record DeleteCredentialCommand(Guid Id) : IRequest<Result>;
 
-public class DeleteCredentialCommandHandler : IRequestHandler<DeleteCredentialCommand, Result>
+public class DeleteCredentialCommandHandler(
+    ICurrentUserService currentUserService,
+    IApplicationDbContext context) : IRequestHandler<DeleteCredentialCommand, Result>
 {
-    private readonly ICurrentUserService _currentUserService;
-    private readonly IApplicationDbContext _context;
-
-    public DeleteCredentialCommandHandler(
-        ICurrentUserService currentUserService,
-        IApplicationDbContext context)
-    {
-        _currentUserService = currentUserService;
-        _context = context;
-    }
+    private readonly ICurrentUserService _currentUserService = currentUserService;
+    private readonly IApplicationDbContext _context = context;
 
     public async Task<Result> Handle(DeleteCredentialCommand request, CancellationToken ct)
     {

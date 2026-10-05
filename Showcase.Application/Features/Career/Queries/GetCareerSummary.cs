@@ -1,29 +1,17 @@
-using System.Threading;
-using System.Threading.Tasks;
-using MediatR;
-using Showcase.Application.Common.Extensions;
-using Showcase.Application.Common.Interfaces;
 using Showcase.Application.Features.Career.Common;
-using Showcase.Domain.Common.Results;
-using Showcase.Domain.Entities;
 
 namespace Showcase.Application.Features.Career.Queries;
+
 using Showcase.Application.Features.Career.Common;
 
 public record GetCareerSummaryQuery : IRequest<Result<CareerSummaryResponse>>;
 
-public class GetCareerSummaryQueryHandler : IRequestHandler<GetCareerSummaryQuery, Result<CareerSummaryResponse>>
+public class GetCareerSummaryQueryHandler(
+    ICurrentUserService currentUserService,
+    IApplicationDbContext context) : IRequestHandler<GetCareerSummaryQuery, Result<CareerSummaryResponse>>
 {
-    private readonly ICurrentUserService _currentUserService;
-    private readonly IApplicationDbContext _context;
-
-    public GetCareerSummaryQueryHandler(
-        ICurrentUserService currentUserService,
-        IApplicationDbContext context)
-    {
-        _currentUserService = currentUserService;
-        _context = context;
-    }
+    private readonly ICurrentUserService _currentUserService = currentUserService;
+    private readonly IApplicationDbContext _context = context;
 
     public async Task<Result<CareerSummaryResponse>> Handle(GetCareerSummaryQuery request, CancellationToken ct)
     {

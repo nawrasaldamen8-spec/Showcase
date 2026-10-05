@@ -1,10 +1,4 @@
-using FluentValidation;
-using MediatR;
-using Showcase.Application.Common.Interfaces;
 using Showcase.Application.Features.Auth.Common;
-using Showcase.Domain.Common.Results;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Showcase.Application.Features.Auth.Commands;
 
@@ -19,14 +13,9 @@ public record RefreshTokenCommand(
 
 
 
-public class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCommand, Result<AuthResponse>>
+public class RefreshTokenCommandHandler(IAuthSessionOrchestrator authOrchestrator) : IRequestHandler<RefreshTokenCommand, Result<AuthResponse>>
 {
-    private readonly IAuthSessionOrchestrator _authOrchestrator;
-
-    public RefreshTokenCommandHandler(IAuthSessionOrchestrator authOrchestrator)
-    {
-        _authOrchestrator = authOrchestrator;
-    }
+    private readonly IAuthSessionOrchestrator _authOrchestrator = authOrchestrator;
 
     public async Task<Result<AuthResponse>> Handle(RefreshTokenCommand request, CancellationToken ct)
     {

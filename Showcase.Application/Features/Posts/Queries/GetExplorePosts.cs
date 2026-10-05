@@ -1,14 +1,4 @@
-using FluentValidation;
-using MediatR;
-using Microsoft.EntityFrameworkCore;
-using Showcase.Application.Common.Extensions;
-using Showcase.Application.Common.Interfaces;
-using Showcase.Application.Common.Models;
 using Showcase.Application.Features.Posts.Common;
-using Showcase.Domain.Common.Results;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Showcase.Application.Features.Posts.Queries;
 
@@ -21,24 +11,16 @@ public record GetExplorePostsQuery(
 
 
 
-public class GetExplorePostsQueryHandler : IRequestHandler<GetExplorePostsQuery, Result<PaginatedList<PostSummaryResponse>>>
+public class GetExplorePostsQueryHandler(
+    IApplicationDbContext context,
+    IIdentityService identityService,
+    IStorageService storageService,
+    ICurrentUserService currentUserService) : IRequestHandler<GetExplorePostsQuery, Result<PaginatedList<PostSummaryResponse>>>
 {
-    private readonly IApplicationDbContext _context;
-    private readonly IIdentityService _identityService;
-    private readonly IStorageService _storageService;
-    private readonly ICurrentUserService _currentUserService;
-
-    public GetExplorePostsQueryHandler(
-        IApplicationDbContext context,
-        IIdentityService identityService,
-        IStorageService storageService,
-        ICurrentUserService currentUserService)
-    {
-        _context = context;
-        _identityService = identityService;
-        _storageService = storageService;
-        _currentUserService = currentUserService;
-    }
+    private readonly IApplicationDbContext _context = context;
+    private readonly IIdentityService _identityService = identityService;
+    private readonly IStorageService _storageService = storageService;
+    private readonly ICurrentUserService _currentUserService = currentUserService;
 
     public async Task<Result<PaginatedList<PostSummaryResponse>>> Handle(GetExplorePostsQuery request, CancellationToken ct)
     {

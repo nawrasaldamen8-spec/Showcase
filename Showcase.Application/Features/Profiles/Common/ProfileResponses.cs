@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using Showcase.Domain.Enums;
-
 namespace Showcase.Application.Features.Profiles.Common;
 
 public record SocialLinkDto(

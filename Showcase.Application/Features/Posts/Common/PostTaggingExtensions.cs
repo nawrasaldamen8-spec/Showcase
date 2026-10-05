@@ -1,11 +1,3 @@
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
-using Showcase.Application.Common.Interfaces;
-using Showcase.Domain.Entities;
-
 namespace Showcase.Application.Features.Posts.Common;
 
 public static class PostTaggingExtensions

@@ -1,13 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using MediatR;
-using Microsoft.EntityFrameworkCore;
-using Showcase.Application.Common.Interfaces;
-using Showcase.Domain.Common.Results;
-
 namespace Showcase.Application.Features.Lookups.Queries;
 
 public record CountryDto(int Id, string Alpha2, string Alpha3, string Name);
@@ -18,14 +8,9 @@ public record GetCountriesQuery : IRequest<Result<IReadOnlyList<CountryDto>>>, I
     public TimeSpan? Expiration => TimeSpan.FromDays(30);
 }
 
-public class GetCountriesQueryHandler : IRequestHandler<GetCountriesQuery, Result<IReadOnlyList<CountryDto>>>
+public class GetCountriesQueryHandler(IApplicationDbContext context) : IRequestHandler<GetCountriesQuery, Result<IReadOnlyList<CountryDto>>>
 {
-    private readonly IApplicationDbContext _context;
-
-    public GetCountriesQueryHandler(IApplicationDbContext context)
-    {
-        _context = context;
-    }
+    private readonly IApplicationDbContext _context = context;
 
     public async Task<Result<IReadOnlyList<CountryDto>>> Handle(GetCountriesQuery request, CancellationToken ct)
     {

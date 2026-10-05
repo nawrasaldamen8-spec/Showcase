@@ -1,26 +1,14 @@
-using System.Threading;
-using System.Threading.Tasks;
-using MediatR;
-using Showcase.Application.Common.Interfaces;
 using Showcase.Application.Features.Notifications.Common;
 using Showcase.Application.Features.Notifications.Events;
-using Showcase.Domain.Entities;
-using Showcase.Domain.Enums;
 
 namespace Showcase.Application.Features.Notifications.Handlers;
 
-public class FeaturedApprovedNotificationHandler : INotificationHandler<FeaturedApprovedNotificationEvent>
+public class FeaturedApprovedNotificationHandler(
+    IApplicationDbContext context,
+    IRealtimeNotifier realtimeNotifier) : INotificationHandler<FeaturedApprovedNotificationEvent>
 {
-    private readonly IApplicationDbContext _context;
-    private readonly IRealtimeNotifier _realtimeNotifier;
-
-    public FeaturedApprovedNotificationHandler(
-        IApplicationDbContext context,
-        IRealtimeNotifier realtimeNotifier)
-    {
-        _context = context;
-        _realtimeNotifier = realtimeNotifier;
-    }
+    private readonly IApplicationDbContext _context = context;
+    private readonly IRealtimeNotifier _realtimeNotifier = realtimeNotifier;
 
     public async Task Handle(FeaturedApprovedNotificationEvent notification, CancellationToken ct)
     {
@@ -34,18 +22,12 @@ public class FeaturedApprovedNotificationHandler : INotificationHandler<Featured
     }
 }
 
-public class FeaturedRejectedNotificationHandler : INotificationHandler<FeaturedRejectedNotificationEvent>
+public class FeaturedRejectedNotificationHandler(
+    IApplicationDbContext context,
+    IRealtimeNotifier realtimeNotifier) : INotificationHandler<FeaturedRejectedNotificationEvent>
 {
-    private readonly IApplicationDbContext _context;
-    private readonly IRealtimeNotifier _realtimeNotifier;
-
-    public FeaturedRejectedNotificationHandler(
-        IApplicationDbContext context,
-        IRealtimeNotifier realtimeNotifier)
-    {
-        _context = context;
-        _realtimeNotifier = realtimeNotifier;
-    }
+    private readonly IApplicationDbContext _context = context;
+    private readonly IRealtimeNotifier _realtimeNotifier = realtimeNotifier;
 
     public async Task Handle(FeaturedRejectedNotificationEvent notification, CancellationToken ct)
     {

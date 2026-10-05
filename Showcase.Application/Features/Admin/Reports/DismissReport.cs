@@ -1,13 +1,3 @@
-using System;
-using System.Threading;
-using System.Threading.Tasks;
-using FluentValidation;
-using MediatR;
-using Microsoft.EntityFrameworkCore;
-using Showcase.Application.Common.Interfaces;
-using Showcase.Domain.Common.Results;
-using Showcase.Domain.Entities;
-
 namespace Showcase.Application.Features.Admin.Reports;
 
 public record DismissReportCommand(Guid ReportId) : IRequest<Result>;
@@ -21,18 +11,12 @@ public class DismissReportCommandValidator : AbstractValidator<DismissReportComm
     }
 }
 
-public class DismissReportCommandHandler : IRequestHandler<DismissReportCommand, Result>
+public class DismissReportCommandHandler(
+    IApplicationDbContext context,
+    IAuditLogger auditLogger) : IRequestHandler<DismissReportCommand, Result>
 {
-    private readonly IApplicationDbContext _context;
-    private readonly IAuditLogger _auditLogger;
-
-    public DismissReportCommandHandler(
-        IApplicationDbContext context,
-        IAuditLogger auditLogger)
-    {
-        _context = context;
-        _auditLogger = auditLogger;
-    }
+    private readonly IApplicationDbContext _context = context;
+    private readonly IAuditLogger _auditLogger = auditLogger;
 
     public async Task<Result> Handle(DismissReportCommand request, CancellationToken ct)
     {

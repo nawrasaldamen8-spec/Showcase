@@ -1,15 +1,3 @@
-using FluentValidation;
-using MediatR;
-using Microsoft.EntityFrameworkCore;
-using Showcase.Application.Common.Interfaces;
-using Showcase.Domain.Common.Results;
-using Showcase.Domain.Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-
 namespace Showcase.Application.Features.SocialLinks.Commands;
 
 
@@ -20,18 +8,12 @@ public record ReorderSocialLinksCommand(IReadOnlyList<ReorderSocialLinkItem> Ite
 
 
 
-public class ReorderSocialLinksCommandHandler : IRequestHandler<ReorderSocialLinksCommand, Result>
+public class ReorderSocialLinksCommandHandler(
+    IApplicationDbContext context,
+    ICurrentUserService currentUserService) : IRequestHandler<ReorderSocialLinksCommand, Result>
 {
-    private readonly IApplicationDbContext _context;
-    private readonly ICurrentUserService _currentUserService;
-
-    public ReorderSocialLinksCommandHandler(
-        IApplicationDbContext context,
-        ICurrentUserService currentUserService)
-    {
-        _context = context;
-        _currentUserService = currentUserService;
-    }
+    private readonly IApplicationDbContext _context = context;
+    private readonly ICurrentUserService _currentUserService = currentUserService;
 
     public async Task<Result> Handle(ReorderSocialLinksCommand request, CancellationToken ct)
     {

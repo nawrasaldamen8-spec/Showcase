@@ -1,17 +1,7 @@
-using System;
-using System.Threading;
-using System.Threading.Tasks;
-using FluentValidation;
-using MediatR;
-using Microsoft.EntityFrameworkCore;
-using Showcase.Application.Common.Extensions;
-using Showcase.Application.Common.Interfaces;
 using Showcase.Application.Features.Career.Common;
-using Showcase.Domain.Common.Results;
-using Showcase.Domain.Entities;
-using Showcase.Domain.ValueObjects;
 
 namespace Showcase.Application.Features.Career.Commands;
+
 using Showcase.Application.Features.Career.Common;
 
 public record CreateCredentialCommand(
@@ -41,18 +31,12 @@ public class CreateCredentialCommandValidator : AbstractValidator<CreateCredenti
     }
 }
 
-public class CreateCredentialCommandHandler : IRequestHandler<CreateCredentialCommand, Result<CareerCredentialDto>>
+public class CreateCredentialCommandHandler(
+    ICurrentUserService currentUserService,
+    IApplicationDbContext context) : IRequestHandler<CreateCredentialCommand, Result<CareerCredentialDto>>
 {
-    private readonly ICurrentUserService _currentUserService;
-    private readonly IApplicationDbContext _context;
-
-    public CreateCredentialCommandHandler(
-        ICurrentUserService currentUserService,
-        IApplicationDbContext context)
-    {
-        _currentUserService = currentUserService;
-        _context = context;
-    }
+    private readonly ICurrentUserService _currentUserService = currentUserService;
+    private readonly IApplicationDbContext _context = context;
 
     public async Task<Result<CareerCredentialDto>> Handle(CreateCredentialCommand request, CancellationToken ct)
     {

@@ -1,17 +1,7 @@
-using System;
-using System.Threading;
-using System.Threading.Tasks;
-using FluentValidation;
-using MediatR;
-using Microsoft.EntityFrameworkCore;
-using Showcase.Application.Common.Extensions;
-using Showcase.Application.Common.Interfaces;
 using Showcase.Application.Features.Career.Common;
-using Showcase.Domain.Common.Results;
-using Showcase.Domain.Entities;
-using Showcase.Domain.ValueObjects;
 
 namespace Showcase.Application.Features.Career.Commands;
+
 using Showcase.Application.Features.Career.Common;
 
 public record CreateAchievementCommand(
@@ -33,18 +23,12 @@ public class CreateAchievementCommandValidator : AbstractValidator<CreateAchieve
     }
 }
 
-public class CreateAchievementCommandHandler : IRequestHandler<CreateAchievementCommand, Result<CareerAchievementDto>>
+public class CreateAchievementCommandHandler(
+    ICurrentUserService currentUserService,
+    IApplicationDbContext context) : IRequestHandler<CreateAchievementCommand, Result<CareerAchievementDto>>
 {
-    private readonly ICurrentUserService _currentUserService;
-    private readonly IApplicationDbContext _context;
-
-    public CreateAchievementCommandHandler(
-        ICurrentUserService currentUserService,
-        IApplicationDbContext context)
-    {
-        _currentUserService = currentUserService;
-        _context = context;
-    }
+    private readonly ICurrentUserService _currentUserService = currentUserService;
+    private readonly IApplicationDbContext _context = context;
 
     public async Task<Result<CareerAchievementDto>> Handle(CreateAchievementCommand request, CancellationToken ct)
     {

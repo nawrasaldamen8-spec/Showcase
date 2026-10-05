@@ -1,10 +1,3 @@
-using FluentValidation;
-using MediatR;
-using Showcase.Application.Common.Interfaces;
-using Showcase.Domain.Common.Results;
-using System.Threading;
-using System.Threading.Tasks;
-
 namespace Showcase.Application.Features.Auth.Commands;
 
 
@@ -15,18 +8,12 @@ public record ChangeEmailCommand(
 
 
 
-public class ChangeEmailCommandHandler : IRequestHandler<ChangeEmailCommand, Result>
+public class ChangeEmailCommandHandler(
+    IIdentityService identityService,
+    ICurrentUserService currentUserService) : IRequestHandler<ChangeEmailCommand, Result>
 {
-    private readonly IIdentityService _identityService;
-    private readonly ICurrentUserService _currentUserService;
-
-    public ChangeEmailCommandHandler(
-        IIdentityService identityService,
-        ICurrentUserService currentUserService)
-    {
-        _identityService = identityService;
-        _currentUserService = currentUserService;
-    }
+    private readonly IIdentityService _identityService = identityService;
+    private readonly ICurrentUserService _currentUserService = currentUserService;
 
     public async Task<Result> Handle(ChangeEmailCommand request, CancellationToken ct)
     {

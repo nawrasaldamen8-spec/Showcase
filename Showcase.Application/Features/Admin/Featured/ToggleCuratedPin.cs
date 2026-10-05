@@ -1,33 +1,17 @@
-using System;
-using System.Threading;
-using System.Threading.Tasks;
-using MediatR;
-using Microsoft.EntityFrameworkCore;
-using Showcase.Application.Common.Interfaces;
-using Showcase.Domain.Common.Results;
-using Showcase.Domain.Enums;
-
 namespace Showcase.Application.Features.Admin.Featured;
 
 public record ToggleCuratedPinCommand(
     Guid Id,
     bool IsPinned) : IRequest<Result>;
 
-public class ToggleCuratedPinCommandHandler : IRequestHandler<ToggleCuratedPinCommand, Result>
+public class ToggleCuratedPinCommandHandler(
+    IApplicationDbContext context,
+    IPublisher publisher,
+    IAuditLogger auditLogger) : IRequestHandler<ToggleCuratedPinCommand, Result>
 {
-    private readonly IApplicationDbContext _context;
-    private readonly IPublisher _publisher;
-    private readonly IAuditLogger _auditLogger;
-
-    public ToggleCuratedPinCommandHandler(
-        IApplicationDbContext context,
-        IPublisher publisher,
-        IAuditLogger auditLogger)
-    {
-        _context = context;
-        _publisher = publisher;
-        _auditLogger = auditLogger;
-    }
+    private readonly IApplicationDbContext _context = context;
+    private readonly IPublisher _publisher = publisher;
+    private readonly IAuditLogger _auditLogger = auditLogger;
 
     public async Task<Result> Handle(ToggleCuratedPinCommand request, CancellationToken ct)
     {

@@ -1,10 +1,4 @@
-using FluentValidation;
-using MediatR;
-using Showcase.Application.Common.Interfaces;
 using Showcase.Application.Features.Auth.Common;
-using Showcase.Domain.Common.Results;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Showcase.Application.Features.Auth.Commands;
 
@@ -16,18 +10,12 @@ public record LoginCommand(
 
 
 
-public class LoginCommandHandler : IRequestHandler<LoginCommand, Result<AuthResponse>>
+public class LoginCommandHandler(
+    IIdentityService identityService,
+    IAuthSessionOrchestrator authOrchestrator) : IRequestHandler<LoginCommand, Result<AuthResponse>>
 {
-    private readonly IIdentityService _identityService;
-    private readonly IAuthSessionOrchestrator _authOrchestrator;
-
-    public LoginCommandHandler(
-        IIdentityService identityService,
-        IAuthSessionOrchestrator authOrchestrator)
-    {
-        _identityService = identityService;
-        _authOrchestrator = authOrchestrator;
-    }
+    private readonly IIdentityService _identityService = identityService;
+    private readonly IAuthSessionOrchestrator _authOrchestrator = authOrchestrator;
 
     public async Task<Result<AuthResponse>> Handle(LoginCommand request, CancellationToken ct)
     {

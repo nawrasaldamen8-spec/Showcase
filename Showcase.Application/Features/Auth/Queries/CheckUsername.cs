@@ -1,10 +1,3 @@
-using FluentValidation;
-using MediatR;
-using Showcase.Application.Common.Interfaces;
-using Showcase.Domain.Common.Results;
-using System.Threading;
-using System.Threading.Tasks;
-
 namespace Showcase.Application.Features.Auth.Queries;
 
 
@@ -13,14 +6,9 @@ public record CheckUsernameQuery(string Username) : IRequest<Result<CheckUsernam
 
 
 
-public class CheckUsernameQueryHandler : IRequestHandler<CheckUsernameQuery, Result<CheckUsernameResponse>>
+public class CheckUsernameQueryHandler(IIdentityService identityService) : IRequestHandler<CheckUsernameQuery, Result<CheckUsernameResponse>>
 {
-    private readonly IIdentityService _identityService;
-
-    public CheckUsernameQueryHandler(IIdentityService identityService)
-    {
-        _identityService = identityService;
-    }
+    private readonly IIdentityService _identityService = identityService;
 
     public async Task<Result<CheckUsernameResponse>> Handle(CheckUsernameQuery request, CancellationToken ct)
     {

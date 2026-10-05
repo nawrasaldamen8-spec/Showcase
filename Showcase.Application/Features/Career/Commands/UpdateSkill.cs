@@ -1,17 +1,7 @@
-using System;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using FluentValidation;
-using MediatR;
-using Microsoft.EntityFrameworkCore;
-using Showcase.Application.Common.Extensions;
-using Showcase.Application.Common.Interfaces;
 using Showcase.Application.Features.Career.Common;
-using Showcase.Domain.Common.Results;
-using Showcase.Domain.Entities;
 
 namespace Showcase.Application.Features.Career.Commands;
+
 using Showcase.Application.Features.Career.Common;
 
 public record UpdateSkillCommand(
@@ -32,18 +22,12 @@ public class UpdateSkillCommandValidator : AbstractValidator<UpdateSkillCommand>
     }
 }
 
-public class UpdateSkillCommandHandler : IRequestHandler<UpdateSkillCommand, Result<CareerSkillDto>>
+public class UpdateSkillCommandHandler(
+    ICurrentUserService currentUserService,
+    IApplicationDbContext context) : IRequestHandler<UpdateSkillCommand, Result<CareerSkillDto>>
 {
-    private readonly ICurrentUserService _currentUserService;
-    private readonly IApplicationDbContext _context;
-
-    public UpdateSkillCommandHandler(
-        ICurrentUserService currentUserService,
-        IApplicationDbContext context)
-    {
-        _currentUserService = currentUserService;
-        _context = context;
-    }
+    private readonly ICurrentUserService _currentUserService = currentUserService;
+    private readonly IApplicationDbContext _context = context;
 
     public async Task<Result<CareerSkillDto>> Handle(UpdateSkillCommand request, CancellationToken ct)
     {

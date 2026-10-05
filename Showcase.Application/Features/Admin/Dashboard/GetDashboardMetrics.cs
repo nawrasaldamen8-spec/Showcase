@@ -1,24 +1,12 @@
-using System.Threading;
-using System.Threading.Tasks;
-using MediatR;
-using Microsoft.EntityFrameworkCore;
-using Showcase.Application.Common.Interfaces;
 using Showcase.Application.Features.Admin.Common;
-using Showcase.Domain.Common.Results;
-using Showcase.Domain.Enums;
 
 namespace Showcase.Application.Features.Admin.Dashboard;
 
 public record GetDashboardMetricsQuery : IRequest<Result<AdminDashboardMetricsDto>>;
 
-public class GetDashboardMetricsQueryHandler : IRequestHandler<GetDashboardMetricsQuery, Result<AdminDashboardMetricsDto>>
+public class GetDashboardMetricsQueryHandler(IApplicationDbContext context) : IRequestHandler<GetDashboardMetricsQuery, Result<AdminDashboardMetricsDto>>
 {
-    private readonly IApplicationDbContext _context;
-
-    public GetDashboardMetricsQueryHandler(IApplicationDbContext context)
-    {
-        _context = context;
-    }
+    private readonly IApplicationDbContext _context = context;
 
     public async Task<Result<AdminDashboardMetricsDto>> Handle(GetDashboardMetricsQuery request, CancellationToken ct)
     {

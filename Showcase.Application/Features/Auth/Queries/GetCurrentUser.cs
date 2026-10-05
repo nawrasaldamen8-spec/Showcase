@@ -1,14 +1,3 @@
-using MediatR;
-using Microsoft.EntityFrameworkCore;
-using Showcase.Application.Common.Interfaces;
-using Showcase.Domain.Common.Results;
-using Showcase.Domain.Entities;
-using Showcase.Domain.Enums;
-using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
-
 namespace Showcase.Application.Features.Auth.Queries;
 
 
@@ -34,24 +23,16 @@ public record GetCurrentUserQuery : IRequest<Result<CurrentUserResponse>>;
 
 
 
-public class GetCurrentUserQueryHandler : IRequestHandler<GetCurrentUserQuery, Result<CurrentUserResponse>>
+public class GetCurrentUserQueryHandler(
+    ICurrentUserService currentUserService,
+    IIdentityService identityService,
+    IApplicationDbContext context,
+    IStorageService storageService) : IRequestHandler<GetCurrentUserQuery, Result<CurrentUserResponse>>
 {
-    private readonly ICurrentUserService _currentUserService;
-    private readonly IIdentityService _identityService;
-    private readonly IApplicationDbContext _context;
-    private readonly IStorageService _storageService;
-
-    public GetCurrentUserQueryHandler(
-        ICurrentUserService currentUserService,
-        IIdentityService identityService,
-        IApplicationDbContext context,
-        IStorageService storageService)
-    {
-        _currentUserService = currentUserService;
-        _identityService = identityService;
-        _context = context;
-        _storageService = storageService;
-    }
+    private readonly ICurrentUserService _currentUserService = currentUserService;
+    private readonly IIdentityService _identityService = identityService;
+    private readonly IApplicationDbContext _context = context;
+    private readonly IStorageService _storageService = storageService;
 
     public async Task<Result<CurrentUserResponse>> Handle(GetCurrentUserQuery request, CancellationToken ct)
     {

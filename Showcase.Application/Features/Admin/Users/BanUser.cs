@@ -1,12 +1,3 @@
-using System.Threading;
-using System.Threading.Tasks;
-using FluentValidation;
-using MediatR;
-using Microsoft.EntityFrameworkCore;
-using Showcase.Application.Common.Interfaces;
-using Showcase.Domain.Common.Results;
-using Showcase.Domain.Entities;
-
 namespace Showcase.Application.Features.Admin.Users;
 
 public record BanUserCommand(
@@ -26,18 +17,12 @@ public class BanUserCommandValidator : AbstractValidator<BanUserCommand>
     }
 }
 
-public class BanUserCommandHandler : IRequestHandler<BanUserCommand, Result>
+public class BanUserCommandHandler(
+    IApplicationDbContext context,
+    IAuditLogger auditLogger) : IRequestHandler<BanUserCommand, Result>
 {
-    private readonly IApplicationDbContext _context;
-    private readonly IAuditLogger _auditLogger;
-
-    public BanUserCommandHandler(
-        IApplicationDbContext context,
-        IAuditLogger auditLogger)
-    {
-        _context = context;
-        _auditLogger = auditLogger;
-    }
+    private readonly IApplicationDbContext _context = context;
+    private readonly IAuditLogger _auditLogger = auditLogger;
 
     public async Task<Result> Handle(BanUserCommand request, CancellationToken ct)
     {

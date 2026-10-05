@@ -1,12 +1,4 @@
-using MediatR;
-using Microsoft.EntityFrameworkCore;
-using Showcase.Application.Common.Interfaces;
 using Showcase.Application.Features.Notifications.Events;
-using Showcase.Domain.Common.Results;
-using Showcase.Domain.Entities;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Showcase.Application.Features.Posts.Commands;
 
@@ -16,21 +8,14 @@ public record ToggleLikePostCommand(Guid PostId, bool? DesiredState = null) : IR
 
 
 
-public class ToggleLikePostCommandHandler : IRequestHandler<ToggleLikePostCommand, Result<ToggleLikePostResponse>>
+public class ToggleLikePostCommandHandler(
+    ICurrentUserService currentUserService,
+    IApplicationDbContext context,
+    IPublisher publisher) : IRequestHandler<ToggleLikePostCommand, Result<ToggleLikePostResponse>>
 {
-    private readonly ICurrentUserService _currentUserService;
-    private readonly IApplicationDbContext _context;
-    private readonly IPublisher _publisher;
-
-    public ToggleLikePostCommandHandler(
-        ICurrentUserService currentUserService,
-        IApplicationDbContext context,
-        IPublisher publisher)
-    {
-        _currentUserService = currentUserService;
-        _context = context;
-        _publisher = publisher;
-    }
+    private readonly ICurrentUserService _currentUserService = currentUserService;
+    private readonly IApplicationDbContext _context = context;
+    private readonly IPublisher _publisher = publisher;
 
     public async Task<Result<ToggleLikePostResponse>> Handle(ToggleLikePostCommand request, CancellationToken ct)
     {

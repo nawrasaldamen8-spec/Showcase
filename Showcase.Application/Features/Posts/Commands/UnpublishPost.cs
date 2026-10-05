@@ -1,12 +1,3 @@
-using MediatR;
-using Microsoft.EntityFrameworkCore;
-using Showcase.Application.Common.Interfaces;
-using Showcase.Domain.Common.Results;
-using Showcase.Domain.Entities;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
-
 namespace Showcase.Application.Features.Posts.Commands;
 
 
@@ -15,18 +6,12 @@ public record UnpublishPostCommand(Guid Id) : IRequest<Result>;
 
 
 
-public class UnpublishPostCommandHandler : IRequestHandler<UnpublishPostCommand, Result>
+public class UnpublishPostCommandHandler(
+    IApplicationDbContext context,
+    ICurrentUserService currentUserService) : IRequestHandler<UnpublishPostCommand, Result>
 {
-    private readonly IApplicationDbContext _context;
-    private readonly ICurrentUserService _currentUserService;
-
-    public UnpublishPostCommandHandler(
-        IApplicationDbContext context,
-        ICurrentUserService currentUserService)
-    {
-        _context = context;
-        _currentUserService = currentUserService;
-    }
+    private readonly IApplicationDbContext _context = context;
+    private readonly ICurrentUserService _currentUserService = currentUserService;
 
     public async Task<Result> Handle(UnpublishPostCommand request, CancellationToken ct)
     {

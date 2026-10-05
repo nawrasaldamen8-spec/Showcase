@@ -1,13 +1,4 @@
-using MediatR;
-using Microsoft.EntityFrameworkCore;
-using Showcase.Application.Common.Extensions;
-using Showcase.Application.Common.Interfaces;
-using Showcase.Application.Common.Models;
 using Showcase.Application.Features.Profiles.Common;
-using Showcase.Domain.Common.Results;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Showcase.Application.Features.Profiles.Queries;
 
@@ -21,21 +12,14 @@ public record GetProfilesQuery(
 
 
 
-public class GetProfilesQueryHandler : IRequestHandler<GetProfilesQuery, Result<PaginatedList<PublicProfileResponse>>>
+public class GetProfilesQueryHandler(
+    IApplicationDbContext context,
+    IIdentityService identityService,
+    IStorageService storageService) : IRequestHandler<GetProfilesQuery, Result<PaginatedList<PublicProfileResponse>>>
 {
-    private readonly IApplicationDbContext _context;
-    private readonly IIdentityService _identityService;
-    private readonly IStorageService _storageService;
-
-    public GetProfilesQueryHandler(
-        IApplicationDbContext context,
-        IIdentityService identityService,
-        IStorageService storageService)
-    {
-        _context = context;
-        _identityService = identityService;
-        _storageService = storageService;
-    }
+    private readonly IApplicationDbContext _context = context;
+    private readonly IIdentityService _identityService = identityService;
+    private readonly IStorageService _storageService = storageService;
 
     public async Task<Result<PaginatedList<PublicProfileResponse>>> Handle(GetProfilesQuery request, CancellationToken ct)
     {

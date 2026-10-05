@@ -1,14 +1,4 @@
-using FluentValidation;
-using MediatR;
-using Microsoft.EntityFrameworkCore;
-using Showcase.Application.Common.Interfaces;
 using Showcase.Application.Features.Posts.Common;
-using Showcase.Domain.Common.Results;
-using Showcase.Domain.Entities;
-using Showcase.Domain.ValueObjects;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Showcase.Application.Features.Posts.Commands;
 
@@ -21,21 +11,14 @@ public record AddPostImageCommand(
 
 
 
-public class AddPostImageCommandHandler : IRequestHandler<AddPostImageCommand, Result<PostImageDto>>
+public class AddPostImageCommandHandler(
+    IApplicationDbContext context,
+    ICurrentUserService currentUserService,
+    IStorageService storageService) : IRequestHandler<AddPostImageCommand, Result<PostImageDto>>
 {
-    private readonly IApplicationDbContext _context;
-    private readonly ICurrentUserService _currentUserService;
-    private readonly IStorageService _storageService;
-
-    public AddPostImageCommandHandler(
-        IApplicationDbContext context,
-        ICurrentUserService currentUserService,
-        IStorageService storageService)
-    {
-        _context = context;
-        _currentUserService = currentUserService;
-        _storageService = storageService;
-    }
+    private readonly IApplicationDbContext _context = context;
+    private readonly ICurrentUserService _currentUserService = currentUserService;
+    private readonly IStorageService _storageService = storageService;
 
     public async Task<Result<PostImageDto>> Handle(AddPostImageCommand request, CancellationToken ct)
     {

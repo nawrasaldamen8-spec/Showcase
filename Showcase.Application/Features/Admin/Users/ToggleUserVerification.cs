@@ -1,13 +1,4 @@
-using System;
-using System.Threading;
-using System.Threading.Tasks;
-using FluentValidation;
-using MediatR;
-using Microsoft.EntityFrameworkCore;
-using Showcase.Application.Common.Interfaces;
 using Showcase.Application.Features.Notifications.Events;
-using Showcase.Domain.Common.Results;
-using Showcase.Domain.Entities;
 
 namespace Showcase.Application.Features.Admin.Users;
 
@@ -25,21 +16,14 @@ public class ToggleUserVerificationCommandValidator : AbstractValidator<ToggleUs
     }
 }
 
-public class ToggleUserVerificationCommandHandler : IRequestHandler<ToggleUserVerificationCommand, Result>
+public class ToggleUserVerificationCommandHandler(
+    IApplicationDbContext context,
+    IPublisher publisher,
+    IAuditLogger auditLogger) : IRequestHandler<ToggleUserVerificationCommand, Result>
 {
-    private readonly IApplicationDbContext _context;
-    private readonly IPublisher _publisher;
-    private readonly IAuditLogger _auditLogger;
-
-    public ToggleUserVerificationCommandHandler(
-        IApplicationDbContext context,
-        IPublisher publisher,
-        IAuditLogger auditLogger)
-    {
-        _context = context;
-        _publisher = publisher;
-        _auditLogger = auditLogger;
-    }
+    private readonly IApplicationDbContext _context = context;
+    private readonly IPublisher _publisher = publisher;
+    private readonly IAuditLogger _auditLogger = auditLogger;
 
     public async Task<Result> Handle(ToggleUserVerificationCommand request, CancellationToken ct)
     {

@@ -1,14 +1,4 @@
-using System;
-using System.Security.Cryptography;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using MediatR;
-using Microsoft.EntityFrameworkCore;
-using Showcase.Application.Common.Interfaces;
 using Showcase.Application.Features.Notifications.Events;
-using Showcase.Domain.Common.Results;
-using Showcase.Domain.Entities;
 
 namespace Showcase.Application.Features.Analytics;
 
@@ -17,21 +7,14 @@ public record TrackProfileVisitCommand(
     string? IpAddress = null,
     string? VisitorToken = null) : IRequest<Result>;
 
-public class TrackProfileVisitCommandHandler : IRequestHandler<TrackProfileVisitCommand, Result>
+public class TrackProfileVisitCommandHandler(
+    ICurrentUserService currentUserService,
+    IApplicationDbContext context,
+    IPublisher publisher) : IRequestHandler<TrackProfileVisitCommand, Result>
 {
-    private readonly ICurrentUserService _currentUserService;
-    private readonly IApplicationDbContext _context;
-    private readonly IPublisher _publisher;
-
-    public TrackProfileVisitCommandHandler(
-        ICurrentUserService currentUserService,
-        IApplicationDbContext context,
-        IPublisher publisher)
-    {
-        _currentUserService = currentUserService;
-        _context = context;
-        _publisher = publisher;
-    }
+    private readonly ICurrentUserService _currentUserService = currentUserService;
+    private readonly IApplicationDbContext _context = context;
+    private readonly IPublisher _publisher = publisher;
 
     public async Task<Result> Handle(TrackProfileVisitCommand request, CancellationToken ct)
     {

@@ -1,14 +1,4 @@
-using MediatR;
-using Microsoft.EntityFrameworkCore;
-using Showcase.Application.Common.Extensions;
-using Showcase.Application.Common.Interfaces;
 using Showcase.Application.Features.Notifications.Events;
-using Showcase.Domain.Common.Results;
-using Showcase.Domain.Entities;
-using System;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Showcase.Application.Features.Posts.Commands;
 
@@ -18,21 +8,14 @@ public record DeletePostCommand(Guid Id) : IRequest<Result>;
 
 
 
-public class DeletePostCommandHandler : IRequestHandler<DeletePostCommand, Result>
+public class DeletePostCommandHandler(
+    IApplicationDbContext context,
+    ICurrentUserService currentUserService,
+    IPublisher publisher) : IRequestHandler<DeletePostCommand, Result>
 {
-    private readonly IApplicationDbContext _context;
-    private readonly ICurrentUserService _currentUserService;
-    private readonly IPublisher _publisher;
-
-    public DeletePostCommandHandler(
-        IApplicationDbContext context,
-        ICurrentUserService currentUserService,
-        IPublisher publisher)
-    {
-        _context = context;
-        _currentUserService = currentUserService;
-        _publisher = publisher;
-    }
+    private readonly IApplicationDbContext _context = context;
+    private readonly ICurrentUserService _currentUserService = currentUserService;
+    private readonly IPublisher _publisher = publisher;
 
     public async Task<Result> Handle(DeletePostCommand request, CancellationToken ct)
     {

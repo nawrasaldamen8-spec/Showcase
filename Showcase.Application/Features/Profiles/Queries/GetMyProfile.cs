@@ -1,12 +1,4 @@
-using MediatR;
-using Microsoft.EntityFrameworkCore;
-using Showcase.Application.Common.Extensions;
-using Showcase.Application.Common.Interfaces;
 using Showcase.Application.Features.Profiles.Common;
-using Showcase.Domain.Common.Results;
-using Showcase.Domain.Entities;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Showcase.Application.Features.Profiles.Queries;
 
@@ -16,24 +8,16 @@ public record GetMyProfileQuery : IRequest<Result<MyProfileResponse>>;
 
 
 
-public class GetMyProfileQueryHandler : IRequestHandler<GetMyProfileQuery, Result<MyProfileResponse>>
+public class GetMyProfileQueryHandler(
+    IApplicationDbContext context,
+    ICurrentUserService currentUserService,
+    IIdentityService identityService,
+    IStorageService storageService) : IRequestHandler<GetMyProfileQuery, Result<MyProfileResponse>>
 {
-    private readonly IApplicationDbContext _context;
-    private readonly ICurrentUserService _currentUserService;
-    private readonly IIdentityService _identityService;
-    private readonly IStorageService _storageService;
-
-    public GetMyProfileQueryHandler(
-        IApplicationDbContext context,
-        ICurrentUserService currentUserService,
-        IIdentityService identityService,
-        IStorageService storageService)
-    {
-        _context = context;
-        _currentUserService = currentUserService;
-        _identityService = identityService;
-        _storageService = storageService;
-    }
+    private readonly IApplicationDbContext _context = context;
+    private readonly ICurrentUserService _currentUserService = currentUserService;
+    private readonly IIdentityService _identityService = identityService;
+    private readonly IStorageService _storageService = storageService;
 
     public async Task<Result<MyProfileResponse>> Handle(GetMyProfileQuery request, CancellationToken ct)
     {

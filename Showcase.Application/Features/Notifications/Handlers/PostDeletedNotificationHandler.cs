@@ -1,30 +1,15 @@
-using System;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using MediatR;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
-using Showcase.Application.Common.Interfaces;
 using Showcase.Application.Features.Notifications.Events;
 
 namespace Showcase.Application.Features.Notifications.Handlers;
 
-public class PostDeletedNotificationHandler : INotificationHandler<PostDeletedNotificationEvent>
+public class PostDeletedNotificationHandler(
+    IApplicationDbContext context,
+    IStorageService storageService,
+    ILogger<PostDeletedNotificationHandler> logger) : INotificationHandler<PostDeletedNotificationEvent>
 {
-    private readonly IApplicationDbContext _context;
-    private readonly IStorageService _storageService;
-    private readonly ILogger<PostDeletedNotificationHandler> _logger;
-
-    public PostDeletedNotificationHandler(
-        IApplicationDbContext context,
-        IStorageService storageService,
-        ILogger<PostDeletedNotificationHandler> logger)
-    {
-        _context = context;
-        _storageService = storageService;
-        _logger = logger;
-    }
+    private readonly IApplicationDbContext _context = context;
+    private readonly IStorageService _storageService = storageService;
+    private readonly ILogger<PostDeletedNotificationHandler> _logger = logger;
 
     public async Task Handle(PostDeletedNotificationEvent notification, CancellationToken ct)
     {

@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using MediatR;
-
 namespace Showcase.Application.Features.Notifications.Events;
 
 public record PostLikedNotificationEvent(

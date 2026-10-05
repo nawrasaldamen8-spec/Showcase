@@ -1,33 +1,17 @@
-using System;
-using System.Threading;
-using System.Threading.Tasks;
-using MediatR;
-using Microsoft.EntityFrameworkCore;
-using Showcase.Application.Common.Interfaces;
-using Showcase.Domain.Common.Results;
-using Showcase.Domain.Entities;
-
 namespace Showcase.Application.Features.Admin.Verifications;
 
 public record RejectVerificationRequestCommand(
     Guid RequestId,
     string? Note = null) : IRequest<Result>;
 
-public class RejectVerificationRequestCommandHandler : IRequestHandler<RejectVerificationRequestCommand, Result>
+public class RejectVerificationRequestCommandHandler(
+    IApplicationDbContext context,
+    IPublisher publisher,
+    IAuditLogger auditLogger) : IRequestHandler<RejectVerificationRequestCommand, Result>
 {
-    private readonly IApplicationDbContext _context;
-    private readonly IPublisher _publisher;
-    private readonly IAuditLogger _auditLogger;
-
-    public RejectVerificationRequestCommandHandler(
-        IApplicationDbContext context,
-        IPublisher publisher,
-        IAuditLogger auditLogger)
-    {
-        _context = context;
-        _publisher = publisher;
-        _auditLogger = auditLogger;
-    }
+    private readonly IApplicationDbContext _context = context;
+    private readonly IPublisher _publisher = publisher;
+    private readonly IAuditLogger _auditLogger = auditLogger;
 
     public async Task<Result> Handle(RejectVerificationRequestCommand request, CancellationToken ct)
     {

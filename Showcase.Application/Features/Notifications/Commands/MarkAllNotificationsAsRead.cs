@@ -1,28 +1,15 @@
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using MediatR;
-using Microsoft.EntityFrameworkCore;
-using Showcase.Application.Common.Interfaces;
-using Showcase.Domain.Common.Results;
-
 namespace Showcase.Application.Features.Notifications.Commands;
+
 using Showcase.Application.Features.Notifications.Common;
 
 public record MarkAllNotificationsAsReadCommand : IRequest<Result>;
 
-public class MarkAllNotificationsAsReadCommandHandler : IRequestHandler<MarkAllNotificationsAsReadCommand, Result>
+public class MarkAllNotificationsAsReadCommandHandler(
+    ICurrentUserService currentUserService,
+    IApplicationDbContext context) : IRequestHandler<MarkAllNotificationsAsReadCommand, Result>
 {
-    private readonly ICurrentUserService _currentUserService;
-    private readonly IApplicationDbContext _context;
-
-    public MarkAllNotificationsAsReadCommandHandler(
-        ICurrentUserService currentUserService,
-        IApplicationDbContext context)
-    {
-        _currentUserService = currentUserService;
-        _context = context;
-    }
+    private readonly ICurrentUserService _currentUserService = currentUserService;
+    private readonly IApplicationDbContext _context = context;
 
     public async Task<Result> Handle(MarkAllNotificationsAsReadCommand request, CancellationToken ct)
     {

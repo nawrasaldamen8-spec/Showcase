@@ -1,13 +1,3 @@
-using System;
-using System.Threading;
-using System.Threading.Tasks;
-using FluentValidation;
-using MediatR;
-using Microsoft.EntityFrameworkCore;
-using Showcase.Application.Common.Interfaces;
-using Showcase.Domain.Common.Results;
-using Showcase.Domain.Entities;
-
 namespace Showcase.Application.Features.Admin.Reports;
 
 public record ResolveReportCommand(
@@ -27,21 +17,14 @@ public class ResolveReportCommandValidator : AbstractValidator<ResolveReportComm
     }
 }
 
-public class ResolveReportCommandHandler : IRequestHandler<ResolveReportCommand, Result>
+public class ResolveReportCommandHandler(
+    IApplicationDbContext context,
+    IPublisher publisher,
+    IAuditLogger auditLogger) : IRequestHandler<ResolveReportCommand, Result>
 {
-    private readonly IApplicationDbContext _context;
-    private readonly IPublisher _publisher;
-    private readonly IAuditLogger _auditLogger;
-
-    public ResolveReportCommandHandler(
-        IApplicationDbContext context,
-        IPublisher publisher,
-        IAuditLogger auditLogger)
-    {
-        _context = context;
-        _publisher = publisher;
-        _auditLogger = auditLogger;
-    }
+    private readonly IApplicationDbContext _context = context;
+    private readonly IPublisher _publisher = publisher;
+    private readonly IAuditLogger _auditLogger = auditLogger;
 
     public async Task<Result> Handle(ResolveReportCommand request, CancellationToken ct)
     {

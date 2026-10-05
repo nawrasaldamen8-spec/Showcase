@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-
 namespace Showcase.Application.Features.Posts.Common;
 
 public record PostImageDto(

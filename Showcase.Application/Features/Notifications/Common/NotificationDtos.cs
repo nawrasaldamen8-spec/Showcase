@@ -1,5 +1,3 @@
-using System;
-
 namespace Showcase.Application.Features.Notifications.Common;
 
 public record NotificationDto(

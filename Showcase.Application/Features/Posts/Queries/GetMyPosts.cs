@@ -1,15 +1,4 @@
-using FluentValidation;
-using MediatR;
-using Microsoft.EntityFrameworkCore;
-using Showcase.Application.Common.Extensions;
-using Showcase.Application.Common.Interfaces;
-using Showcase.Application.Common.Models;
 using Showcase.Application.Features.Posts.Common;
-using Showcase.Domain.Common.Results;
-using Showcase.Domain.Enums;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Showcase.Application.Features.Posts.Queries;
 
@@ -22,24 +11,16 @@ public record GetMyPostsQuery(
 
 
 
-public class GetMyPostsQueryHandler : IRequestHandler<GetMyPostsQuery, Result<PaginatedList<PostSummaryResponse>>>
+public class GetMyPostsQueryHandler(
+    IApplicationDbContext context,
+    ICurrentUserService currentUserService,
+    IIdentityService identityService,
+    IStorageService storageService) : IRequestHandler<GetMyPostsQuery, Result<PaginatedList<PostSummaryResponse>>>
 {
-    private readonly IApplicationDbContext _context;
-    private readonly ICurrentUserService _currentUserService;
-    private readonly IIdentityService _identityService;
-    private readonly IStorageService _storageService;
-
-    public GetMyPostsQueryHandler(
-        IApplicationDbContext context,
-        ICurrentUserService currentUserService,
-        IIdentityService identityService,
-        IStorageService storageService)
-    {
-        _context = context;
-        _currentUserService = currentUserService;
-        _identityService = identityService;
-        _storageService = storageService;
-    }
+    private readonly IApplicationDbContext _context = context;
+    private readonly ICurrentUserService _currentUserService = currentUserService;
+    private readonly IIdentityService _identityService = identityService;
+    private readonly IStorageService _storageService = storageService;
 
     public async Task<Result<PaginatedList<PostSummaryResponse>>> Handle(GetMyPostsQuery request, CancellationToken ct)
     {

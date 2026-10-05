@@ -1,12 +1,3 @@
-using MediatR;
-using Microsoft.EntityFrameworkCore;
-using Showcase.Application.Common.Interfaces;
-using Showcase.Domain.Common.Results;
-using Showcase.Domain.Entities;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
-
 namespace Showcase.Application.Features.SocialLinks.Commands;
 
 
@@ -15,18 +6,12 @@ public record DeleteSocialLinkCommand(Guid Id) : IRequest<Result>;
 
 
 
-public class DeleteSocialLinkCommandHandler : IRequestHandler<DeleteSocialLinkCommand, Result>
+public class DeleteSocialLinkCommandHandler(
+    IApplicationDbContext context,
+    ICurrentUserService currentUserService) : IRequestHandler<DeleteSocialLinkCommand, Result>
 {
-    private readonly IApplicationDbContext _context;
-    private readonly ICurrentUserService _currentUserService;
-
-    public DeleteSocialLinkCommandHandler(
-        IApplicationDbContext context,
-        ICurrentUserService currentUserService)
-    {
-        _context = context;
-        _currentUserService = currentUserService;
-    }
+    private readonly IApplicationDbContext _context = context;
+    private readonly ICurrentUserService _currentUserService = currentUserService;
 
     public async Task<Result> Handle(DeleteSocialLinkCommand request, CancellationToken ct)
     {

@@ -1,11 +1,4 @@
-using FluentValidation;
-using MediatR;
-using Showcase.Application.Common.Interfaces;
 using Showcase.Application.Features.Auth.Common;
-using Showcase.Domain.Common.Results;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Showcase.Application.Features.Auth.Commands;
 
@@ -17,24 +10,16 @@ public record ChangeUsernameCommand(
 
 
 
-public class ChangeUsernameCommandHandler : IRequestHandler<ChangeUsernameCommand, Result<AuthResponse>>
+public class ChangeUsernameCommandHandler(
+    IIdentityService identityService,
+    ITokenService tokenService,
+    ICurrentUserService currentUserService,
+    IAuthCookieService? authCookieService = null) : IRequestHandler<ChangeUsernameCommand, Result<AuthResponse>>
 {
-    private readonly IIdentityService _identityService;
-    private readonly ITokenService _tokenService;
-    private readonly ICurrentUserService _currentUserService;
-    private readonly IAuthCookieService? _authCookieService;
-
-    public ChangeUsernameCommandHandler(
-        IIdentityService identityService,
-        ITokenService tokenService,
-        ICurrentUserService currentUserService,
-        IAuthCookieService? authCookieService = null)
-    {
-        _identityService = identityService;
-        _tokenService = tokenService;
-        _currentUserService = currentUserService;
-        _authCookieService = authCookieService;
-    }
+    private readonly IIdentityService _identityService = identityService;
+    private readonly ITokenService _tokenService = tokenService;
+    private readonly ICurrentUserService _currentUserService = currentUserService;
+    private readonly IAuthCookieService? _authCookieService = authCookieService;
 
     public async Task<Result<AuthResponse>> Handle(ChangeUsernameCommand request, CancellationToken ct)
     {
@@ -89,4 +74,3 @@ public class ChangeUsernameCommandValidator : AbstractValidator<ChangeUsernameCo
             .NotEmpty().WithMessage("Current password is required.");
     }
 }
-

@@ -1,15 +1,3 @@
-using FluentValidation;
-using MediatR;
-using Microsoft.EntityFrameworkCore;
-using Showcase.Application.Common.Interfaces;
-using Showcase.Domain.Common.Results;
-using Showcase.Domain.Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-
 namespace Showcase.Application.Features.Posts.Commands;
 
 
@@ -22,18 +10,12 @@ public record ReorderPostImagesCommand(
 
 
 
-public class ReorderPostImagesCommandHandler : IRequestHandler<ReorderPostImagesCommand, Result>
+public class ReorderPostImagesCommandHandler(
+    IApplicationDbContext context,
+    ICurrentUserService currentUserService) : IRequestHandler<ReorderPostImagesCommand, Result>
 {
-    private readonly IApplicationDbContext _context;
-    private readonly ICurrentUserService _currentUserService;
-
-    public ReorderPostImagesCommandHandler(
-        IApplicationDbContext context,
-        ICurrentUserService currentUserService)
-    {
-        _context = context;
-        _currentUserService = currentUserService;
-    }
+    private readonly IApplicationDbContext _context = context;
+    private readonly ICurrentUserService _currentUserService = currentUserService;
 
     public async Task<Result> Handle(ReorderPostImagesCommand request, CancellationToken ct)
     {

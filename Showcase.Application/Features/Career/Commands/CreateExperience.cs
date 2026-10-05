@@ -1,19 +1,7 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using FluentValidation;
-using MediatR;
-using Microsoft.EntityFrameworkCore;
-using Showcase.Application.Common.Extensions;
-using Showcase.Application.Common.Interfaces;
 using Showcase.Application.Features.Career.Common;
-using Showcase.Domain.Common.Results;
-using Showcase.Domain.Entities;
-using Showcase.Domain.ValueObjects;
 
 namespace Showcase.Application.Features.Career.Commands;
+
 using Showcase.Application.Features.Career.Common;
 
 public record CreateExperienceCommand(
@@ -45,18 +33,12 @@ public class CreateExperienceCommandValidator : AbstractValidator<CreateExperien
     }
 }
 
-public class CreateExperienceCommandHandler : IRequestHandler<CreateExperienceCommand, Result<CareerExperienceDto>>
+public class CreateExperienceCommandHandler(
+    ICurrentUserService currentUserService,
+    IApplicationDbContext context) : IRequestHandler<CreateExperienceCommand, Result<CareerExperienceDto>>
 {
-    private readonly ICurrentUserService _currentUserService;
-    private readonly IApplicationDbContext _context;
-
-    public CreateExperienceCommandHandler(
-        ICurrentUserService currentUserService,
-        IApplicationDbContext context)
-    {
-        _currentUserService = currentUserService;
-        _context = context;
-    }
+    private readonly ICurrentUserService _currentUserService = currentUserService;
+    private readonly IApplicationDbContext _context = context;
 
     public async Task<Result<CareerExperienceDto>> Handle(CreateExperienceCommand request, CancellationToken ct)
     {

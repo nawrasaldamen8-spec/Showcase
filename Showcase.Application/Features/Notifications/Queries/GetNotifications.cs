@@ -1,18 +1,7 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using FluentValidation;
-using MediatR;
-using Microsoft.EntityFrameworkCore;
-using Showcase.Application.Common.Extensions;
-using Showcase.Application.Common.Interfaces;
-using Showcase.Application.Common.Models;
 using Showcase.Application.Features.Notifications.Common;
-using Showcase.Domain.Common.Results;
 
 namespace Showcase.Application.Features.Notifications.Queries;
+
 using Showcase.Application.Features.Notifications.Common;
 
 public record GetNotificationsQuery(int PageNumber = 1, int PageSize = 20) : IRequest<Result<PaginatedList<NotificationDto>>>, IPaginationRequest;
@@ -29,24 +18,16 @@ public class GetNotificationsQueryValidator : AbstractValidator<GetNotifications
     }
 }
 
-public class GetNotificationsQueryHandler : IRequestHandler<GetNotificationsQuery, Result<PaginatedList<NotificationDto>>>
+public class GetNotificationsQueryHandler(
+    ICurrentUserService currentUserService,
+    IApplicationDbContext context,
+    IIdentityService identityService,
+    IStorageService storageService) : IRequestHandler<GetNotificationsQuery, Result<PaginatedList<NotificationDto>>>
 {
-    private readonly ICurrentUserService _currentUserService;
-    private readonly IApplicationDbContext _context;
-    private readonly IIdentityService _identityService;
-    private readonly IStorageService _storageService;
-
-    public GetNotificationsQueryHandler(
-        ICurrentUserService currentUserService,
-        IApplicationDbContext context,
-        IIdentityService identityService,
-        IStorageService storageService)
-    {
-        _currentUserService = currentUserService;
-        _context = context;
-        _identityService = identityService;
-        _storageService = storageService;
-    }
+    private readonly ICurrentUserService _currentUserService = currentUserService;
+    private readonly IApplicationDbContext _context = context;
+    private readonly IIdentityService _identityService = identityService;
+    private readonly IStorageService _storageService = storageService;
 
     public async Task<Result<PaginatedList<NotificationDto>>> Handle(GetNotificationsQuery request, CancellationToken ct)
     {

@@ -1,13 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using MediatR;
-using Microsoft.EntityFrameworkCore;
-using Showcase.Application.Common.Interfaces;
-using Showcase.Domain.Common.Results;
-
 namespace Showcase.Application.Features.Lookups.Queries;
 
 public record SpecialtyItemDto(int Id, string Code, string Name, string SubField);
@@ -22,14 +12,9 @@ public record GetSpecialtiesQuery : IRequest<Result<IReadOnlyList<SpecialtyCateg
     public TimeSpan? Expiration => TimeSpan.FromDays(30);
 }
 
-public class GetSpecialtiesQueryHandler : IRequestHandler<GetSpecialtiesQuery, Result<IReadOnlyList<SpecialtyCategoryDto>>>
+public class GetSpecialtiesQueryHandler(IApplicationDbContext context) : IRequestHandler<GetSpecialtiesQuery, Result<IReadOnlyList<SpecialtyCategoryDto>>>
 {
-    private readonly IApplicationDbContext _context;
-
-    public GetSpecialtiesQueryHandler(IApplicationDbContext context)
-    {
-        _context = context;
-    }
+    private readonly IApplicationDbContext _context = context;
 
     public async Task<Result<IReadOnlyList<SpecialtyCategoryDto>>> Handle(GetSpecialtiesQuery request, CancellationToken ct)
     {

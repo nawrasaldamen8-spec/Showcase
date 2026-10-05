@@ -1,14 +1,3 @@
-using MediatR;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-using Showcase.Application.Common.Interfaces;
-using Showcase.Application.Common.Models;
-using Showcase.Domain.Common.Results;
-using System;
-using System.Text.Encodings.Web;
-using System.Threading;
-using System.Threading.Tasks;
-
 namespace Showcase.Application.Features.Auth.Commands;
 
 
@@ -22,30 +11,20 @@ public record HandleGoogleCallbackCommand(
 
 
 
-public class HandleGoogleCallbackCommandHandler : IRequestHandler<HandleGoogleCallbackCommand, Result<GoogleCallbackResponse>>
+public class HandleGoogleCallbackCommandHandler(
+    IGoogleAuthService googleAuthService,
+    IOptions<GoogleAuthSettings> googleOptions,
+    IIdentityService identityService,
+    ITokenService tokenService,
+    ILogger<HandleGoogleCallbackCommandHandler> logger,
+    IAuthCookieService? authCookieService = null) : IRequestHandler<HandleGoogleCallbackCommand, Result<GoogleCallbackResponse>>
 {
-    private readonly IGoogleAuthService _googleAuthService;
-    private readonly IOptions<GoogleAuthSettings> _googleOptions;
-    private readonly IIdentityService _identityService;
-    private readonly ITokenService _tokenService;
-    private readonly IAuthCookieService? _authCookieService;
-    private readonly ILogger<HandleGoogleCallbackCommandHandler> _logger;
-
-    public HandleGoogleCallbackCommandHandler(
-        IGoogleAuthService googleAuthService,
-        IOptions<GoogleAuthSettings> googleOptions,
-        IIdentityService identityService,
-        ITokenService tokenService,
-        ILogger<HandleGoogleCallbackCommandHandler> logger,
-        IAuthCookieService? authCookieService = null)
-    {
-        _googleAuthService = googleAuthService;
-        _googleOptions = googleOptions;
-        _identityService = identityService;
-        _tokenService = tokenService;
-        _logger = logger;
-        _authCookieService = authCookieService;
-    }
+    private readonly IGoogleAuthService _googleAuthService = googleAuthService;
+    private readonly IOptions<GoogleAuthSettings> _googleOptions = googleOptions;
+    private readonly IIdentityService _identityService = identityService;
+    private readonly ITokenService _tokenService = tokenService;
+    private readonly IAuthCookieService? _authCookieService = authCookieService;
+    private readonly ILogger<HandleGoogleCallbackCommandHandler> _logger = logger;
 
     public async Task<Result<GoogleCallbackResponse>> Handle(HandleGoogleCallbackCommand request, CancellationToken ct)
     {

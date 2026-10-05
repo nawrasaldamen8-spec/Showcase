@@ -1,11 +1,3 @@
-using MediatR;
-using Microsoft.EntityFrameworkCore;
-using Showcase.Application.Common.Interfaces;
-using Showcase.Domain.Common.Results;
-using Showcase.Domain.Entities;
-using System.Threading;
-using System.Threading.Tasks;
-
 namespace Showcase.Application.Features.Profiles.Commands;
 
 
@@ -14,21 +6,14 @@ public record RemoveAvatarCommand : IRequest<Result>;
 
 
 
-public class RemoveAvatarCommandHandler : IRequestHandler<RemoveAvatarCommand, Result>
+public class RemoveAvatarCommandHandler(
+    IApplicationDbContext context,
+    ICurrentUserService currentUserService,
+    IStorageService storageService) : IRequestHandler<RemoveAvatarCommand, Result>
 {
-    private readonly IApplicationDbContext _context;
-    private readonly ICurrentUserService _currentUserService;
-    private readonly IStorageService _storageService;
-
-    public RemoveAvatarCommandHandler(
-        IApplicationDbContext context,
-        ICurrentUserService currentUserService,
-        IStorageService storageService)
-    {
-        _context = context;
-        _currentUserService = currentUserService;
-        _storageService = storageService;
-    }
+    private readonly IApplicationDbContext _context = context;
+    private readonly ICurrentUserService _currentUserService = currentUserService;
+    private readonly IStorageService _storageService = storageService;
 
     public async Task<Result> Handle(RemoveAvatarCommand request, CancellationToken ct)
     {

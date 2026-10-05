@@ -1,8 +1,3 @@
-using System.Threading;
-using System.Threading.Tasks;
-using Showcase.Application.Common.Interfaces;
-using Showcase.Domain.Entities;
-
 namespace Showcase.Application.Features.Notifications.Common;
 
 public static class NotificationPublishExtensions

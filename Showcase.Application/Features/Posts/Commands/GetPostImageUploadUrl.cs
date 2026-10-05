@@ -1,16 +1,4 @@
-using FluentValidation;
-using MediatR;
-using Microsoft.EntityFrameworkCore;
-using Showcase.Application.Common.Extensions;
-using Showcase.Application.Common.Interfaces;
 using Showcase.Application.Features.Posts.Common;
-using Showcase.Domain.Common.Results;
-using Showcase.Domain.Entities;
-using Showcase.Domain.ValueObjects;
-using System;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Showcase.Application.Features.Posts.Commands;
 
@@ -23,21 +11,14 @@ public record GetPostImageUploadUrlCommand(
 
 
 
-public class GetPostImageUploadUrlCommandHandler : IRequestHandler<GetPostImageUploadUrlCommand, Result<PostImageUploadUrlResponse>>
+public class GetPostImageUploadUrlCommandHandler(
+    IApplicationDbContext context,
+    ICurrentUserService currentUserService,
+    IStorageService storageService) : IRequestHandler<GetPostImageUploadUrlCommand, Result<PostImageUploadUrlResponse>>
 {
-    private readonly IApplicationDbContext _context;
-    private readonly ICurrentUserService _currentUserService;
-    private readonly IStorageService _storageService;
-
-    public GetPostImageUploadUrlCommandHandler(
-        IApplicationDbContext context,
-        ICurrentUserService currentUserService,
-        IStorageService storageService)
-    {
-        _context = context;
-        _currentUserService = currentUserService;
-        _storageService = storageService;
-    }
+    private readonly IApplicationDbContext _context = context;
+    private readonly ICurrentUserService _currentUserService = currentUserService;
+    private readonly IStorageService _storageService = storageService;
 
     public async Task<Result<PostImageUploadUrlResponse>> Handle(GetPostImageUploadUrlCommand request, CancellationToken ct)
     {

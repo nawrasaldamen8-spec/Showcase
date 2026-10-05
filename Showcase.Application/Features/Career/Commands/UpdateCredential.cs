@@ -1,18 +1,7 @@
-using System;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using FluentValidation;
-using MediatR;
-using Microsoft.EntityFrameworkCore;
-using Showcase.Application.Common.Extensions;
-using Showcase.Application.Common.Interfaces;
 using Showcase.Application.Features.Career.Common;
-using Showcase.Domain.Common.Results;
-using Showcase.Domain.Entities;
-using Showcase.Domain.ValueObjects;
 
 namespace Showcase.Application.Features.Career.Commands;
+
 using Showcase.Application.Features.Career.Common;
 
 public record UpdateCredentialCommand(
@@ -46,18 +35,12 @@ public class UpdateCredentialCommandValidator : AbstractValidator<UpdateCredenti
     }
 }
 
-public class UpdateCredentialCommandHandler : IRequestHandler<UpdateCredentialCommand, Result<CareerCredentialDto>>
+public class UpdateCredentialCommandHandler(
+    ICurrentUserService currentUserService,
+    IApplicationDbContext context) : IRequestHandler<UpdateCredentialCommand, Result<CareerCredentialDto>>
 {
-    private readonly ICurrentUserService _currentUserService;
-    private readonly IApplicationDbContext _context;
-
-    public UpdateCredentialCommandHandler(
-        ICurrentUserService currentUserService,
-        IApplicationDbContext context)
-    {
-        _currentUserService = currentUserService;
-        _context = context;
-    }
+    private readonly ICurrentUserService _currentUserService = currentUserService;
+    private readonly IApplicationDbContext _context = context;
 
     public async Task<Result<CareerCredentialDto>> Handle(UpdateCredentialCommand request, CancellationToken ct)
     {

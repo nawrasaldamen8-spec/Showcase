@@ -1,17 +1,7 @@
-using System;
-using System.Threading;
-using System.Threading.Tasks;
-using FluentValidation;
-using MediatR;
-using Microsoft.EntityFrameworkCore;
-using Showcase.Application.Common.Extensions;
-using Showcase.Application.Common.Interfaces;
 using Showcase.Application.Features.Career.Common;
-using Showcase.Domain.Common.Results;
-using Showcase.Domain.Entities;
-using Showcase.Domain.Enums;
 
 namespace Showcase.Application.Features.Career.Commands;
+
 using Showcase.Application.Features.Career.Common;
 
 public record CreateLanguageCommand(
@@ -31,18 +21,12 @@ public class CreateLanguageCommandValidator : AbstractValidator<CreateLanguageCo
     }
 }
 
-public class CreateLanguageCommandHandler : IRequestHandler<CreateLanguageCommand, Result<CareerLanguageDto>>
+public class CreateLanguageCommandHandler(
+    ICurrentUserService currentUserService,
+    IApplicationDbContext context) : IRequestHandler<CreateLanguageCommand, Result<CareerLanguageDto>>
 {
-    private readonly ICurrentUserService _currentUserService;
-    private readonly IApplicationDbContext _context;
-
-    public CreateLanguageCommandHandler(
-        ICurrentUserService currentUserService,
-        IApplicationDbContext context)
-    {
-        _currentUserService = currentUserService;
-        _context = context;
-    }
+    private readonly ICurrentUserService _currentUserService = currentUserService;
+    private readonly IApplicationDbContext _context = context;
 
     public async Task<Result<CareerLanguageDto>> Handle(CreateLanguageCommand request, CancellationToken ct)
     {

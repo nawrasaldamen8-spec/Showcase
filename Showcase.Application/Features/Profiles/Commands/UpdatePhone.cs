@@ -1,11 +1,3 @@
-using FluentValidation;
-using MediatR;
-using Showcase.Application.Common.Interfaces;
-using Showcase.Domain.Common.Results;
-using System.Text.RegularExpressions;
-using System.Threading;
-using System.Threading.Tasks;
-
 namespace Showcase.Application.Features.Profiles.Commands;
 
 
@@ -14,18 +6,12 @@ public record UpdatePhoneCommand(string PhoneNumber) : IRequest<Result>;
 
 
 
-public class UpdatePhoneCommandHandler : IRequestHandler<UpdatePhoneCommand, Result>
+public class UpdatePhoneCommandHandler(
+    ICurrentUserService currentUserService,
+    IIdentityService identityService) : IRequestHandler<UpdatePhoneCommand, Result>
 {
-    private readonly ICurrentUserService _currentUserService;
-    private readonly IIdentityService _identityService;
-
-    public UpdatePhoneCommandHandler(
-        ICurrentUserService currentUserService,
-        IIdentityService identityService)
-    {
-        _currentUserService = currentUserService;
-        _identityService = identityService;
-    }
+    private readonly ICurrentUserService _currentUserService = currentUserService;
+    private readonly IIdentityService _identityService = identityService;
 
     public async Task<Result> Handle(UpdatePhoneCommand request, CancellationToken ct)
     {

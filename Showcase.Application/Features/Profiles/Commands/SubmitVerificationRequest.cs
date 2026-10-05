@@ -1,11 +1,3 @@
-using MediatR;
-using Microsoft.EntityFrameworkCore;
-using Showcase.Application.Common.Interfaces;
-using Showcase.Domain.Common.Results;
-using Showcase.Domain.Entities;
-using System.Threading;
-using System.Threading.Tasks;
-
 namespace Showcase.Application.Features.Profiles.Commands;
 
 
@@ -22,18 +14,12 @@ public record SubmitVerificationRequestCommand(
 
 
 
-public class SubmitVerificationRequestCommandHandler : IRequestHandler<SubmitVerificationRequestCommand, Result>
+public class SubmitVerificationRequestCommandHandler(
+    ICurrentUserService currentUserService,
+    IApplicationDbContext context) : IRequestHandler<SubmitVerificationRequestCommand, Result>
 {
-    private readonly ICurrentUserService _currentUserService;
-    private readonly IApplicationDbContext _context;
-
-    public SubmitVerificationRequestCommandHandler(
-        ICurrentUserService currentUserService,
-        IApplicationDbContext context)
-    {
-        _currentUserService = currentUserService;
-        _context = context;
-    }
+    private readonly ICurrentUserService _currentUserService = currentUserService;
+    private readonly IApplicationDbContext _context = context;
 
     public async Task<Result> Handle(SubmitVerificationRequestCommand request, CancellationToken ct)
     {

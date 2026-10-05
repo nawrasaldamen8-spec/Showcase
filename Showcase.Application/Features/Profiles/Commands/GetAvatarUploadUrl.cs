@@ -1,13 +1,4 @@
-using FluentValidation;
-using MediatR;
-using Showcase.Application.Common.Interfaces;
 using Showcase.Application.Features.Profiles.Common;
-using Showcase.Domain.Common.Results;
-using Showcase.Domain.ValueObjects;
-using System;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Showcase.Application.Features.Profiles.Commands;
 
@@ -19,18 +10,12 @@ public record GetAvatarUploadUrlCommand(
 
 
 
-public class GetAvatarUploadUrlCommandHandler : IRequestHandler<GetAvatarUploadUrlCommand, Result<AvatarUploadUrlResponse>>
+public class GetAvatarUploadUrlCommandHandler(
+    IStorageService storageService,
+    ICurrentUserService currentUserService) : IRequestHandler<GetAvatarUploadUrlCommand, Result<AvatarUploadUrlResponse>>
 {
-    private readonly IStorageService _storageService;
-    private readonly ICurrentUserService _currentUserService;
-
-    public GetAvatarUploadUrlCommandHandler(
-        IStorageService storageService,
-        ICurrentUserService currentUserService)
-    {
-        _storageService = storageService;
-        _currentUserService = currentUserService;
-    }
+    private readonly IStorageService _storageService = storageService;
+    private readonly ICurrentUserService _currentUserService = currentUserService;
 
     public async Task<Result<AvatarUploadUrlResponse>> Handle(GetAvatarUploadUrlCommand request, CancellationToken ct)
     {

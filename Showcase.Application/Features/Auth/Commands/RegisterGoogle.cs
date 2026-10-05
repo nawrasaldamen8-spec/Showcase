@@ -1,10 +1,4 @@
-using FluentValidation;
-using MediatR;
-using Showcase.Application.Common.Interfaces;
 using Showcase.Application.Features.Auth.Common;
-using Showcase.Domain.Common.Results;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Showcase.Application.Features.Auth.Commands;
 
@@ -20,21 +14,14 @@ public record RegisterGoogleCommand(
 
 
 
-public class RegisterGoogleCommandHandler : IRequestHandler<RegisterGoogleCommand, Result<AuthResponse>>
+public class RegisterGoogleCommandHandler(
+    IIdentityService identityService,
+    ITokenService tokenService,
+    IAuthSessionOrchestrator authOrchestrator) : IRequestHandler<RegisterGoogleCommand, Result<AuthResponse>>
 {
-    private readonly IIdentityService _identityService;
-    private readonly ITokenService _tokenService;
-    private readonly IAuthSessionOrchestrator _authOrchestrator;
-
-    public RegisterGoogleCommandHandler(
-        IIdentityService identityService,
-        ITokenService tokenService,
-        IAuthSessionOrchestrator authOrchestrator)
-    {
-        _identityService = identityService;
-        _tokenService = tokenService;
-        _authOrchestrator = authOrchestrator;
-    }
+    private readonly IIdentityService _identityService = identityService;
+    private readonly ITokenService _tokenService = tokenService;
+    private readonly IAuthSessionOrchestrator _authOrchestrator = authOrchestrator;
 
     public async Task<Result<AuthResponse>> Handle(RegisterGoogleCommand request, CancellationToken ct)
     {

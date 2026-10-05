@@ -1,12 +1,3 @@
-using MediatR;
-using Microsoft.Extensions.Options;
-using Showcase.Application.Common.Models;
-using Showcase.Domain.Common.Results;
-using System;
-using System.Text.Encodings.Web;
-using System.Threading;
-using System.Threading.Tasks;
-
 namespace Showcase.Application.Features.Auth.Queries;
 
 
@@ -15,14 +6,9 @@ public record GoogleAuthUrlResponse(string Url);
 
 public record GetGoogleAuthUrlQuery(string? ReturnUrl = null) : IRequest<Result<GoogleAuthUrlResponse>>;
 
-public class GetGoogleAuthUrlQueryHandler : IRequestHandler<GetGoogleAuthUrlQuery, Result<GoogleAuthUrlResponse>>
+public class GetGoogleAuthUrlQueryHandler(IOptions<GoogleAuthSettings> googleOptions) : IRequestHandler<GetGoogleAuthUrlQuery, Result<GoogleAuthUrlResponse>>
 {
-    private readonly IOptions<GoogleAuthSettings> _googleOptions;
-
-    public GetGoogleAuthUrlQueryHandler(IOptions<GoogleAuthSettings> googleOptions)
-    {
-        _googleOptions = googleOptions;
-    }
+    private readonly IOptions<GoogleAuthSettings> _googleOptions = googleOptions;
 
     public Task<Result<GoogleAuthUrlResponse>> Handle(GetGoogleAuthUrlQuery request, CancellationToken ct)
     {

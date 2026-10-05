@@ -1,15 +1,4 @@
-using FluentValidation;
-using MediatR;
-using Showcase.Application.Common.Extensions;
-using Showcase.Application.Common.Interfaces;
 using Showcase.Application.Features.Posts.Common;
-using Showcase.Domain.Common.Results;
-using Showcase.Domain.Entities;
-using Showcase.Domain.ValueObjects;
-using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Showcase.Application.Features.Posts.Commands;
 
@@ -23,18 +12,12 @@ public record CreatePostCommand(
 
 
 
-public class CreatePostCommandHandler : IRequestHandler<CreatePostCommand, Result<PostCreatedResponse>>
+public class CreatePostCommandHandler(
+    IApplicationDbContext context,
+    ICurrentUserService currentUserService) : IRequestHandler<CreatePostCommand, Result<PostCreatedResponse>>
 {
-    private readonly IApplicationDbContext _context;
-    private readonly ICurrentUserService _currentUserService;
-
-    public CreatePostCommandHandler(
-        IApplicationDbContext context,
-        ICurrentUserService currentUserService)
-    {
-        _context = context;
-        _currentUserService = currentUserService;
-    }
+    private readonly IApplicationDbContext _context = context;
+    private readonly ICurrentUserService _currentUserService = currentUserService;
 
     public async Task<Result<PostCreatedResponse>> Handle(CreatePostCommand request, CancellationToken ct)
     {

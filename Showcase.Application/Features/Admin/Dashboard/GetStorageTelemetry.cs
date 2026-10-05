@@ -1,37 +1,21 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using MediatR;
-using Microsoft.EntityFrameworkCore;
-using Showcase.Application.Common.Interfaces;
 using Showcase.Application.Features.Admin.Common;
-using Showcase.Domain.Common.Results;
 
 namespace Showcase.Application.Features.Admin.Dashboard;
 
 public record GetStorageTelemetryQuery : IRequest<Result<StorageTelemetryDto>>;
 
-public class GetStorageTelemetryQueryHandler : IRequestHandler<GetStorageTelemetryQuery, Result<StorageTelemetryDto>>
+public class GetStorageTelemetryQueryHandler(
+    IApplicationDbContext context,
+    IStorageService storageService,
+    IIdentityService identityService) : IRequestHandler<GetStorageTelemetryQuery, Result<StorageTelemetryDto>>
 {
-    private readonly IApplicationDbContext _context;
-    private readonly IStorageService _storageService;
-    private readonly IIdentityService _identityService;
+    private readonly IApplicationDbContext _context = context;
+    private readonly IStorageService _storageService = storageService;
+    private readonly IIdentityService _identityService = identityService;
 
     // Statistical approximations: ~850 KB per high-res plate.
     // Actual file sizes are not stored in the database; these are display estimates only.
     private const long ApproximateBytesPerPost = 850_000L;
-
-    public GetStorageTelemetryQueryHandler(
-        IApplicationDbContext context,
-        IStorageService storageService,
-        IIdentityService identityService)
-    {
-        _context = context;
-        _storageService = storageService;
-        _identityService = identityService;
-    }
 
     public async Task<Result<StorageTelemetryDto>> Handle(GetStorageTelemetryQuery request, CancellationToken ct)
     {

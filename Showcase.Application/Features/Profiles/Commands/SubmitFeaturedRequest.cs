@@ -1,12 +1,3 @@
-using MediatR;
-using Microsoft.EntityFrameworkCore;
-using Showcase.Application.Common.Interfaces;
-using Showcase.Domain.Common.Results;
-using Showcase.Domain.Entities;
-using Showcase.Domain.Enums;
-using System.Threading;
-using System.Threading.Tasks;
-
 namespace Showcase.Application.Features.Profiles.Commands;
 
 
@@ -15,18 +6,12 @@ public record SubmitFeaturedRequestCommand(string? Message = null, string? Notes
 
 
 
-public class SubmitFeaturedRequestCommandHandler : IRequestHandler<SubmitFeaturedRequestCommand, Result>
+public class SubmitFeaturedRequestCommandHandler(
+    ICurrentUserService currentUserService,
+    IApplicationDbContext context) : IRequestHandler<SubmitFeaturedRequestCommand, Result>
 {
-    private readonly ICurrentUserService _currentUserService;
-    private readonly IApplicationDbContext _context;
-
-    public SubmitFeaturedRequestCommandHandler(
-        ICurrentUserService currentUserService,
-        IApplicationDbContext context)
-    {
-        _currentUserService = currentUserService;
-        _context = context;
-    }
+    private readonly ICurrentUserService _currentUserService = currentUserService;
+    private readonly IApplicationDbContext _context = context;
 
     public async Task<Result> Handle(SubmitFeaturedRequestCommand request, CancellationToken ct)
     {

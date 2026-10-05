@@ -1,11 +1,3 @@
-using MediatR;
-using Microsoft.EntityFrameworkCore;
-using Showcase.Application.Common.Interfaces;
-using Showcase.Domain.Common.Results;
-using Showcase.Domain.Entities;
-using System.Threading;
-using System.Threading.Tasks;
-
 namespace Showcase.Application.Features.Auth.Commands;
 
 
@@ -14,16 +6,10 @@ public record DevToggleBanResponse(bool IsBanned, string? BanReason);
 
 public record ToggleDevBanCommand : IRequest<Result<DevToggleBanResponse>>;
 
-public class ToggleDevBanCommandHandler : IRequestHandler<ToggleDevBanCommand, Result<DevToggleBanResponse>>
+public class ToggleDevBanCommandHandler(ICurrentUserService currentUserService, IApplicationDbContext context) : IRequestHandler<ToggleDevBanCommand, Result<DevToggleBanResponse>>
 {
-    private readonly ICurrentUserService _currentUserService;
-    private readonly IApplicationDbContext _context;
-
-    public ToggleDevBanCommandHandler(ICurrentUserService currentUserService, IApplicationDbContext context)
-    {
-        _currentUserService = currentUserService;
-        _context = context;
-    }
+    private readonly ICurrentUserService _currentUserService = currentUserService;
+    private readonly IApplicationDbContext _context = context;
 
     public async Task<Result<DevToggleBanResponse>> Handle(ToggleDevBanCommand request, CancellationToken ct)
     {

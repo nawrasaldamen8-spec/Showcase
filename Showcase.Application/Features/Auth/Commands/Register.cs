@@ -1,12 +1,4 @@
-using FluentValidation;
-using MediatR;
-using Showcase.Application.Common.Interfaces;
 using Showcase.Application.Features.Auth.Common;
-using Showcase.Domain.Common.Results;
-using Showcase.Domain.Entities;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Showcase.Application.Features.Auth.Commands;
 
@@ -22,21 +14,14 @@ public record RegisterCommand(
 
 
 
-public class RegisterCommandHandler : IRequestHandler<RegisterCommand, Result<AuthResponse>>
+public class RegisterCommandHandler(
+    IIdentityService identityService,
+    IApplicationDbContext context,
+    IAuthSessionOrchestrator authOrchestrator) : IRequestHandler<RegisterCommand, Result<AuthResponse>>
 {
-    private readonly IIdentityService _identityService;
-    private readonly IApplicationDbContext _context;
-    private readonly IAuthSessionOrchestrator _authOrchestrator;
-
-    public RegisterCommandHandler(
-        IIdentityService identityService,
-        IApplicationDbContext context,
-        IAuthSessionOrchestrator authOrchestrator)
-    {
-        _identityService = identityService;
-        _context = context;
-        _authOrchestrator = authOrchestrator;
-    }
+    private readonly IIdentityService _identityService = identityService;
+    private readonly IApplicationDbContext _context = context;
+    private readonly IAuthSessionOrchestrator _authOrchestrator = authOrchestrator;
 
     public async Task<Result<AuthResponse>> Handle(RegisterCommand request, CancellationToken ct)
     {

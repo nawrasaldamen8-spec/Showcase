@@ -1,13 +1,4 @@
-using MediatR;
-using Microsoft.EntityFrameworkCore;
-using Showcase.Application.Common.Interfaces;
 using Showcase.Application.Features.Profiles.Common;
-using Showcase.Domain.Common.Results;
-using Showcase.Domain.Entities;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Showcase.Application.Features.SocialLinks.Queries;
 
@@ -17,18 +8,12 @@ public record GetSocialLinksQuery : IRequest<Result<IReadOnlyList<SocialLinkDto>
 
 
 
-public class GetSocialLinksQueryHandler : IRequestHandler<GetSocialLinksQuery, Result<IReadOnlyList<SocialLinkDto>>>
+public class GetSocialLinksQueryHandler(
+    ICurrentUserService currentUserService,
+    IApplicationDbContext context) : IRequestHandler<GetSocialLinksQuery, Result<IReadOnlyList<SocialLinkDto>>>
 {
-    private readonly ICurrentUserService _currentUserService;
-    private readonly IApplicationDbContext _context;
-
-    public GetSocialLinksQueryHandler(
-        ICurrentUserService currentUserService,
-        IApplicationDbContext context)
-    {
-        _currentUserService = currentUserService;
-        _context = context;
-    }
+    private readonly ICurrentUserService _currentUserService = currentUserService;
+    private readonly IApplicationDbContext _context = context;
 
     public async Task<Result<IReadOnlyList<SocialLinkDto>>> Handle(GetSocialLinksQuery request, CancellationToken ct)
     {

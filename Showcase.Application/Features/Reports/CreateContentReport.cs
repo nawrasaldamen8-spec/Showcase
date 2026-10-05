@@ -1,12 +1,3 @@
-using System;
-using System.Threading;
-using System.Threading.Tasks;
-using FluentValidation;
-using MediatR;
-using Showcase.Application.Common.Interfaces;
-using Showcase.Domain.Common.Results;
-using Showcase.Domain.Entities;
-
 namespace Showcase.Application.Features.Reports;
 
 public record CreateContentReportCommand(
@@ -37,18 +28,12 @@ public class CreateContentReportCommandValidator : AbstractValidator<CreateConte
     }
 }
 
-public class CreateContentReportCommandHandler : IRequestHandler<CreateContentReportCommand, Result<Guid>>
+public class CreateContentReportCommandHandler(
+    IApplicationDbContext context,
+    ICurrentUserService currentUserService) : IRequestHandler<CreateContentReportCommand, Result<Guid>>
 {
-    private readonly IApplicationDbContext _context;
-    private readonly ICurrentUserService _currentUserService;
-
-    public CreateContentReportCommandHandler(
-        IApplicationDbContext context,
-        ICurrentUserService currentUserService)
-    {
-        _context = context;
-        _currentUserService = currentUserService;
-    }
+    private readonly IApplicationDbContext _context = context;
+    private readonly ICurrentUserService _currentUserService = currentUserService;
 
     public async Task<Result<Guid>> Handle(CreateContentReportCommand request, CancellationToken ct)
     {

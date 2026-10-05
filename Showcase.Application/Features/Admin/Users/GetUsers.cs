@@ -1,15 +1,4 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using MediatR;
-using Microsoft.EntityFrameworkCore;
-using Showcase.Application.Common.Extensions;
-using Showcase.Application.Common.Interfaces;
 using Showcase.Application.Features.Admin.Common;
-using Showcase.Domain.Common.Results;
-using Showcase.Domain.Enums;
 
 namespace Showcase.Application.Features.Admin.Users;
 
@@ -18,25 +7,18 @@ public record GetUsersQuery(
     string? Status = null,
     string? Role = null) : IRequest<Result<IReadOnlyList<AdminUserListItemDto>>>;
 
-public class GetUsersQueryHandler : IRequestHandler<GetUsersQuery, Result<IReadOnlyList<AdminUserListItemDto>>>
+public class GetUsersQueryHandler(
+    IApplicationDbContext context,
+    IIdentityService identityService,
+    IStorageService storageService) : IRequestHandler<GetUsersQuery, Result<IReadOnlyList<AdminUserListItemDto>>>
 {
-    private readonly IApplicationDbContext _context;
-    private readonly IIdentityService _identityService;
-    private readonly IStorageService _storageService;
+    private readonly IApplicationDbContext _context = context;
+    private readonly IIdentityService _identityService = identityService;
+    private readonly IStorageService _storageService = storageService;
 
     // Statistical approximation: ~850 KB per high-resolution architectural plate.
     // Actual file sizes are not stored in post_images; this is a display estimate only.
     private const long ApproximateBytesPerPost = 850_000L;
-
-    public GetUsersQueryHandler(
-        IApplicationDbContext context,
-        IIdentityService identityService,
-        IStorageService storageService)
-    {
-        _context = context;
-        _identityService = identityService;
-        _storageService = storageService;
-    }
 
     public async Task<Result<IReadOnlyList<AdminUserListItemDto>>> Handle(GetUsersQuery request, CancellationToken ct)
     {

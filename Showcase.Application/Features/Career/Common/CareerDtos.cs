@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-
 namespace Showcase.Application.Features.Career.Common;
 
 public record CareerExperienceDto(

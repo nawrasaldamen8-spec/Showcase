@@ -1,14 +1,4 @@
-using FluentValidation;
-using MediatR;
-using Microsoft.EntityFrameworkCore;
-using Showcase.Application.Common.Interfaces;
 using Showcase.Application.Features.Profiles.Common;
-using Showcase.Domain.Common.Results;
-using Showcase.Domain.Entities;
-using Showcase.Domain.ValueObjects;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Showcase.Application.Features.SocialLinks.Commands;
 
@@ -21,18 +11,12 @@ public record AddSocialLinkCommand(
 
 
 
-public class AddSocialLinkCommandHandler : IRequestHandler<AddSocialLinkCommand, Result<SocialLinkDto>>
+public class AddSocialLinkCommandHandler(
+    IApplicationDbContext context,
+    ICurrentUserService currentUserService) : IRequestHandler<AddSocialLinkCommand, Result<SocialLinkDto>>
 {
-    private readonly IApplicationDbContext _context;
-    private readonly ICurrentUserService _currentUserService;
-
-    public AddSocialLinkCommandHandler(
-        IApplicationDbContext context,
-        ICurrentUserService currentUserService)
-    {
-        _context = context;
-        _currentUserService = currentUserService;
-    }
+    private readonly IApplicationDbContext _context = context;
+    private readonly ICurrentUserService _currentUserService = currentUserService;
 
     public async Task<Result<SocialLinkDto>> Handle(AddSocialLinkCommand request, CancellationToken ct)
     {

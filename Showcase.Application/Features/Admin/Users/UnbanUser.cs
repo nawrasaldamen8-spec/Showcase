@@ -1,12 +1,3 @@
-using System.Threading;
-using System.Threading.Tasks;
-using FluentValidation;
-using MediatR;
-using Microsoft.EntityFrameworkCore;
-using Showcase.Application.Common.Interfaces;
-using Showcase.Domain.Common.Results;
-using Showcase.Domain.Entities;
-
 namespace Showcase.Application.Features.Admin.Users;
 
 public record UnbanUserCommand(string UserId) : IRequest<Result>;
@@ -20,18 +11,12 @@ public class UnbanUserCommandValidator : AbstractValidator<UnbanUserCommand>
     }
 }
 
-public class UnbanUserCommandHandler : IRequestHandler<UnbanUserCommand, Result>
+public class UnbanUserCommandHandler(
+    IApplicationDbContext context,
+    IAuditLogger auditLogger) : IRequestHandler<UnbanUserCommand, Result>
 {
-    private readonly IApplicationDbContext _context;
-    private readonly IAuditLogger _auditLogger;
-
-    public UnbanUserCommandHandler(
-        IApplicationDbContext context,
-        IAuditLogger auditLogger)
-    {
-        _context = context;
-        _auditLogger = auditLogger;
-    }
+    private readonly IApplicationDbContext _context = context;
+    private readonly IAuditLogger _auditLogger = auditLogger;
 
     public async Task<Result> Handle(UnbanUserCommand request, CancellationToken ct)
     {
