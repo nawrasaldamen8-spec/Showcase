@@ -1,15 +1,5 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using FluentValidation.TestHelper;
-using Microsoft.EntityFrameworkCore;
 using Moq;
-using Showcase.Application.Common.Interfaces;
 using Showcase.Application.Features.SocialLinks.Commands;
-using Showcase.Domain.Entities;
-using Showcase.Domain.ValueObjects;
 using Showcase.Infrastructure.Data;
 using Xunit;
 

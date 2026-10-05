@@ -1,17 +1,8 @@
-using System;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
 using Moq;
-using Showcase.Application.Common.Interfaces;
 using Showcase.Application.Features.Analytics;
 using Showcase.Application.Features.Lookups.Queries;
 using Showcase.Application.Features.Notifications.Commands;
 using Showcase.Application.Features.Notifications.Queries;
-using Showcase.Domain.Entities;
-using Showcase.Domain.Enums;
-using Showcase.Domain.ValueObjects;
 using Showcase.Infrastructure.Data;
 using Xunit;
 

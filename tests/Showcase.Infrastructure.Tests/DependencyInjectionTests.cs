@@ -1,12 +1,6 @@
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
-using Showcase.Application.Common.Interfaces;
 using Showcase.Infrastructure.DependencyInjection;
 using Showcase.Infrastructure.Identity;
 using Showcase.Infrastructure.Storage;

@@ -1,6 +1,3 @@
-using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
-using Showcase.Application.Common.Interfaces;
 using Showcase.Infrastructure.Data;
 using Xunit;
 

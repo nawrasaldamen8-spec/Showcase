@@ -1,22 +1,8 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using FluentValidation.TestHelper;
-using MediatR;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using Moq;
-using Showcase.Application.Common.Interfaces;
 using Showcase.Application.Features.Notifications.Events;
 using Showcase.Application.Features.Notifications.Handlers;
 using Showcase.Application.Features.Posts.Commands;
 using Showcase.Application.Features.Posts.Queries;
-using Showcase.Domain.Common.Results;
-using Showcase.Domain.Entities;
-using Showcase.Domain.Enums;
-using Showcase.Domain.ValueObjects;
 using Showcase.Infrastructure.Data;
 using Xunit;
 

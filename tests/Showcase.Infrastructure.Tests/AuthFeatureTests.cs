@@ -1,17 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Claims;
-using System.Threading;
-using System.Threading.Tasks;
-using FluentValidation.TestHelper;
-using Microsoft.EntityFrameworkCore;
 using Moq;
-using Showcase.Application.Common.Interfaces;
 using Showcase.Application.Features.Auth.Commands;
 using Showcase.Application.Features.Auth.Queries;
-using Showcase.Domain.Common.Results;
-using Showcase.Domain.Entities;
 using Showcase.Infrastructure.Data;
 using Xunit;
 

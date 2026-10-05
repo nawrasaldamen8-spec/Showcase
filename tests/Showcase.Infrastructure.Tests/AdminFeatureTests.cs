@@ -1,18 +1,9 @@
-using System;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
 using Moq;
-using Showcase.Application.Common.Interfaces;
 using Showcase.Application.Features.Admin.Dashboard;
 using Showcase.Application.Features.Admin.Featured;
 using Showcase.Application.Features.Admin.Reports;
 using Showcase.Application.Features.Admin.Users;
 using Showcase.Application.Features.Admin.Verifications;
-using Showcase.Domain.Entities;
-using Showcase.Domain.Enums;
-using Showcase.Domain.ValueObjects;
 using Showcase.Infrastructure.Data;
 using Xunit;
 

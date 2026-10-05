@@ -1,10 +1,5 @@
-using System.Threading;
-using System.Threading.Tasks;
-using FluentValidation.TestHelper;
 using Moq;
-using Showcase.Application.Common.Interfaces;
 using Showcase.Application.Features.Auth.Commands;
-using Showcase.Domain.Common.Results;
 using Xunit;
 
 namespace Showcase.Infrastructure.Tests;

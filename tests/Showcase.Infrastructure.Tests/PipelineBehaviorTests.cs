@@ -1,11 +1,5 @@
-using System;
-using System.Threading;
-using System.Threading.Tasks;
-using MediatR;
 using Microsoft.Extensions.Logging.Abstractions;
 using Showcase.Application.Common.Behaviors;
-using Showcase.Application.Common.Interfaces;
-using Showcase.Domain.Common.Results;
 using Xunit;
 
 namespace Showcase.Infrastructure.Tests;

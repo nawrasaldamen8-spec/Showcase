@@ -1,8 +1,3 @@
-using System;
-using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
-using Showcase.Domain.Entities;
-using Showcase.Domain.ValueObjects;
 using Showcase.Infrastructure.Data;
 using Showcase.Infrastructure.Data.Seed;
 using Xunit;
