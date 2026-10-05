@@ -1,7 +1,3 @@
-using System;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-
 namespace Showcase.Api.DependencyInjection;
 
 public static class CorsExtensions

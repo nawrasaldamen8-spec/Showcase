@@ -1,4 +1,3 @@
-﻿using System.Reflection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Showcase.Api.Endpoints;

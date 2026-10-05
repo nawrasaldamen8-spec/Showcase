@@ -1,5 +1,4 @@
 using Showcase.Api.DependencyInjection;
-using Showcase.Api.Endpoints;
 using Showcase.Application.Common.DependencyInjection;
 using Showcase.Infrastructure.DependencyInjection;
 using Showcase.Infrastructure.Hubs;

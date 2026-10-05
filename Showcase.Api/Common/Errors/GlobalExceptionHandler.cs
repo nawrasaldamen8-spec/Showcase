@@ -5,16 +5,10 @@ using Microsoft.Extensions.Hosting;
 
 namespace Showcase.Api.Common.Errors;
 
-public class GlobalExceptionHandler : IExceptionHandler
+public class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger, IHostEnvironment env) : IExceptionHandler
 {
-    private readonly ILogger<GlobalExceptionHandler> _logger;
-    private readonly IHostEnvironment _env;
-
-    public GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger, IHostEnvironment env)
-    {
-        _logger = logger;
-        _env = env;
-    }
+    private readonly ILogger<GlobalExceptionHandler> _logger = logger;
+    private readonly IHostEnvironment _env = env;
 
     public async ValueTask<bool> TryHandleAsync(
         HttpContext httpContext,

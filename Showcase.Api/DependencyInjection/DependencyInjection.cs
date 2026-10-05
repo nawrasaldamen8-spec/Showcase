@@ -1,9 +1,5 @@
-using System.Reflection;
 using Microsoft.AspNetCore.Http.Json;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using Showcase.Api.Common.Errors;
-using Showcase.Api.Endpoints;
 
 namespace Showcase.Api.DependencyInjection;
 

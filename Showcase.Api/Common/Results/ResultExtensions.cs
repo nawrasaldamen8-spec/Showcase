@@ -1,5 +1,3 @@
-using Showcase.Domain.Common.Results;
-
 namespace Showcase.Api.Common.Results;
 
 public static class ResultExtensions

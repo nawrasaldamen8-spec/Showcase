@@ -1,9 +1,6 @@
-using System.Threading;
-using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
-using Showcase.Api.Common.Results;
 using Showcase.Application.Features.Profiles.Common;
 using Showcase.Application.Features.Profiles.Queries;
 

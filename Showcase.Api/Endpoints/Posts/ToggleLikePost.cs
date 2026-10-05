@@ -1,11 +1,7 @@
-using System;
-using System.Threading;
-using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
-using Showcase.Api.Common.Results;
 using Showcase.Application.Features.Posts.Commands;
 
 namespace Showcase.Api.Endpoints.Posts;
