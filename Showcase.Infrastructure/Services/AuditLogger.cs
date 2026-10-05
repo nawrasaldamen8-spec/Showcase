@@ -1,27 +1,13 @@
-using System;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using Showcase.Application.Common.Interfaces;
-using Showcase.Domain.Entities;
-
 namespace Showcase.Infrastructure.Services;
 
-public class AuditLogger : IAuditLogger
+public class AuditLogger(
+    IApplicationDbContext context,
+    ICurrentUserService currentUserService,
+    ILogger<AuditLogger> logger) : IAuditLogger
 {
-    private readonly IApplicationDbContext _context;
-    private readonly ICurrentUserService _currentUserService;
-    private readonly ILogger<AuditLogger> _logger;
-
-    public AuditLogger(
-        IApplicationDbContext context,
-        ICurrentUserService currentUserService,
-        ILogger<AuditLogger> logger)
-    {
-        _context = context;
-        _currentUserService = currentUserService;
-        _logger = logger;
-    }
+    private readonly IApplicationDbContext _context = context;
+    private readonly ICurrentUserService _currentUserService = currentUserService;
+    private readonly ILogger<AuditLogger> _logger = logger;
 
     public Task LogAsync(
         string action,

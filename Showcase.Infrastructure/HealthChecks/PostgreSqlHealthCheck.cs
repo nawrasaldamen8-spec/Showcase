@@ -1,19 +1,11 @@
-using System;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Showcase.Infrastructure.Data;
 
 namespace Showcase.Infrastructure.HealthChecks;
 
-public class PostgreSqlHealthCheck : IHealthCheck
+public class PostgreSqlHealthCheck(ApplicationDbContext context) : IHealthCheck
 {
-    private readonly ApplicationDbContext _context;
-
-    public PostgreSqlHealthCheck(ApplicationDbContext context)
-    {
-        _context = context;
-    }
+    private readonly ApplicationDbContext _context = context;
 
     public async Task<HealthCheckResult> CheckHealthAsync(
         HealthCheckContext context,

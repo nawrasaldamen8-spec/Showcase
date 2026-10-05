@@ -1,33 +1,13 @@
-using System;
-using System.Collections.Generic;
-using System.Net.Http;
-using System.Net.Http.Headers;
-using System.Text.Json;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-using Showcase.Application.Common.Interfaces;
-using Showcase.Application.Common.Models;
-using Showcase.Domain.Common.Results;
-
 namespace Showcase.Infrastructure.Identity;
 
-public class GoogleAuthService : IGoogleAuthService
+public class GoogleAuthService(
+    HttpClient httpClient,
+    IOptions<GoogleAuthSettings> googleOptions,
+    ILogger<GoogleAuthService> logger) : IGoogleAuthService
 {
-    private readonly HttpClient _httpClient;
-    private readonly IOptions<GoogleAuthSettings> _googleOptions;
-    private readonly ILogger<GoogleAuthService> _logger;
-
-    public GoogleAuthService(
-        HttpClient httpClient,
-        IOptions<GoogleAuthSettings> googleOptions,
-        ILogger<GoogleAuthService> logger)
-    {
-        _httpClient = httpClient;
-        _googleOptions = googleOptions;
-        _logger = logger;
-    }
+    private readonly HttpClient _httpClient = httpClient;
+    private readonly IOptions<GoogleAuthSettings> _googleOptions = googleOptions;
+    private readonly ILogger<GoogleAuthService> _logger = logger;
 
     public async Task<Result<GoogleUserInfo>> ExchangeCodeForUserInfoAsync(string code, CancellationToken ct)
     {

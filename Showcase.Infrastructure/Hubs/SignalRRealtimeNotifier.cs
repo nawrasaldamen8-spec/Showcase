@@ -1,18 +1,10 @@
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
-using Showcase.Application.Common.Interfaces;
 
 namespace Showcase.Infrastructure.Hubs;
 
-public class SignalRRealtimeNotifier : IRealtimeNotifier
+public class SignalRRealtimeNotifier(IHubContext<NotificationHub> hubContext) : IRealtimeNotifier
 {
-    private readonly IHubContext<NotificationHub> _hubContext;
-
-    public SignalRRealtimeNotifier(IHubContext<NotificationHub> hubContext)
-    {
-        _hubContext = hubContext;
-    }
+    private readonly IHubContext<NotificationHub> _hubContext = hubContext;
 
     public async Task PublishToUserAsync(string userId, string title, string message, object? payload = null, CancellationToken ct = default)
     {

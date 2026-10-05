@@ -1,6 +1,4 @@
-using System;
 using Microsoft.AspNetCore.Identity;
-using Showcase.Domain.Entities;
 
 namespace Showcase.Infrastructure.Identity;
 

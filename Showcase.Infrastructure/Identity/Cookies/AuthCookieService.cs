@@ -1,24 +1,16 @@
-using System;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Hosting;
-using Showcase.Application.Common.Interfaces;
 
 namespace Showcase.Infrastructure.Identity;
 
-public class AuthCookieService : IAuthCookieService
+public class AuthCookieService(IHttpContextAccessor httpContextAccessor, IWebHostEnvironment env) : IAuthCookieService
 {
     public const string AccessTokenCookieName = "showcase_access_token";
     public const string RefreshTokenCookieName = "showcase_refresh_token";
 
-    private readonly IHttpContextAccessor _httpContextAccessor;
-    private readonly IWebHostEnvironment _env;
-
-    public AuthCookieService(IHttpContextAccessor httpContextAccessor, IWebHostEnvironment env)
-    {
-        _httpContextAccessor = httpContextAccessor;
-        _env = env;
-    }
+    private readonly IHttpContextAccessor _httpContextAccessor = httpContextAccessor;
+    private readonly IWebHostEnvironment _env = env;
 
     public void SetAuthCookies(string accessToken, string refreshToken)
     {

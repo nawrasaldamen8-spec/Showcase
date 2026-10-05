@@ -1,11 +1,4 @@
-using System;
-using System.IO;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
-using Showcase.Application.Common.Interfaces;
-using Showcase.Domain.Common.Results;
 
 namespace Showcase.Infrastructure.Storage;
 

@@ -1,13 +1,5 @@
-using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
 using CloudinaryDotNet;
 using CloudinaryDotNet.Actions;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-using Showcase.Application.Common.Interfaces;
-using Showcase.Domain.Common.Results;
 
 namespace Showcase.Infrastructure.Storage;
 

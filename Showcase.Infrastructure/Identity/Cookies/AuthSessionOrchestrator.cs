@@ -1,28 +1,15 @@
-using System;
-using System.Security.Claims;
-using System.Threading;
-using System.Threading.Tasks;
-using Showcase.Application.Common.Interfaces;
 using Showcase.Application.Features.Auth.Common;
-using Showcase.Domain.Common.Results;
 
 namespace Showcase.Infrastructure.Identity;
 
-public class AuthSessionOrchestrator : IAuthSessionOrchestrator
+public class AuthSessionOrchestrator(
+    IIdentityService identityService,
+    ITokenService tokenService,
+    IAuthCookieService? authCookieService = null) : IAuthSessionOrchestrator
 {
-    private readonly IIdentityService _identityService;
-    private readonly ITokenService _tokenService;
-    private readonly IAuthCookieService? _authCookieService;
-
-    public AuthSessionOrchestrator(
-        IIdentityService identityService,
-        ITokenService tokenService,
-        IAuthCookieService? authCookieService = null)
-    {
-        _identityService = identityService;
-        _tokenService = tokenService;
-        _authCookieService = authCookieService;
-    }
+    private readonly IIdentityService _identityService = identityService;
+    private readonly ITokenService _tokenService = tokenService;
+    private readonly IAuthCookieService? _authCookieService = authCookieService;
 
     public async Task<Result<AuthResponse>> CreateSessionAsync(
         UserIdentityDetails user,
