@@ -1,8 +1,3 @@
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
-using Showcase.Domain.Common.Results;
-
 namespace Showcase.Application.Common.Interfaces;
 
 public record UserIdentityDetails(

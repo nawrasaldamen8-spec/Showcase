@@ -1,25 +1,12 @@
-using System.Diagnostics;
-using System.Threading;
-using System.Threading.Tasks;
-using MediatR;
-using Microsoft.Extensions.Logging;
-using Showcase.Application.Common.Interfaces;
-
 namespace Showcase.Application.Common.Behaviors;
 
-public class LoggingBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
+public class LoggingBehavior<TRequest, TResponse>(
+    ILogger<TRequest> logger,
+    ICurrentUserService currentUserService) : IPipelineBehavior<TRequest, TResponse>
     where TRequest : notnull
 {
-    private readonly ILogger<TRequest> _logger;
-    private readonly ICurrentUserService _currentUserService;
-
-    public LoggingBehavior(
-        ILogger<TRequest> logger,
-        ICurrentUserService currentUserService)
-    {
-        _logger = logger;
-        _currentUserService = currentUserService;
-    }
+    private readonly ILogger<TRequest> _logger = logger;
+    private readonly ICurrentUserService _currentUserService = currentUserService;
 
     public async Task<TResponse> Handle(
         TRequest request,

@@ -1,27 +1,14 @@
-using System;
-using System.Threading;
-using System.Threading.Tasks;
-using MediatR;
 using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.Logging;
-using Showcase.Application.Common.Interfaces;
-using Showcase.Domain.Common.Results;
 
 namespace Showcase.Application.Common.Behaviors;
 
-public class CachingBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
+public class CachingBehavior<TRequest, TResponse>(
+    IMemoryCache cache,
+    ILogger<CachingBehavior<TRequest, TResponse>> logger) : IPipelineBehavior<TRequest, TResponse>
     where TRequest : notnull
 {
-    private readonly IMemoryCache _cache;
-    private readonly ILogger<CachingBehavior<TRequest, TResponse>> _logger;
-
-    public CachingBehavior(
-        IMemoryCache cache,
-        ILogger<CachingBehavior<TRequest, TResponse>> logger)
-    {
-        _cache = cache;
-        _logger = logger;
-    }
+    private readonly IMemoryCache _cache = cache;
+    private readonly ILogger<CachingBehavior<TRequest, TResponse>> _logger = logger;
 
     public async Task<TResponse> Handle(
         TRequest request,

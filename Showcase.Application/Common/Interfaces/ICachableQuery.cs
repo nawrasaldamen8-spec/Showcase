@@ -1,5 +1,3 @@
-using System;
-
 namespace Showcase.Application.Common.Interfaces;
 
 public interface ICachableQuery

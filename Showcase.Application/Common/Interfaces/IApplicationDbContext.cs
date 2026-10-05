@@ -1,6 +1,3 @@
-using Microsoft.EntityFrameworkCore;
-using Showcase.Domain.Entities;
-
 namespace Showcase.Application.Common.Interfaces;
 
 public interface IApplicationDbContext

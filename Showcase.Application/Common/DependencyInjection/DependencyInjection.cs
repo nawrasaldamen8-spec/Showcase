@@ -1,8 +1,4 @@
-using System.Reflection;
 using Showcase.Application.Common.Behaviors;
-using FluentValidation;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 namespace Showcase.Application.Common.DependencyInjection;
 
 public static class DependencyInjection

@@ -1,22 +1,9 @@
-using System;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using MediatR;
-using Microsoft.Extensions.Logging;
-using Showcase.Domain.Common.Results;
-
 namespace Showcase.Application.Common.Behaviors;
 
-public class UnhandledExceptionBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
+public class UnhandledExceptionBehavior<TRequest, TResponse>(ILogger<TRequest> logger) : IPipelineBehavior<TRequest, TResponse>
     where TRequest : notnull
 {
-    private readonly ILogger<TRequest> _logger;
-
-    public UnhandledExceptionBehavior(ILogger<TRequest> logger)
-    {
-        _logger = logger;
-    }
+    private readonly ILogger<TRequest> _logger = logger;
 
     public async Task<TResponse> Handle(
         TRequest request,

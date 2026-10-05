@@ -1,6 +1,3 @@
-using System.Collections.Generic;
-using System.Security.Claims;
-
 namespace Showcase.Application.Common.Interfaces;
 
 public record OnboardingTokenPayload(

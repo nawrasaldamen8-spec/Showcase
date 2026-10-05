@@ -1,28 +1,14 @@
-using System.Diagnostics;
-using System.Threading;
-using System.Threading.Tasks;
-using MediatR;
-using Microsoft.Extensions.Logging;
-using Showcase.Application.Common.Interfaces;
-
 namespace Showcase.Application.Common.Behaviors;
 
-public class PerformanceBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
+public class PerformanceBehavior<TRequest, TResponse>(
+    ILogger<TRequest> logger,
+    ICurrentUserService currentUserService) : IPipelineBehavior<TRequest, TResponse>
     where TRequest : notnull
 {
     private const int WarningThresholdMilliseconds = 500;
-    private readonly Stopwatch _timer;
-    private readonly ILogger<TRequest> _logger;
-    private readonly ICurrentUserService _currentUserService;
-
-    public PerformanceBehavior(
-        ILogger<TRequest> logger,
-        ICurrentUserService currentUserService)
-    {
-        _timer = new Stopwatch();
-        _logger = logger;
-        _currentUserService = currentUserService;
-    }
+    private readonly Stopwatch _timer = new Stopwatch();
+    private readonly ILogger<TRequest> _logger = logger;
+    private readonly ICurrentUserService _currentUserService = currentUserService;
 
     public async Task<TResponse> Handle(
         TRequest request,
