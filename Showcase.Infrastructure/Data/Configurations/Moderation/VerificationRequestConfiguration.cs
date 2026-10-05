@@ -1,7 +1,3 @@
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Showcase.Domain.Entities;
-
 namespace Showcase.Infrastructure.Data.Configurations;
 
 public class VerificationRequestConfiguration : IEntityTypeConfiguration<VerificationRequest>

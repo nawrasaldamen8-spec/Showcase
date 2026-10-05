@@ -1,9 +1,3 @@
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Showcase.Domain.Entities;
-using Showcase.Domain.Enums;
-using Showcase.Domain.ValueObjects;
-
 namespace Showcase.Infrastructure.Data.Configurations;
 
 public class ProfileConfiguration : IEntityTypeConfiguration<Profile>

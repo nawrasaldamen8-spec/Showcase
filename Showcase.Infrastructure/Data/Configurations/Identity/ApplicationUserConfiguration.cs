@@ -1,6 +1,3 @@
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Showcase.Domain.Entities;
 using Showcase.Infrastructure.Identity;
 
 namespace Showcase.Infrastructure.Data.Configurations;

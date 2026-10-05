@@ -1,15 +1,4 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Reflection;
-using System.Text.Json;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
-using Showcase.Domain.Constants;
-using Showcase.Domain.Entities;
 
 namespace Showcase.Infrastructure.Data.Seed;
 

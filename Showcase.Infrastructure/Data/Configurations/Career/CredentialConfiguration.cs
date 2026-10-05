@@ -1,8 +1,3 @@
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Showcase.Domain.Entities;
-using Showcase.Domain.ValueObjects;
-
 namespace Showcase.Infrastructure.Data.Configurations;
 
 public class CredentialConfiguration : IEntityTypeConfiguration<Credential>
