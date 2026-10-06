@@ -1,51 +1,23 @@
 import { ArrowLeft, Check, Globe, Search, X, XCircle } from "lucide-react";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { toast } from "sonner";
-import { apiClient } from "@shared/api/apiClient.ts";
-import type { CountryDto } from "@shared/api/apiClient.lookups.ts";
+import { useCountriesQuery } from "@shared/hooks/index.ts";
 import { useAuth } from "@shared/context/index.ts";
+import { useMyProfileQuery, useUpdateProfileMutation } from "../../profile/hooks/useProfileQueries.ts";
 
 export const SelectCountryPage: React.FC = () => {
   const navigate = useNavigate();
   const { refreshUser } = useAuth();
 
-  const [countries, setCountries] = useState<CountryDto[]>([]);
-  const [currentCountry, setCurrentCountry] = useState<string | null>(null);
-  const [profileName, setProfileName] = useState<string>("");
-  const [profileSpecialty, setProfileSpecialty] = useState<string | null>(null);
-  const [profileBio, setProfileBio] = useState<string>("");
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [isSaving, setIsSaving] = useState<boolean>(false);
+  const { data: countries = [], isLoading: isLoadingCountries } = useCountriesQuery();
+  const { data: profile, isLoading: isLoadingProfile } = useMyProfileQuery();
+  const updateProfileMutation = useUpdateProfileMutation();
 
   const [searchQuery, setSearchQuery] = useState<string>("");
 
-  useEffect(() => {
-    let isMounted = true;
-    async function loadData() {
-      try {
-        const [profileData, countriesData] = await Promise.all([
-          apiClient.getMyProfile(),
-          apiClient.getCountries(),
-        ]);
-        if (isMounted) {
-          setCurrentCountry(profileData.country || null);
-          setProfileName(profileData.name || "");
-          setProfileSpecialty(profileData.specialty || null);
-          setProfileBio(profileData.bio || "");
-          setCountries(countriesData || []);
-        }
-      } catch (err) {
-        console.error("Failed to load country data:", err);
-      } finally {
-        if (isMounted) setIsLoading(false);
-      }
-    }
-    void loadData();
-    return () => {
-      isMounted = false;
-    };
-  }, []);
+  const currentCountry = profile?.country || null;
+  const isLoading = isLoadingCountries || isLoadingProfile;
+  const isSaving = updateProfileMutation.isPending;
 
   const filteredCountries = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
@@ -59,25 +31,20 @@ export const SelectCountryPage: React.FC = () => {
   }, [countries, searchQuery]);
 
   const handleSelectCountry = async (countryName: string | null) => {
-    if (isSaving) return;
-    setIsSaving(true);
+    if (isSaving || !profile) return;
 
     try {
-      await apiClient.updateProfile({
-        name: profileName,
-        specialty: profileSpecialty,
+      await updateProfileMutation.mutateAsync({
+        name: profile.name || "",
+        specialty: profile.specialty || null,
         country: countryName,
-        bio: profileBio,
+        bio: profile.bio || "",
       });
 
       await refreshUser();
-      toast.success(countryName ? `Country updated to "${countryName}".` : "Country location removed.");
       navigate("/profile/edit");
-    } catch (err) {
-      console.error("Failed to update country:", err);
-      toast.error("Failed to update country. Please try again.");
-    } finally {
-      setIsSaving(false);
+    } catch {
+      // Global/mutation error handler will show toast
     }
   };
 
@@ -132,7 +99,7 @@ export const SelectCountryPage: React.FC = () => {
             <button
               type="button"
               onClick={() => setSearchQuery("")}
-              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-cloud-dark hover:text-slate-dark p-1"
+              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-cloud-dark hover:text-slate-dark p-1 cursor-pointer"
               aria-label="Clear search"
             >
               <X className="w-4 h-4" />
@@ -192,7 +159,7 @@ export const SelectCountryPage: React.FC = () => {
           </button>
         </div>
 
-        {/* Bounded Scrollable Countries Grid (No Numbered Pagination) */}
+        {/* Bounded Scrollable Countries Grid */}
         <div className="space-y-3 pt-2">
           <div className="flex items-center justify-between text-xs font-gothic font-bold uppercase tracking-[0.14em] text-cloud-dark">
             <span>

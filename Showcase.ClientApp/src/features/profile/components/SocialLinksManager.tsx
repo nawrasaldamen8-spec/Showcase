@@ -1,23 +1,34 @@
 import { Globe } from "lucide-react";
 import React, { useState } from "react";
-import { apiClient } from "@shared/api/apiClient.ts";
 import type { SocialLinkDto } from "@shared/types/index.ts";
 import { SUPPORTED_PLATFORMS, type SupportedPlatform } from "../constants.ts";
 import { validateUrl } from "../utils.ts";
+import {
+  useAddSocialLinkMutation,
+  useDeleteSocialLinkMutation,
+  useReorderSocialLinksMutation,
+  useUpdateSocialLinkMutation,
+} from "../hooks/useProfileQueries.ts";
 import { AddSocialLinkForm } from "./AddSocialLinkForm.tsx";
 import { SocialLinkRow } from "./SocialLinkRow.tsx";
 
 export interface SocialLinksManagerProps {
-  initialLinks: SocialLinkDto[];
-  onLinksChanged?: (links: SocialLinkDto[]) => void;
-  onNotify?: (message: string, type?: "success" | "error") => void;
+  links: SocialLinkDto[];
 }
 
-export const SocialLinksManager: React.FC<SocialLinksManagerProps> = ({ initialLinks, onLinksChanged, onNotify }) => {
-  const [links, setLinks] = useState<SocialLinkDto[]>(() =>
-    [...(initialLinks || [])].sort((a, b) => a.displayOrder - b.displayOrder),
-  );
-  const [isProcessing, setIsProcessing] = useState(false);
+export const SocialLinksManager: React.FC<SocialLinksManagerProps> = ({ links }) => {
+  const addMutation = useAddSocialLinkMutation();
+  const updateMutation = useUpdateSocialLinkMutation();
+  const deleteMutation = useDeleteSocialLinkMutation();
+  const reorderMutation = useReorderSocialLinksMutation();
+
+  const isProcessing =
+    addMutation.isPending ||
+    updateMutation.isPending ||
+    deleteMutation.isPending ||
+    reorderMutation.isPending;
+
+  const sortedLinks = [...(links || [])].sort((a, b) => a.displayOrder - b.displayOrder);
 
   // Inline Edit Form State
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -26,29 +37,16 @@ export const SocialLinksManager: React.FC<SocialLinksManagerProps> = ({ initialL
   const [editError, setEditError] = useState<string | null>(null);
 
   const handleAddLink = async (platform: SupportedPlatform, url: string): Promise<boolean> => {
-    setIsProcessing(true);
     try {
-      const nextOrder = links.length > 0 ? Math.max(...links.map((l) => l.displayOrder)) + 1 : 0;
-      const res = await apiClient.addSocialLink({
+      const nextOrder = sortedLinks.length > 0 ? Math.max(...sortedLinks.map((l) => l.displayOrder)) + 1 : 0;
+      await addMutation.mutateAsync({
         platform,
         url,
         displayOrder: nextOrder,
       });
-
-      const newLink: SocialLinkDto = res;
-
-      const updatedLinks = [...links, newLink].sort((a, b) => a.displayOrder - b.displayOrder);
-      setLinks(updatedLinks);
-      onLinksChanged?.(updatedLinks);
-      onNotify?.(`Added ${platform} link.`, "success");
       return true;
-    } catch (err: unknown) {
-      const problem = err as { detail?: string; title?: string };
-      const msg = problem?.detail || problem?.title || "Failed to add social link.";
-      onNotify?.(msg, "error");
+    } catch {
       return false;
-    } finally {
-      setIsProcessing(false);
     }
   };
 
@@ -70,77 +68,44 @@ export const SocialLinksManager: React.FC<SocialLinksManagerProps> = ({ initialL
       return;
     }
 
-    setIsProcessing(true);
     try {
-      await apiClient.updateSocialLink(id, {
-        platform: editPlatform,
-        url: editUrl.trim(),
+      await updateMutation.mutateAsync({
+        id,
+        data: {
+          platform: editPlatform,
+          url: editUrl.trim(),
+        },
       });
-
-      const updatedLinks = links.map((link) =>
-        link.id === id ? { ...link, platform: editPlatform, url: editUrl.trim() } : link,
-      );
-      setLinks(updatedLinks);
       setEditingId(null);
-      onLinksChanged?.(updatedLinks);
-      onNotify?.(`Updated ${editPlatform} link.`, "success");
     } catch (err: unknown) {
       const problem = err as { detail?: string; title?: string };
-      const msg = problem?.detail || problem?.title || "Failed to update social link.";
-      setEditError(msg);
-      onNotify?.(msg, "error");
-    } finally {
-      setIsProcessing(false);
+      setEditError(problem?.detail || problem?.title || "Failed to update social link.");
     }
   };
 
   const handleDeleteLink = async (id: string) => {
-    setIsProcessing(true);
     try {
-      await apiClient.deleteSocialLink(id);
-      const remaining = links.filter((link) => link.id !== id);
-      const reindexed = remaining.map((link, idx) => ({ ...link, displayOrder: idx }));
-
-      setLinks(reindexed);
-      onLinksChanged?.(reindexed);
-      onNotify?.("Social link removed.", "success");
-
-      if (reindexed.length > 0) {
-        await apiClient.reorderSocialLinks({
-          items: reindexed.map((l) => ({ id: l.id, displayOrder: l.displayOrder })),
-        });
-      }
-    } catch (err: unknown) {
-      const problem = err as { detail?: string; title?: string };
-      const msg = problem?.detail || problem?.title || "Failed to delete social link.";
-      onNotify?.(msg, "error");
-    } finally {
-      setIsProcessing(false);
+      await deleteMutation.mutateAsync(id);
+    } catch {
+      // Handled by mutation toast
     }
   };
 
   const handleMove = async (index: number, direction: "up" | "down") => {
     const targetIndex = direction === "up" ? index - 1 : index + 1;
-    if (targetIndex < 0 || targetIndex >= links.length) return;
+    if (targetIndex < 0 || targetIndex >= sortedLinks.length) return;
 
-    const newOrder = [...links];
+    const newOrder = [...sortedLinks];
     const [movedItem] = newOrder.splice(index, 1);
     if (!movedItem) return;
     newOrder.splice(targetIndex, 0, movedItem);
 
-    const updatedLinks = newOrder.map((item, idx) => ({ ...item, displayOrder: idx }));
-    setLinks(updatedLinks);
-    onLinksChanged?.(updatedLinks);
+    const reorderedPayload = newOrder.map((item, idx) => ({ id: item.id, displayOrder: idx }));
 
     try {
-      await apiClient.reorderSocialLinks({
-        items: updatedLinks.map((l) => ({ id: l.id, displayOrder: l.displayOrder })),
-      });
-      onNotify?.("Links reordered.", "success");
-    } catch (err: unknown) {
-      console.error("Reorder error:", err);
-      setLinks(links);
-      onNotify?.("Failed to persist link order.", "error");
+      await reorderMutation.mutateAsync({ items: reorderedPayload });
+    } catch {
+      // Handled by mutation toast
     }
   };
 
@@ -166,14 +131,14 @@ export const SocialLinksManager: React.FC<SocialLinksManagerProps> = ({ initialL
       <div>
         <div className="flex items-center justify-between mb-4">
           <h3 className="font-gothic text-xs font-bold uppercase tracking-[0.14em] text-cloud-dark">
-            Links ({links.length})
+            Links ({sortedLinks.length})
           </h3>
-          {links.length > 1 && (
+          {sortedLinks.length > 1 && (
             <span className="font-serif text-xs text-cloud-dark">Use arrows to reorder links</span>
           )}
         </div>
 
-        {links.length === 0 ? (
+        {sortedLinks.length === 0 ? (
           <div className="text-center py-10 px-4 rounded-2xl border border-dashed border-stone bg-ivory-medium/30">
             <Globe className="h-8 w-8 text-cloud-dark mx-auto mb-2 opacity-60" />
             <p className="font-gothic text-xs font-semibold uppercase tracking-wider text-slate-dark">
@@ -185,12 +150,12 @@ export const SocialLinksManager: React.FC<SocialLinksManagerProps> = ({ initialL
           </div>
         ) : (
           <ul className="space-y-3" aria-label="Social links">
-            {links.map((link, index) => (
+            {sortedLinks.map((link, index) => (
               <SocialLinkRow
                 key={link.id}
                 link={link}
                 index={index}
-                totalLinks={links.length}
+                totalLinks={sortedLinks.length}
                 isEditing={editingId === link.id}
                 isProcessing={isProcessing}
                 editPlatform={editPlatform}

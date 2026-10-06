@@ -1,6 +1,25 @@
-import { QueryClient } from "@tanstack/react-query";
+import { MutationCache, QueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { extractApiErrorMessage } from "@shared/api/index.ts";
+
+declare module "@tanstack/react-query" {
+  interface Register {
+    mutationMeta: {
+      skipGlobalToast?: boolean;
+    };
+  }
+}
 
 export const queryClient = new QueryClient({
+  mutationCache: new MutationCache({
+    onError: (error, _variables, _context, mutation) => {
+      if (mutation.meta?.skipGlobalToast) {
+        return;
+      }
+      const message = extractApiErrorMessage(error);
+      toast.error(message);
+    },
+  }),
   defaultOptions: {
     queries: {
       staleTime: 1000 * 60 * 5, // 5 minutes cache validity
@@ -23,3 +42,4 @@ export const queryClient = new QueryClient({
     },
   },
 });
+

@@ -1,6 +1,7 @@
-import { useState, useEffect, useRef } from 'react';
-import { apiClient } from '@shared/api/apiClient.ts';
-import { useAuth } from '@shared/context/useAuth.ts';
+import React, { useState, useEffect, useRef } from "react";
+import { extractApiErrorMessage, extractApiFieldErrors } from "@shared/api/index.ts";
+import { useAuth } from "@shared/context/useAuth.ts";
+import { useUpdateProfileMutation } from "./useProfileQueries.ts";
 
 export interface UseBioEditorProps {
   initialName: string;
@@ -8,32 +9,30 @@ export interface UseBioEditorProps {
   initialCountry?: string | null;
   initialBio?: string | null;
   onProfileUpdated?: (updated: { name: string; specialty: string | null; country: string | null; bio: string }) => void;
-  onNotify?: (message: string, type?: 'success' | 'error') => void;
 }
 
 export function useBioEditor({
   initialName,
   initialSpecialty = null,
   initialCountry = null,
-  initialBio = '',
+  initialBio = "",
   onProfileUpdated,
-  onNotify,
 }: UseBioEditorProps) {
   const { refreshUser } = useAuth();
+  const updateProfileMutation = useUpdateProfileMutation();
 
   const [name, setName] = useState(initialName);
   const [specialty, setSpecialty] = useState<string | null>(initialSpecialty || null);
   const [country, setCountry] = useState<string | null>(initialCountry || null);
-  const [bio, setBio] = useState(initialBio || '');
+  const [bio, setBio] = useState(initialBio || "");
 
   const [prevProps, setPrevProps] = useState({
     name: initialName,
     specialty: initialSpecialty || null,
     country: initialCountry || null,
-    bio: initialBio || '',
+    bio: initialBio || "",
   });
 
-  const [isSaving, setIsSaving] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<{
     name?: string;
     specialty?: string;
@@ -56,31 +55,31 @@ export function useBioEditor({
     initialName !== prevProps.name ||
     (initialSpecialty || null) !== prevProps.specialty ||
     (initialCountry || null) !== prevProps.country ||
-    (initialBio || '') !== prevProps.bio
+    (initialBio || "") !== prevProps.bio
   ) {
     setPrevProps({
       name: initialName,
       specialty: initialSpecialty || null,
       country: initialCountry || null,
-      bio: initialBio || '',
+      bio: initialBio || "",
     });
     setName(initialName);
     setSpecialty(initialSpecialty || null);
     setCountry(initialCountry || null);
-    setBio(initialBio || '');
+    setBio(initialBio || "");
   }
 
   const hasChanges =
     name.trim() !== initialName.trim() ||
     (specialty || null) !== (initialSpecialty || null) ||
     (country?.trim() || null) !== (initialCountry?.trim() || null) ||
-    (bio.trim() || '') !== (initialBio?.trim() || '');
+    (bio.trim() || "") !== (initialBio?.trim() || "");
 
   const handleReset = () => {
     setName(initialName);
     setSpecialty(initialSpecialty || null);
     setCountry(initialCountry || null);
-    setBio(initialBio || '');
+    setBio(initialBio || "");
     setFieldErrors({});
     setGeneralError(null);
     setSaveSuccess(false);
@@ -92,10 +91,10 @@ export function useBioEditor({
     const errors: { name?: string; specialty?: string; country?: string; bio?: string } = {};
 
     if (!name.trim()) {
-      errors.name = 'Full name is required.';
+      errors.name = "Full name is required.";
     }
     if (bio.length > 1000) {
-      errors.bio = 'Biography cannot exceed 1000 characters.';
+      errors.bio = "Biography cannot exceed 1000 characters.";
     }
 
     if (Object.keys(errors).length > 0) {
@@ -105,11 +104,10 @@ export function useBioEditor({
 
     setFieldErrors({});
     setGeneralError(null);
-    setIsSaving(true);
     setSaveSuccess(false);
 
     try {
-      await apiClient.updateProfile({
+      await updateProfileMutation.mutateAsync({
         name: name.trim(),
         specialty: specialty || null,
         country: country?.trim() || null,
@@ -125,7 +123,6 @@ export function useBioEditor({
         country: country?.trim() || null,
         bio: bio.trim(),
       });
-      onNotify?.('Profile details updated successfully.', 'success');
 
       if (successTimerRef.current) {
         clearTimeout(successTimerRef.current);
@@ -135,13 +132,12 @@ export function useBioEditor({
         successTimerRef.current = null;
       }, 4000);
     } catch (err: unknown) {
-      const problem = err as { detail?: string; title?: string; errors?: Record<string, string[]> };
-      const errorMessage =
-        problem?.detail || problem?.title || 'Failed to update profile details. Please try again.';
-      setGeneralError(errorMessage);
-      onNotify?.(errorMessage, 'error');
-    } finally {
-      setIsSaving(false);
+      const extractedErrors = extractApiFieldErrors(err);
+      if (Object.keys(extractedErrors).length > 0) {
+        setFieldErrors(extractedErrors);
+      }
+      const message = extractApiErrorMessage(err, "Failed to update profile details. Please try again.");
+      setGeneralError(message);
     }
   };
 
@@ -159,7 +155,7 @@ export function useBioEditor({
     generalError,
     saveSuccess,
     hasChanges,
-    isSaving,
+    isSaving: updateProfileMutation.isPending,
     handleReset,
     handleSave,
   };

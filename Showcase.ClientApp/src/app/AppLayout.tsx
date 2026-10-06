@@ -1,6 +1,7 @@
 import React from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useNotificationRealtime } from "@features/notifications/hooks/useNotificationRealtime.ts";
+import { useUnreadNotificationsCountQuery } from "@features/notifications/hooks/useNotificationQueries.ts";
 import { useAuth } from "@shared/context/index.ts";
 import { Footer, MobileBottomNav, MobileTopBar, Sidebar } from "@shared/layout/index.ts";
 import { ScrollToTop } from "./ScrollToTop.tsx";
@@ -12,6 +13,9 @@ export interface AppLayoutProps {
 export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   const { currentUser, logout } = useAuth();
   useNotificationRealtime();
+  const { data: unreadData } = useUnreadNotificationsCountQuery({ enabled: Boolean(currentUser) });
+  const unreadCount = unreadData?.count ?? 0;
+
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -70,10 +74,11 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
       <ScrollToTop />
       <Sidebar
         user={layoutUser}
+        unreadNotificationsCount={unreadCount}
         onLogout={handleLogout}
       />
       <div className="flex-1 flex flex-col min-w-0 md:pl-60 lg:pl-64 transition-all">
-        <MobileTopBar />
+        <MobileTopBar unreadNotificationsCount={unreadCount} />
         <main className={`flex-1 ${isEditorRoute ? "" : "pb-16 md:pb-0"}`}>{content}</main>
         {!isWorkspaceRoute && <Footer />}
       </div>
@@ -81,4 +86,5 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
     </div>
   );
 };
+
 

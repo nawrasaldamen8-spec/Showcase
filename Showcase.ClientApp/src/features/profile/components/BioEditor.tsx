@@ -12,7 +12,6 @@ export interface BioEditorProps {
   initialCountry?: string | null;
   initialBio?: string | null;
   onProfileUpdated?: (updated: { name: string; specialty: string | null; country: string | null; bio: string }) => void;
-  onNotify?: (message: string, type?: "success" | "error") => void;
 }
 
 export const BioEditor: React.FC<BioEditorProps> = (props) => {

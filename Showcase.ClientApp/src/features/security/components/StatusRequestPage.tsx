@@ -1,13 +1,13 @@
 import { Clock, MessageSquare } from "lucide-react";
 import React, { useState } from "react";
 import { toast } from "sonner";
-import { apiClient } from "@shared/api/apiClient.ts";
-import { extractApiErrorMessage } from "@shared/api/index.ts";
+import { useQueryClient } from "@tanstack/react-query";
+import { extractApiErrorMessage, queryKeys } from "@shared/api/index.ts";
 import { Button } from "@shared/components/Button.tsx";
 import { Textarea } from "@shared/components/Textarea.tsx";
-import { useAsyncData } from "@shared/hooks/index.ts";
 import { useAuth } from "@shared/context/index.ts";
 import type { ProblemDetails } from "@shared/types/index.ts";
+import { useMyProfileQuery } from "../../profile/hooks/useProfileQueries.ts";
 import { ProblemAlert } from "./ProblemAlert.tsx";
 import { SecurityActionLayout } from "./SecurityActionLayout.tsx";
 
@@ -51,8 +51,8 @@ export const StatusRequestPage: React.FC<StatusRequestPageConfig> = ({
   buttonLabel,
 }) => {
   const { currentUser } = useAuth();
-
-  const { data: profile, reload: loadData } = useAsyncData(() => apiClient.getMyProfile());
+  const queryClient = useQueryClient();
+  const { data: profile } = useMyProfileQuery();
 
   const [message, setMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -88,7 +88,7 @@ export const StatusRequestPage: React.FC<StatusRequestPageConfig> = ({
     try {
       await submitFn(trimmed);
       toast.success(successMessage);
-      loadData();
+      queryClient.invalidateQueries({ queryKey: queryKeys.profiles.me() });
       setMessage("");
     } catch (err: unknown) {
       const msg = extractApiErrorMessage(err);
@@ -104,75 +104,82 @@ export const StatusRequestPage: React.FC<StatusRequestPageConfig> = ({
     }
   };
 
-  return (
-    <SecurityActionLayout
-      title={title}
-      subtitle={subtitle}
-      badge={badge}
-      backTo="/settings/security"
-      backLabel="Back to Account Security"
-    >
-      {/* 1. Status Banner */}
-      {isApproved ? (
-        <div className="bg-[#2e7d32]/10 border border-[#2e7d32]/30 rounded-2xl p-5 space-y-3">
-          <div className="flex items-center gap-3">
+  if (isApproved) {
+    return (
+      <SecurityActionLayout title={title} subtitle={subtitle} badge={badge}>
+        <div className="bg-ivory-light rounded-card border border-clay/40 p-6 sm:p-8 space-y-4">
+          <div className="flex items-center gap-3 text-clay">
             {approvedRenderIcon()}
-            <div>
-              <h3 className="font-gothic text-base font-bold uppercase tracking-tight text-[#2e7d32]">
-                {approvedTitle}
-              </h3>
-              <p className="font-serif text-xs text-[#2e7d32]/90 mt-0.5">
-                {approvedDescription}
-              </p>
-            </div>
+            <h2 className="font-gothic text-base sm:text-lg font-bold uppercase tracking-tight text-slate-dark">
+              {approvedTitle}
+            </h2>
           </div>
-          <div className="pt-2 border-t border-[#2e7d32]/20 text-xs font-serif text-slate-dark/70">
-            {approvedFooter}
-          </div>
-        </div>
-      ) : status === "pending" ? (
-        <div className="bg-clay/10 border border-clay/30 rounded-2xl p-5 space-y-3">
-          <div className="flex items-center gap-3">
-            <Clock className="w-6 h-6 text-clay shrink-0 animate-pulse" />
-            <div>
-              <h3 className="font-gothic text-base font-bold uppercase tracking-tight text-clay">
-                {pendingTitle}
-              </h3>
-              <p className="font-serif text-xs text-slate-dark/80 mt-0.5">
-                {pendingDescription}
-              </p>
-            </div>
+          <p className="font-serif text-sm text-slate-dark/85 leading-relaxed">
+            {approvedDescription}
+          </p>
+          <div className="pt-2 border-t border-stone/60">
+            <p className="font-serif text-xs text-cloud-dark">
+              {approvedFooter}
+            </p>
           </div>
         </div>
-      ) : (
-        <form onSubmit={handleSubmit} className="space-y-5" noValidate>
+      </SecurityActionLayout>
+    );
+  }
+
+  if (status === "pending") {
+    return (
+      <SecurityActionLayout title={title} subtitle={subtitle} badge={badge}>
+        <div className="bg-ivory-light rounded-card border border-stone/60 p-6 sm:p-8 space-y-4">
+          <div className="flex items-center gap-3 text-clay">
+            <Clock className="h-6 w-6 shrink-0" />
+            <h2 className="font-gothic text-base sm:text-lg font-bold uppercase tracking-tight text-slate-dark">
+              {pendingTitle}
+            </h2>
+          </div>
+          <p className="font-serif text-sm text-slate-dark/85 leading-relaxed">
+            {pendingDescription}
+          </p>
+          <div className="pt-2 border-t border-stone/60">
+            <p className="font-serif text-xs text-cloud-dark">
+              You will receive an in-app notification once the curatorial team reviews your application.
+            </p>
+          </div>
+        </div>
+      </SecurityActionLayout>
+    );
+  }
+
+  return (
+    <SecurityActionLayout title={title} subtitle={subtitle} badge={badge}>
+      <div className="bg-ivory-light rounded-card border border-stone/60 p-6 sm:p-8">
+        <form onSubmit={handleSubmit} className="space-y-6">
           {problem && <ProblemAlert problem={problem} />}
 
           <Textarea
             label={formLabel}
-            placeholder={formPlaceholder}
             value={message}
             onChange={(e) => setMessage(e.target.value)}
-            rows={5}
+            placeholder={formPlaceholder}
             helperText={formHelperText}
+            rows={5}
             required
+            disabled={isLoading}
           />
 
-          <div className="pt-2">
+          <div className="flex items-center justify-end gap-3 pt-4 border-t border-stone/60">
             <Button
               type="submit"
               variant="clay"
-              size="lg"
-              fullWidth
+              size="md"
               isLoading={isLoading}
-              leftIcon={<MessageSquare className="w-4 h-4" />}
-              className="font-gothic uppercase tracking-wider text-xs justify-center"
+              leftIcon={<MessageSquare className="h-4 w-4" />}
             >
               {buttonLabel}
             </Button>
           </div>
         </form>
-      )}
+      </div>
     </SecurityActionLayout>
   );
 };

@@ -2,7 +2,12 @@ import { Eye, EyeOff, Lock } from "lucide-react";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { apiClient, extractApiErrorMessage } from "@shared/api/index.ts";
+import {
+  apiClient,
+  extractApiErrorMessage,
+  extractApiFieldErrors,
+  extractApiProblemDetails,
+} from "@shared/api/index.ts";
 import { Button } from "@shared/components/Button.tsx";
 import { Input } from "@shared/components/Input.tsx";
 import type { ProblemDetails } from "@shared/types/index.ts";
@@ -18,36 +23,27 @@ export const ChangePasswordPage: React.FC = () => {
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [problem, setProblem] = useState<ProblemDetails | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setProblem(null);
+    setFieldErrors({});
 
+    const clientErrors: Record<string, string> = {};
     if (!currentPassword) {
-      setProblem({
-        title: "Validation Error",
-        detail: "Current password is required.",
-        status: 400,
-      });
-      return;
+      clientErrors.currentPassword = "Current password is required.";
     }
-
     if (!newPassword || newPassword.length < 6) {
-      setProblem({
-        title: "Validation Error",
-        detail: "New password must contain at least 6 characters.",
-        status: 400,
-      });
-      return;
+      clientErrors.newPassword = "New password must contain at least 6 characters.";
+    }
+    if (newPassword && confirmPassword && newPassword !== confirmPassword) {
+      clientErrors.confirmPassword = "Passwords do not match.";
     }
 
-    if (newPassword !== confirmPassword) {
-      setProblem({
-        title: "Validation Error",
-        detail: "Passwords do not match.",
-        status: 400,
-      });
+    if (Object.keys(clientErrors).length > 0) {
+      setFieldErrors(clientErrors);
       return;
     }
 
@@ -62,12 +58,11 @@ export const ChangePasswordPage: React.FC = () => {
       toast.success("Password updated successfully.");
       navigate("/settings/security");
     } catch (err: unknown) {
+      const extractedFields = extractApiFieldErrors(err);
+      const problemDetails = extractApiProblemDetails(err);
+      setFieldErrors(extractedFields);
+      setProblem(problemDetails);
       const errorMsg = extractApiErrorMessage(err, "Failed to update password.");
-      setProblem({
-        title: "Password Update Failed",
-        detail: errorMsg,
-        status: 400,
-      });
       toast.error(errorMsg);
     } finally {
       setIsLoading(false);
@@ -80,15 +75,21 @@ export const ChangePasswordPage: React.FC = () => {
       subtitle="Choose a strong password with at least 6 characters."
       badge="Credentials"
     >
-      <form onSubmit={handleSubmit} className="space-y-5">
+      <form onSubmit={handleSubmit} className="space-y-5" noValidate>
         <Input
           label="Current Password"
           type={showCurrentPassword ? "text" : "password"}
           value={currentPassword}
-          onChange={(e) => setCurrentPassword(e.target.value)}
+          onChange={(e) => {
+            setCurrentPassword(e.target.value);
+            if (fieldErrors.currentPassword || fieldErrors.CurrentPassword) {
+              setFieldErrors((prev) => ({ ...prev, currentPassword: "", CurrentPassword: "" }));
+            }
+          }}
           placeholder="Enter current password"
           required
           disabled={isLoading}
+          errorMessage={fieldErrors.currentPassword || fieldErrors.CurrentPassword}
           rightIcon={
             <button
               type="button"
@@ -106,10 +107,16 @@ export const ChangePasswordPage: React.FC = () => {
             label="New Password"
             type={showNewPassword ? "text" : "password"}
             value={newPassword}
-            onChange={(e) => setNewPassword(e.target.value)}
+            onChange={(e) => {
+              setNewPassword(e.target.value);
+              if (fieldErrors.newPassword || fieldErrors.NewPassword) {
+                setFieldErrors((prev) => ({ ...prev, newPassword: "", NewPassword: "" }));
+              }
+            }}
             placeholder="Minimum 6 characters"
             required
             disabled={isLoading}
+            errorMessage={fieldErrors.newPassword || fieldErrors.NewPassword}
             rightIcon={
               <button
                 type="button"
@@ -126,15 +133,21 @@ export const ChangePasswordPage: React.FC = () => {
             label="Confirm New Password"
             type={showNewPassword ? "text" : "password"}
             value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
+            onChange={(e) => {
+              setConfirmPassword(e.target.value);
+              if (fieldErrors.confirmPassword || fieldErrors.ConfirmPassword) {
+                setFieldErrors((prev) => ({ ...prev, confirmPassword: "", ConfirmPassword: "" }));
+              }
+            }}
             placeholder="Re-enter new password"
             required
             disabled={isLoading}
+            errorMessage={fieldErrors.confirmPassword || fieldErrors.ConfirmPassword}
           />
         </div>
 
-        {/* Problem Alert */}
-        <ProblemAlert problem={problem} />
+        {/* Global / Unmapped Problem Alert */}
+        {problem && !Object.keys(fieldErrors).length && <ProblemAlert problem={problem} />}
 
         {/* Action Button: Full-width at the bottom */}
         <div className="pt-3">

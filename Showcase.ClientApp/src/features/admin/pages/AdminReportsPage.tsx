@@ -1,37 +1,29 @@
 import React, { useState } from "react";
 import { CheckCircle2, ShieldAlert } from "lucide-react";
 import { Button } from "@shared/components/Button.tsx";
-import { useAsyncData } from "@shared/hooks/index.ts";
-import { toast } from "sonner";
-import { apiClient } from "@shared/api/index.ts";
 import type { ContentReportItem } from "@shared/types/index.ts";
 import { AdminLayout } from "../components/AdminLayout.tsx";
 import { ReportActionModal } from "../components/ReportActionModal.tsx";
+import {
+  useAdminReportsQuery,
+  useDismissReportMutation,
+  useResolveReportMutation,
+} from "../hooks/useAdminQueries.ts";
 
 export const AdminReportsPage: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState("all");
   const [selectedReport, setSelectedReport] = useState<ContentReportItem | null>(null);
 
-  const {
-    data: reports,
-    isLoading,
-    reload: loadReports,
-  } = useAsyncData(() => apiClient.getContentReports(statusFilter));
-
-  React.useEffect(() => {
-    loadReports();
-  }, [statusFilter, loadReports]);
+  const { data: reports = [], isLoading } = useAdminReportsQuery(statusFilter);
+  const resolveMutation = useResolveReportMutation();
+  const dismissMutation = useDismissReportMutation();
 
   const handleResolve = async (reportId: string, actionTaken: string) => {
-    await apiClient.resolveReport(reportId, actionTaken);
-    toast.success("Report resolved and corrective moderation action recorded.");
-    loadReports();
+    await resolveMutation.mutateAsync({ reportId, actionTaken });
   };
 
   const handleDismiss = async (reportId: string) => {
-    await apiClient.dismissReport(reportId);
-    toast.info("Report dismissed.");
-    loadReports();
+    await dismissMutation.mutateAsync(reportId);
   };
 
   return (
@@ -123,6 +115,7 @@ export const AdminReportsPage: React.FC = () => {
                     variant="clay"
                     size="sm"
                     onClick={() => setSelectedReport(rep)}
+                    disabled={resolveMutation.isPending || dismissMutation.isPending}
                     leftIcon={<ShieldAlert className="w-3.5 h-3.5" />}
                   >
                     Moderate

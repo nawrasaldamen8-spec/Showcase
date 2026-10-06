@@ -1,7 +1,6 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import { Check, Globe, Search, X } from "lucide-react";
-import { apiClient } from "@shared/api/apiClient.ts";
-import type { LanguageRefDto } from "@shared/api/apiClient.lookups.ts";
+import { useLookupLanguagesQuery } from "@shared/hooks/index.ts";
 import { Button } from "@shared/components/Button.tsx";
 import type { CareerLanguage, LanguageProficiency } from "@shared/types/index.ts";
 import { PREDEFINED_LANGUAGES, PROFICIENCY_LEVELS } from "../constants.ts";
@@ -21,7 +20,7 @@ export const LanguageForm: React.FC<LanguageFormProps> = ({
   onSave,
   onCancel,
 }) => {
-  const [lookupLanguages, setLookupLanguages] = useState<LanguageRefDto[]>([]);
+  const { data: lookupLanguages = [] } = useLookupLanguagesQuery();
   const [language, setLanguage] = useState(initialItem?.language || "English");
   const [proficiency, setProficiency] = useState<LanguageProficiency>(
     (initialItem?.proficiency as LanguageProficiency) || "Fluent"
@@ -31,26 +30,8 @@ export const LanguageForm: React.FC<LanguageFormProps> = ({
   const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  useEffect(() => {
-    let isMounted = true;
-    async function loadLanguages() {
-      try {
-        const data = await apiClient.getLookupLanguages();
-        if (isMounted && Array.isArray(data) && data.length > 0) {
-          setLookupLanguages(data);
-        }
-      } catch (err) {
-        console.warn("Failed to load lookup languages from API, using fallback:", err);
-      }
-    }
-    void loadLanguages();
-    return () => {
-      isMounted = false;
-    };
-  }, []);
-
   const languageOptions = useMemo(() => {
-    if (lookupLanguages.length > 0) {
+    if (lookupLanguages && lookupLanguages.length > 0) {
       return lookupLanguages.map((l) => l.name);
     }
     return PREDEFINED_LANGUAGES;

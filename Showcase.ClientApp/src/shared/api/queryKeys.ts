@@ -41,6 +41,7 @@ export const queryKeys = {
     countries: () => [...queryKeys.lookups.all, "countries"] as const,
     languages: () => [...queryKeys.lookups.all, "languages"] as const,
     popularTags: (limit = 20) => [...queryKeys.lookups.all, "popular-tags", limit] as const,
+    specialties: () => [...queryKeys.lookups.all, "specialties"] as const,
   },
   admin: {
     all: ["admin"] as const,
@@ -48,7 +49,7 @@ export const queryKeys = {
     users: (params?: Record<string, unknown>) => [...queryKeys.admin.all, "users", params || {}] as const,
     verifications: () => [...queryKeys.admin.all, "verifications"] as const,
     featured: () => [...queryKeys.admin.all, "featured"] as const,
-    reports: () => [...queryKeys.admin.all, "reports"] as const,
+    reports: (params?: Record<string, unknown>) => [...queryKeys.admin.all, "reports", params || {}] as const,
     broadcasts: () => [...queryKeys.admin.all, "broadcasts"] as const,
     storage: () => [...queryKeys.admin.all, "storage"] as const,
     auditLogs: (params?: Record<string, unknown>) => [...queryKeys.admin.all, "audit-logs", params || {}] as const,

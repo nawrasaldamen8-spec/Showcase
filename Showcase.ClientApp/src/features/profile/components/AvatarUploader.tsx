@@ -9,7 +9,6 @@ export interface AvatarUploaderProps {
   name?: string;
   username?: string;
   onAvatarUpdated?: (newUrl: string | null) => void;
-  onNotify?: (message: string, type?: "success" | "error") => void;
 }
 
 const ACCEPTED_MIME_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
@@ -19,7 +18,6 @@ export const AvatarUploader: React.FC<AvatarUploaderProps> = ({
   name,
   username,
   onAvatarUpdated,
-  onNotify,
 }) => {
   const {
     currentUrl,
@@ -36,7 +34,7 @@ export const AvatarUploader: React.FC<AvatarUploaderProps> = ({
     handleDrop,
     handleDelete,
     triggerPicker,
-  } = useAvatarUpload({ avatarUrl, onAvatarUpdated, onNotify });
+  } = useAvatarUpload({ avatarUrl, onAvatarUpdated });
 
   const initials = (name?.[0] || username?.[0] || "A").toUpperCase();
 

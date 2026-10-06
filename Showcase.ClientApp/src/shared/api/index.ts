@@ -1,7 +1,12 @@
 export { apiClient, USE_MOCK_API, API_BASE_URL, httpFetch } from "./apiClient.ts";
 export type { FetchOptions } from "./apiClient.ts";
 export { tokenStorage } from "./tokenStorage.ts";
-export { axiosInstance, extractApiErrorMessage } from "./axiosClient.ts";
+export {
+  axiosInstance,
+  extractApiErrorMessage,
+  extractApiProblemDetails,
+  extractApiFieldErrors,
+} from "./axiosClient.ts";
 export type { ApiProblemDetails } from "./axiosClient.ts";
 export { queryKeys } from "./queryKeys.ts";
 export { apiAuthClient } from "./apiClient.auth.ts";

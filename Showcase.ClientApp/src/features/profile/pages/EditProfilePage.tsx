@@ -1,51 +1,17 @@
 import { AlertCircle, ArrowLeft, UserCheck } from "lucide-react";
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { Link } from "react-router-dom";
-import { toast } from "sonner";
-import { apiClient } from "@shared/api/apiClient.ts";
+import { extractApiErrorMessage } from "@shared/api/index.ts";
 import { Button } from "@shared/components/Button.tsx";
 import { Skeleton } from "@shared/components/Skeleton.tsx";
 import { useAuth } from "@shared/context/index.ts";
-import type { MyProfileResponse } from "@shared/types/index.ts";
 import { AvatarUploader } from "../components/AvatarUploader.tsx";
 import { BioEditor } from "../components/BioEditor.tsx";
+import { useMyProfileQuery } from "../hooks/useProfileQueries.ts";
 
 export const EditProfilePage: React.FC = () => {
   const { currentUser } = useAuth();
-
-  const [profile, setProfile] = useState<MyProfileResponse | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
-  const [retryCount, setRetryCount] = useState<number>(0);
-
-  useEffect(() => {
-    let isMounted = true;
-    async function fetchProfile() {
-      setIsLoading(true);
-      setError(null);
-      try {
-        const data = await apiClient.getMyProfile();
-        if (isMounted) setProfile(data);
-      } catch (err: unknown) {
-        console.error("Failed to load profile:", err);
-        if (isMounted) setError("Unable to load profile. Please try again.");
-      } finally {
-        if (isMounted) setIsLoading(false);
-      }
-    }
-    void fetchProfile();
-    return () => {
-      isMounted = false;
-    };
-  }, [retryCount]);
-
-  const handleNotify = (message: string, type?: "success" | "error") => {
-    if (type === "error") {
-      toast.error(message);
-    } else {
-      toast.success(message);
-    }
-  };
+  const { data: profile, isLoading, isError, error, refetch } = useMyProfileQuery();
 
   const username = profile?.username || currentUser?.username;
   const backUrl = username ? `/u/${username}` : "/studio";
@@ -107,15 +73,17 @@ export const EditProfilePage: React.FC = () => {
             <Skeleton variant="rectangular" height={120} />
           </div>
         </div>
-      ) : error ? (
+      ) : isError ? (
         <div className="bg-ivory-light rounded-card border border-clay/40 p-8 text-center max-w-xl mx-auto my-12">
           <AlertCircle className="h-10 w-10 text-clay mx-auto mb-3" />
           <h2 className="font-gothic text-xl font-bold uppercase tracking-tight text-slate-dark">
             Unable to Load Profile
           </h2>
-          <p className="font-serif text-sm text-slate-dark/80 mt-2">{error}</p>
+          <p className="font-serif text-sm text-slate-dark/80 mt-2">
+            {extractApiErrorMessage(error, "Unable to load profile. Please try again.")}
+          </p>
           <div className="mt-6">
-            <Button variant="slate" size="sm" onClick={() => setRetryCount((c) => c + 1)}>
+            <Button variant="slate" size="sm" onClick={() => void refetch()}>
               Retry Loading
             </Button>
           </div>
@@ -126,10 +94,6 @@ export const EditProfilePage: React.FC = () => {
             avatarUrl={profile.avatarUrl}
             name={profile.name}
             username={profile.username}
-            onAvatarUpdated={(newUrl) => {
-              setProfile((prev) => (prev ? { ...prev, avatarUrl: newUrl } : null));
-            }}
-            onNotify={handleNotify}
           />
 
           <BioEditor
@@ -137,20 +101,6 @@ export const EditProfilePage: React.FC = () => {
             initialSpecialty={profile.specialty}
             initialCountry={profile.country}
             initialBio={profile.bio}
-            onProfileUpdated={(updated) => {
-              setProfile((prev) =>
-                prev
-                  ? {
-                      ...prev,
-                      name: updated.name,
-                      specialty: updated.specialty,
-                      country: updated.country,
-                      bio: updated.bio,
-                    }
-                  : null,
-              );
-            }}
-            onNotify={handleNotify}
           />
 
           <div className="pt-6 border-t border-stone/50 flex items-center justify-between font-serif text-xs text-cloud-dark">

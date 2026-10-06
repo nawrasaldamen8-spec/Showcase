@@ -1,50 +1,16 @@
 import { AlertCircle, ArrowLeft, UserCheck } from "lucide-react";
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { Link } from "react-router-dom";
-import { toast } from "sonner";
-import { apiClient } from "@shared/api/apiClient.ts";
+import { extractApiErrorMessage } from "@shared/api/index.ts";
 import { Button } from "@shared/components/Button.tsx";
 import { Skeleton } from "@shared/components/Skeleton.tsx";
 import { useAuth } from "@shared/context/index.ts";
-import type { SocialLinkDto, MyProfileResponse } from "@shared/types/index.ts";
 import { SocialLinksManager } from "../components/SocialLinksManager.tsx";
+import { useMyProfileQuery } from "../hooks/useProfileQueries.ts";
 
 export const EditSocialLinksPage: React.FC = () => {
   const { currentUser } = useAuth();
-
-  const [profile, setProfile] = useState<MyProfileResponse | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
-  const [retryCount, setRetryCount] = useState<number>(0);
-
-  useEffect(() => {
-    let isMounted = true;
-    async function fetchProfile() {
-      setIsLoading(true);
-      setError(null);
-      try {
-        const data = await apiClient.getMyProfile();
-        if (isMounted) setProfile(data);
-      } catch (err: unknown) {
-        console.error("Failed to load profile for social links:", err);
-        if (isMounted) setError("Unable to load social links. Please try again.");
-      } finally {
-        if (isMounted) setIsLoading(false);
-      }
-    }
-    void fetchProfile();
-    return () => {
-      isMounted = false;
-    };
-  }, [retryCount]);
-
-  const handleNotify = (message: string, type?: "success" | "error") => {
-    if (type === "error") {
-      toast.error(message);
-    } else {
-      toast.success(message);
-    }
-  };
+  const { data: profile, isLoading, isError, error, refetch } = useMyProfileQuery();
 
   const username = profile?.username || currentUser?.username;
   const backUrl = username ? `/u/${username}` : "/studio";
@@ -92,35 +58,30 @@ export const EditSocialLinksPage: React.FC = () => {
             <Skeleton variant="rectangular" height={50} />
           </div>
         </div>
-      ) : error ? (
+      ) : isError ? (
         <div className="bg-ivory-light rounded-card border border-clay/40 p-8 text-center max-w-xl mx-auto my-12">
           <AlertCircle className="h-10 w-10 text-clay mx-auto mb-3" />
           <h2 className="font-gothic text-xl font-bold uppercase tracking-tight text-slate-dark">
             Unable to Load Social Links
           </h2>
-          <p className="font-serif text-sm text-slate-dark/80 mt-2">{error}</p>
+          <p className="font-serif text-sm text-slate-dark/80 mt-2">
+            {extractApiErrorMessage(error, "Unable to load social links. Please try again.")}
+          </p>
           <div className="mt-6">
-            <Button variant="slate" size="sm" onClick={() => setRetryCount((c) => c + 1)}>
+            <Button variant="slate" size="sm" onClick={() => void refetch()}>
               Retry Loading
             </Button>
           </div>
         </div>
       ) : profile ? (
         <div className="space-y-8">
-          <SocialLinksManager
-            initialLinks={profile.socialLinks || []}
-            onLinksChanged={(updatedLinks: SocialLinkDto[]) => {
-              setProfile((prev) => (prev ? { ...prev, socialLinks: updatedLinks } : null));
-            }}
-            onNotify={handleNotify}
-          />
+          <SocialLinksManager links={profile.socialLinks || []} />
 
-          <div className="pt-6 border-t border-stone/50 flex flex-col sm:flex-row items-center justify-between gap-4 font-serif text-xs text-cloud-dark">
+          <div className="pt-6 border-t border-stone/50 flex items-center justify-between font-serif text-xs text-cloud-dark">
             <div className="flex items-center gap-2">
               <UserCheck className="h-4 w-4 text-cloud-dark" />
               <span>Signed in as: @{profile.username}</span>
             </div>
-            <span>Changes persist immediately</span>
           </div>
         </div>
       ) : null}

@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { apiClient } from "@shared/api/apiClient.ts";
+import { apiClient, extractApiErrorMessage, extractApiFieldErrors } from "@shared/api/index.ts";
 import { PostStatus } from "@shared/types/index.ts";
 import type { ImageGridItem } from "../components/ImageReorderGrid.tsx";
 import { persistPostData } from "./postEditorOperations.ts";
@@ -20,6 +20,9 @@ export interface UsePostEditorSubmitOptions {
   setIsDirty: (dirty: boolean) => void;
   validateFullForm: () => boolean;
   setImageInvariantError: (err: string | null) => void;
+  setTitleError?: (err: string | null) => void;
+  setDescriptionError?: (err: string | null) => void;
+  setUrlError?: (err: string | null) => void;
   setCurrentStep: (step: WizardStepNumber) => void;
 }
 
@@ -37,6 +40,32 @@ export function usePostEditorSubmit(options: UsePostEditorSubmitOptions) {
       }
     };
   }, []);
+
+  const handleApiErrors = (err: unknown, fallbackMessage: string) => {
+    const fieldErrors = extractApiFieldErrors(err);
+    let hasFieldErrors = false;
+
+    if (fieldErrors.title && options.setTitleError) {
+      options.setTitleError(fieldErrors.title);
+      hasFieldErrors = true;
+    }
+    if (fieldErrors.description && options.setDescriptionError) {
+      options.setDescriptionError(fieldErrors.description);
+      hasFieldErrors = true;
+    }
+    if (fieldErrors.externalUrl && options.setUrlError) {
+      options.setUrlError(fieldErrors.externalUrl);
+      hasFieldErrors = true;
+    }
+
+    if (hasFieldErrors) {
+      options.setCurrentStep(2);
+    }
+
+    const message = extractApiErrorMessage(err, fallbackMessage);
+    setGeneralError(message);
+    toast.error(message);
+  };
 
   const handleSaveDraft = async () => {
     if (!options.validateFullForm()) return;
@@ -58,16 +87,17 @@ export function usePostEditorSubmit(options: UsePostEditorSubmitOptions) {
       }
 
       options.setIsDirty(false);
+      toast.success("Draft saved successfully.");
       if (navTimerRef.current) {
         clearTimeout(navTimerRef.current);
       }
       navTimerRef.current = setTimeout(() => {
         navTimerRef.current = null;
         navigate("/studio");
-      }, 800);
+      }, 600);
     } catch (err) {
       console.error("Failed to save draft:", err);
-      setGeneralError("Failed to save draft. Please check your connection and try again.");
+      handleApiErrors(err, "Failed to save draft. Please check your connection and try again.");
     } finally {
       setIsSaving(false);
     }
@@ -104,11 +134,10 @@ export function usePostEditorSubmit(options: UsePostEditorSubmitOptions) {
       navTimerRef.current = setTimeout(() => {
         navTimerRef.current = null;
         navigate(`/posts/${targetPostId}`);
-      }, 900);
+      }, 700);
     } catch (err) {
       console.error("Failed to publish work:", err);
-      const errMsg = err instanceof Error ? err.message : "Failed to publish post. Ensure at least one image is uploaded.";
-      setGeneralError(errMsg);
+      handleApiErrors(err, "Failed to publish post. Ensure at least one image is uploaded.");
     } finally {
       setIsPublishing(false);
     }

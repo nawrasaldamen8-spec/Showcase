@@ -1,58 +1,28 @@
 import { ArrowLeft, Check, ChevronLeft, Search, Sparkles, X, XCircle } from "lucide-react";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { toast } from "sonner";
-import { apiClient } from "@shared/api/apiClient.ts";
-import type { SpecialtyCategoryDto } from "@shared/api/apiClient.lookups.ts";
+import { useSpecialtiesQuery } from "@shared/hooks/index.ts";
 import { useAuth } from "@shared/context/index.ts";
 import { ALL_SPECIALTIES, SPECIALTY_CATEGORIES } from "../constants.ts";
+import { useMyProfileQuery, useUpdateProfileMutation } from "../../profile/hooks/useProfileQueries.ts";
 
 export const SelectSpecialtyPage: React.FC = () => {
   const navigate = useNavigate();
   const { refreshUser } = useAuth();
 
-  const [currentSpecialty, setCurrentSpecialty] = useState<string | null>(null);
-  const [profileName, setProfileName] = useState<string>("");
-  const [profileCountry, setProfileCountry] = useState<string | null>(null);
-  const [profileBio, setProfileBio] = useState<string>("");
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [isSaving, setIsSaving] = useState<boolean>(false);
+  const { data: apiCategories = [], isLoading: isLoadingSpecialties } = useSpecialtiesQuery();
+  const { data: profile, isLoading: isLoadingProfile } = useMyProfileQuery();
+  const updateProfileMutation = useUpdateProfileMutation();
 
-  const [apiCategories, setApiCategories] = useState<SpecialtyCategoryDto[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>("");
 
-  useEffect(() => {
-    let isMounted = true;
-    async function loadData() {
-      try {
-        const [profileData, specialtiesData] = await Promise.all([
-          apiClient.getMyProfile(),
-          apiClient.getSpecialties().catch(() => []),
-        ]);
-        if (isMounted) {
-          setCurrentSpecialty(profileData.specialty || null);
-          setProfileName(profileData.name || "");
-          setProfileCountry(profileData.country || null);
-          setProfileBio(profileData.bio || "");
-          if (specialtiesData && specialtiesData.length > 0) {
-            setApiCategories(specialtiesData);
-          }
-        }
-      } catch (err) {
-        console.error("Failed to load profile specialty:", err);
-      } finally {
-        if (isMounted) setIsLoading(false);
-      }
-    }
-    void loadData();
-    return () => {
-      isMounted = false;
-    };
-  }, []);
+  const currentSpecialty = profile?.specialty || null;
+  const isLoading = isLoadingSpecialties || isLoadingProfile;
+  const isSaving = updateProfileMutation.isPending;
 
   const categories = useMemo(() => {
-    if (apiCategories.length > 0) {
+    if (apiCategories && apiCategories.length > 0) {
       return apiCategories.map((c) => ({
         id: c.name,
         name: c.name,
@@ -64,7 +34,7 @@ export const SelectSpecialtyPage: React.FC = () => {
   }, [apiCategories]);
 
   const allSpecialtiesList = useMemo(() => {
-    if (apiCategories.length > 0) {
+    if (apiCategories && apiCategories.length > 0) {
       const set = new Set<string>();
       for (const cat of apiCategories) {
         for (const spec of cat.specialties) {
@@ -93,25 +63,20 @@ export const SelectSpecialtyPage: React.FC = () => {
   }, [searchQuery, activeCategoryObj, allSpecialtiesList]);
 
   const handleSelectSpecialty = async (specialty: string | null) => {
-    if (isSaving) return;
-    setIsSaving(true);
+    if (isSaving || !profile) return;
 
     try {
-      await apiClient.updateProfile({
-        name: profileName,
+      await updateProfileMutation.mutateAsync({
+        name: profile.name || "",
         specialty: specialty,
-        country: profileCountry,
-        bio: profileBio,
+        country: profile.country || null,
+        bio: profile.bio || "",
       });
 
       await refreshUser();
-      toast.success(specialty ? `Primary specialty updated to "${specialty}".` : "Specialty removed.");
       navigate("/profile/edit");
-    } catch (err) {
-      console.error("Failed to update specialty:", err);
-      toast.error("Failed to update specialty. Please try again.");
-    } finally {
-      setIsSaving(false);
+    } catch {
+      // Handled by global/mutation toast handler
     }
   };
 
@@ -166,7 +131,7 @@ export const SelectSpecialtyPage: React.FC = () => {
             <button
               type="button"
               onClick={() => setSearchQuery("")}
-              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-cloud-dark hover:text-slate-dark p-1"
+              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-cloud-dark hover:text-slate-dark p-1 cursor-pointer"
               aria-label="Clear search"
             >
               <X className="w-4 h-4" />
@@ -226,7 +191,7 @@ export const SelectSpecialtyPage: React.FC = () => {
           </button>
         </div>
 
-        {/* Progressive Disclosure Section: List of Disciplines (When Searching or Category is Selected) */}
+        {/* Progressive Disclosure Section: List of Disciplines */}
         {(searchQuery.trim() !== "" || selectedCategory !== null) ? (
           <div className="space-y-3 pt-2">
             <div className="flex items-center justify-between">
@@ -293,7 +258,7 @@ export const SelectSpecialtyPage: React.FC = () => {
             </p>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-              {SPECIALTY_CATEGORIES.map((cat) => (
+              {categories.map((cat) => (
                 <button
                   key={cat.id}
                   type="button"

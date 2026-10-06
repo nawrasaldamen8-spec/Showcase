@@ -2,7 +2,12 @@ import { Phone } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { apiClient, extractApiErrorMessage } from "@shared/api/index.ts";
+import {
+  apiClient,
+  extractApiErrorMessage,
+  extractApiFieldErrors,
+  extractApiProblemDetails,
+} from "@shared/api/index.ts";
 import { Button } from "@shared/components/Button.tsx";
 import { Input } from "@shared/components/Input.tsx";
 import type { ProblemDetails } from "@shared/types/index.ts";
@@ -15,6 +20,7 @@ export const ManagePhonePage: React.FC = () => {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isFetching, setIsFetching] = useState(true);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [problem, setProblem] = useState<ProblemDetails | null>(null);
 
   useEffect(() => {
@@ -45,15 +51,14 @@ export const ManagePhonePage: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setProblem(null);
+    setFieldErrors({});
 
     const trimmedPhone = phoneNumber.trim();
 
     // Basic phone validation if provided
     if (trimmedPhone && !/^[+0-9\s\-()]{6,20}$/.test(trimmedPhone)) {
-      setProblem({
-        title: "Validation Error",
-        detail: "Please enter a valid international phone number format.",
-        status: 400,
+      setFieldErrors({
+        phoneNumber: "Please enter a valid international phone number format.",
       });
       return;
     }
@@ -68,12 +73,11 @@ export const ManagePhonePage: React.FC = () => {
       toast.success("Phone number updated successfully.");
       navigate("/settings/security");
     } catch (err: unknown) {
+      const extractedFields = extractApiFieldErrors(err);
+      const problemDetails = extractApiProblemDetails(err);
+      setFieldErrors(extractedFields);
+      setProblem(problemDetails);
       const errorMsg = extractApiErrorMessage(err, "An error occurred while saving your phone number.");
-      setProblem({
-        title: "Update Failed",
-        detail: errorMsg,
-        status: 400,
-      });
       toast.error(errorMsg);
     } finally {
       setIsLoading(false);
@@ -89,7 +93,7 @@ export const ManagePhonePage: React.FC = () => {
       backLabel="Back to Account Security"
     >
       <form onSubmit={handleSubmit} className="space-y-6" noValidate>
-        <ProblemAlert problem={problem} />
+        {problem && !Object.keys(fieldErrors).length && <ProblemAlert problem={problem} />}
 
         <div className="space-y-4">
           <Input
@@ -98,8 +102,14 @@ export const ManagePhonePage: React.FC = () => {
             type="tel"
             placeholder="+962 7 9000 0000"
             value={phoneNumber}
-            onChange={(e) => setPhoneNumber(e.target.value)}
-            disabled={isFetching}
+            onChange={(e) => {
+              setPhoneNumber(e.target.value);
+              if (fieldErrors.phoneNumber || fieldErrors.PhoneNumber) {
+                setFieldErrors((prev) => ({ ...prev, phoneNumber: "", PhoneNumber: "" }));
+              }
+            }}
+            disabled={isFetching || isLoading}
+            errorMessage={fieldErrors.phoneNumber || fieldErrors.PhoneNumber}
             leftIcon={<Phone className="h-4 w-4 text-cloud-dark" />}
             helperText="Used for account recovery and security alerts"
           />

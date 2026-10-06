@@ -35,14 +35,14 @@ export function useNotificationRealtime() {
       .configureLogging(LogLevel.Warning)
       .build();
 
-    connection.on("NotificationReceived", (data?: NotificationPayload) => {
-      // Invalidate queries so unread count and notification list refresh
+    const handleNotification = (data?: NotificationPayload) => {
+      // Invalidate all notification queries to refresh badge counter and list immediately
       queryClient.invalidateQueries({ queryKey: queryKeys.notifications.all });
 
-      // Dispatch event to trigger bell animation
+      // Dispatch event to trigger bell badge vibration / pulse animation
       window.dispatchEvent(new CustomEvent(NOTIFICATION_ARRIVED_EVENT));
 
-      // Show toast if user is not currently looking at the notifications page
+      // Show toast if user is not currently viewing the notifications page
       if (typeof window !== "undefined" && window.location.pathname !== "/notifications") {
         if (data?.message) {
           toast.info(data.message, {
@@ -50,7 +50,11 @@ export function useNotificationRealtime() {
           });
         }
       }
-    });
+    };
+
+    // Handle both event namings for total backend contract robustness
+    connection.on("ReceiveNotification", handleNotification);
+    connection.on("NotificationReceived", handleNotification);
 
     connection.on("BroadcastReceived", (data?: { title?: string; message?: string }) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.notifications.all });

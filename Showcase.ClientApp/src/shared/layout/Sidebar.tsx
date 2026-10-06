@@ -10,10 +10,11 @@ export type { SidebarUser };
 
 export interface SidebarProps {
   user?: SidebarUser | null;
+  unreadNotificationsCount?: number;
   onLogout?: () => void;
 }
 
-export const Sidebar: React.FC<SidebarProps> = ({ user, onLogout }) => {
+export const Sidebar: React.FC<SidebarProps> = ({ user, unreadNotificationsCount, onLogout }) => {
   const location = useLocation();
   return (
     <aside
@@ -34,7 +35,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ user, onLogout }) => {
       </div>
 
       {/* 2. Middle Navigation Items */}
-      <SidebarNavLinks user={user} />
+      <SidebarNavLinks user={user} unreadNotificationsCount={unreadNotificationsCount} />
 
       {/* 3. Bottom Section: Action CTAs & Profile Area */}
       <div className="p-4 border-t border-[#262624] space-y-2.5 bg-slate-dark">

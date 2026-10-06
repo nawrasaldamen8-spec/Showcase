@@ -1,16 +1,20 @@
 import { Settings } from "lucide-react";
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
-import { NotificationBellBadge } from "@features/notifications/components/index.ts";
-import { useUnreadNotificationsCountQuery } from "@features/notifications/hooks/useNotificationQueries.ts";
 import { BrandLogo } from "@shared/components/BrandLogo.tsx";
+import { NotificationBellBadge } from "@shared/components/NotificationBellBadge.tsx";
 import { useAuth } from "../context/index.ts";
 
-export const MobileTopBar: React.FC = () => {
+export interface MobileTopBarProps {
+  unreadNotificationsCount?: number;
+}
+
+export const MobileTopBar: React.FC<MobileTopBarProps> = ({
+  unreadNotificationsCount = 0,
+}) => {
   const { currentUser } = useAuth();
   const location = useLocation();
-  const { data: unreadData } = useUnreadNotificationsCountQuery({ enabled: Boolean(currentUser) });
-  const unreadCount = unreadData?.count ?? 0;
+  const unreadCount = unreadNotificationsCount;
 
   const isProfilePage = location.pathname.startsWith("/u/") || location.pathname.startsWith("/profile");
 

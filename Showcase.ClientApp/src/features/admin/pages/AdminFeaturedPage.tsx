@@ -1,39 +1,30 @@
 import React from "react";
 import { CheckCircle2, ExternalLink, Pin, PinOff, Sparkles, XCircle } from "lucide-react";
-import { toast } from "sonner";
 import { Button } from "@shared/components/Button.tsx";
-import { useAsyncData } from "@shared/hooks/index.ts";
-import { apiClient } from "@shared/api/index.ts";
 import { AdminLayout } from "../components/AdminLayout.tsx";
+import {
+  useAdminFeaturedQuery,
+  useApproveFeaturedMutation,
+  useRejectFeaturedMutation,
+  useToggleCuratedPinMutation,
+} from "../hooks/useAdminQueries.ts";
 
 export const AdminFeaturedPage: React.FC = () => {
-
-  const {
-    data: recommendations,
-    isLoading,
-    reload: loadData,
-  } = useAsyncData(() => apiClient.getFeaturedRecommendations());
+  const { data: recommendations = [], isLoading } = useAdminFeaturedQuery();
+  const togglePinMutation = useToggleCuratedPinMutation();
+  const approveMutation = useApproveFeaturedMutation();
+  const rejectMutation = useRejectFeaturedMutation();
 
   const handleTogglePin = async (id: string, currentlyPinned: boolean) => {
-    await apiClient.toggleCuratedPin(id, !currentlyPinned);
-    toast.success(
-      !currentlyPinned
-        ? "Creator pinned to curated spotlight."
-        : "Creator unpinned from curated spotlight."
-    );
-    loadData();
+    await togglePinMutation.mutateAsync({ id, isPinned: !currentlyPinned });
   };
 
   const handleApprove = async (id: string) => {
-    await apiClient.approveFeaturedRequest(id);
-    toast.success("Approved for discovery recommendations.");
-    loadData();
+    await approveMutation.mutateAsync(id);
   };
 
   const handleReject = async (id: string) => {
-    await apiClient.rejectFeaturedRequest(id);
-    toast.info("Featured request declined.");
-    loadData();
+    await rejectMutation.mutateAsync(id);
   };
 
   const pinnedItems = recommendations?.filter((item) =>
@@ -138,6 +129,7 @@ export const AdminFeaturedPage: React.FC = () => {
                         variant="outline"
                         size="sm"
                         onClick={() => handleTogglePin(item.id, true)}
+                        disabled={togglePinMutation.isPending}
                         leftIcon={<PinOff className="w-3.5 h-3.5" />}
                         className="font-gothic uppercase tracking-wider text-[10px]"
                       >
@@ -217,6 +209,7 @@ export const AdminFeaturedPage: React.FC = () => {
                         variant="clay"
                         size="sm"
                         onClick={() => handleTogglePin(item.id, false)}
+                        disabled={togglePinMutation.isPending}
                         leftIcon={<Pin className="w-3.5 h-3.5" />}
                         className="font-gothic uppercase tracking-wider text-[11px]"
                       >
@@ -228,6 +221,7 @@ export const AdminFeaturedPage: React.FC = () => {
                           <button
                             type="button"
                             onClick={() => handleReject(item.id)}
+                            disabled={rejectMutation.isPending}
                             className="p-1.5 rounded-lg text-red-600 hover:bg-red-500/10 cursor-pointer"
                             title="Decline"
                           >
@@ -236,6 +230,7 @@ export const AdminFeaturedPage: React.FC = () => {
                           <button
                             type="button"
                             onClick={() => handleApprove(item.id)}
+                            disabled={approveMutation.isPending}
                             className="p-1.5 rounded-lg text-[#2e7d32] hover:bg-[#2e7d32]/10 cursor-pointer"
                             title="Approve"
                           >

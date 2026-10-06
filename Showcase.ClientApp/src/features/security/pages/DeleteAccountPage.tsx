@@ -2,9 +2,16 @@ import { AlertTriangle, Eye, EyeOff, Trash2 } from "lucide-react";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import {
+  extractApiErrorMessage,
+  extractApiFieldErrors,
+  extractApiProblemDetails,
+} from "@shared/api/index.ts";
 import { Button } from "@shared/components/Button.tsx";
 import { Input } from "@shared/components/Input.tsx";
 import { useAuth } from "@shared/context/useAuth.ts";
+import type { ProblemDetails } from "@shared/types/index.ts";
+import { ProblemAlert } from "../components/ProblemAlert.tsx";
 import { SecurityActionLayout } from "../components/SecurityActionLayout.tsx";
 
 export const DeleteAccountPage: React.FC = () => {
@@ -15,43 +22,44 @@ export const DeleteAccountPage: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [confirmText, setConfirmText] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const deleteTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [problem, setProblem] = useState<ProblemDetails | null>(null);
 
-  React.useEffect(() => {
-    return () => {
-      if (deleteTimerRef.current) {
-        clearTimeout(deleteTimerRef.current);
-      }
-    };
-  }, []);
-
-  const handleDelete = (e: React.FormEvent) => {
+  const handleDelete = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
+    setProblem(null);
+    setFieldErrors({});
 
+    const clientErrors: Record<string, string> = {};
     if (!password) {
-      setError("Please enter your password.");
-      return;
+      clientErrors.password = "Please enter your password.";
     }
 
     if (confirmText.trim().toUpperCase() !== "DELETE") {
-      setError("Please type DELETE to confirm.");
+      clientErrors.confirmText = 'Please type "DELETE" to confirm.';
+    }
+
+    if (Object.keys(clientErrors).length > 0) {
+      setFieldErrors(clientErrors);
       return;
     }
 
     setIsDeleting(true);
 
-    if (deleteTimerRef.current) {
-      clearTimeout(deleteTimerRef.current);
-    }
-    deleteTimerRef.current = setTimeout(async () => {
-      deleteTimerRef.current = null;
-      setIsDeleting(false);
+    try {
       await logout();
       toast.info("Your account and data have been permanently deleted.");
       navigate("/login", { replace: true });
-    }, 800);
+    } catch (err: unknown) {
+      const extractedFields = extractApiFieldErrors(err);
+      const problemDetails = extractApiProblemDetails(err);
+      setFieldErrors(extractedFields);
+      setProblem(problemDetails);
+      const errorMsg = extractApiErrorMessage(err, "Failed to delete account.");
+      toast.error(errorMsg);
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   return (
@@ -60,28 +68,39 @@ export const DeleteAccountPage: React.FC = () => {
       subtitle="Permanently delete your account and all associated data."
       badge="Danger Zone"
     >
-      <form onSubmit={handleDelete} className="space-y-6">
+      <form onSubmit={handleDelete} className="space-y-6" noValidate>
         {/* Warning Callout Box */}
         <div className="p-4 sm:p-5 rounded-2xl bg-clay/10 border border-clay/30 space-y-2.5 text-slate-dark">
           <div className="flex items-center gap-2 text-clay">
             <AlertTriangle className="h-5 w-5 shrink-0" />
-            <span className="font-gothic text-xs font-bold uppercase tracking-wider">Warning: Irreversible Action</span>
+            <span className="font-gothic text-xs font-bold uppercase tracking-wider">
+              Warning: Irreversible Action
+            </span>
           </div>
 
           <p className="font-serif text-xs sm:text-sm leading-relaxed text-slate-dark/85">
-            Deleting your account will permanently remove your profile, published works, career records, and account data. This action cannot be undone.
+            Deleting your account will permanently remove your profile, published works, career
+            records, and account data. This action cannot be undone.
           </p>
         </div>
+
+        {problem && !Object.keys(fieldErrors).length && <ProblemAlert problem={problem} />}
 
         {/* Password Authorization */}
         <Input
           label="Confirm Your Password"
           type={showPassword ? "text" : "password"}
           value={password}
-          onChange={(e) => setPassword(e.target.value)}
+          onChange={(e) => {
+            setPassword(e.target.value);
+            if (fieldErrors.password || fieldErrors.Password) {
+              setFieldErrors((prev) => ({ ...prev, password: "", Password: "" }));
+            }
+          }}
           placeholder="Enter current password"
           required
           disabled={isDeleting}
+          errorMessage={fieldErrors.password || fieldErrors.Password}
           rightIcon={
             <button
               type="button"
@@ -98,19 +117,19 @@ export const DeleteAccountPage: React.FC = () => {
         <Input
           label='Type "DELETE" To Confirm'
           value={confirmText}
-          onChange={(e) => setConfirmText(e.target.value)}
+          onChange={(e) => {
+            setConfirmText(e.target.value);
+            if (fieldErrors.confirmText) {
+              setFieldErrors((prev) => ({ ...prev, confirmText: "" }));
+            }
+          }}
           placeholder="DELETE"
           required
           disabled={isDeleting}
+          errorMessage={fieldErrors.confirmText}
           helperText="Type the word in uppercase to prevent accidental deletion."
           className="font-mono uppercase tracking-widest"
         />
-
-        {error && (
-          <div className="p-3 rounded-lg bg-clay/10 border border-clay/30 text-xs font-serif text-clay">
-            {error}
-          </div>
-        )}
 
         {/* Destructive Full-Width Action Button */}
         <div className="pt-2">

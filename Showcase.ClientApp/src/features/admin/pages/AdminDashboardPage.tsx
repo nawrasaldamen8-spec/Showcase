@@ -10,15 +10,14 @@ import {
   Users,
 } from "lucide-react";
 import { Button } from "@shared/components/Button.tsx";
-import { useAsyncData } from "@shared/hooks/index.ts";
-import { apiClient } from "@shared/api/index.ts";
 import { formatBytes } from "@shared/utils/format.ts";
 import { AdminKpiCard } from "../components/AdminKpiCard.tsx";
 import { AdminLayout } from "../components/AdminLayout.tsx";
+import { useAdminDashboardQuery } from "../hooks/useAdminQueries.ts";
 
 export const AdminDashboardPage: React.FC = () => {
   const navigate = useNavigate();
-  const { data: metrics } = useAsyncData(() => apiClient.getDashboardMetrics());
+  const { data: metrics } = useAdminDashboardQuery();
 
   return (
     <AdminLayout

@@ -1,8 +1,7 @@
 import { Briefcase, LayoutGrid, Search, Shield, User as UserIcon } from "lucide-react";
 import React from "react";
 import { NavLink, useLocation } from "react-router-dom";
-import { NotificationBellBadge } from "@features/notifications/components/index.ts";
-import { useUnreadNotificationsCountQuery } from "@features/notifications/hooks/useNotificationQueries.ts";
+import { NotificationBellBadge } from "../components/NotificationBellBadge.tsx";
 
 export interface SidebarUser {
   username: string;
@@ -14,12 +13,15 @@ export interface SidebarUser {
 
 export interface SidebarNavLinksProps {
   user?: SidebarUser | null;
+  unreadNotificationsCount?: number;
 }
 
-export const SidebarNavLinks: React.FC<SidebarNavLinksProps> = ({ user }) => {
+export const SidebarNavLinks: React.FC<SidebarNavLinksProps> = ({
+  user,
+  unreadNotificationsCount = 0,
+}) => {
   const location = useLocation();
-  const { data: unreadData } = useUnreadNotificationsCountQuery({ enabled: Boolean(user) });
-  const unreadCount = unreadData?.count ?? 0;
+  const unreadCount = unreadNotificationsCount;
 
   const isLinkActive = (to: string, isActive: boolean) => {
     if (isActive) return true;

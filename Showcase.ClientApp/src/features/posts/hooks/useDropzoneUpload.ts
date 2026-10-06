@@ -1,5 +1,5 @@
 import React, { useState, useRef, useCallback, useEffect } from "react";
-import { apiClient } from "@shared/api/apiClient.ts";
+import { apiClient, extractApiErrorMessage } from "@shared/api/index.ts";
 
 import { MAX_POST_IMAGES } from "../constants.ts";
 
@@ -199,7 +199,7 @@ export function useDropzoneUpload({
         objectUrls.current.forEach((url) => URL.revokeObjectURL(url));
         objectUrls.current = [];
         console.error("Direct upload error:", err);
-        const errMsg = err instanceof Error ? err.message : "Failed to upload image.";
+        const errMsg = extractApiErrorMessage(err, "Failed to upload image.");
         setValidationError(errMsg);
         onError?.(errMsg);
       } finally {

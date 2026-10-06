@@ -1,15 +1,14 @@
 import React, { useState } from "react";
 import { Search, Shield } from "lucide-react";
 import { Input } from "@shared/components/Input.tsx";
-import { useAsyncData } from "@shared/hooks/index.ts";
-import { apiClient } from "@shared/api/index.ts";
 import type { AuditLogItem } from "@shared/types/index.ts";
 import { AdminLayout } from "../components/AdminLayout.tsx";
 import { AdminTable, type AdminTableColumn } from "../components/AdminTable.tsx";
+import { useAdminAuditLogsQuery } from "../hooks/useAdminQueries.ts";
 
 export const AdminAuditLogsPage: React.FC = () => {
   const [search, setSearch] = useState("");
-  const { data: logs, isLoading } = useAsyncData(() => apiClient.getAuditLogs());
+  const { data: logs = [], isLoading } = useAdminAuditLogsQuery();
 
   const filteredLogs = logs?.filter((log) => {
     if (!search.trim()) return true;

@@ -2,32 +2,28 @@ import React, { useState } from "react";
 import { CheckCircle2, Clock, ExternalLink, FileCheck, ShieldCheck, XCircle } from "lucide-react";
 import { Button } from "@shared/components/Button.tsx";
 import { VerifiedBadge } from "@shared/components/VerifiedBadge.tsx";
-import { useAsyncData } from "@shared/hooks/index.ts";
-import { apiClient } from "@shared/api/index.ts";
-import { toast } from "sonner";
 import type { VerificationRequestItem } from "@shared/types/index.ts";
 import { AdminLayout } from "../components/AdminLayout.tsx";
 import { VerificationReviewModal } from "../components/VerificationReviewModal.tsx";
+import {
+  useAdminVerificationsQuery,
+  useApproveVerificationMutation,
+  useRejectVerificationMutation,
+} from "../hooks/useAdminQueries.ts";
 
 export const AdminVerificationsPage: React.FC = () => {
   const [selectedRequest, setSelectedRequest] = useState<VerificationRequestItem | null>(null);
 
-  const {
-    data: requests,
-    isLoading,
-    reload: loadRequests,
-  } = useAsyncData(() => apiClient.getVerificationRequests());
+  const { data: requests = [], isLoading } = useAdminVerificationsQuery();
+  const approveMutation = useApproveVerificationMutation();
+  const rejectMutation = useRejectVerificationMutation();
 
   const handleApprove = async (requestId: string, note?: string) => {
-    await apiClient.approveVerificationRequest(requestId, note);
-    toast.success("Official verification checkmark badge granted.");
-    loadRequests();
+    await approveMutation.mutateAsync({ requestId, note });
   };
 
   const handleReject = async (requestId: string, note?: string) => {
-    await apiClient.rejectVerificationRequest(requestId, note);
-    toast.info("Verification application declined.");
-    loadRequests();
+    await rejectMutation.mutateAsync({ requestId, note });
   };
 
   const pendingRequests = requests?.filter((r) => r.status === "pending") || [];
@@ -130,6 +126,7 @@ export const AdminVerificationsPage: React.FC = () => {
                       variant="clay"
                       size="sm"
                       onClick={() => setSelectedRequest(req)}
+                      disabled={approveMutation.isPending || rejectMutation.isPending}
                       leftIcon={<FileCheck className="w-3.5 h-3.5" />}
                     >
                       Examine &amp; Decide

@@ -1,11 +1,10 @@
 import { AlertTriangle, AtSign, CheckCircle2, Clock, KeyRound, LogOut, Mail, Phone, ShieldAlert, ShieldCheck, Sparkles } from "lucide-react";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { apiClient } from "@shared/api/apiClient.ts";
 import { Button } from "@shared/components/Button.tsx";
 import { Modal } from "@shared/components/Modal.tsx";
 import { useAuth } from "@shared/context/useAuth.ts";
-import { useAsyncData } from "@shared/hooks/index.ts";
+import { useMyProfileQuery } from "../../profile/hooks/useProfileQueries.ts";
 import { SecurityNavRow } from "../components/SecurityNavRow.tsx";
 
 export const SecurityHubPage: React.FC = () => {
@@ -13,7 +12,7 @@ export const SecurityHubPage: React.FC = () => {
   const navigate = useNavigate();
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
-  const { data: profile } = useAsyncData(() => apiClient.getMyProfile());
+  const { data: profile } = useMyProfileQuery();
 
   const displayUsername = profile?.username || currentUser?.username || "user";
   const displayEmail = profile?.email || currentUser?.email || "user@pority.com";

@@ -2,7 +2,12 @@ import { CheckCircle2, Eye, EyeOff, Mail } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { apiClient, extractApiErrorMessage } from "@shared/api/index.ts";
+import {
+  apiClient,
+  extractApiErrorMessage,
+  extractApiFieldErrors,
+  extractApiProblemDetails,
+} from "@shared/api/index.ts";
 import { Button } from "@shared/components/Button.tsx";
 import { Input } from "@shared/components/Input.tsx";
 import { useAuth } from "@shared/context/index.ts";
@@ -19,6 +24,7 @@ export const UpdateEmailPage: React.FC = () => {
   const [currentPassword, setCurrentPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [problem, setProblem] = useState<ProblemDetails | null>(null);
 
   useEffect(() => {
@@ -38,34 +44,24 @@ export const UpdateEmailPage: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setProblem(null);
+    setFieldErrors({});
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const trimmedEmail = newEmail.trim().toLowerCase();
+    const clientErrors: Record<string, string> = {};
 
     if (!trimmedEmail || !emailRegex.test(trimmedEmail)) {
-      setProblem({
-        title: "Invalid Email Address",
-        detail: "Please provide a valid, well-formed email address.",
-        status: 400,
-      });
-      return;
-    }
-
-    if (trimmedEmail === currentEmail.trim().toLowerCase()) {
-      setProblem({
-        title: "Unchanged Email",
-        detail: "The new email address matches your current registered address.",
-        status: 400,
-      });
-      return;
+      clientErrors.newEmail = "Please provide a valid, well-formed email address.";
+    } else if (trimmedEmail === currentEmail.trim().toLowerCase()) {
+      clientErrors.newEmail = "The new email address matches your current registered address.";
     }
 
     if (!currentPassword) {
-      setProblem({
-        title: "Authorization Required",
-        detail: "Your existing account password is required to authorize email changes.",
-        status: 400,
-      });
+      clientErrors.currentPassword = "Your existing account password is required to authorize email changes.";
+    }
+
+    if (Object.keys(clientErrors).length > 0) {
+      setFieldErrors(clientErrors);
       return;
     }
 
@@ -81,12 +77,11 @@ export const UpdateEmailPage: React.FC = () => {
       toast.success(`Email address successfully updated to ${trimmedEmail}.`);
       navigate("/settings/security");
     } catch (err: unknown) {
+      const extractedFields = extractApiFieldErrors(err);
+      const problemDetails = extractApiProblemDetails(err);
+      setFieldErrors(extractedFields);
+      setProblem(problemDetails);
       const errorMsg = extractApiErrorMessage(err, "Failed to update email address.");
-      setProblem({
-        title: "Email Update Failed",
-        detail: errorMsg,
-        status: 400,
-      });
       toast.error(errorMsg);
     } finally {
       setIsLoading(false);
@@ -99,7 +94,7 @@ export const UpdateEmailPage: React.FC = () => {
       subtitle="Your email address is used for critical security notifications and account recovery."
       badge="Credentials"
     >
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-6" noValidate>
         {/* Current Email Info Box */}
         <div className="p-4 rounded-xl bg-ivory-medium border border-stone/60 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3 min-w-0">
@@ -125,10 +120,16 @@ export const UpdateEmailPage: React.FC = () => {
           label="New Email Address"
           type="email"
           value={newEmail}
-          onChange={(e) => setNewEmail(e.target.value)}
+          onChange={(e) => {
+            setNewEmail(e.target.value);
+            if (fieldErrors.newEmail || fieldErrors.NewEmail) {
+              setFieldErrors((prev) => ({ ...prev, newEmail: "", NewEmail: "" }));
+            }
+          }}
           placeholder="your.new.email@domain.com"
           required
           disabled={isLoading}
+          errorMessage={fieldErrors.newEmail || fieldErrors.NewEmail}
         />
 
         {/* Current Password Authorization */}
@@ -136,10 +137,16 @@ export const UpdateEmailPage: React.FC = () => {
           label="Authorize With Current Password"
           type={showPassword ? "text" : "password"}
           value={currentPassword}
-          onChange={(e) => setCurrentPassword(e.target.value)}
+          onChange={(e) => {
+            setCurrentPassword(e.target.value);
+            if (fieldErrors.currentPassword || fieldErrors.CurrentPassword) {
+              setFieldErrors((prev) => ({ ...prev, currentPassword: "", CurrentPassword: "" }));
+            }
+          }}
           placeholder="Enter current password"
           required
           disabled={isLoading}
+          errorMessage={fieldErrors.currentPassword || fieldErrors.CurrentPassword}
           rightIcon={
             <button
               type="button"
@@ -153,7 +160,7 @@ export const UpdateEmailPage: React.FC = () => {
         />
 
         {/* Problem Alert */}
-        <ProblemAlert problem={problem} />
+        {problem && !Object.keys(fieldErrors).length && <ProblemAlert problem={problem} />}
 
         {/* Action Button: Full-width at the bottom */}
         <div className="pt-2">

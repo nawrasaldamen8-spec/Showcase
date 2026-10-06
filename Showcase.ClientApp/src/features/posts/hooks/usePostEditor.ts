@@ -99,6 +99,9 @@ export function usePostEditor(id?: string) {
     setIsDirty,
     validateFullForm,
     setImageInvariantError,
+    setTitleError,
+    setDescriptionError,
+    setUrlError,
     setCurrentStep,
   });
 

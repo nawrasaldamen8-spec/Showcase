@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import { apiClient } from "@shared/api/apiClient.ts";
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import { extractApiErrorMessage } from "@shared/api/index.ts";
 import { useAuth } from "@shared/context/useAuth.ts";
+import { useAvatarUploadMutation, useRemoveAvatarMutation } from "./useProfileQueries.ts";
 
 const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024; // 5 MB
 const ACCEPTED_MIME_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
@@ -8,7 +9,6 @@ const ACCEPTED_MIME_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif
 export interface UseAvatarUploadOptions {
   avatarUrl?: string | null;
   onAvatarUpdated?: (newUrl: string | null) => void;
-  onNotify?: (message: string, type?: "success" | "error") => void;
 }
 
 function validateAvatarFile(file: File): string | null {
@@ -21,27 +21,13 @@ function validateAvatarFile(file: File): string | null {
   return null;
 }
 
-async function uploadAvatarApi(file: File, objectUrl: string, onProgress: (pct: number) => void): Promise<void> {
-  onProgress(35);
-  const { uploadUrl, storageKey } = await apiClient.getAvatarUploadUrl({
-    contentType: file.type,
-    fileSizeBytes: file.size,
-  });
-
-  onProgress(65);
-  await apiClient.uploadImageFile(uploadUrl, file);
-
-  onProgress(90);
-  await apiClient.updateAvatar(storageKey, objectUrl);
-}
-
-export function useAvatarUpload({ avatarUrl, onAvatarUpdated, onNotify }: UseAvatarUploadOptions) {
+export function useAvatarUpload({ avatarUrl, onAvatarUpdated }: UseAvatarUploadOptions) {
   const { refreshUser } = useAuth();
+  const avatarUploadMutation = useAvatarUploadMutation();
+  const removeAvatarMutation = useRemoveAvatarMutation();
 
   const [currentUrl, setCurrentUrl] = useState<string | null>(avatarUrl || null);
   const [isDragging, setIsDragging] = useState(false);
-  const [isUploading, setIsUploading] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -49,6 +35,13 @@ export function useAvatarUpload({ avatarUrl, onAvatarUpdated, onNotify }: UseAva
   const fileInputRef = useRef<HTMLInputElement>(null);
   const createdObjectUrlRef = useRef<string | null>(null);
   const timersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
+
+  const isUploading = avatarUploadMutation.isPending;
+  const isDeleting = removeAvatarMutation.isPending;
+
+  useEffect(() => {
+    setCurrentUrl(avatarUrl || null);
+  }, [avatarUrl]);
 
   const safeTimeout = useCallback((fn: () => void, ms: number) => {
     const timer = setTimeout(() => {
@@ -77,7 +70,6 @@ export function useAvatarUpload({ avatarUrl, onAvatarUpdated, onNotify }: UseAva
       const valError = validateAvatarFile(file);
       if (valError) {
         setErrorMessage(valError);
-        onNotify?.(valError, "error");
         return;
       }
 
@@ -88,35 +80,28 @@ export function useAvatarUpload({ avatarUrl, onAvatarUpdated, onNotify }: UseAva
       createdObjectUrlRef.current = objectUrl;
 
       setCurrentUrl(objectUrl);
-      setIsUploading(true);
-      setUploadProgress(15);
+      setUploadProgress(20);
 
       try {
-        await uploadAvatarApi(file, objectUrl, setUploadProgress);
+        const result = await avatarUploadMutation.mutateAsync(file);
         await refreshUser();
 
         setUploadProgress(100);
         setSuccessMessage("Avatar uploaded successfully.");
-        onAvatarUpdated?.(objectUrl);
-        onNotify?.("Avatar updated successfully.", "success");
+        onAvatarUpdated?.(result.publicUrl);
 
         safeTimeout(() => {
-          setIsUploading(false);
           setUploadProgress(0);
         }, 600);
         safeTimeout(() => setSuccessMessage(null), 4000);
       } catch (err: unknown) {
-        console.error("Avatar upload error:", err);
         setCurrentUrl(avatarUrl || null);
-        const problem = err as { detail?: string; title?: string };
-        const msg = problem?.detail || problem?.title || "Failed to upload avatar. Please try again.";
+        const msg = extractApiErrorMessage(err, "Failed to upload avatar. Please try again.");
         setErrorMessage(msg);
-        onNotify?.(msg, "error");
-        setIsUploading(false);
         setUploadProgress(0);
       }
     },
-    [avatarUrl, onAvatarUpdated, onNotify, refreshUser]
+    [avatarUrl, avatarUploadMutation, onAvatarUpdated, refreshUser, safeTimeout]
   );
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -159,12 +144,11 @@ export function useAvatarUpload({ avatarUrl, onAvatarUpdated, onNotify }: UseAva
   const handleDelete = async () => {
     if (!currentUrl || isDeleting || isUploading) return;
 
-    setIsDeleting(true);
     setErrorMessage(null);
     setSuccessMessage(null);
 
     try {
-      await apiClient.removeAvatar();
+      await removeAvatarMutation.mutateAsync();
       if (createdObjectUrlRef.current) {
         URL.revokeObjectURL(createdObjectUrlRef.current);
         createdObjectUrlRef.current = null;
@@ -173,17 +157,11 @@ export function useAvatarUpload({ avatarUrl, onAvatarUpdated, onNotify }: UseAva
       await refreshUser();
       onAvatarUpdated?.(null);
       setSuccessMessage("Avatar removed.");
-      onNotify?.("Avatar removed successfully.", "success");
 
       safeTimeout(() => setSuccessMessage(null), 4000);
     } catch (err: unknown) {
-      console.error("Avatar deletion error:", err);
-      const problem = err as { detail?: string; title?: string };
-      const msg = problem?.detail || problem?.title || "Failed to remove avatar.";
+      const msg = extractApiErrorMessage(err, "Failed to remove avatar.");
       setErrorMessage(msg);
-      onNotify?.(msg, "error");
-    } finally {
-      setIsDeleting(false);
     }
   };
 

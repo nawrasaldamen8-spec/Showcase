@@ -10,18 +10,21 @@ import {
 } from "lucide-react";
 import { Input } from "@shared/components/Input.tsx";
 import { VerifiedBadge } from "@shared/components/VerifiedBadge.tsx";
-import { useAsyncData } from "@shared/hooks/index.ts";
-import { apiClient } from "@shared/api/index.ts";
-import { toast } from "sonner";
 import { formatBytes } from "@shared/utils/format.ts";
 import type { AdminUserListItem, UserRole } from "@shared/types/index.ts";
 import { AdminLayout } from "../components/AdminLayout.tsx";
 import { AdminPasswordConfirmModal } from "../components/AdminPasswordConfirmModal.tsx";
 import { AdminTable, type AdminTableColumn } from "../components/AdminTable.tsx";
 import { BanUserModal } from "../components/BanUserModal.tsx";
+import {
+  useAdminUsersQuery,
+  useBanUserMutation,
+  useToggleUserVerificationMutation,
+  useUnbanUserMutation,
+  useUpdateUserRoleMutation,
+} from "../hooks/useAdminQueries.ts";
 
 export const AdminUsersPage: React.FC = () => {
-
   const [searchInput, setSearchInput] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -34,26 +37,19 @@ export const AdminUsersPage: React.FC = () => {
     return () => clearTimeout(timer);
   }, [searchInput]);
 
-  const {
-    data: users,
-    isLoading,
-    reload: loadUsers,
-  } = useAsyncData(() => apiClient.getUsers(debouncedSearch, statusFilter, roleFilter));
+  const { data: users, isLoading } = useAdminUsersQuery(debouncedSearch, statusFilter, roleFilter);
 
-  useEffect(() => {
-    loadUsers();
-  }, [debouncedSearch, statusFilter, roleFilter, loadUsers]);
+  const banMutation = useBanUserMutation();
+  const unbanMutation = useUnbanUserMutation();
+  const updateRoleMutation = useUpdateUserRoleMutation();
+  const toggleVerificationMutation = useToggleUserVerificationMutation();
 
   const handleConfirmBan = async (userId: string, reason: string) => {
-    await apiClient.banUser(userId, reason);
-    toast.success("User account suspended successfully.");
-    loadUsers();
+    await banMutation.mutateAsync({ userId, reason });
   };
 
   const handleConfirmUnban = async (userId: string) => {
-    await apiClient.unbanUser(userId);
-    toast.success("User account reinstated.");
-    loadUsers();
+    await unbanMutation.mutateAsync(userId);
   };
 
   const handleConfirmRoleChange = async (adminPassword: string) => {
@@ -64,34 +60,22 @@ export const AdminUsersPage: React.FC = () => {
       ? user.roles.filter((r) => r !== "Admin")
       : [...user.roles, "Admin"];
 
-    await apiClient.updateUserRole(user.id, nextRoles, adminPassword);
-    toast.success(
-      hasAdmin
-        ? `Admin privileges revoked for @${user.username}.`
-        : `Admin privileges granted to @${user.username}.`
-    );
-    loadUsers();
+    await updateRoleMutation.mutateAsync({
+      userId: user.id,
+      roles: nextRoles,
+      adminPassword,
+    });
   };
 
   const handleToggleVerification = async (user: AdminUserListItem) => {
     const nextVerified = !user.isVerified;
-    try {
-      await apiClient.toggleUserVerification(
-        user.id,
-        nextVerified,
-        nextVerified
-          ? "Direct verified badge granted by administrator."
-          : "Verified badge revoked by administrator."
-      );
-      toast.success(
-        nextVerified
-          ? `Verified badge granted to @${user.username}.`
-          : `Verified badge revoked from @${user.username}.`
-      );
-      loadUsers();
-    } catch {
-      toast.error("Failed to update verification status.");
-    }
+    await toggleVerificationMutation.mutateAsync({
+      userId: user.id,
+      isVerified: nextVerified,
+      note: nextVerified
+        ? "Direct verified badge granted by administrator."
+        : "Verified badge revoked by administrator.",
+    });
   };
 
   const columns: AdminTableColumn<AdminUserListItem>[] = [
@@ -196,6 +180,7 @@ export const AdminUsersPage: React.FC = () => {
           <button
             type="button"
             onClick={() => handleToggleVerification(user)}
+            disabled={toggleVerificationMutation.isPending}
             className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
               user.isVerified
                 ? "text-clay hover:bg-clay/10"
@@ -209,6 +194,7 @@ export const AdminUsersPage: React.FC = () => {
           <button
             type="button"
             onClick={() => setSelectedUserForRoleChange(user)}
+            disabled={updateRoleMutation.isPending}
             className="p-1.5 rounded-lg text-cloud-dark hover:text-[#2e7d32] hover:bg-[#e8e5dc] transition-colors cursor-pointer"
             title={user.roles.includes("Admin") ? "Revoke Admin Role" : "Make Admin"}
           >
@@ -218,6 +204,7 @@ export const AdminUsersPage: React.FC = () => {
           <button
             type="button"
             onClick={() => setSelectedUserForBan(user)}
+            disabled={banMutation.isPending || unbanMutation.isPending}
             className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
               user.status === "suspended"
                 ? "text-[#2e7d32] hover:bg-[#2e7d32]/10"
@@ -258,7 +245,7 @@ export const AdminUsersPage: React.FC = () => {
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-3 py-2 rounded-xl border border-stone bg-ivory-medium font-serif text-xs text-slate-dark focus:outline-none"
+            className="px-3 py-2 rounded-xl border border-stone bg-ivory-medium font-serif text-xs text-slate-dark focus:outline-none cursor-pointer"
           >
             <option value="all">All Statuses</option>
             <option value="active">Active Only</option>
@@ -269,7 +256,7 @@ export const AdminUsersPage: React.FC = () => {
           <select
             value={roleFilter}
             onChange={(e) => setRoleFilter(e.target.value)}
-            className="px-3 py-2 rounded-xl border border-stone bg-ivory-medium font-serif text-xs text-slate-dark focus:outline-none"
+            className="px-3 py-2 rounded-xl border border-stone bg-ivory-medium font-serif text-xs text-slate-dark focus:outline-none cursor-pointer"
           >
             <option value="all">All Roles</option>
             <option value="Creator">Creators</option>
