@@ -1,10 +1,11 @@
 import { AtSign, Lock } from "lucide-react";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { apiClient } from "@shared/api/apiClient.ts";
+import { toast } from "sonner";
+import { apiClient, extractApiErrorMessage } from "@shared/api/index.ts";
 import { Button } from "@shared/components/Button.tsx";
 import { Input } from "@shared/components/Input.tsx";
-import { useAuth, useToast } from "@shared/context/index.ts";
+import { useAuth } from "@shared/context/index.ts";
 import type { ProblemDetails } from "@shared/types/index.ts";
 import { ProblemAlert } from "../components/ProblemAlert.tsx";
 import { SecurityActionLayout } from "../components/SecurityActionLayout.tsx";
@@ -12,7 +13,6 @@ import { SecurityActionLayout } from "../components/SecurityActionLayout.tsx";
 export const ChangeUsernamePage: React.FC = () => {
   const navigate = useNavigate();
   const { currentUser } = useAuth();
-  const { showToast } = useToast();
 
   const [newUsername, setNewUsername] = useState(currentUser?.username || "");
   const [currentPassword, setCurrentPassword] = useState("");
@@ -61,15 +61,16 @@ export const ChangeUsernamePage: React.FC = () => {
         newUsername: trimmed,
       });
 
-      showToast("success", "Username updated successfully.");
+      toast.success("Username updated successfully.");
       navigate("/settings/security");
     } catch (err: unknown) {
-      const p = err as ProblemDetails;
+      const errorMsg = extractApiErrorMessage(err, "An error occurred while updating your username.");
       setProblem({
-        title: p?.title || "Update Failed",
-        detail: p?.detail || "An error occurred while updating your username.",
-        status: p?.status || 400,
+        title: "Update Failed",
+        detail: errorMsg,
+        status: 400,
       });
+      toast.error(errorMsg);
     } finally {
       setIsLoading(false);
     }

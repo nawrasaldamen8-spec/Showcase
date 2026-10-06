@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 import { apiClient } from "@shared/api/apiClient.ts";
 import { PostStatus } from "@shared/types/index.ts";
 import type { ImageGridItem } from "../components/ImageReorderGrid.tsx";
@@ -20,7 +21,6 @@ export interface UsePostEditorSubmitOptions {
   validateFullForm: () => boolean;
   setImageInvariantError: (err: string | null) => void;
   setCurrentStep: (step: WizardStepNumber) => void;
-  showToast: (type: "success" | "error", message: string) => void;
 }
 
 export function usePostEditorSubmit(options: UsePostEditorSubmitOptions) {
@@ -97,7 +97,7 @@ export function usePostEditorSubmit(options: UsePostEditorSubmitOptions) {
       await apiClient.publishPost(targetPostId);
       options.setPostStatus(PostStatus.Published);
       options.setIsDirty(false);
-      options.showToast("success", "Project published successfully!");
+      toast.success("Project published successfully!");
       if (navTimerRef.current) {
         clearTimeout(navTimerRef.current);
       }

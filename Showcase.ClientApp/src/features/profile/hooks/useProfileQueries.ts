@@ -1,6 +1,6 @@
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { apiClient, extractApiErrorMessage, queryKeys, tokenStorage } from "@shared/api/index.ts";
+import { apiClient, extractApiErrorMessage, queryKeys } from "@shared/api/index.ts";
 import type {
   AddSocialLinkRequest,
   FeaturedRequestDto,
@@ -18,7 +18,7 @@ export function useMyProfileQuery(options?: { enabled?: boolean }) {
   return useQuery<ProfileDetailsResponse>({
     queryKey: queryKeys.profiles.me(),
     queryFn: () => apiClient.getMyProfile(),
-    enabled: options?.enabled ?? Boolean(tokenStorage.getToken()),
+    enabled: options?.enabled ?? true,
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
 }

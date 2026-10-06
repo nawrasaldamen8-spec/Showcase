@@ -1,11 +1,12 @@
 import { ArrowRight, ChevronDown, ChevronUp, ExternalLink, Flag, User as UserIcon } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
+import { toast } from "sonner";
 import { Badge } from "@shared/components/Badge.tsx";
 import { Button } from "@shared/components/Button.tsx";
 import { ProgressiveImage } from "@shared/components/ProgressiveImage.tsx";
 import { VerifiedBadge } from "@shared/components/VerifiedBadge.tsx";
-import { useAuth, useToast } from "@shared/context/index.ts";
+import { useAuth } from "@shared/context/index.ts";
 import type { PostDetailsResponse } from "@shared/types/index.ts";
 import { PostLikeButton } from "./PostLikeButton.tsx";
 import { ReportPostModal } from "./ReportPostModal.tsx";
@@ -28,7 +29,6 @@ export const PostCuratorialMeta: React.FC<PostCuratorialMetaProps> = ({
   showCreator = layout === "sidebar",
 }) => {
   const { currentUser } = useAuth();
-  const { showToast } = useToast();
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const [canExpand, setCanExpand] = useState(false);
@@ -108,7 +108,7 @@ export const PostCuratorialMeta: React.FC<PostCuratorialMetaProps> = ({
           type="button"
           onClick={() => {
             if (!currentUser) {
-              showToast("warning", "Please sign in to report content.");
+              toast.warning("Please sign in to report content.");
               return;
             }
             setIsReportModalOpen(true);

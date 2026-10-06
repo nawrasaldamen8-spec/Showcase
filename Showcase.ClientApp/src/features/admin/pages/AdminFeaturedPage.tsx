@@ -1,13 +1,12 @@
 import React from "react";
 import { CheckCircle2, ExternalLink, Pin, PinOff, Sparkles, XCircle } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@shared/components/Button.tsx";
 import { useAsyncData } from "@shared/hooks/index.ts";
 import { apiClient } from "@shared/api/index.ts";
-import { useToast } from "@shared/context/index.ts";
 import { AdminLayout } from "../components/AdminLayout.tsx";
 
 export const AdminFeaturedPage: React.FC = () => {
-  const { showToast } = useToast();
 
   const {
     data: recommendations,
@@ -17,8 +16,7 @@ export const AdminFeaturedPage: React.FC = () => {
 
   const handleTogglePin = async (id: string, currentlyPinned: boolean) => {
     await apiClient.toggleCuratedPin(id, !currentlyPinned);
-    showToast(
-      "success",
+    toast.success(
       !currentlyPinned
         ? "Creator pinned to curated spotlight."
         : "Creator unpinned from curated spotlight."
@@ -28,13 +26,13 @@ export const AdminFeaturedPage: React.FC = () => {
 
   const handleApprove = async (id: string) => {
     await apiClient.approveFeaturedRequest(id);
-    showToast("success", "Approved for discovery recommendations.");
+    toast.success("Approved for discovery recommendations.");
     loadData();
   };
 
   const handleReject = async (id: string) => {
     await apiClient.rejectFeaturedRequest(id);
-    showToast("info", "Featured request declined.");
+    toast.info("Featured request declined.");
     loadData();
   };
 

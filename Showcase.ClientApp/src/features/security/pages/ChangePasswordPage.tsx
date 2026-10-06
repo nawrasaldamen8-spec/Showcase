@@ -1,17 +1,16 @@
 import { Eye, EyeOff, Lock } from "lucide-react";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { apiClient } from "@shared/api/apiClient.ts";
+import { toast } from "sonner";
+import { apiClient, extractApiErrorMessage } from "@shared/api/index.ts";
 import { Button } from "@shared/components/Button.tsx";
 import { Input } from "@shared/components/Input.tsx";
-import { useToast } from "@shared/context/index.ts";
 import type { ProblemDetails } from "@shared/types/index.ts";
 import { ProblemAlert } from "../components/ProblemAlert.tsx";
 import { SecurityActionLayout } from "../components/SecurityActionLayout.tsx";
 
 export const ChangePasswordPage: React.FC = () => {
   const navigate = useNavigate();
-  const { showToast } = useToast();
 
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -60,17 +59,16 @@ export const ChangePasswordPage: React.FC = () => {
         newPassword,
       });
 
-      showToast("success", "Password updated successfully.");
+      toast.success("Password updated successfully.");
       navigate("/settings/security");
     } catch (err: unknown) {
-      const p = err as ProblemDetails;
+      const errorMsg = extractApiErrorMessage(err, "Failed to update password.");
       setProblem({
-        title: p?.title || "Password Update Failed",
-        detail: p?.detail || "An error occurred while updating your password.",
-        status: p?.status || 400,
-        errors: p?.errors,
+        title: "Password Update Failed",
+        detail: errorMsg,
+        status: 400,
       });
-      showToast("error", p?.detail || "Failed to update password.");
+      toast.error(errorMsg);
     } finally {
       setIsLoading(false);
     }

@@ -1,10 +1,12 @@
 import { Clock, MessageSquare } from "lucide-react";
 import React, { useState } from "react";
+import { toast } from "sonner";
 import { apiClient } from "@shared/api/apiClient.ts";
+import { extractApiErrorMessage } from "@shared/api/index.ts";
 import { Button } from "@shared/components/Button.tsx";
 import { Textarea } from "@shared/components/Textarea.tsx";
 import { useAsyncData } from "@shared/hooks/index.ts";
-import { useAuth, useToast } from "@shared/context/index.ts";
+import { useAuth } from "@shared/context/index.ts";
 import type { ProblemDetails } from "@shared/types/index.ts";
 import { ProblemAlert } from "./ProblemAlert.tsx";
 import { SecurityActionLayout } from "./SecurityActionLayout.tsx";
@@ -49,7 +51,6 @@ export const StatusRequestPage: React.FC<StatusRequestPageConfig> = ({
   buttonLabel,
 }) => {
   const { currentUser } = useAuth();
-  const { showToast } = useToast();
 
   const { data: profile, reload: loadData } = useAsyncData(() => apiClient.getMyProfile());
 
@@ -86,14 +87,16 @@ export const StatusRequestPage: React.FC<StatusRequestPageConfig> = ({
 
     try {
       await submitFn(trimmed);
-      showToast("success", successMessage);
+      toast.success(successMessage);
       loadData();
       setMessage("");
     } catch (err: unknown) {
+      const msg = extractApiErrorMessage(err);
+      toast.error(msg);
       const p = err as ProblemDetails;
       setProblem({
         title: p?.title || "Submission Failed",
-        detail: p?.detail || "An error occurred while submitting your request.",
+        detail: msg,
         status: p?.status || 400,
       });
     } finally {

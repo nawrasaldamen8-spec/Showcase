@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { useToast } from "@shared/context/index.ts";
 import { PostStatus } from "@shared/types/index.ts";
 import { fetchPostEditorData } from "./postEditorOperations.ts";
 import { usePostEditorSubmit } from "./usePostEditorSubmit.ts";
@@ -18,7 +17,6 @@ export type { WizardStepNumber };
 export function usePostEditor(id?: string) {
   const navigate = useNavigate();
   const location = useLocation();
-  const { showToast } = useToast();
   const isEditing = Boolean(id);
   const fromState = location.state as { from?: string } | null;
   const returnUrl = fromState?.from || (id ? `/posts/${id}` : "/studio");
@@ -59,7 +57,6 @@ export function usePostEditor(id?: string) {
     id,
     postStatus,
     setIsDirty,
-    showToast,
   });
 
   const getNormalizedUrl = () => normalizeUrlHelper(externalUrl);
@@ -103,7 +100,6 @@ export function usePostEditor(id?: string) {
     validateFullForm,
     setImageInvariantError,
     setCurrentStep,
-    showToast,
   });
 
   useEffect(() => {

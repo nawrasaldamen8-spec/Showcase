@@ -1,14 +1,14 @@
 import { ArrowLeft, Check, ChevronLeft, Search, Sparkles, X, XCircle } from "lucide-react";
 import React, { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 import { apiClient } from "@shared/api/apiClient.ts";
 import type { SpecialtyCategoryDto } from "@shared/api/apiClient.lookups.ts";
-import { useAuth, useToast } from "@shared/context/index.ts";
+import { useAuth } from "@shared/context/index.ts";
 import { ALL_SPECIALTIES, SPECIALTY_CATEGORIES } from "../constants.ts";
 
 export const SelectSpecialtyPage: React.FC = () => {
   const navigate = useNavigate();
-  const { showToast } = useToast();
   const { refreshUser } = useAuth();
 
   const [currentSpecialty, setCurrentSpecialty] = useState<string | null>(null);
@@ -105,11 +105,11 @@ export const SelectSpecialtyPage: React.FC = () => {
       });
 
       await refreshUser();
-      showToast("success", specialty ? `Primary specialty updated to "${specialty}".` : "Specialty removed.");
+      toast.success(specialty ? `Primary specialty updated to "${specialty}".` : "Specialty removed.");
       navigate("/profile/edit");
     } catch (err) {
       console.error("Failed to update specialty:", err);
-      showToast("error", "Failed to update specialty. Please try again.");
+      toast.error("Failed to update specialty. Please try again.");
     } finally {
       setIsSaving(false);
     }

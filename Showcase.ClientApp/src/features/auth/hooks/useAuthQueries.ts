@@ -7,7 +7,7 @@ export function useCurrentUserQuery(options?: { enabled?: boolean }) {
   return useQuery<CurrentUserResponse | null>({
     queryKey: queryKeys.auth.currentUser(),
     queryFn: () => apiClient.getCurrentUser(),
-    enabled: options?.enabled ?? Boolean(tokenStorage.getToken()),
+    enabled: options?.enabled ?? true,
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
 }

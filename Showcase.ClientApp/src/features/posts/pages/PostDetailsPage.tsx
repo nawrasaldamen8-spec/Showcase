@@ -87,8 +87,6 @@ export const PostDetailsPage: React.FC = () => {
     e.preventDefault();
     if (fromState?.from) {
       navigate(fromState.from);
-    } else if (window.history.length > 2) {
-      navigate(-1);
     } else {
       navigate(isOwnPost ? "/studio" : "/feed");
     }

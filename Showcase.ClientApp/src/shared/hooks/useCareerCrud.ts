@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
-import { useToast } from "@shared/context/index.ts";
+import { toast } from "sonner";
+import { extractApiErrorMessage } from "@shared/api/index.ts";
 
 export interface CareerCrudMessages {
   loadError?: string;
@@ -53,8 +54,6 @@ export function useCareerCrud<T extends { id: string }, FormInput = Omit<T, "id"
   const [deleteTarget, setDeleteTarget] = useState<T | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  const { showToast } = useToast();
-
   const loadItems = useCallback(async () => {
     setLoading(true);
     try {
@@ -62,11 +61,11 @@ export function useCareerCrud<T extends { id: string }, FormInput = Omit<T, "id"
       setItems(data);
     } catch (err) {
       console.error(err);
-      showToast("error", messages.loadError || `Failed to load ${entityLabel.toLowerCase()} records`);
+      toast.error(messages.loadError || extractApiErrorMessage(err) || `Failed to load ${entityLabel.toLowerCase()} records`);
     } finally {
       setLoading(false);
     }
-  }, [loadFn, entityLabel, messages.loadError, showToast]);
+  }, [loadFn, entityLabel, messages.loadError]);
 
   useEffect(() => {
     let isCancelled = false;
@@ -100,21 +99,21 @@ export function useCareerCrud<T extends { id: string }, FormInput = Omit<T, "id"
         setIsSaving(true);
         if (editingItem) {
           await updateFn(editingItem.id, data);
-          showToast("success", messages.updateSuccess || `${entityLabel} updated successfully`);
+          toast.success(messages.updateSuccess || `${entityLabel} updated successfully`);
         } else {
           await createFn(data);
-          showToast("success", messages.createSuccess || `${entityLabel} recorded successfully`);
+          toast.success(messages.createSuccess || `${entityLabel} recorded successfully`);
         }
         closeModal();
         await loadItems();
       } catch (err) {
         console.error(err);
-        showToast("error", messages.saveError || `Failed to save ${entityLabel.toLowerCase()}`);
+        toast.error(messages.saveError || extractApiErrorMessage(err) || `Failed to save ${entityLabel.toLowerCase()}`);
       } finally {
         setIsSaving(false);
       }
     },
-    [editingItem, updateFn, createFn, closeModal, loadItems, entityLabel, messages, showToast]
+    [editingItem, updateFn, createFn, closeModal, loadItems, entityLabel, messages]
   );
 
   const handleDeleteConfirm = useCallback(async () => {
@@ -122,16 +121,16 @@ export function useCareerCrud<T extends { id: string }, FormInput = Omit<T, "id"
     try {
       setIsDeleting(true);
       await deleteFn(deleteTarget.id);
-      showToast("success", messages.deleteSuccess || `${entityLabel} expunged successfully`);
+      toast.success(messages.deleteSuccess || `${entityLabel} expunged successfully`);
       setDeleteTarget(null);
       await loadItems();
     } catch (err) {
       console.error(err);
-      showToast("error", messages.deleteError || `Failed to expunge ${entityLabel.toLowerCase()}`);
+      toast.error(messages.deleteError || extractApiErrorMessage(err) || `Failed to expunge ${entityLabel.toLowerCase()}`);
     } finally {
       setIsDeleting(false);
     }
-  }, [deleteTarget, deleteFn, loadItems, entityLabel, messages, showToast]);
+  }, [deleteTarget, deleteFn, loadItems, entityLabel, messages]);
 
   return {
     items,

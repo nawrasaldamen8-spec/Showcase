@@ -1,8 +1,9 @@
 import { Heart } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { apiClient, queryKeys } from "@shared/api/index.ts";
-import { useAuth, useToast } from "@shared/context/index.ts";
+import { useAuth } from "@shared/context/index.ts";
 
 export interface PostLikeButtonProps {
   postId: string;
@@ -43,7 +44,6 @@ export const PostLikeButton: React.FC<PostLikeButtonProps> = ({
 }) => {
   const queryClient = useQueryClient();
   const { isAuthenticated } = useAuth();
-  const { showToast } = useToast();
   const [isLiked, setIsLiked] = useState<boolean>(initialLiked);
   const [count, setCount] = useState<number>(initialCount);
   const [isPopping, setIsPopping] = useState<boolean>(false);
@@ -96,7 +96,7 @@ export const PostLikeButton: React.FC<PostLikeButtonProps> = ({
       currentLikedRef.current = syncedLikedRef.current;
       setCount(initialCount);
       if (err?.response?.status === 401) {
-        showToast("warning", "Please sign in to like this project.");
+        toast.warning("Please sign in to like this project.");
       }
     }
   };
@@ -124,7 +124,7 @@ export const PostLikeButton: React.FC<PostLikeButtonProps> = ({
     e.stopPropagation();
 
     if (!isAuthenticated) {
-      showToast("warning", "Please sign in to like this project.");
+      toast.warning("Please sign in to like this project.");
       return;
     }
 

@@ -1,7 +1,7 @@
 import type { LucideIcon } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useToast } from "@shared/context/index.ts";
+import { toast } from "sonner";
 import type { CareerVisibilitySettings } from "@shared/types/index.ts";
 import { useCareerVisibility } from "../hooks/useCareerVisibility.ts";
 import { CareerEmptyState } from "./CareerEmptyState.tsx";
@@ -44,7 +44,6 @@ export function CareerListPage<T extends { id: string }>({
   gridClassName = "space-y-6",
 }: CareerListPageConfig<T>): React.ReactElement {
   const navigate = useNavigate();
-  const { showToast } = useToast();
   const { visibility, isToggling, toggleSection } = useCareerVisibility();
   const isMounted = useRef(true);
 
@@ -71,7 +70,7 @@ export function CareerListPage<T extends { id: string }>({
         }
       } catch {
         if (!cancelled && isMounted.current) {
-          showToast("error", `Failed to load ${entityLabel.toLowerCase()}s`);
+          toast.error(`Failed to load ${entityLabel.toLowerCase()}s`);
         }
       } finally {
         if (!cancelled && isMounted.current) {
@@ -83,7 +82,7 @@ export function CareerListPage<T extends { id: string }>({
     return () => {
       cancelled = true;
     };
-  }, [loadFn, entityLabel, showToast]);
+  }, [loadFn, entityLabel]);
 
   const handleDeleteConfirm = async () => {
     if (!deleteTarget) return;
@@ -93,11 +92,11 @@ export function CareerListPage<T extends { id: string }>({
       if (isMounted.current) {
         setItems((prev) => prev.filter((i) => i.id !== deleteTarget.id));
         setDeleteTarget(null);
-        showToast("success", `${entityLabel} deleted`);
+        toast.success(`${entityLabel} deleted`);
       }
     } catch {
       if (isMounted.current) {
-        showToast("error", `Failed to delete ${entityLabel.toLowerCase()}`);
+        toast.error(`Failed to delete ${entityLabel.toLowerCase()}`);
       }
     } finally {
       if (isMounted.current) {

@@ -1,13 +1,13 @@
 import { ArrowLeft, Check, Globe, Search, X, XCircle } from "lucide-react";
 import React, { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 import { apiClient } from "@shared/api/apiClient.ts";
 import type { CountryDto } from "@shared/api/apiClient.lookups.ts";
-import { useAuth, useToast } from "@shared/context/index.ts";
+import { useAuth } from "@shared/context/index.ts";
 
 export const SelectCountryPage: React.FC = () => {
   const navigate = useNavigate();
-  const { showToast } = useToast();
   const { refreshUser } = useAuth();
 
   const [countries, setCountries] = useState<CountryDto[]>([]);
@@ -71,11 +71,11 @@ export const SelectCountryPage: React.FC = () => {
       });
 
       await refreshUser();
-      showToast("success", countryName ? `Country updated to "${countryName}".` : "Country location removed.");
+      toast.success(countryName ? `Country updated to "${countryName}".` : "Country location removed.");
       navigate("/profile/edit");
     } catch (err) {
       console.error("Failed to update country:", err);
-      showToast("error", "Failed to update country. Please try again.");
+      toast.error("Failed to update country. Please try again.");
     } finally {
       setIsSaving(false);
     }

@@ -1,11 +1,11 @@
 import { Layers, Plus } from "lucide-react";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { apiClient, extractApiErrorMessage } from "@shared/api/index.ts";
+import { extractApiErrorMessage } from "@shared/api/index.ts";
 import { EmptyState } from "@shared/components/EmptyState.tsx";
 import { ErrorBanner } from "@shared/components/ErrorBanner.tsx";
 import { Skeleton } from "@shared/components/Skeleton.tsx";
-import { type PostSummaryResponse } from "@shared/types/index.ts";
+import type { PostSummaryResponse } from "@shared/types/index.ts";
 import {
   StudioDeleteModal,
   StudioFilterBar,
@@ -14,6 +14,7 @@ import {
   type StudioTabFilter,
 } from "../components/index.ts";
 import { usePostActions } from "../hooks/index.ts";
+import { useMyPostsQuery } from "../hooks/usePostQueries.ts";
 import { isPostDraft, isPostPublished } from "../utils.ts";
 
 function filterAndSortStudioPosts(
@@ -55,12 +56,19 @@ function filterAndSortStudioPosts(
 }
 
 export const StudioDashboardPage: React.FC = () => {
-  const [posts, setPosts] = useState<PostSummaryResponse[]>([]);
   const [activeTab, setActiveTab] = useState<StudioTabFilter>("all");
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [sortBy, setSortBy] = useState<StudioSortOption>("newest");
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
+
+  const {
+    data: postsData,
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useMyPostsQuery({ status: "all", pageNumber: 1, pageSize: 50 });
+
+  const posts = postsData?.items ?? [];
 
   const {
     actionInProgressId,
@@ -69,32 +77,11 @@ export const StudioDashboardPage: React.FC = () => {
     isDeleting,
     handleTogglePublish,
     handleConfirmDelete,
-  } = usePostActions({ posts, setPosts });
+  } = usePostActions();
 
-  const loadPosts = useCallback(async () => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const response = await apiClient.getMyPosts("all", 1, 50);
-      setPosts(response.items);
-    } catch (err) {
-      console.error("Failed to load studio posts:", err);
-      setError(extractApiErrorMessage(err, "Unable to load projects. Please try again."));
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    let isCancelled = false;
-    void Promise.resolve().then(async () => {
-      if (isCancelled) return;
-      await loadPosts();
-    });
-    return () => {
-      isCancelled = true;
-    };
-  }, [loadPosts]);
+  const errorMessage = isError
+    ? extractApiErrorMessage(error, "Unable to load projects. Please try again.")
+    : null;
 
   const filteredAndSortedPosts = useMemo(
     () => filterAndSortStudioPosts(posts, activeTab, searchQuery, sortBy),
@@ -175,11 +162,13 @@ export const StudioDashboardPage: React.FC = () => {
           onSortChange={setSortBy}
         />
 
-        {error && (
+        {errorMessage && (
           <ErrorBanner
             className="mt-6"
-            message={error}
-            onRetry={loadPosts}
+            message={errorMessage}
+            onRetry={() => {
+              void refetch();
+            }}
           />
         )}
 

@@ -6,7 +6,7 @@ import { Toaster } from "sonner";
 import { NotFoundView } from "@shared/components/NotFoundView.tsx";
 import { ProtectedRoute } from "@shared/components/ProtectedRoute.tsx";
 import { RouteLoadingSkeleton } from "@shared/components/RouteLoadingSkeleton.tsx";
-import { AuthProvider, ToastProvider } from "@shared/context/index.ts";
+import { AuthProvider } from "@shared/context/index.ts";
 
 import { AppLayout } from "./AppLayout.tsx";
 import { queryClient } from "./queryClient.ts";
@@ -188,10 +188,8 @@ export const App: React.FC = () => {
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <AuthProvider>
-          <ToastProvider>
-            <AppRoutes />
-            <Toaster position="top-right" richColors closeButton />
-          </ToastProvider>
+          <AppRoutes />
+          <Toaster position="top-right" richColors closeButton />
         </AuthProvider>
       </BrowserRouter>
       {import.meta.env.DEV && <ReactQueryDevtools initialIsOpen={false} />}

@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 import { extractApiErrorMessage } from "@shared/api/index.ts";
-import { useAuth, useToast } from "@shared/context/index.ts";
+import { useAuth } from "@shared/context/index.ts";
 
 export function useLoginForm() {
   const [emailOrUsername, setEmailOrUsername] = useState("");
@@ -11,7 +12,6 @@ export function useLoginForm() {
   const [error, setError] = useState<string | null>(null);
 
   const { login } = useAuth();
-  const { showToast } = useToast();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -41,7 +41,7 @@ export function useLoginForm() {
     setIsLoading(true);
     try {
       await login({ emailOrUsername: identifier, password });
-      showToast("success", "Welcome back to Pority Studio.");
+      toast.success("Welcome back to Pority Studio.");
       
       const fromState = location.state as { from?: { pathname: string; search?: string } } | null;
       const targetPath = fromState?.from?.pathname

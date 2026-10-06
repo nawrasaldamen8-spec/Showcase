@@ -2,14 +2,13 @@ import React, { useState } from "react";
 import { CheckCircle2, ShieldAlert } from "lucide-react";
 import { Button } from "@shared/components/Button.tsx";
 import { useAsyncData } from "@shared/hooks/index.ts";
+import { toast } from "sonner";
 import { apiClient } from "@shared/api/index.ts";
-import { useToast } from "@shared/context/index.ts";
 import type { ContentReportItem } from "@shared/types/index.ts";
 import { AdminLayout } from "../components/AdminLayout.tsx";
 import { ReportActionModal } from "../components/ReportActionModal.tsx";
 
 export const AdminReportsPage: React.FC = () => {
-  const { showToast } = useToast();
   const [statusFilter, setStatusFilter] = useState("all");
   const [selectedReport, setSelectedReport] = useState<ContentReportItem | null>(null);
 
@@ -25,13 +24,13 @@ export const AdminReportsPage: React.FC = () => {
 
   const handleResolve = async (reportId: string, actionTaken: string) => {
     await apiClient.resolveReport(reportId, actionTaken);
-    showToast("success", "Report resolved and corrective moderation action recorded.");
+    toast.success("Report resolved and corrective moderation action recorded.");
     loadReports();
   };
 
   const handleDismiss = async (reportId: string) => {
     await apiClient.dismissReport(reportId);
-    showToast("info", "Report dismissed.");
+    toast.info("Report dismissed.");
     loadReports();
   };
 

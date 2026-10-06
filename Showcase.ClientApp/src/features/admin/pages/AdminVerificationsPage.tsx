@@ -4,13 +4,12 @@ import { Button } from "@shared/components/Button.tsx";
 import { VerifiedBadge } from "@shared/components/VerifiedBadge.tsx";
 import { useAsyncData } from "@shared/hooks/index.ts";
 import { apiClient } from "@shared/api/index.ts";
-import { useToast } from "@shared/context/index.ts";
+import { toast } from "sonner";
 import type { VerificationRequestItem } from "@shared/types/index.ts";
 import { AdminLayout } from "../components/AdminLayout.tsx";
 import { VerificationReviewModal } from "../components/VerificationReviewModal.tsx";
 
 export const AdminVerificationsPage: React.FC = () => {
-  const { showToast } = useToast();
   const [selectedRequest, setSelectedRequest] = useState<VerificationRequestItem | null>(null);
 
   const {
@@ -21,13 +20,13 @@ export const AdminVerificationsPage: React.FC = () => {
 
   const handleApprove = async (requestId: string, note?: string) => {
     await apiClient.approveVerificationRequest(requestId, note);
-    showToast("success", "Official verification checkmark badge granted.");
+    toast.success("Official verification checkmark badge granted.");
     loadRequests();
   };
 
   const handleReject = async (requestId: string, note?: string) => {
     await apiClient.rejectVerificationRequest(requestId, note);
-    showToast("info", "Verification application declined.");
+    toast.info("Verification application declined.");
     loadRequests();
   };
 

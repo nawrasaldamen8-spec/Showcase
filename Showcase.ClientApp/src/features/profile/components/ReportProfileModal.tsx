@@ -3,8 +3,7 @@ import { Flag, ShieldAlert } from "lucide-react";
 import { Button } from "@shared/components/Button.tsx";
 import { Modal } from "@shared/components/Modal.tsx";
 import { Textarea } from "@shared/components/Textarea.tsx";
-import { useToast } from "@shared/context/index.ts";
-
+import { toast } from "sonner";
 import { apiClient } from "@shared/api/index.ts";
 
 export interface ReportProfileModalProps {
@@ -29,7 +28,6 @@ export const ReportProfileModal: React.FC<ReportProfileModalProps> = ({
   username,
   fullName,
 }) => {
-  const { showToast } = useToast();
   const [selectedReason, setSelectedReason] = useState<string>("impersonation");
   const [details, setDetails] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -47,12 +45,12 @@ export const ReportProfileModal: React.FC<ReportProfileModalProps> = ({
         details: details.trim() || undefined,
       });
 
-      showToast("success", `Report for @${username} submitted. Thank you for keeping Pority safe.`);
+      toast.success(`Report for @${username} submitted. Thank you for keeping Pority safe.`);
       setSelectedReason("impersonation");
       setDetails("");
       onClose();
     } catch {
-      showToast("error", "Failed to submit report. Please try again.");
+      toast.error("Failed to submit report. Please try again.");
     } finally {
       setIsSubmitting(false);
     }

@@ -1,14 +1,14 @@
 import { ArrowLeft, SearchX } from "lucide-react";
-import React, { useCallback, useEffect, useState } from "react";
-import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
-import { apiClient, tokenStorage } from "@shared/api/index.ts";
+import React, { useEffect, useState } from "react";
+import { Link, useLocation, useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { apiClient, queryKeys, tokenStorage } from "@shared/api/index.ts";
 import { Button } from "@shared/components/Button.tsx";
-import { useAuth, useToast } from "@shared/context/index.ts";
-import type {
-  PostSummaryResponse,
-  PublicCareerData,
-  PublicProfileResponse,
-} from "@shared/types/index.ts";
+import { useAuth } from "@shared/context/index.ts";
+import type { PublicCareerData } from "@shared/types/index.ts";
+import { useInfiniteProfilePostsQuery } from "../../posts/hooks/usePostQueries.ts";
+import { usePublicProfileQuery } from "../hooks/useProfileQueries.ts";
 import {
   type CareerSectionId,
   PostMasonryGrid,
@@ -18,104 +18,79 @@ import {
   ProfileSkeleton,
 } from "../components/index.ts";
 
-const PAGE_SIZE = 12;
 const APP_NAME = "Pority";
 
 type ProfileTab = "works" | "career" | "about";
 
 export const PublicProfilePage: React.FC = () => {
-  const { username } = useParams<{ username: string }>();
+  const { username = "" } = useParams<{ username: string }>();
   const { currentUser } = useAuth();
-  const { showToast } = useToast();
   const location = useLocation();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const fromState = location.state as { from?: string; fromLabel?: string } | null;
 
-  const [profile, setProfile] = useState<PublicProfileResponse | null>(null);
-  const [posts, setPosts] = useState<PostSummaryResponse[]>([]);
-  const [careerData, setCareerData] = useState<PublicCareerData | null>(null);
-  const [pageNumber, setPageNumber] = useState<number>(1);
-  const [hasNextPage, setHasNextPage] = useState<boolean>(false);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [isLoadingMore, setIsLoadingMore] = useState<boolean>(false);
-  const [notFound, setNotFound] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<ProfileTab>("works");
+  const rawTab = searchParams.get("tab");
+  const activeTab: ProfileTab =
+    rawTab === "career" || rawTab === "about" || rawTab === "works" ? rawTab : "works";
+
+  const setActiveTab = (tab: ProfileTab) => {
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev);
+        if (tab === "works") {
+          next.delete("tab");
+        } else {
+          next.set("tab", tab);
+        }
+        return next;
+      },
+      { replace: true }
+    );
+  };
+
   const [selectedCareerSection, setSelectedCareerSection] = useState<CareerSectionId | null>(null);
 
-  const loadProfileData = useCallback(async () => {
-    if (!username) {
-      setNotFound(true);
-      setIsLoading(false);
-      return;
-    }
+  const {
+    data: profile,
+    isLoading: isProfileLoading,
+    isError: isProfileError,
+    error: profileError,
+    refetch: refetchProfile,
+  } = usePublicProfileQuery(username);
 
-    setIsLoading(true);
-    setError(null);
-    setNotFound(false);
+  const {
+    data: postsData,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useInfiniteProfilePostsQuery(username);
 
-    try {
-      const [profileData, postsData, careerRes] = await Promise.all([
-        apiClient.getPublicProfile(username),
-        apiClient.getCreatorPosts(username, 1, PAGE_SIZE),
-        apiClient.getPublicCareer(username).catch((err) => {
-          console.warn("Failed to load public career data:", err);
-          return null;
-        }),
-      ]);
+  const {
+    data: careerData,
+    refetch: refetchCareer,
+  } = useQuery<PublicCareerData | null>({
+    queryKey: queryKeys.career.public(username),
+    queryFn: () => apiClient.getPublicCareer(username).catch(() => null),
+    enabled: Boolean(username),
+    staleTime: 1000 * 60 * 2,
+  });
 
-      setProfile(profileData);
-      setPosts(postsData.items);
-      setPageNumber(1);
-      setHasNextPage(postsData.hasNextPage);
-      setCareerData(careerRes);
-
-      // Track public profile visit for analytics and notifications
-      if (profileData.id) {
-        const visitorToken = tokenStorage.getVisitorToken();
-        apiClient.trackProfileVisit(profileData.id, visitorToken).catch((err) => {
-          console.warn("Failed to track profile visit:", err);
-        });
-      }
-    } catch (err: unknown) {
-      console.error("Failed to load creator profile:", err);
-      const status = (err as { status?: number })?.status;
-      if (status === 404) {
-        setNotFound(true);
-      } else {
-        setError("Unable to load profile. Please try again.");
-      }
-    } finally {
-      setIsLoading(false);
-    }
-  }, [username]);
+  const posts = postsData?.pages.flatMap((page) => page.items) ?? [];
 
   useEffect(() => {
-    let isCancelled = false;
-    void Promise.resolve().then(async () => {
-      if (isCancelled) return;
-      await loadProfileData();
-    });
-    return () => {
-      isCancelled = true;
-    };
-  }, [loadProfileData]);
+    if (profile?.id) {
+      const visitorToken = tokenStorage.getVisitorToken();
+      apiClient.trackProfileVisit(profile.id, visitorToken).catch((err) => {
+        console.warn("Failed to track profile visit:", err);
+      });
+    }
+  }, [profile?.id]);
 
-  const handleLoadMore = async () => {
-    if (!username || isLoadingMore || !hasNextPage) return;
-
-    setIsLoadingMore(true);
-    const nextPage = pageNumber + 1;
-    try {
-      const postsData = await apiClient.getCreatorPosts(username, nextPage, PAGE_SIZE);
-      setPosts((prev) => [...prev, ...postsData.items]);
-      setPageNumber(nextPage);
-      setHasNextPage(postsData.hasNextPage);
-    } catch (err) {
-      console.error("Failed to load more works for profile:", err);
-    } finally {
-      setIsLoadingMore(false);
+  const handleLoadMore = () => {
+    if (hasNextPage && !isFetchingNextPage) {
+      void fetchNextPage();
     }
   };
 
@@ -136,17 +111,21 @@ export const PublicProfilePage: React.FC = () => {
     }
     if (navigator.clipboard) {
       await navigator.clipboard.writeText(url);
-      showToast("success", "Profile link copied to clipboard.");
+      toast.success("Profile link copied to clipboard.");
     } else {
-      showToast("error", "Unable to copy profile link.");
+      toast.error("Unable to copy profile link.");
     }
   };
 
-  if (isLoading) {
+  if (isProfileLoading) {
     return <ProfileSkeleton />;
   }
 
-  if (notFound || !profile) {
+  const is404 =
+    !username ||
+    (isProfileError && (profileError as { status?: number })?.status === 404);
+
+  if (is404 || (!profile && !isProfileLoading)) {
     return (
       <div className="max-w-3xl mx-auto px-4 sm:px-6 py-20 text-center">
         <div className="inline-flex items-center justify-center p-4 rounded-full bg-ivory-medium text-cloud-dark mb-6">
@@ -172,18 +151,27 @@ export const PublicProfilePage: React.FC = () => {
     );
   }
 
-  if (error) {
+  if (isProfileError || !profile) {
     return (
       <div className="max-w-2xl mx-auto px-4 py-16 text-center">
         <div className="bg-ivory-light border border-clay/40 rounded-card p-8">
-          <p className="font-serif text-lg text-slate-dark">{error}</p>
+          <p className="font-serif text-lg text-slate-dark">
+            Unable to load profile. Please try again.
+          </p>
           <div className="mt-6 flex justify-center gap-4">
             <Link to="/studio">
               <Button variant="outline" size="sm">
                 Back to Studio
               </Button>
             </Link>
-            <Button variant="slate" size="sm" onClick={loadProfileData}>
+            <Button
+              variant="slate"
+              size="sm"
+              onClick={() => {
+                void refetchProfile();
+                void refetchCareer();
+              }}
+            >
               Retry
             </Button>
           </div>
@@ -198,8 +186,6 @@ export const PublicProfilePage: React.FC = () => {
     e.preventDefault();
     if (fromState?.from) {
       navigate(fromState.from);
-    } else if (window.history.length > 2) {
-      navigate(-1);
     } else {
       navigate(isOwnProfile ? "/studio" : "/feed");
     }
@@ -269,8 +255,8 @@ export const PublicProfilePage: React.FC = () => {
             posts={posts}
             creator={profile}
             isOwnProfile={isOwnProfile}
-            hasNextPage={hasNextPage}
-            isLoadingMore={isLoadingMore}
+            hasNextPage={Boolean(hasNextPage)}
+            isLoadingMore={isFetchingNextPage}
             onLoadMore={handleLoadMore}
           />
         </section>
@@ -278,7 +264,7 @@ export const PublicProfilePage: React.FC = () => {
 
       {activeTab === "career" && (
         <ProfileCareerTab
-          careerData={careerData}
+          careerData={careerData ?? null}
           selectedSection={selectedCareerSection}
           onSelectSection={setSelectedCareerSection}
         />

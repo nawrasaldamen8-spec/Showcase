@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
+import { toast } from "sonner";
 import { apiClient } from "@shared/api/apiClient.ts";
-import { useToast } from "@shared/context/index.ts";
 import type { CareerVisibilitySettings } from "@shared/types/index.ts";
 
 const defaultCareerVisibility: CareerVisibilitySettings = {
@@ -16,7 +16,6 @@ export function useCareerVisibility() {
   const [visibility, setVisibility] = useState<CareerVisibilitySettings>(defaultCareerVisibility);
   const [loading, setLoading] = useState<boolean>(true);
   const [isToggling, setIsToggling] = useState<boolean>(false);
-  const { showToast } = useToast();
 
   const loadVisibility = useCallback(async () => {
     try {
@@ -68,22 +67,21 @@ export function useCareerVisibility() {
 
       try {
         await apiClient.toggleSectionVisibility(section, isVisible);
-        showToast(
-          "success",
+        toast.success(
           isVisible
             ? `${label} is now visible on your public profile`
             : `${label} is hidden from your public profile`
         );
       } catch (err) {
         console.error(`Failed to update visibility for ${section}`, err);
-        showToast("error", `Failed to update visibility for ${label}`);
+        toast.error(`Failed to update visibility for ${label}`);
         // Revert on error
         setVisibility((prev) => ({ ...prev, [section]: !isVisible }));
       } finally {
         setIsToggling(false);
       }
     },
-    [showToast]
+    []
   );
 
   return {

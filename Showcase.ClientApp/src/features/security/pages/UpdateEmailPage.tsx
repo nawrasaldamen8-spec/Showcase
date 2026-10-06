@@ -1,10 +1,11 @@
 import { CheckCircle2, Eye, EyeOff, Mail } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { apiClient } from "@shared/api/apiClient.ts";
+import { toast } from "sonner";
+import { apiClient, extractApiErrorMessage } from "@shared/api/index.ts";
 import { Button } from "@shared/components/Button.tsx";
 import { Input } from "@shared/components/Input.tsx";
-import { useAuth, useToast } from "@shared/context/index.ts";
+import { useAuth } from "@shared/context/index.ts";
 import type { ProblemDetails } from "@shared/types/index.ts";
 import { ProblemAlert } from "../components/ProblemAlert.tsx";
 import { SecurityActionLayout } from "../components/SecurityActionLayout.tsx";
@@ -12,7 +13,6 @@ import { SecurityActionLayout } from "../components/SecurityActionLayout.tsx";
 export const UpdateEmailPage: React.FC = () => {
   const navigate = useNavigate();
   const { currentUser, refreshUser } = useAuth();
-  const { showToast } = useToast();
 
   const [currentEmail, setCurrentEmail] = useState(currentUser?.email || "");
   const [newEmail, setNewEmail] = useState("");
@@ -78,17 +78,16 @@ export const UpdateEmailPage: React.FC = () => {
       });
 
       await refreshUser();
-      showToast("success", `Email address successfully updated to ${trimmedEmail}.`);
+      toast.success(`Email address successfully updated to ${trimmedEmail}.`);
       navigate("/settings/security");
     } catch (err: unknown) {
-      const p = err as ProblemDetails;
+      const errorMsg = extractApiErrorMessage(err, "Failed to update email address.");
       setProblem({
-        title: p?.title || "Email Update Failed",
-        detail: p?.detail || "An unexpected error occurred while modifying your email.",
-        status: p?.status || 400,
-        errors: p?.errors,
+        title: "Email Update Failed",
+        detail: errorMsg,
+        status: 400,
       });
-      showToast("error", p?.detail || "Failed to update email address.");
+      toast.error(errorMsg);
     } finally {
       setIsLoading(false);
     }

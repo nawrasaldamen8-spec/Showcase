@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { toast } from "sonner";
 import { apiClient } from "@shared/api/apiClient.ts";
 import { PostStatus } from "@shared/types/index.ts";
 import type { UploadedImageData } from "../components/ImageDropzone.tsx";
@@ -8,14 +9,12 @@ export interface UsePostEditorImagesOptions {
   id?: string;
   postStatus: number;
   setIsDirty: (dirty: boolean) => void;
-  showToast: (type: "success" | "error", message: string) => void;
 }
 
 export function usePostEditorImages({
   id,
   postStatus,
   setIsDirty,
-  showToast,
 }: UsePostEditorImagesOptions) {
   const [images, setImages] = useState<ImageGridItem[]>([]);
   const [imageInvariantError, setImageInvariantError] = useState<string | null>(null);
@@ -82,7 +81,7 @@ export function usePostEditorImages({
         await apiClient.removePostImage(id, imageId);
       } catch (err) {
         console.error("Failed to remove image from storage:", err);
-        showToast("error", "Failed to remove image from backend.");
+        toast.error("Failed to remove image from backend.");
         return;
       }
     }
@@ -116,7 +115,7 @@ export function usePostEditorImages({
         await apiClient.reorderPostImages(id, {
           items: reorderedList.map((img) => ({ id: img.id, displayOrder: img.displayOrder })),
         });
-        showToast("success", "Cover image updated successfully.");
+        toast.success("Cover image updated successfully.");
       } catch (err) {
         console.error("Failed to synchronize cover image update:", err);
       }

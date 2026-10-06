@@ -1,16 +1,15 @@
 import { AlertTriangle, Eye, EyeOff, Trash2 } from "lucide-react";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 import { Button } from "@shared/components/Button.tsx";
 import { Input } from "@shared/components/Input.tsx";
-import { useToast } from "@shared/context/index.ts";
 import { useAuth } from "@shared/context/useAuth.ts";
 import { SecurityActionLayout } from "../components/SecurityActionLayout.tsx";
 
 export const DeleteAccountPage: React.FC = () => {
   const navigate = useNavigate();
   const { logout } = useAuth();
-  const { showToast } = useToast();
 
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -50,7 +49,7 @@ export const DeleteAccountPage: React.FC = () => {
       deleteTimerRef.current = null;
       setIsDeleting(false);
       await logout();
-      showToast("info", "Your account and data have been permanently deleted.");
+      toast.info("Your account and data have been permanently deleted.");
       navigate("/login", { replace: true });
     }, 800);
   };

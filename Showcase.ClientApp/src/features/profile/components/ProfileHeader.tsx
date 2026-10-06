@@ -1,10 +1,11 @@
 import { Edit3, Flag, MoreVertical, Share2, User as UserIcon } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
+import { toast } from "sonner";
 import { Badge } from "@shared/components/Badge.tsx";
 import { ProgressiveImage } from "@shared/components/ProgressiveImage.tsx";
 import { VerifiedBadge } from "@shared/components/VerifiedBadge.tsx";
-import { useAuth, useToast } from "@shared/context/index.ts";
+import { useAuth } from "@shared/context/index.ts";
 import type { PublicProfileResponse } from "@shared/types/index.ts";
 import { ReportProfileModal } from "./ReportProfileModal.tsx";
 
@@ -17,7 +18,6 @@ export interface ProfileHeaderProps {
 export const ProfileHeader: React.FC<ProfileHeaderProps> = ({ profile, isOwnProfile, onShare }) => {
   const fullName = profile.name || `@${profile.username}`;
   const { currentUser } = useAuth();
-  const { showToast } = useToast();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -138,7 +138,7 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({ profile, isOwnProf
                     onClick={() => {
                       setIsMenuOpen(false);
                       if (!currentUser) {
-                        showToast("warning", "Please sign in to report profiles.");
+                        toast.warning("Please sign in to report profiles.");
                         return;
                       }
                       setIsReportModalOpen(true);

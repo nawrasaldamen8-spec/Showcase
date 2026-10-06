@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 import { apiClient, extractApiErrorMessage } from "@shared/api/index.ts";
-import { useAuth, useToast } from "@shared/context/index.ts";
+import { useAuth } from "@shared/context/index.ts";
 
 function parseJwtPayload(token: string): { email?: string; name?: string; picture?: string } | null {
   try {
@@ -24,7 +25,6 @@ export function useRegisterWizard() {
   const navigate = useNavigate();
   const location = useLocation();
   const { register, refreshUser } = useAuth();
-  const { showToast } = useToast();
 
   const searchParams = useMemo(() => new URLSearchParams(location.search), [location.search]);
   const oauthToken = searchParams.get("token") || "";
@@ -209,7 +209,7 @@ export function useRegisterWizard() {
         });
       }
 
-      showToast("success", `Welcome to Pority, ${name.trim()}!`);
+      toast.success(`Welcome to Pority, ${name.trim()}!`);
       // Redirect newly registered creators directly to their public profile
       navigate(`/u/${encodeURIComponent(finalUsername)}`, { replace: true });
     } catch (err: unknown) {

@@ -12,7 +12,7 @@ import { Input } from "@shared/components/Input.tsx";
 import { VerifiedBadge } from "@shared/components/VerifiedBadge.tsx";
 import { useAsyncData } from "@shared/hooks/index.ts";
 import { apiClient } from "@shared/api/index.ts";
-import { useToast } from "@shared/context/index.ts";
+import { toast } from "sonner";
 import { formatBytes } from "@shared/utils/format.ts";
 import type { AdminUserListItem, UserRole } from "@shared/types/index.ts";
 import { AdminLayout } from "../components/AdminLayout.tsx";
@@ -21,7 +21,6 @@ import { AdminTable, type AdminTableColumn } from "../components/AdminTable.tsx"
 import { BanUserModal } from "../components/BanUserModal.tsx";
 
 export const AdminUsersPage: React.FC = () => {
-  const { showToast } = useToast();
 
   const [searchInput, setSearchInput] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
@@ -47,13 +46,13 @@ export const AdminUsersPage: React.FC = () => {
 
   const handleConfirmBan = async (userId: string, reason: string) => {
     await apiClient.banUser(userId, reason);
-    showToast("success", "User account suspended successfully.");
+    toast.success("User account suspended successfully.");
     loadUsers();
   };
 
   const handleConfirmUnban = async (userId: string) => {
     await apiClient.unbanUser(userId);
-    showToast("success", "User account reinstated.");
+    toast.success("User account reinstated.");
     loadUsers();
   };
 
@@ -66,8 +65,7 @@ export const AdminUsersPage: React.FC = () => {
       : [...user.roles, "Admin"];
 
     await apiClient.updateUserRole(user.id, nextRoles, adminPassword);
-    showToast(
-      "success",
+    toast.success(
       hasAdmin
         ? `Admin privileges revoked for @${user.username}.`
         : `Admin privileges granted to @${user.username}.`
@@ -85,15 +83,14 @@ export const AdminUsersPage: React.FC = () => {
           ? "Direct verified badge granted by administrator."
           : "Verified badge revoked by administrator."
       );
-      showToast(
-        "success",
+      toast.success(
         nextVerified
           ? `Verified badge granted to @${user.username}.`
           : `Verified badge revoked from @${user.username}.`
       );
       loadUsers();
     } catch {
-      showToast("error", "Failed to update verification status.");
+      toast.error("Failed to update verification status.");
     }
   };
 

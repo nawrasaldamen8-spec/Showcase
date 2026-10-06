@@ -225,6 +225,3 @@ export const SPECIALTY_CATEGORIES: SpecialtyCategory[] = [
 
 export const ALL_SPECIALTIES: string[] = SPECIALTY_CATEGORIES.flatMap((c) => c.specialties);
 
-// Legacy export retained for backwards compatibility
-export const CREATIVE_SPECIALTIES = ALL_SPECIALTIES;
-export type CreativeSpecialty = string;

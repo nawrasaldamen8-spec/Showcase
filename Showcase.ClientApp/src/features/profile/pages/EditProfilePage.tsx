@@ -1,17 +1,17 @@
 import { AlertCircle, ArrowLeft, UserCheck } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { toast } from "sonner";
 import { apiClient } from "@shared/api/apiClient.ts";
 import { Button } from "@shared/components/Button.tsx";
 import { Skeleton } from "@shared/components/Skeleton.tsx";
-import { useAuth, useToast } from "@shared/context/index.ts";
+import { useAuth } from "@shared/context/index.ts";
 import type { MyProfileResponse } from "@shared/types/index.ts";
 import { AvatarUploader } from "../components/AvatarUploader.tsx";
 import { BioEditor } from "../components/BioEditor.tsx";
 
 export const EditProfilePage: React.FC = () => {
   const { currentUser } = useAuth();
-  const { showToast } = useToast();
 
   const [profile, setProfile] = useState<MyProfileResponse | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -40,7 +40,11 @@ export const EditProfilePage: React.FC = () => {
   }, [retryCount]);
 
   const handleNotify = (message: string, type?: "success" | "error") => {
-    showToast(type || "success", message);
+    if (type === "error") {
+      toast.error(message);
+    } else {
+      toast.success(message);
+    }
   };
 
   const username = profile?.username || currentUser?.username;

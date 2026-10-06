@@ -3,7 +3,7 @@ import { Flag, ShieldAlert } from "lucide-react";
 import { Button } from "@shared/components/Button.tsx";
 import { Modal } from "@shared/components/Modal.tsx";
 import { Textarea } from "@shared/components/Textarea.tsx";
-import { useToast } from "@shared/context/index.ts";
+import { toast } from "sonner";
 import { apiClient } from "@shared/api/index.ts";
 
 export interface ReportPostModalProps {
@@ -29,7 +29,6 @@ export const ReportPostModal: React.FC<ReportPostModalProps> = ({
   postTitle,
   creatorUsername,
 }) => {
-  const { showToast } = useToast();
   const [selectedReason, setSelectedReason] = useState<string>("copyright");
   const [details, setDetails] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -48,12 +47,12 @@ export const ReportPostModal: React.FC<ReportPostModalProps> = ({
         details: details.trim() || undefined,
       });
 
-      showToast("success", "Report submitted for moderation review. Thank you.");
+      toast.success("Report submitted for moderation review. Thank you.");
       setSelectedReason("copyright");
       setDetails("");
       onClose();
     } catch {
-      showToast("error", "Failed to submit report. Please try again.");
+      toast.error("Failed to submit report. Please try again.");
     } finally {
       setIsSubmitting(false);
     }

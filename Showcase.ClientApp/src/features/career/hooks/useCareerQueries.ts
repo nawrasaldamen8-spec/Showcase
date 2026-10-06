@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { apiClient, extractApiErrorMessage, queryKeys, tokenStorage } from "@shared/api/index.ts";
+import { apiClient, extractApiErrorMessage, queryKeys } from "@shared/api/index.ts";
 import type {
   CareerAcademic,
   CareerAchievement,
@@ -24,7 +24,7 @@ export function useCareerVisibilityQuery(options?: { enabled?: boolean }) {
   return useQuery<CareerVisibilitySettings>({
     queryKey: queryKeys.career.visibility(),
     queryFn: () => apiClient.getCareerVisibility(),
-    enabled: options?.enabled ?? Boolean(tokenStorage.getToken()),
+    enabled: options?.enabled ?? true,
     staleTime: 1000 * 60 * 5,
   });
 }
@@ -50,7 +50,7 @@ export function useCareerExperiencesQuery(options?: { enabled?: boolean }) {
   return useQuery<CareerExperience[]>({
     queryKey: queryKeys.career.experiences(),
     queryFn: () => apiClient.getExperiences(),
-    enabled: options?.enabled ?? Boolean(tokenStorage.getToken()),
+    enabled: options?.enabled ?? true,
   });
 }
 
@@ -95,7 +95,7 @@ export function useCareerAcademicsQuery(options?: { enabled?: boolean }) {
   return useQuery<CareerAcademic[]>({
     queryKey: queryKeys.career.academics(),
     queryFn: () => apiClient.getAcademics(),
-    enabled: options?.enabled ?? Boolean(tokenStorage.getToken()),
+    enabled: options?.enabled ?? true,
   });
 }
 
@@ -140,7 +140,7 @@ export function useCareerSkillsQuery(options?: { enabled?: boolean }) {
   return useQuery<CareerSkill[]>({
     queryKey: queryKeys.career.skills(),
     queryFn: () => apiClient.getSkills(),
-    enabled: options?.enabled ?? Boolean(tokenStorage.getToken()),
+    enabled: options?.enabled ?? true,
   });
 }
 
@@ -185,7 +185,7 @@ export function useCareerLanguagesQuery(options?: { enabled?: boolean }) {
   return useQuery<CareerLanguage[]>({
     queryKey: queryKeys.career.languages(),
     queryFn: () => apiClient.getLanguages(),
-    enabled: options?.enabled ?? Boolean(tokenStorage.getToken()),
+    enabled: options?.enabled ?? true,
   });
 }
 
@@ -230,7 +230,7 @@ export function useCareerAchievementsQuery(options?: { enabled?: boolean }) {
   return useQuery<CareerAchievement[]>({
     queryKey: queryKeys.career.achievements(),
     queryFn: () => apiClient.getAchievements(),
-    enabled: options?.enabled ?? Boolean(tokenStorage.getToken()),
+    enabled: options?.enabled ?? true,
   });
 }
 
@@ -239,6 +239,6 @@ export function useCareerCredentialsQuery(options?: { enabled?: boolean }) {
   return useQuery<CareerCredential[]>({
     queryKey: queryKeys.career.credentials(),
     queryFn: () => apiClient.getCredentials(),
-    enabled: options?.enabled ?? Boolean(tokenStorage.getToken()),
+    enabled: options?.enabled ?? true,
   });
 }
