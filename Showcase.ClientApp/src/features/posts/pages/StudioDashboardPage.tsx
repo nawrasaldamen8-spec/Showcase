@@ -1,6 +1,5 @@
-import { Layers, Plus } from "lucide-react";
+import { Layers } from "lucide-react";
 import React, { useMemo, useState } from "react";
-import { Link } from "react-router-dom";
 import { extractApiErrorMessage } from "@shared/api/index.ts";
 import { EmptyState } from "@shared/components/EmptyState.tsx";
 import { ErrorBanner } from "@shared/components/ErrorBanner.tsx";
@@ -100,56 +99,14 @@ export const StudioDashboardPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-ivory-medium pb-24">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6">
-        {/* Studio Editorial Header & Pulse Metrics */}
+        {/* Studio Editorial Header */}
         <header className="mb-6 sm:mb-8 border-b border-stone/60 pb-6">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-5">
-            <div>
-              <span className="font-gothic text-[11px] font-bold uppercase tracking-[0.2em] text-clay block mb-1">
-                Portfolio Curation
-              </span>
-              <h1 className="font-gothic text-2xl sm:text-4xl font-extrabold uppercase tracking-tight text-slate-dark">
-                Project Studio
-              </h1>
-              <p className="font-serif text-sm sm:text-base text-slate-dark/70 mt-1 max-w-xl">
-                Curate and publish your spatial monographs and built works.
-              </p>
-            </div>
-            <Link
-              to="/posts/new"
-              className="hidden sm:inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full bg-clay hover:bg-clay/90 text-ivory-light font-gothic text-xs font-bold uppercase tracking-wider transition-all self-start sm:self-auto cursor-pointer text-decoration-none min-h-[46px]"
-            >
-              <Plus className="w-4 h-4" />
-              <span>New Exhibition</span>
-            </Link>
-          </div>
-
-          {/* Quick Metrics Bar (Responsive: Grid 3 cols) */}
-          <div className="grid grid-cols-3 gap-2 sm:gap-4">
-            <div className="bg-ivory-light border border-stone/60 rounded-xl sm:rounded-2xl p-3 sm:p-4 text-center sm:text-left">
-              <span className="font-gothic text-[10px] sm:text-xs font-bold uppercase tracking-wider text-cloud-dark block">
-                Total Works
-              </span>
-              <span className="font-gothic text-lg sm:text-2xl font-extrabold text-slate-dark tabular-nums mt-0.5 block">
-                {counts.total}
-              </span>
-            </div>
-            <div className="bg-ivory-light border border-stone/60 rounded-xl sm:rounded-2xl p-3 sm:p-4 text-center sm:text-left">
-              <span className="font-gothic text-[10px] sm:text-xs font-bold uppercase tracking-wider text-[#2e7d32] block">
-                Published
-              </span>
-              <span className="font-gothic text-lg sm:text-2xl font-extrabold text-[#2e7d32] tabular-nums mt-0.5 block">
-                {counts.published}
-              </span>
-            </div>
-            <div className="bg-ivory-light border border-stone/60 rounded-xl sm:rounded-2xl p-3 sm:p-4 text-center sm:text-left">
-              <span className="font-gothic text-[10px] sm:text-xs font-bold uppercase tracking-wider text-cloud-dark block">
-                Drafts
-              </span>
-              <span className="font-gothic text-lg sm:text-2xl font-extrabold text-slate-dark/80 tabular-nums mt-0.5 block">
-                {counts.drafts}
-              </span>
-            </div>
-          </div>
+          <h1 className="font-gothic text-2xl sm:text-4xl font-extrabold uppercase tracking-tight text-slate-dark">
+            Project Studio
+          </h1>
+          <p className="font-serif text-sm sm:text-base text-slate-dark/70 mt-1 max-w-xl">
+            Curate and publish your spatial monographs and built works.
+          </p>
         </header>
 
         <StudioFilterBar

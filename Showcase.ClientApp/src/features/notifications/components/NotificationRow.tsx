@@ -1,29 +1,14 @@
-import { AlertTriangle, Bell, Heart, ShieldCheck, Sparkles, Trash2, User as UserIcon } from "lucide-react";
+import { AlertTriangle, Bell, Heart, ShieldCheck, Sparkles, Trash2 } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import type { NotificationDto } from "@shared/api/apiClient.notifications.ts";
+import { UserAvatar } from "@shared/components/media/index.ts";
+import { formatRelativeTime } from "@shared/utils/index.ts";
 
 export interface NotificationRowProps {
   notification: NotificationDto;
   onMarkAsRead?: (id: string) => void;
   onDelete?: (id: string) => void;
-}
-
-function formatRelativeTime(dateString: string): string {
-  const date = new Date(dateString);
-  const now = new Date();
-  const diffInSeconds = Math.max(0, Math.floor((now.getTime() - date.getTime()) / 1000));
-
-  if (diffInSeconds < 60) return "just now";
-  const diffInMinutes = Math.floor(diffInSeconds / 60);
-  if (diffInMinutes < 60) return `${diffInMinutes}m`;
-  const diffInHours = Math.floor(diffInMinutes / 60);
-  if (diffInHours < 24) return `${diffInHours}h`;
-  const diffInDays = Math.floor(diffInHours / 24);
-  if (diffInDays < 7) return `${diffInDays}d`;
-  const diffInWeeks = Math.floor(diffInDays / 7);
-  if (diffInWeeks < 4) return `${diffInWeeks}w`;
-  return date.toLocaleDateString(undefined, { month: "short", day: "numeric" });
 }
 
 export const NotificationRow: React.FC<NotificationRowProps> = ({
@@ -153,22 +138,18 @@ export const NotificationRow: React.FC<NotificationRowProps> = ({
           title={`View ${actorDisplayName}'s profile`}
           onClick={(e) => e.stopPropagation()}
         >
-          {actorAvatar ? (
-            <img
-              src={actorAvatar}
-              alt={actorDisplayName}
-              className="w-10 h-10 rounded-full object-cover border border-stone/80 group-hover:border-clay transition-colors"
-            />
-          ) : (
-            <div className="w-10 h-10 rounded-full bg-ivory-light border border-stone/80 group-hover:border-clay flex items-center justify-center font-gothic text-xs font-bold uppercase text-slate-dark transition-colors">
-              {actorDisplayName.charAt(0) || <UserIcon className="w-4 h-4 text-cloud-dark" />}
-            </div>
-          )}
+          <UserAvatar
+            src={actorAvatar}
+            alt={actorDisplayName}
+            size="md"
+            className="border border-stone/80 group-hover:border-clay transition-colors"
+          />
         </Link>
       ) : (
-        <div className="w-10 h-10 rounded-full bg-ivory-light border border-stone/80 flex items-center justify-center font-gothic text-xs font-bold uppercase text-slate-dark">
-          <UserIcon className="w-4 h-4 text-cloud-dark" />
-        </div>
+        <UserAvatar
+          size="md"
+          className="border border-stone/80"
+        />
       );
     }
 
@@ -330,7 +311,7 @@ export const NotificationRow: React.FC<NotificationRowProps> = ({
           transition: isDragging ? "none" : "transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1)",
           touchAction: "pan-y",
         }}
-        className={`group relative z-10 w-full flex items-center justify-between gap-3 sm:gap-4 py-3 sm:py-3.5 px-3 sm:px-4 rounded-xl border border-stone/30 cursor-pointer shadow-sm ${
+        className={`group relative z-10 w-full flex items-center justify-between gap-3 sm:gap-4 py-3 sm:py-3.5 px-3 sm:px-4 rounded-xl border border-stone/30 cursor-pointer ${
           notification.isRead
             ? "bg-ivory-light hover:bg-ivory-light/90"
             : "bg-[#f5ede2] hover:bg-[#efe4d6] border-clay/30"

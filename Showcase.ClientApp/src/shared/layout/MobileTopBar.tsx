@@ -25,16 +25,16 @@ export const MobileTopBar: React.FC<MobileTopBarProps> = ({
     >
       {/* Brand Wordmark (Aligned Left) */}
       <Link
-        to={currentUser ? "/studio" : "/"}
+        to={currentUser ? "/feed" : "/"}
         className="inline-flex items-center text-decoration-none group"
         aria-label="Pority Home"
       >
         <BrandLogo variant="wordmark" size="sm" />
       </Link>
 
-      {/* Right: Conditional Navigation (Settings on Profile, Notifications elsewhere) */}
+      {/* Right: Actions for logged in users only (Settings on Profile, Notifications elsewhere) */}
       <div className="flex items-center gap-1">
-        {isProfilePage ? (
+        {currentUser && isProfilePage && (
           <Link
             to="/settings"
             aria-label="Account Settings"
@@ -43,7 +43,9 @@ export const MobileTopBar: React.FC<MobileTopBarProps> = ({
           >
             <Settings className="h-5 w-5 stroke-[1.8]" />
           </Link>
-        ) : currentUser ? (
+        )}
+
+        {currentUser && !isProfilePage && (
           <Link
             to="/notifications"
             aria-label="Notifications"
@@ -57,7 +59,7 @@ export const MobileTopBar: React.FC<MobileTopBarProps> = ({
               badgeRingColor="ring-ivory-light"
             />
           </Link>
-        ) : null}
+        )}
       </div>
     </header>
   );

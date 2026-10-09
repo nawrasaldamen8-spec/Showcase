@@ -97,6 +97,13 @@ export const apiAdminClient = {
     });
   },
 
+  async toggleUserFeatured(userId: string, isFeatured: boolean): Promise<void> {
+    return httpFetch<void>(`/api/admin/users/${userId}/featured`, {
+      method: "PUT",
+      body: JSON.stringify({ isFeatured }),
+    });
+  },
+
   async approveFeaturedRequest(id: string): Promise<void> {
     return httpFetch<void>(`/api/admin/featured/${id}/approve`, {
       method: "POST",

@@ -27,23 +27,27 @@ public class FeaturedRequest : BaseEntity
 
     public Result Approve(string? adminNotes = null)
     {
-        if (Status != FeaturedStatus.Pending)
-            return FeaturedRequestErrors.NotPending;
-
         Status = FeaturedStatus.Featured;
-        AdminNotes = string.IsNullOrWhiteSpace(adminNotes) ? null : adminNotes.Trim();
+        AdminNotes = string.IsNullOrWhiteSpace(adminNotes) ? AdminNotes : adminNotes.Trim();
         ReviewedAtUtc = DateTime.UtcNow;
         return Result.Success();
     }
 
     public Result Reject(string? adminNotes = null)
     {
-        if (Status != FeaturedStatus.Pending)
-            return FeaturedRequestErrors.NotPending;
-
         Status = FeaturedStatus.Rejected;
-        AdminNotes = string.IsNullOrWhiteSpace(adminNotes) ? null : adminNotes.Trim();
+        AdminNotes = string.IsNullOrWhiteSpace(adminNotes) ? AdminNotes : adminNotes.Trim();
         ReviewedAtUtc = DateTime.UtcNow;
         return Result.Success();
+    }
+
+    public void SetStatus(FeaturedStatus status, string? adminNotes = null)
+    {
+        Status = status;
+        if (!string.IsNullOrWhiteSpace(adminNotes))
+        {
+            AdminNotes = adminNotes.Trim();
+        }
+        ReviewedAtUtc = DateTime.UtcNow;
     }
 }

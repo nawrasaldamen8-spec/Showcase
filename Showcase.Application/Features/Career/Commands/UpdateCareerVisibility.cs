@@ -35,6 +35,7 @@ public class UpdateCareerVisibilityCommandHandler(
             request.Languages,
             request.Achievements);
 
+        _context.CareerVisibilities.Update(profile.CareerVisibility);
         await _context.SaveChangesAsync(ct);
 
         return profile.CareerVisibility.ToDto();

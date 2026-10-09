@@ -1,9 +1,9 @@
-import { Edit3, Flag, MoreVertical, Share2, User as UserIcon } from "lucide-react";
+import { Edit3, Flag, MoreVertical, Share2 } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { Badge } from "@shared/components/Badge.tsx";
-import { ProgressiveImage } from "@shared/components/ProgressiveImage.tsx";
+import { UserAvatar } from "@shared/components/media/index.ts";
 import { VerifiedBadge } from "@shared/components/VerifiedBadge.tsx";
 import { useAuth } from "@shared/context/index.ts";
 import type { PublicProfileResponse } from "@shared/types/index.ts";
@@ -18,6 +18,8 @@ export interface ProfileHeaderProps {
 export const ProfileHeader: React.FC<ProfileHeaderProps> = ({ profile, isOwnProfile, onShare }) => {
   const fullName = profile.name || `@${profile.username}`;
   const { currentUser } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -43,34 +45,35 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({ profile, isOwnProf
       <div className="flex items-start justify-between gap-3 sm:gap-4">
         {/* Creator Identity */}
         <div className="flex items-center gap-3.5 sm:gap-6 min-w-0 flex-1 pr-2 sm:pr-4">
-          {profile.avatarUrl ? (
-            <ProgressiveImage
-              src={profile.avatarUrl}
-              alt={fullName}
-              containerClassName="h-14 w-14 sm:h-20 sm:w-20 rounded-full border-2 border-stone/70 shrink-0"
-              className="w-full h-full object-cover"
-            />
-          ) : (
-            <div className="h-14 w-14 sm:h-20 sm:w-20 rounded-full bg-slate-dark text-ivory-light flex items-center justify-center font-gothic text-lg sm:text-2xl font-extrabold uppercase shrink-0">
-              {profile.name?.[0] || <UserIcon className="h-6 w-6 sm:h-8 sm:w-8" />}
-            </div>
-          )}
+          <UserAvatar
+            src={profile.avatarUrl}
+            alt={fullName}
+            size="xl"
+            loading="eager"
+            fetchPriority="high"
+            className="border-2 border-stone/70"
+          />
 
           <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-2 mb-1">
-              <span className="font-gothic text-[11px] sm:text-xs font-semibold uppercase tracking-[0.10em] text-cloud-dark truncate">
-                @{profile.username}
-              </span>
-            </div>
             <div className="flex items-center gap-2 min-w-0">
               <h1 className="font-gothic font-extrabold text-xl sm:text-3xl text-slate-dark tracking-[-0.02em] truncate">
                 {fullName}
               </h1>
               {profile.isVerified && <VerifiedBadge size="md" className="shrink-0" />}
             </div>
+            <div className="flex items-center gap-2 mt-0.5 sm:mt-1">
+              <span className="font-gothic text-[11px] sm:text-xs font-semibold uppercase tracking-[0.10em] text-cloud-dark truncate">
+                @{profile.username}
+              </span>
+            </div>
             {profile.specialty && profile.specialty.trim() !== "" && (
               <div className="mt-1.5 sm:mt-2 flex items-center gap-2">
-                <Badge variant="stone" size="sm" className="max-w-[200px] truncate">
+                <Badge
+                  variant="stone"
+                  size="sm"
+                  title={profile.specialty}
+                  className="max-w-full sm:max-w-md cursor-default"
+                >
                   {profile.specialty}
                 </Badge>
               </div>
@@ -94,7 +97,7 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({ profile, isOwnProf
           {isMenuOpen && (
             <div
               role="menu"
-              className="absolute top-11 right-0 w-48 bg-ivory-light border border-stone rounded-2xl shadow-lg p-1.5 z-30 animate-in fade-in zoom-in-95 duration-100"
+              className="absolute top-11 right-0 w-48 bg-ivory-light border border-stone rounded-2xl p-1.5 z-30 animate-in fade-in zoom-in-95 duration-100"
             >
               {isOwnProfile ? (
                 <>
@@ -138,7 +141,8 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({ profile, isOwnProf
                     onClick={() => {
                       setIsMenuOpen(false);
                       if (!currentUser) {
-                        toast.warning("Please sign in to report profiles.");
+                        toast.info("Please sign in to report profiles.");
+                        navigate("/login", { state: { from: `${location.pathname}${location.search}` } });
                         return;
                       }
                       setIsReportModalOpen(true);

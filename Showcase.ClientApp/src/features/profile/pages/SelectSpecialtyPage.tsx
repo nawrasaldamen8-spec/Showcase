@@ -221,19 +221,20 @@ export const SelectSpecialtyPage: React.FC = () => {
                       type="button"
                       onClick={() => handleSelectSpecialty(item)}
                       disabled={isSaving || isLoading}
-                      className={`text-left p-3.5 rounded-xl border transition-all cursor-pointer flex items-center justify-between gap-2 ${
+                      title={item}
+                      className={`text-left p-3.5 rounded-xl border transition-all cursor-pointer flex items-center justify-between gap-2.5 ${
                         isSelected
                           ? "bg-slate-dark text-ivory-light border-slate-dark"
                           : "bg-ivory-light hover:bg-ivory-medium border-stone/60 text-slate-dark hover:border-slate-dark"
                       }`}
                     >
-                      <div className="flex items-center gap-2.5 min-w-0">
+                      <div className="flex items-center gap-2.5 min-w-0 flex-1">
                         <Sparkles
                           className={`w-4 h-4 shrink-0 ${
                             isSelected ? "text-clay" : "text-cloud-dark"
                           }`}
                         />
-                        <span className="font-serif text-sm font-medium truncate">
+                        <span className="font-serif text-sm font-medium leading-snug">
                           {item}
                         </span>
                       </div>

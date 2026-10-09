@@ -36,6 +36,17 @@ public static class ProfileQueryExtensions
         if (profile is null)
             return ProfileErrors.NotFoundForUser(userId);
 
+        if (profile.CareerVisibility is null)
+        {
+            var visibility = await context.CareerVisibilities.FirstOrDefaultAsync(v => v.ProfileId == profile.Id, ct);
+            if (visibility is null)
+            {
+                visibility = new CareerVisibility(profile.Id);
+                context.CareerVisibilities.Add(visibility);
+            }
+            profile.AttachCareerVisibility(visibility);
+        }
+
         return profile;
     }
 

@@ -245,6 +245,7 @@ export function useToggleCuratedPinMutation() {
       apiClient.toggleCuratedPin(id, isPinned),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.admin.featured() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.admin.users() });
       toast.success(
         variables.isPinned
           ? "Creator pinned to curated spotlight."
@@ -253,6 +254,27 @@ export function useToggleCuratedPinMutation() {
     },
     onError: (err) => {
       toast.error(extractApiErrorMessage(err, "Failed to update spotlight pin status."));
+    },
+  });
+}
+
+export function useToggleUserFeaturedMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ userId, isFeatured }: { userId: string; isFeatured: boolean }) =>
+      apiClient.toggleUserFeatured(userId, isFeatured),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.admin.users() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.admin.featured() });
+      toast.success(
+        variables.isFeatured
+          ? "User featured in discovery spotlight."
+          : "User removed from featured spotlight."
+      );
+    },
+    onError: (err) => {
+      toast.error(extractApiErrorMessage(err, "Failed to update user featured status."));
     },
   });
 }

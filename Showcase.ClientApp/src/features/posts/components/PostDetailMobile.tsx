@@ -1,7 +1,7 @@
-import { ArrowRight, User as UserIcon } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import React, { useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { ProgressiveImage } from "@shared/components/ProgressiveImage.tsx";
+import { UserAvatar } from "@shared/components/media/index.ts";
 import { VerifiedBadge } from "@shared/components/VerifiedBadge.tsx";
 import { useAdaptiveImageDimensions, useResponsiveViewport } from "@shared/hooks/index.ts";
 import type { PostDetailsResponse } from "@shared/types/index.ts";
@@ -55,19 +55,12 @@ export const PostDetailMobile: React.FC<PostDetailMobileProps> = ({
       {/* 1. Creator Header Row */}
       <div className="flex items-center justify-between py-1">
         <Link to={`/u/${creatorUsername}`} className="flex items-center gap-2.5 min-w-0 text-decoration-none group">
-          {creatorAvatar ? (
-            <ProgressiveImage
-              src={creatorAvatar}
-              alt={creatorName}
-              variant="avatar"
-              containerClassName="h-9 w-9 rounded-full border border-stone/70 shrink-0"
-              className="w-full h-full object-cover"
-            />
-          ) : (
-            <div className="h-9 w-9 rounded-full bg-slate-dark text-ivory-light flex items-center justify-center font-gothic text-xs font-bold uppercase shrink-0">
-              {post.creator?.name?.[0] || <UserIcon className="h-4 w-4" />}
-            </div>
-          )}
+          <UserAvatar
+            src={creatorAvatar}
+            alt={creatorName}
+            size="sm"
+            className="h-9 w-9 border border-stone/70 shrink-0"
+          />
           <div className="min-w-0">
             <div className="flex items-center gap-1 min-w-0">
               <span className="font-gothic text-xs sm:text-sm font-bold uppercase tracking-tight text-slate-dark truncate block group-hover:text-clay transition-colors leading-tight">

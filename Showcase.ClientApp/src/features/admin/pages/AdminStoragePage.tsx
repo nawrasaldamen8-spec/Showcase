@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { apiClient, queryKeys } from "@shared/api/index.ts";
 import { formatBytes } from "@shared/utils/format.ts";
 import { Button } from "@shared/components/Button.tsx";
+import { UserAvatar } from "@shared/components/media/index.ts";
 import { AdminKpiCard } from "../components/AdminKpiCard.tsx";
 import { AdminLayout } from "../components/AdminLayout.tsx";
 import { StorageBarChart } from "../components/StorageBarChart.tsx";
@@ -128,17 +129,12 @@ export const AdminStoragePage: React.FC = () => {
                               <span className="font-gothic font-bold text-xs text-cloud-dark w-5">
                                 #{idx + 1}
                               </span>
-                              {consumer.avatarUrl ? (
-                                <img
-                                  src={consumer.avatarUrl}
-                                  alt={consumer.username}
-                                  className="w-7 h-7 rounded-full object-cover border border-stone shrink-0"
-                                />
-                              ) : (
-                                <div className="w-7 h-7 rounded-full bg-slate-dark text-ivory-light flex items-center justify-center font-gothic text-xs font-bold uppercase shrink-0">
-                                  {consumer.fullName ? consumer.fullName[0] : "U"}
-                                </div>
-                              )}
+                              <UserAvatar
+                                src={consumer.avatarUrl}
+                                alt={consumer.fullName || consumer.username}
+                                size="xs"
+                                className="w-7 h-7 border border-stone shrink-0"
+                              />
                               <div className="min-w-0">
                                 <span className="font-gothic font-bold uppercase tracking-wider text-slate-dark block truncate">
                                   {consumer.fullName}

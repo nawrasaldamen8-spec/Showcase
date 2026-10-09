@@ -11,7 +11,6 @@ import {
   Sparkles,
   Users,
 } from "lucide-react";
-import { AdminRouteGuard } from "./AdminRouteGuard.tsx";
 
 export interface AdminLayoutProps {
   children: React.ReactNode;
@@ -48,8 +47,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
   ];
 
   return (
-    <AdminRouteGuard>
-      <div className="min-h-screen bg-ivory-medium text-slate-dark pb-24">
+    <div className="min-h-screen bg-ivory-medium text-slate-dark pb-24">
         {/* Top Dark Governance Bar */}
         <header className="bg-slate-dark text-ivory-light border-b border-[#262624] px-4 sm:px-8 py-3.5 sticky top-0 z-30 shadow-none">
           <div className="max-w-7xl mx-auto flex items-center justify-between">
@@ -136,6 +134,5 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
           <div>{children}</div>
         </main>
       </div>
-    </AdminRouteGuard>
   );
 };

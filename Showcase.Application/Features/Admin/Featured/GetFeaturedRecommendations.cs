@@ -15,22 +15,44 @@ public class GetFeaturedRecommendationsQueryHandler(
 
     public async Task<Result<IReadOnlyList<FeaturedRecommendationItemDto>>> Handle(GetFeaturedRecommendationsQuery request, CancellationToken ct)
     {
-        var requests = await _context.FeaturedRequests
+        // 1. Fetch all existing requests
+        var allRequests = await _context.FeaturedRequests
             .OrderByDescending(f => f.CreatedAtUtc)
-            .Take(100)
             .ToListAsync(ct);
 
-        var userIds = requests.Select(r => r.UserId).Distinct().ToList();
+        // Deduplicate requests by UserId (keep newest)
+        var latestRequestsByUser = allRequests
+            .GroupBy(r => r.UserId)
+            .ToDictionary(g => g.Key, g => g.First());
 
+        // 2. Also fetch all actively featured profiles to ensure direct admin features are included
+        var activelyFeaturedProfiles = await _context.Profiles
+            .IgnoreQueryFilters()
+            .Where(p => !p.IsDeleted && p.FeaturedStatus == FeaturedStatus.Featured)
+            .ToListAsync(ct);
+
+        // 3. Union all relevant user IDs
+        var userIds = latestRequestsByUser.Keys
+            .Union(activelyFeaturedProfiles.Select(p => p.UserId))
+            .Distinct()
+            .ToList();
+
+        if (userIds.Count == 0)
+        {
+            return Result.Success<IReadOnlyList<FeaturedRecommendationItemDto>>(Array.Empty<FeaturedRecommendationItemDto>());
+        }
+
+        // 4. Batch Lookups for Users, Profiles, and Post Counts
         var usersResult = await _identityService.GetUsersByIdsAsync(userIds, ct);
         var usersMap = usersResult.IsSuccess ? usersResult.Value : new Dictionary<string, UserIdentityDetails>();
 
-        var profiles = await _context.Profiles
-            .Where(p => userIds.Contains(p.UserId))
+        var allRelevantProfiles = await _context.Profiles
+            .IgnoreQueryFilters()
+            .Where(p => userIds.Contains(p.UserId) && !p.IsDeleted)
             .ToListAsync(ct);
 
-        var profileMap = profiles.ToDictionary(p => p.UserId, p => p);
-        var profileIds = profiles.Select(p => p.Id).ToList();
+        var profileMap = allRelevantProfiles.ToDictionary(p => p.UserId, p => p);
+        var profileIds = allRelevantProfiles.Select(p => p.Id).ToList();
 
         var postCounts = await _context.Posts
             .Where(p => profileIds.Contains(p.ProfileId) && p.Status == PostStatus.Published)
@@ -38,10 +60,14 @@ public class GetFeaturedRecommendationsQueryHandler(
             .Select(g => new { ProfileId = g.Key, Count = g.Count() })
             .ToDictionaryAsync(x => x.ProfileId, x => x.Count, ct);
 
-        var list = requests.Select(req =>
+        // 5. Build Unified Result List
+        var list = new List<FeaturedRecommendationItemDto>();
+
+        foreach (var userId in userIds)
         {
-            var username = usersMap.TryGetValue(req.UserId, out var user) ? user.UserName : "unknown";
-            profileMap.TryGetValue(req.UserId, out var profile);
+            var hasRequest = latestRequestsByUser.TryGetValue(userId, out var req);
+            profileMap.TryGetValue(userId, out var profile);
+            var username = usersMap.TryGetValue(userId, out var user) ? user.UserName : "unknown";
             var name = profile?.Name ?? username;
             var avatarUrl = profile?.AvatarKey is not null
                 ? _storageService.GetPublicUrl(profile.AvatarKey.Value)
@@ -51,20 +77,38 @@ public class GetFeaturedRecommendationsQueryHandler(
                 ? count
                 : 0;
 
-            return new FeaturedRecommendationItemDto(
-                req.Id,
-                req.UserId,
+            var isPinned = (profile is not null && profile.FeaturedStatus == FeaturedStatus.Featured)
+                || (req is not null && req.Status == FeaturedStatus.Featured);
+
+            var statusStr = isPinned
+                ? "featured"
+                : (req is not null ? req.Status.ToString().ToLowerInvariant() : "none");
+
+            var message = req?.Message ?? "Curated spotlight recommendation.";
+            var id = req?.Id ?? (profile is not null ? profile.Id : Guid.NewGuid());
+            var createdAt = req?.CreatedAtUtc ?? (profile?.CreatedAt ?? DateTime.UtcNow);
+
+            list.Add(new FeaturedRecommendationItemDto(
+                id,
+                userId,
                 username,
                 name,
                 avatarUrl,
                 profile?.Specialty,
-                req.Message,
+                message,
                 postsCount,
-                req.Status == FeaturedStatus.Featured,
-                req.Status.ToString().ToLowerInvariant(),
-                req.CreatedAtUtc);
-        }).ToList();
+                isPinned,
+                statusStr,
+                createdAt));
+        }
 
-        return Result.Success<IReadOnlyList<FeaturedRecommendationItemDto>>(list);
+        // Sort: Pinned first, then by date descending
+        var sortedList = list
+            .OrderByDescending(x => x.IsCuratedPin)
+            .ThenByDescending(x => x.NominatedAt)
+            .Take(100)
+            .ToList();
+
+        return Result.Success<IReadOnlyList<FeaturedRecommendationItemDto>>(sortedList);
     }
 }

@@ -10,6 +10,7 @@ export interface AdminUserListItem {
   roles: UserRole[];
   status: UserStatus;
   isVerified: boolean;
+  isFeatured?: boolean;
   featuredStatus: "none" | "pending" | "featured" | "rejected";
   postsCount: number;
   storageUsedBytes: number;
@@ -24,10 +25,12 @@ export interface VerificationRequestItem {
   name?: string;
   fullName?: string;
   avatarUrl?: string | null;
+  specialty?: string;
   category?: string;
   message: string;
   notes?: string;
-  status: "pending" | "approved" | "rejected" | string;
+  isVerified?: boolean;
+  status: "pending" | "approved" | "verified" | "rejected" | string;
   postsCount?: number;
   createdAt?: string;
   submittedAt?: string;

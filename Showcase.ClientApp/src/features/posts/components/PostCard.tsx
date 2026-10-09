@@ -4,6 +4,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { ProgressiveImage } from "@shared/components/ProgressiveImage.tsx";
 import { VerifiedBadge } from "@shared/components/VerifiedBadge.tsx";
 import type { ExplorePostResponse } from "@shared/types/index.ts";
+import { formatRelativeTime } from "@shared/utils/index.ts";
 
 export type TileSpanType = "square" | "tall" | "wide" | "hero";
 
@@ -108,6 +109,12 @@ export const PostCard: React.FC<PostCardProps> = ({ post, spanType = "square", c
         <div className="flex items-center gap-1.5 mt-1 sm:mt-1.5 text-[11px] sm:text-xs text-ivory-light/80 font-serif">
           <span className="truncate">@{creatorUsername}</span>
           {post.creator?.isVerified && <VerifiedBadge size="xs" className="shrink-0" />}
+          {(post.publishedAt || post.createdAt) && (
+            <>
+              <span className="text-ivory-light/50">•</span>
+              <span>{formatRelativeTime(post.publishedAt || post.createdAt, { suffix: true })}</span>
+            </>
+          )}
           {post.imageCount > 1 && (
             <>
               <span className="text-ivory-light/50">•</span>

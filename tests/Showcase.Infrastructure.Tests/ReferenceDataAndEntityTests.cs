@@ -154,7 +154,7 @@ public class ReferenceDataAndEntityTests
 
         Assert.Equal(249, countryCount);
         Assert.Equal(184, languageCount);
-        Assert.True(specialtyCount > 3000);
+        Assert.Equal(345, specialtyCount);
         Assert.Equal(0, profileCount);
 
         var jordan = await context.Countries.FirstOrDefaultAsync(c => c.Alpha2 == "jo");

@@ -1,13 +1,14 @@
-import { ArrowRight, ChevronDown, ChevronUp, ExternalLink, Flag, User as UserIcon } from "lucide-react";
+import { ArrowRight, ChevronDown, ChevronUp, ExternalLink, Flag } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { Badge } from "@shared/components/Badge.tsx";
 import { Button } from "@shared/components/Button.tsx";
-import { ProgressiveImage } from "@shared/components/ProgressiveImage.tsx";
+import { UserAvatar } from "@shared/components/media/index.ts";
 import { VerifiedBadge } from "@shared/components/VerifiedBadge.tsx";
 import { useAuth } from "@shared/context/index.ts";
 import type { PostDetailsResponse } from "@shared/types/index.ts";
+import { formatRelativeTime } from "@shared/utils/index.ts";
 import { PostLikeButton } from "./PostLikeButton.tsx";
 import { ReportPostModal } from "./ReportPostModal.tsx";
 
@@ -29,6 +30,8 @@ export const PostCuratorialMeta: React.FC<PostCuratorialMetaProps> = ({
   showCreator = layout === "sidebar",
 }) => {
   const { currentUser } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const [canExpand, setCanExpand] = useState(false);
@@ -49,18 +52,12 @@ export const PostCuratorialMeta: React.FC<PostCuratorialMetaProps> = ({
       {showCreator && (
         <div className="flex items-center gap-3.5">
           <Link to={`/u/${creatorUsername}`} className="shrink-0 group">
-            {creatorAvatar ? (
-              <ProgressiveImage
-                src={creatorAvatar}
-                alt={creatorName}
-                containerClassName="h-12 w-12 rounded-full border border-stone transition-transform group-hover:scale-105 shrink-0"
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <div className="h-12 w-12 rounded-full bg-slate-dark text-ivory-light flex items-center justify-center font-gothic text-sm font-bold uppercase transition-transform group-hover:scale-105">
-                {post.creator?.name?.[0] || <UserIcon className="h-5 w-5" />}
-              </div>
-            )}
+            <UserAvatar
+              src={creatorAvatar}
+              alt={creatorName}
+              size="md"
+              className="h-12 w-12 border border-stone transition-transform group-hover:scale-105 shrink-0"
+            />
           </Link>
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-1.5 min-w-0">
@@ -108,7 +105,8 @@ export const PostCuratorialMeta: React.FC<PostCuratorialMetaProps> = ({
           type="button"
           onClick={() => {
             if (!currentUser) {
-              toast.warning("Please sign in to report content.");
+              toast.info("Please sign in to report content.");
+              navigate("/login", { state: { from: `${location.pathname}${location.search}` } });
               return;
             }
             setIsReportModalOpen(true);
@@ -120,6 +118,22 @@ export const PostCuratorialMeta: React.FC<PostCuratorialMetaProps> = ({
           <span className="hidden sm:inline">Report</span>
         </button>
       </div>
+
+      {/* Publication Relative Date */}
+      {(post.publishedAt || post.createdAt) && (
+        <div className="pt-0.5">
+          <time
+            dateTime={post.publishedAt || post.createdAt}
+            title={new Date(post.publishedAt || post.createdAt).toLocaleString(undefined, {
+              dateStyle: "medium",
+              timeStyle: "short",
+            })}
+            className="font-serif text-xs text-cloud-dark hover:text-slate-dark transition-colors select-none block"
+          >
+            {formatRelativeTime(post.publishedAt || post.createdAt, { suffix: true })}
+          </time>
+        </div>
+      )}
 
       {/* Tags */}
       {post.tags && post.tags.length > 0 && (

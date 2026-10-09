@@ -24,7 +24,7 @@ export const NotificationCard: React.FC<NotificationCardProps> = ({
       className={`rounded-2xl border p-5 transition-all space-y-3 ${
         item.isRead
           ? "bg-ivory-light/80 border-stone/60 opacity-80"
-          : "bg-ivory-light border-stone shadow-sm"
+          : "bg-ivory-light border-slate-dark/40"
       }`}
     >
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-stone/50 pb-2.5">

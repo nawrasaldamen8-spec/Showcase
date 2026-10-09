@@ -15,10 +15,13 @@ public class ToggleSectionVisibility : IEndpoint
     {
         app.MapPut("api/career/visibility/{section}", async (
             string section,
-            ToggleSectionVisibilityRequest request,
+            [Microsoft.AspNetCore.Mvc.FromBody] ToggleSectionVisibilityRequest? request,
             ISender sender,
             CancellationToken ct) =>
         {
+            if (request is null)
+                return Results.BadRequest(new Microsoft.AspNetCore.Mvc.ProblemDetails { Title = "Invalid Request", Detail = "Request body is required." });
+
             var command = new ToggleSectionVisibilityCommand(section, request.IsVisible);
             var result = await sender.Send(command, ct);
             return result.ToResponse();

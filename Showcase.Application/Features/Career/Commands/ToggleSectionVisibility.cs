@@ -26,6 +26,7 @@ public class ToggleSectionVisibilityCommandHandler(
         if (toggleResult.IsFailure)
             return Result.Failure<CareerVisibilityDto>(toggleResult.Error);
 
+        _context.CareerVisibilities.Update(profile.CareerVisibility);
         await _context.SaveChangesAsync(ct);
 
         return profile.CareerVisibility.ToDto();

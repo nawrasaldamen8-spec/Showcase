@@ -121,7 +121,7 @@ export const ProfileAboutTab: React.FC<ProfileAboutTabProps> = ({
           <p className="font-serif text-xs sm:text-sm text-cloud-dark mb-3">
             No links added yet.
           </p>
-          <Link to="/profile/edit/links" className="text-decoration-none inline-block">
+          <Link to="/profile/social-links" className="text-decoration-none inline-block">
             <Button variant="outline" size="sm" leftIcon={<Plus className="h-3.5 w-3.5" />} className="text-xs h-7 px-2.5">
               Add Social Links
             </Button>

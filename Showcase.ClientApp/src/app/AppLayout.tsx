@@ -33,6 +33,20 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   const isEditorRoute =
     location.pathname.startsWith("/posts/new") || /^\/posts\/[^/]+\/edit/.test(location.pathname);
 
+  const isCareerFormRoute =
+    /\/career\/(experience|academics|skills|credentials|languages|achievements)\/(new|[^/]+\/edit)/.test(
+      location.pathname
+    );
+
+  const isProfileEditRoute =
+    location.pathname.startsWith("/profile/edit") || location.pathname.startsWith("/profile/social-links");
+
+  const isSecuritySubRoute =
+    location.pathname.startsWith("/settings/security/") && location.pathname !== "/settings/security";
+
+  const shouldHideBottomNav =
+    isEditorRoute || isCareerFormRoute || isProfileEditRoute || isSecuritySubRoute;
+
   const isStandaloneRoute =
     location.pathname === "/banned" ||
     location.pathname.startsWith("/login") ||
@@ -79,10 +93,10 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
       />
       <div className="flex-1 flex flex-col min-w-0 md:pl-60 lg:pl-64 transition-all">
         <MobileTopBar unreadNotificationsCount={unreadCount} />
-        <main className={`flex-1 ${isEditorRoute ? "" : "pb-16 md:pb-0"}`}>{content}</main>
+        <main className={`flex-1 ${shouldHideBottomNav ? "" : "pb-16 md:pb-0"}`}>{content}</main>
         {!isWorkspaceRoute && <Footer />}
       </div>
-      {!isEditorRoute && <MobileBottomNav user={layoutUser} />}
+      {!shouldHideBottomNav && <MobileBottomNav user={layoutUser} />}
     </div>
   );
 };

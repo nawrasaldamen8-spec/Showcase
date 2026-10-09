@@ -51,6 +51,7 @@ export const RegisterWizardPage: React.FC = () => {
     setBio,
     avatarUrl,
     setAvatarUrl,
+    setAvatarFile,
     usernameStatus,
     error,
     isLoading,
@@ -171,6 +172,7 @@ export const RegisterWizardPage: React.FC = () => {
           username={username}
           avatarUrl={avatarUrl}
           onAvatarChange={setAvatarUrl}
+          onFileSelect={setAvatarFile}
           onBack={() => setCurrentStep(isOAuthMode ? 5 : 6)}
           onComplete={handleCompleteRegistration}
           onSkip={handleCompleteRegistration}

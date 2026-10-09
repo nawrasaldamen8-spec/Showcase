@@ -113,9 +113,6 @@ public static class DatabaseSeeder
         ILogger? logger,
         CancellationToken ct)
     {
-        if (await context.SpecialtyReferences.AnyAsync(ct))
-            return;
-
         var json = ReadResource("specialties.json");
         if (string.IsNullOrWhiteSpace(json))
         {
@@ -127,18 +124,56 @@ public static class DatabaseSeeder
         if (items is null || items.Count == 0)
             return;
 
-        var entities = new List<SpecialtyReference>(items.Count);
-        foreach (var item in items)
+        var currentCount = await context.SpecialtyReferences.CountAsync(ct);
+        if (currentCount != items.Count)
         {
-            if (item.id > 0 && !string.IsNullOrWhiteSpace(item.name))
+            if (currentCount > 0)
             {
-                entities.Add(new SpecialtyReference(item.id, item.code ?? string.Empty, item.name, item.category ?? "General", item.subField ?? string.Empty));
+                context.SpecialtyReferences.RemoveRange(context.SpecialtyReferences);
+                await context.SaveChangesAsync(ct);
+                logger?.LogInformation("Cleared {OldCount} legacy specialties for curation upgrade.", currentCount);
             }
+
+            var entities = new List<SpecialtyReference>(items.Count);
+            foreach (var item in items)
+            {
+                if (item.id > 0 && !string.IsNullOrWhiteSpace(item.name))
+                {
+                    entities.Add(new SpecialtyReference(item.id, item.code ?? string.Empty, item.name, item.category ?? "General", item.subField ?? string.Empty));
+                }
+            }
+
+            await context.SpecialtyReferences.AddRangeAsync(entities, ct);
+            await context.SaveChangesAsync(ct);
+            logger?.LogInformation("Seeded {Count} clean curated specialties.", entities.Count);
         }
 
-        await context.SpecialtyReferences.AddRangeAsync(entities, ct);
-        await context.SaveChangesAsync(ct);
-        logger?.LogInformation("Seeded {Count} specialties.", entities.Count);
+        // Clean any existing profile specialties with old bloated text
+        var profilesWithBloatedSpecialty = await context.Profiles
+            .Where(p => p.Specialty != null && (p.Specialty.Contains(",") || p.Specialty.Length > 30))
+            .ToListAsync(ct);
+
+        if (profilesWithBloatedSpecialty.Count > 0)
+        {
+            foreach (var prof in profilesWithBloatedSpecialty)
+            {
+                if (prof.Specialty != null && prof.Specialty.StartsWith("Agriculture", StringComparison.OrdinalIgnoreCase))
+                {
+                    prof.UpdateDetails(prof.Name, "Agricultural Engineer", prof.Country, prof.Bio);
+                }
+                else if (prof.Specialty != null && prof.Specialty.StartsWith("Architecture", StringComparison.OrdinalIgnoreCase))
+                {
+                    prof.UpdateDetails(prof.Name, "Architect", prof.Country, prof.Bio);
+                }
+                else if (prof.Specialty != null && prof.Specialty.Length > 28)
+                {
+                    var cleanTitle = prof.Specialty.Split(',')[0].Trim();
+                    prof.UpdateDetails(prof.Name, cleanTitle, prof.Country, prof.Bio);
+                }
+            }
+            await context.SaveChangesAsync(ct);
+            logger?.LogInformation("Sanitized {Count} user profile specialties.", profilesWithBloatedSpecialty.Count);
+        }
     }
 
     private static string? ReadResource(string fileName)

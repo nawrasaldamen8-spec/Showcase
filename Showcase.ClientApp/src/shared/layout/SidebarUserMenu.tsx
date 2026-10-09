@@ -1,6 +1,7 @@
-import { LogOut, User as UserIcon } from "lucide-react";
+import { LogOut } from "lucide-react";
 import React from "react";
 import { Link } from "react-router-dom";
+import { UserAvatar } from "../components/media/UserAvatar.tsx";
 import { VerifiedBadge } from "../components/VerifiedBadge.tsx";
 import type { SidebarUser } from "./SidebarNavLinks.tsx";
 
@@ -17,9 +18,7 @@ export const SidebarUserMenu: React.FC<SidebarUserMenuProps> = ({ user, onLogout
           to="/login"
           className="flex items-center gap-2.5 min-w-0 flex-1 hover:opacity-85 transition-opacity text-decoration-none text-ivory-light"
         >
-          <div className="h-8 w-8 rounded-full bg-[#262624] text-ivory-light flex items-center justify-center font-gothic text-xs font-bold uppercase shrink-0 border border-ivory-light/20">
-            <UserIcon className="h-4 w-4" />
-          </div>
+          <UserAvatar size="sm" className="border border-ivory-light/20 shrink-0" />
           <div className="min-w-0">
             <p className="font-gothic text-xs font-bold uppercase tracking-wider text-ivory-light truncate">
               Visitor
@@ -40,17 +39,12 @@ export const SidebarUserMenu: React.FC<SidebarUserMenuProps> = ({ user, onLogout
         className="flex items-center gap-2.5 min-w-0 flex-1 hover:opacity-85 transition-opacity text-decoration-none group"
         title={`View @${user.username} Profile`}
       >
-        {user.avatarUrl ? (
-          <img
-            src={user.avatarUrl}
-            alt={user.username}
-            className="h-8 w-8 rounded-full object-cover shrink-0 border border-[#262624]"
-          />
-        ) : (
-          <div className="h-8 w-8 rounded-full bg-[#262624] text-ivory-light flex items-center justify-center font-gothic text-xs font-bold uppercase shrink-0 border border-ivory-light/20">
-            {user.name?.[0] || user.username[0] || <UserIcon className="h-4 w-4" />}
-          </div>
-        )}
+        <UserAvatar
+          src={user.avatarUrl}
+          alt={user.username}
+          size="sm"
+          className="border border-[#262624] shrink-0"
+        />
         <div className="min-w-0">
           <div className="flex items-center gap-1.5 min-w-0">
             <p className="font-gothic text-xs font-bold uppercase tracking-wider text-ivory-light truncate group-hover:text-clay transition-colors">

@@ -3,6 +3,7 @@ import React from "react";
 import { Button } from "@shared/components/Button.tsx";
 import { getOptimizedImageUrl } from "@shared/utils/mediaUrl.ts";
 import { useAvatarUpload } from "../hooks/useAvatarUpload.ts";
+import { AvatarCropModal } from "./AvatarCropModal.tsx";
 
 export interface AvatarUploaderProps {
   avatarUrl?: string | null;
@@ -21,6 +22,8 @@ export const AvatarUploader: React.FC<AvatarUploaderProps> = ({
 }) => {
   const {
     currentUrl,
+    pendingImageSrc,
+    isCropModalOpen,
     isDragging,
     isUploading,
     isDeleting,
@@ -34,9 +37,9 @@ export const AvatarUploader: React.FC<AvatarUploaderProps> = ({
     handleDrop,
     handleDelete,
     triggerPicker,
+    handleConfirmCrop,
+    handleCancelCrop,
   } = useAvatarUpload({ avatarUrl, onAvatarUpdated });
-
-  const initials = (name?.[0] || username?.[0] || "A").toUpperCase();
 
   return (
     <section
@@ -87,8 +90,8 @@ export const AvatarUploader: React.FC<AvatarUploaderProps> = ({
                 }`}
               />
             ) : (
-              <div className="h-full w-full bg-slate-dark text-ivory-light flex items-center justify-center font-gothic text-3xl sm:text-4xl font-extrabold uppercase transition-colors group-hover:bg-[#282725]">
-                {initials || <UserIcon className="h-10 w-10 text-ivory-light" />}
+              <div className="h-full w-full bg-[#F0EEE6] flex items-center justify-center transition-colors group-hover:bg-[#EAE7DC]">
+                <UserIcon className="h-12 w-12 sm:h-14 sm:w-14 stroke-[#D97757] fill-none stroke-[1.75]" />
               </div>
             )}
 
@@ -175,6 +178,15 @@ export const AvatarUploader: React.FC<AvatarUploaderProps> = ({
           )}
         </div>
       </div>
+
+      {/* Large Interactive Avatar Crop & Confirmation Modal */}
+      <AvatarCropModal
+        isOpen={isCropModalOpen}
+        imageSrc={pendingImageSrc}
+        onClose={handleCancelCrop}
+        onConfirm={handleConfirmCrop}
+        isUploading={isUploading}
+      />
     </section>
   );
 };

@@ -1,7 +1,6 @@
 import { Sparkles } from "lucide-react";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { apiClient } from "@shared/api/apiClient.ts";
 import type { CareerSkill } from "@shared/types/index.ts";
 import {
   CareerEmptyState,
@@ -9,35 +8,30 @@ import {
   DeleteConfirmModal,
   SkillCard,
 } from "../components/index.ts";
-import { useCareerCrud, useCareerVisibility } from "../hooks/index.ts";
+import {
+  useCareerSkillsQuery,
+  useCareerVisibility,
+  useDeleteSkillMutation,
+} from "../hooks/index.ts";
 
 export const CareerSkillsPage: React.FC = () => {
   const navigate = useNavigate();
   const [activeCategory, setActiveCategory] = useState<string>("All");
+  const [deleteTarget, setDeleteTarget] = useState<CareerSkill | null>(null);
+
+  const { data: skills = [], isLoading: loading } = useCareerSkillsQuery();
+  const deleteMutation = useDeleteSkillMutation();
   const { visibility, isToggling, toggleSection } = useCareerVisibility();
 
-  const {
-    items: skills,
-    loading,
-    deleteTarget,
-    isDeleting,
-    setDeleteTarget,
-    handleDeleteConfirm,
-  } = useCareerCrud<CareerSkill>({
-    loadFn: apiClient.getSkills,
-    createFn: apiClient.createSkill,
-    updateFn: apiClient.updateSkill,
-    deleteFn: apiClient.deleteSkill,
-    entityLabel: "Skill",
-    messages: {
-      loadError: "Failed to load skills",
-      createSuccess: "Skill added successfully",
-      updateSuccess: "Skill updated",
-      saveError: "Failed to save skill",
-      deleteSuccess: "Skill deleted successfully",
-      deleteError: "Failed to delete skill",
-    },
-  });
+  const handleDeleteConfirm = async () => {
+    if (!deleteTarget) return;
+    try {
+      await deleteMutation.mutateAsync(deleteTarget.id);
+      setDeleteTarget(null);
+    } catch {
+      // Error handled by mutation onError
+    }
+  };
 
   const categories = [
     "All",
@@ -118,7 +112,7 @@ export const CareerSkillsPage: React.FC = () => {
         onConfirm={handleDeleteConfirm}
         title="Delete Skill"
         itemName={deleteTarget?.name || "this skill"}
-        isDeleting={isDeleting}
+        isDeleting={deleteMutation.isPending}
       />
     </div>
   );

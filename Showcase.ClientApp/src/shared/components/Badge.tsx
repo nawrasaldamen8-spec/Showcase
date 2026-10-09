@@ -13,7 +13,7 @@ export interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
 }
 
 const baseClasses =
-  'inline-flex items-center justify-center font-gothic font-semibold uppercase tracking-[0.10em] rounded-pill select-none transition-colors duration-150 leading-none';
+  'inline-flex items-center justify-center font-gothic font-semibold uppercase tracking-[0.10em] rounded-pill select-none transition-colors duration-150 leading-none max-w-full';
 
 const variantClasses: Record<BadgeVariant, string> = {
   slate: 'bg-slate-dark text-ivory-light',
@@ -56,7 +56,7 @@ export const Badge: React.FC<BadgeProps> = ({
         />
       )}
       {icon && <span className="shrink-0 leading-none">{icon}</span>}
-      <span>{children}</span>
+      <span className="truncate">{children}</span>
       {onRemove && (
         <button
           type="button"

@@ -1,15 +1,23 @@
-import { apiAdminClient } from "./apiClient.admin.ts";
-import { apiAnalyticsClient } from "./apiClient.analytics.ts";
-import { apiAuthClient } from "./apiClient.auth.ts";
-import { apiCareerClient } from "./apiClient.career.ts";
+import { apiAdminClient } from "@features/admin/api/index.ts";
+import { apiAuthClient } from "@features/auth/api/index.ts";
+import { apiCareerClient } from "@features/career/api/index.ts";
+import { apiNotificationsClient } from "@features/notifications/api/index.ts";
+import { apiAnalyticsClient, apiPostsClient } from "@features/posts/api/index.ts";
+import { apiProfileClient } from "@features/profile/api/index.ts";
 import { apiLookupsClient } from "./apiClient.lookups.ts";
-import { apiNotificationsClient } from "./apiClient.notifications.ts";
-import { apiPostsClient } from "./apiClient.posts.ts";
-import { apiProfileClient } from "./apiClient.profile.ts";
 
 export { API_BASE_URL, httpFetch, USE_MOCK_API } from "./apiClient.base.ts";
 export type { FetchOptions } from "./apiClient.base.ts";
-export { apiNotificationsClient, apiLookupsClient, apiAnalyticsClient };
+export {
+  apiAdminClient,
+  apiAnalyticsClient,
+  apiAuthClient,
+  apiCareerClient,
+  apiLookupsClient,
+  apiNotificationsClient,
+  apiPostsClient,
+  apiProfileClient,
+};
 
 export const apiClient = {
   ...apiAuthClient,

@@ -23,7 +23,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ user, unreadNotificationsCount
     >
       {/* 1. Header / Platform Branding */}
       <div className="h-18 lg:h-20 px-6 flex items-center justify-between border-b border-[#262624]">
-        <Link to={user ? "/studio" : "/"} className="flex items-center gap-3 group text-decoration-none" aria-label="Pority Home">
+        <Link to={user ? "/feed" : "/"} className="flex items-center gap-3 group text-decoration-none" aria-label="Pority Home">
           <BrandLogo
             variant="full"
             theme="dark"
@@ -77,6 +77,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ user, unreadNotificationsCount
                 );
               }}
             </NavLink>
+            {/* User Profile Row with Direct Logout */}
+            <SidebarUserMenu user={user} onLogout={onLogout} />
           </>
         ) : (
           <Link to="/register" className="block text-decoration-none">
@@ -91,9 +93,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ user, unreadNotificationsCount
             </Button>
           </Link>
         )}
-
-        {/* User Profile Row with Direct Logout */}
-        <SidebarUserMenu user={user} onLogout={onLogout} />
       </div>
     </aside>
   );

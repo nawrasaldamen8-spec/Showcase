@@ -39,6 +39,7 @@ export function useRegisterWizard() {
   const [specialty, setSpecialty] = useState<string | null>(null);
   const [bio, setBio] = useState("");
   const [avatarUrl, setAvatarUrl] = useState("");
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
 
   const [usernameStatus, setUsernameStatus] = useState<"idle" | "checking" | "available" | "taken">("idle");
   const [error, setError] = useState<string | null>(null);
@@ -207,6 +208,20 @@ export function useRegisterWizard() {
           bio: bio.trim() || undefined,
           specialty: specialty || undefined,
         });
+
+        if (avatarFile) {
+          try {
+            const { uploadUrl, storageKey } = await apiClient.getAvatarUploadUrl({
+              contentType: avatarFile.type || "image/jpeg",
+              fileSizeBytes: avatarFile.size,
+            });
+            const publicUrl = await apiClient.uploadImageFile(uploadUrl, avatarFile);
+            await apiClient.updateAvatar(storageKey, publicUrl);
+            await refreshUser();
+          } catch (uploadErr) {
+            console.error("Failed to upload avatar during registration", uploadErr);
+          }
+        }
       }
 
       toast.success(`Welcome to Pority, ${name.trim()}!`);
@@ -239,6 +254,8 @@ export function useRegisterWizard() {
     setBio,
     avatarUrl,
     setAvatarUrl,
+    avatarFile,
+    setAvatarFile,
     usernameStatus,
     error,
     isLoading,

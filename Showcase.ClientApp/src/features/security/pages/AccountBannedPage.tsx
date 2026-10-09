@@ -35,7 +35,7 @@ export const AccountBannedPage: React.FC = () => {
       </div>
 
       {/* Main Suspension Card */}
-      <div className="w-full max-w-lg bg-ivory-light border border-stone/80 rounded-3xl p-6 sm:p-8 shadow-sm space-y-6">
+      <div className="w-full max-w-lg bg-ivory-light border border-stone/80 rounded-3xl p-6 sm:p-8 space-y-6">
         {/* Header with Alert Icon */}
         <div className="flex flex-col items-center text-center space-y-3">
           <div className="w-14 h-14 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center justify-center text-red-600">

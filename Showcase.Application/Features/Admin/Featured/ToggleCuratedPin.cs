@@ -25,10 +25,13 @@ public class ToggleCuratedPinCommandHandler(
             .IgnoreQueryFilters()
             .FirstOrDefaultAsync(p => p.UserId == featuredReq.UserId, ct);
 
+        var nextStatus = request.IsPinned ? FeaturedStatus.Featured : FeaturedStatus.None;
+
         if (profile is not null)
         {
-            var nextStatus = request.IsPinned ? FeaturedStatus.Featured : FeaturedStatus.None;
-            profile.SetFeaturedStatus(nextStatus);
+            var profileResult = profile.SetFeaturedStatus(nextStatus);
+            if (profileResult.IsFailure)
+                return profileResult;
 
             if (request.IsPinned)
             {
@@ -38,6 +41,7 @@ public class ToggleCuratedPinCommandHandler(
             }
         }
 
+        featuredReq.SetStatus(nextStatus);
         await _context.SaveChangesAsync(ct);
 
         await _auditLogger.LogAsync(

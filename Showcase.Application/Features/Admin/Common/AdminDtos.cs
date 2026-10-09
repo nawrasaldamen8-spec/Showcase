@@ -23,7 +23,9 @@ public record AdminUserListItemDto(
     int PostsCount,
     long StorageUsedBytes,
     IReadOnlyList<string> Roles,
-    DateTime CreatedAt);
+    DateTime CreatedAt,
+    bool IsFeatured = false,
+    string FeaturedStatus = "none");
 
 public record VerificationRequestItemDto(
     Guid Id,
@@ -34,7 +36,11 @@ public record VerificationRequestItemDto(
     string Category,
     string Message,
     string Status,
-    DateTime CreatedAt);
+    DateTime CreatedAt,
+    bool IsVerified = false,
+    string? Specialty = null,
+    int PostsCount = 0,
+    string? DecisionNote = null);
 
 public record FeaturedRecommendationItemDto(
     Guid Id,

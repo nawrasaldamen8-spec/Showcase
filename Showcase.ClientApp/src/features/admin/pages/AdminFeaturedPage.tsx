@@ -1,6 +1,7 @@
-import React from "react";
+import React, { useState } from "react";
 import { CheckCircle2, ExternalLink, Pin, PinOff, Sparkles, XCircle } from "lucide-react";
 import { Button } from "@shared/components/Button.tsx";
+import { UserAvatar } from "@shared/components/media/index.ts";
 import { AdminLayout } from "../components/AdminLayout.tsx";
 import {
   useAdminFeaturedQuery,
@@ -9,7 +10,10 @@ import {
   useToggleCuratedPinMutation,
 } from "../hooks/useAdminQueries.ts";
 
+type FeaturedTab = "spotlighted" | "applications";
+
 export const AdminFeaturedPage: React.FC = () => {
+  const [activeTab, setActiveTab] = useState<FeaturedTab>("spotlighted");
   const { data: recommendations = [], isLoading } = useAdminFeaturedQuery();
   const togglePinMutation = useToggleCuratedPinMutation();
   const approveMutation = useApproveFeaturedMutation();
@@ -31,220 +35,270 @@ export const AdminFeaturedPage: React.FC = () => {
     Boolean(item.isCuratedPin ?? item.isCuratedPinned)
   ) || [];
 
-  const candidateItems = recommendations?.filter(
-    (item) => !Boolean(item.isCuratedPin ?? item.isCuratedPinned)
+  const candidateItems = recommendations?.filter((item) =>
+    !Boolean(item.isCuratedPin ?? item.isCuratedPinned)
   ) || [];
 
   return (
     <AdminLayout
-      title="Curated Spotlight &amp; Featured Suggestions"
+      title="Curated Spotlight & Featured Suggestions"
       subtitle="Select outstanding architectural portfolios to appear in the discovery highlights feed."
     >
-      <div className="space-y-8">
-        {/* Section 1: Active Pinned Creators */}
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-clay" />
-              <h2 className="font-gothic font-bold text-sm uppercase tracking-wider text-slate-dark">
-                Currently Spotlighted on Discovery Feed ({pinnedItems.length})
-              </h2>
-            </div>
+      <div className="space-y-6">
+        {/* Top Navigation Tabs */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-stone">
+          <nav
+            className="flex items-center gap-6 sm:gap-8 overflow-x-auto no-scrollbar"
+            aria-label="Featured curation tabs"
+          >
+            <button
+              type="button"
+              onClick={() => setActiveTab("spotlighted")}
+              className={`font-gothic text-[13px] font-semibold uppercase tracking-[0.10em] pb-3 whitespace-nowrap transition-colors relative cursor-pointer border-b -mb-[1px] flex items-center gap-2 ${
+                activeTab === "spotlighted"
+                  ? "text-slate-dark border-slate-dark font-bold"
+                  : "text-cloud-dark border-transparent hover:text-slate-dark hover:border-stone"
+              }`}
+            >
+              <Sparkles className="w-3.5 h-3.5 text-clay" />
+              <span>Spotlighted Creators</span>
+              <span className="ml-1 px-2 py-0.5 rounded-full text-[10px] bg-stone/30 text-slate-dark font-mono font-bold">
+                {pinnedItems.length}
+              </span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setActiveTab("applications")}
+              className={`font-gothic text-[13px] font-semibold uppercase tracking-[0.10em] pb-3 whitespace-nowrap transition-colors relative cursor-pointer border-b -mb-[1px] flex items-center gap-2 ${
+                activeTab === "applications"
+                  ? "text-slate-dark border-slate-dark font-bold"
+                  : "text-cloud-dark border-transparent hover:text-slate-dark hover:border-stone"
+              }`}
+            >
+              <span>Candidate Applications</span>
+              <span className="ml-1 px-2 py-0.5 rounded-full text-[10px] bg-stone/30 text-slate-dark font-mono font-bold">
+                {candidateItems.length}
+              </span>
+            </button>
+          </nav>
+
+          <div className="pb-2.5 sm:pb-3 flex items-center justify-end">
             <a
               href="/feed"
               target="_blank"
               rel="noopener noreferrer"
-              className="font-gothic text-xs font-semibold uppercase text-clay hover:underline inline-flex items-center gap-1"
+              className="font-gothic text-xs font-semibold uppercase text-clay hover:underline inline-flex items-center gap-1.5"
             >
               View Live Feed <ExternalLink className="w-3.5 h-3.5" />
             </a>
           </div>
+        </div>
 
-          {isLoading ? (
-            <div className="p-6 bg-ivory-light rounded-2xl border border-stone text-center text-xs font-serif text-cloud-dark">
-              Loading spotlighted creators...
-            </div>
-          ) : pinnedItems.length === 0 ? (
-            <div className="p-6 bg-ivory-light rounded-2xl border border-dashed border-stone text-center text-xs font-serif text-cloud-dark">
-              No creators are currently pinned to the top of the discovery feed.
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {pinnedItems.map((item) => {
-                const displayName = item.name || item.fullName || item.username;
-                const headline = item.specialty || item.headline || "";
+        {/* Tab 1: Active Spotlighted Creators */}
+        {activeTab === "spotlighted" && (
+          <div className="space-y-4 animate-in fade-in duration-150">
+            {isLoading ? (
+              <div className="p-8 bg-ivory-light rounded-2xl border border-stone text-center text-xs font-serif text-cloud-dark">
+                Loading spotlighted creators...
+              </div>
+            ) : pinnedItems.length === 0 ? (
+              <div className="p-10 bg-ivory-light rounded-2xl border border-dashed border-stone text-center space-y-2">
+                <Sparkles className="w-8 h-8 text-clay mx-auto opacity-70" />
+                <h3 className="font-gothic font-bold text-sm uppercase text-slate-dark">
+                  No creators spotlighted yet
+                </h3>
+                <p className="text-xs font-serif text-cloud-dark max-w-sm mx-auto">
+                  Pin candidates from the Applications tab or directly feature users from the User Directory table.
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {pinnedItems.map((item) => {
+                  const displayName = item.name || item.fullName || item.username;
+                  const headline = item.specialty || item.headline || "";
 
-                return (
-                  <div
-                    key={item.id}
-                    className="bg-ivory-light rounded-2xl border border-clay/50 ring-1 ring-clay/20 p-4 space-y-3 flex flex-col justify-between"
-                  >
-                    <div className="space-y-2.5">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2.5 min-w-0">
-                          {item.avatarUrl ? (
-                            <img
+                  return (
+                    <div
+                      key={item.id}
+                      className="bg-ivory-light rounded-2xl border border-clay/50 ring-1 ring-clay/20 p-4 space-y-3 flex flex-col justify-between transition-all"
+                    >
+                      <div className="space-y-2.5">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2.5 min-w-0">
+                            <UserAvatar
                               src={item.avatarUrl}
                               alt={displayName}
-                              className="w-9 h-9 rounded-full object-cover border border-stone shrink-0"
+                              size="sm"
+                              className="w-9 h-9 border border-stone shrink-0"
                             />
-                          ) : (
-                            <div className="w-9 h-9 rounded-full bg-slate-dark text-ivory-light flex items-center justify-center font-gothic text-xs font-bold uppercase shrink-0">
-                              {(displayName || "?")[0]}
+                            <div className="min-w-0">
+                              <h4 className="font-gothic text-xs font-bold uppercase tracking-wider text-slate-dark truncate">
+                                {displayName}
+                              </h4>
+                              <span className="font-serif text-[11px] text-cloud-dark block truncate">
+                                @{item.username}
+                              </span>
                             </div>
-                          )}
-                          <div className="min-w-0">
-                            <h4 className="font-gothic text-xs font-bold uppercase tracking-wider text-slate-dark truncate">
-                              {displayName}
-                            </h4>
-                            <span className="font-serif text-[11px] text-cloud-dark block truncate">
-                              @{item.username}
-                            </span>
                           </div>
-                        </div>
 
-                        <span className="px-2 py-0.5 rounded-full bg-clay/15 text-clay font-gothic text-[9px] font-bold uppercase tracking-wider border border-clay/30 flex items-center gap-1 shrink-0">
-                          <Sparkles className="w-2.5 h-2.5" /> Pinned
-                        </span>
-                      </div>
-
-                      <div className="font-gothic text-[11px] font-semibold text-slate-dark/90 truncate">
-                        {headline}
-                      </div>
-                    </div>
-
-                    <div className="pt-2.5 border-t border-stone/40 flex items-center justify-between gap-2">
-                      <a
-                        href={`/u/${item.username}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-cloud-dark hover:text-slate-dark p-1 rounded-lg hover:bg-ivory-medium transition-colors"
-                        title="View Public Profile"
-                      >
-                        <ExternalLink className="w-4 h-4" />
-                      </a>
-
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleTogglePin(item.id, true)}
-                        disabled={togglePinMutation.isPending}
-                        leftIcon={<PinOff className="w-3.5 h-3.5" />}
-                        className="font-gothic uppercase tracking-wider text-[10px]"
-                      >
-                        Unpin from Feed
-                      </Button>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
-
-        {/* Section 2: Candidate Requests */}
-        <div className="space-y-3">
-          <h2 className="font-gothic font-bold text-sm uppercase tracking-wider text-slate-dark">
-            Spotlight Candidates &amp; Applications ({candidateItems.length})
-          </h2>
-
-          {isLoading ? (
-            <div className="p-6 bg-ivory-light rounded-2xl border border-stone text-center text-xs font-serif text-cloud-dark">
-              Loading candidate requests...
-            </div>
-          ) : candidateItems.length === 0 ? (
-            <div className="p-6 bg-ivory-light rounded-2xl border border-stone text-center text-xs font-serif text-cloud-dark">
-              No pending spotlight candidate submissions.
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-              {candidateItems.map((item) => {
-                const displayName = item.name || item.fullName || item.username;
-                const headline = item.specialty || item.headline || "";
-
-                return (
-                  <div
-                    key={item.id}
-                    className="bg-ivory-light rounded-2xl border border-stone p-5 space-y-4 flex flex-col justify-between"
-                  >
-                    <div className="space-y-3">
-                      <div className="flex items-center gap-3">
-                        {item.avatarUrl ? (
-                          <img
-                            src={item.avatarUrl}
-                            alt={displayName}
-                            className="w-10 h-10 rounded-full object-cover border border-stone"
-                          />
-                        ) : (
-                          <div className="w-10 h-10 rounded-full bg-slate-dark text-ivory-light flex items-center justify-center font-gothic text-xs font-bold uppercase">
-                            {(displayName || "?")[0]}
-                          </div>
-                        )}
-                        <div>
-                          <h4 className="font-gothic text-sm font-bold uppercase tracking-wider text-slate-dark">
-                            {displayName}
-                          </h4>
-                          <span className="font-serif text-xs text-cloud-dark block">
-                            @{item.username}
+                          <span className="px-2 py-0.5 rounded-full bg-clay/15 text-clay font-gothic text-[9px] font-bold uppercase tracking-wider border border-clay/30 flex items-center gap-1 shrink-0">
+                            <Sparkles className="w-2.5 h-2.5" /> Pinned
                           </span>
                         </div>
+
+                        {headline ? (
+                          <div className="font-gothic text-[11px] font-semibold text-slate-dark/90 truncate">
+                            {headline}
+                          </div>
+                        ) : null}
                       </div>
 
-                      <div>
-                        <h5 className="font-gothic text-xs font-bold uppercase text-slate-dark mb-1">
-                          {headline}
-                        </h5>
-                        {item.message && (
-                          <p className="font-serif text-xs text-slate-dark/75 leading-relaxed bg-ivory-medium p-3 rounded-xl">
-                            &ldquo;{item.message}&rdquo;
-                          </p>
+                      <div className="pt-2.5 border-t border-stone/40 flex items-center justify-between gap-2">
+                        <a
+                          href={`/u/${item.username}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-cloud-dark hover:text-slate-dark p-1 rounded-lg hover:bg-ivory-medium transition-colors"
+                          title="View Public Profile"
+                        >
+                          <ExternalLink className="w-4 h-4" />
+                        </a>
+
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleTogglePin(item.id, true)}
+                          disabled={togglePinMutation.isPending}
+                          leftIcon={<PinOff className="w-3.5 h-3.5" />}
+                          className="font-gothic uppercase tracking-wider text-[10px]"
+                        >
+                          Unpin from Feed
+                        </Button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Tab 2: Candidate Applications */}
+        {activeTab === "applications" && (
+          <div className="space-y-4 animate-in fade-in duration-150">
+            {isLoading ? (
+              <div className="p-8 bg-ivory-light rounded-2xl border border-stone text-center text-xs font-serif text-cloud-dark">
+                Loading candidate applications...
+              </div>
+            ) : candidateItems.length === 0 ? (
+              <div className="p-10 bg-ivory-light rounded-2xl border border-stone text-center space-y-2">
+                <h3 className="font-gothic font-bold text-sm uppercase text-slate-dark">
+                  No pending candidate submissions
+                </h3>
+                <p className="text-xs font-serif text-cloud-dark">
+                  When creators submit a featured spotlight request, their applications will appear here for review.
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                {candidateItems.map((item) => {
+                  const displayName = item.name || item.fullName || item.username;
+                  const headline = item.specialty || item.headline || "";
+
+                  return (
+                    <div
+                      key={item.id}
+                      className="bg-ivory-light rounded-2xl border border-stone p-5 space-y-4 flex flex-col justify-between transition-all"
+                    >
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3 min-w-0">
+                            <UserAvatar
+                              src={item.avatarUrl}
+                              alt={displayName}
+                              size="md"
+                              className="w-10 h-10 border border-stone shrink-0"
+                            />
+                            <div className="min-w-0">
+                              <h4 className="font-gothic text-sm font-bold uppercase tracking-wider text-slate-dark truncate">
+                                {displayName}
+                              </h4>
+                              <span className="font-serif text-xs text-cloud-dark block truncate">
+                                @{item.username}
+                              </span>
+                            </div>
+                          </div>
+
+                          <a
+                            href={`/u/${item.username}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-cloud-dark hover:text-slate-dark p-1 rounded-lg hover:bg-ivory-medium transition-colors shrink-0"
+                            title="View Public Profile"
+                          >
+                            <ExternalLink className="w-4 h-4" />
+                          </a>
+                        </div>
+
+                        <div>
+                          {headline ? (
+                            <h5 className="font-gothic text-xs font-bold uppercase text-slate-dark mb-1.5">
+                              {headline}
+                            </h5>
+                          ) : null}
+                          {item.message && (
+                            <p className="font-serif text-xs text-slate-dark/85 leading-relaxed bg-ivory-medium p-3 rounded-xl border border-stone/30">
+                              &ldquo;{item.message}&rdquo;
+                            </p>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="pt-3 border-t border-stone/50 flex items-center justify-between gap-2">
+                        <Button
+                          type="button"
+                          variant="clay"
+                          size="sm"
+                          onClick={() => handleTogglePin(item.id, false)}
+                          disabled={togglePinMutation.isPending}
+                          leftIcon={<Pin className="w-3.5 h-3.5" />}
+                          className="font-gothic uppercase tracking-wider text-[11px]"
+                        >
+                          Pin to Spotlight
+                        </Button>
+
+                        {item.status === "pending" && (
+                          <div className="flex gap-1.5">
+                            <button
+                              type="button"
+                              onClick={() => handleReject(item.id)}
+                              disabled={rejectMutation.isPending}
+                              className="p-1.5 rounded-lg text-red-600 hover:bg-red-500/10 cursor-pointer transition-colors"
+                              title="Decline"
+                            >
+                              <XCircle className="w-4 h-4" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleApprove(item.id)}
+                              disabled={approveMutation.isPending}
+                              className="p-1.5 rounded-lg text-[#2e7d32] hover:bg-[#2e7d32]/10 cursor-pointer transition-colors"
+                              title="Approve"
+                            >
+                              <CheckCircle2 className="w-4 h-4" />
+                            </button>
+                          </div>
                         )}
                       </div>
                     </div>
-
-                    <div className="pt-3 border-t border-stone/50 flex items-center justify-between gap-2">
-                      <Button
-                        type="button"
-                        variant="clay"
-                        size="sm"
-                        onClick={() => handleTogglePin(item.id, false)}
-                        disabled={togglePinMutation.isPending}
-                        leftIcon={<Pin className="w-3.5 h-3.5" />}
-                        className="font-gothic uppercase tracking-wider text-[11px]"
-                      >
-                        Pin to Spotlight
-                      </Button>
-
-                      {item.status === "pending" && (
-                        <div className="flex gap-1.5">
-                          <button
-                            type="button"
-                            onClick={() => handleReject(item.id)}
-                            disabled={rejectMutation.isPending}
-                            className="p-1.5 rounded-lg text-red-600 hover:bg-red-500/10 cursor-pointer"
-                            title="Decline"
-                          >
-                            <XCircle className="w-4 h-4" />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleApprove(item.id)}
-                            disabled={approveMutation.isPending}
-                            className="p-1.5 rounded-lg text-[#2e7d32] hover:bg-[#2e7d32]/10 cursor-pointer"
-                            title="Approve"
-                          >
-                            <CheckCircle2 className="w-4 h-4" />
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </AdminLayout>
   );

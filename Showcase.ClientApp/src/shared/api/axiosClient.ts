@@ -1,6 +1,5 @@
 import axios, { AxiosError, type InternalAxiosRequestConfig } from "axios";
-import { tokenStorage } from "./tokenStorage.ts";
-
+import { authSyncService } from "../services/authSyncService.ts";
 import type { ProblemDetails } from "../types/index.ts";
 
 export const API_BASE_URL = typeof window !== "undefined" ? import.meta.env.VITE_API_URL || "" : "";
@@ -119,44 +118,7 @@ export const axiosInstance = axios.create({
   timeout: 30000,
 });
 
-let isRefreshing = false;
-let failedQueue: Array<{
-  resolve: () => void;
-  reject: (error: unknown) => void;
-}> = [];
-
-const AUTH_SYNC_CHANNEL = "showcase_auth_sync";
-let authBroadcastChannel: BroadcastChannel | null = null;
-
-if (typeof window !== "undefined" && typeof BroadcastChannel !== "undefined") {
-  try {
-    authBroadcastChannel = new BroadcastChannel(AUTH_SYNC_CHANNEL);
-    authBroadcastChannel.onmessage = (event) => {
-      if (event.data === "refresh-success") {
-        processQueue(null);
-      } else if (event.data === "auth-expired") {
-        tokenStorage.clear();
-        window.dispatchEvent(new CustomEvent("showcase:auth-expired"));
-        processQueue(new Error("Session expired"));
-      }
-    };
-  } catch {
-    // BroadcastChannel unsupported or restricted in environment
-  }
-}
-
-function processQueue(error: unknown) {
-  failedQueue.forEach((prom) => {
-    if (error) {
-      prom.reject(error);
-    } else {
-      prom.resolve();
-    }
-  });
-  failedQueue = [];
-}
-
-// Response Interceptor: 401 Silent Refresh Queue via HttpOnly Cookies
+// Response Interceptor: 401 Silent Refresh Queue via HttpOnly Cookies & authSyncService
 axiosInstance.interceptors.response.use(
   (response) => response,
   async (error: AxiosError) => {
@@ -174,19 +136,17 @@ axiosInstance.interceptors.response.use(
       !originalRequest.url?.includes("/api/auth/login") &&
       !originalRequest.url?.includes("/api/auth/logout")
     ) {
-      if (isRefreshing) {
+      if (authSyncService.isRefreshing()) {
         return new Promise((resolve, reject) => {
-          failedQueue.push({
-            resolve: () => {
-              resolve(axiosInstance(originalRequest));
-            },
-            reject: (err: unknown) => reject(err),
-          });
+          authSyncService.enqueue(
+            () => resolve(axiosInstance(originalRequest)),
+            (err: unknown) => reject(err)
+          );
         });
       }
 
       originalRequest._retry = true;
-      isRefreshing = true;
+      authSyncService.setRefreshing(true);
 
       try {
         await axios.post(
@@ -198,19 +158,13 @@ axiosInstance.interceptors.response.use(
           }
         );
 
-        authBroadcastChannel?.postMessage("refresh-success");
-        processQueue(null);
+        authSyncService.notifyRefreshSuccess();
         return axiosInstance(originalRequest);
       } catch (refreshErr) {
-        tokenStorage.clear();
-        authBroadcastChannel?.postMessage("auth-expired");
-        if (typeof window !== "undefined") {
-          window.dispatchEvent(new CustomEvent("showcase:auth-expired"));
-        }
-        processQueue(refreshErr);
+        authSyncService.notifyAuthExpired(refreshErr);
         return Promise.reject(refreshErr);
       } finally {
-        isRefreshing = false;
+        authSyncService.setRefreshing(false);
       }
     }
 

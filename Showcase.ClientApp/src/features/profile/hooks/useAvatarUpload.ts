@@ -27,6 +27,8 @@ export function useAvatarUpload({ avatarUrl, onAvatarUpdated }: UseAvatarUploadO
   const removeAvatarMutation = useRemoveAvatarMutation();
 
   const [currentUrl, setCurrentUrl] = useState<string | null>(avatarUrl || null);
+  const [pendingImageSrc, setPendingImageSrc] = useState<string | null>(null);
+  const [isCropModalOpen, setIsCropModalOpen] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -62,32 +64,48 @@ export function useAvatarUpload({ avatarUrl, onAvatarUpdated }: UseAvatarUploadO
     };
   }, []);
 
-  const handleFileProcess = useCallback(
-    async (file: File) => {
+  const handleFileProcess = useCallback((file: File) => {
+    setErrorMessage(null);
+    setSuccessMessage(null);
+
+    const valError = validateAvatarFile(file);
+    if (valError) {
+      setErrorMessage(valError);
+      return;
+    }
+
+    if (createdObjectUrlRef.current) {
+      URL.revokeObjectURL(createdObjectUrlRef.current);
+    }
+    const objectUrl = URL.createObjectURL(file);
+    createdObjectUrlRef.current = objectUrl;
+
+    setPendingImageSrc(objectUrl);
+    setIsCropModalOpen(true);
+  }, []);
+
+  const handleConfirmCrop = useCallback(
+    async (croppedBlob: Blob) => {
       setErrorMessage(null);
       setSuccessMessage(null);
-
-      const valError = validateAvatarFile(file);
-      if (valError) {
-        setErrorMessage(valError);
-        return;
-      }
-
-      if (createdObjectUrlRef.current) {
-        URL.revokeObjectURL(createdObjectUrlRef.current);
-      }
-      const objectUrl = URL.createObjectURL(file);
-      createdObjectUrlRef.current = objectUrl;
-
-      setCurrentUrl(objectUrl);
       setUploadProgress(20);
+
+      const file = new File([croppedBlob], "avatar.jpg", { type: "image/jpeg" });
 
       try {
         const result = await avatarUploadMutation.mutateAsync(file);
         await refreshUser();
 
         setUploadProgress(100);
-        setSuccessMessage("Avatar uploaded successfully.");
+        setSuccessMessage("Avatar updated successfully.");
+        setIsCropModalOpen(false);
+        setPendingImageSrc(null);
+
+        if (createdObjectUrlRef.current) {
+          URL.revokeObjectURL(createdObjectUrlRef.current);
+          createdObjectUrlRef.current = null;
+        }
+
         onAvatarUpdated?.(result.publicUrl);
 
         safeTimeout(() => {
@@ -95,19 +113,30 @@ export function useAvatarUpload({ avatarUrl, onAvatarUpdated }: UseAvatarUploadO
         }, 600);
         safeTimeout(() => setSuccessMessage(null), 4000);
       } catch (err: unknown) {
-        setCurrentUrl(avatarUrl || null);
         const msg = extractApiErrorMessage(err, "Failed to upload avatar. Please try again.");
         setErrorMessage(msg);
         setUploadProgress(0);
       }
     },
-    [avatarUrl, avatarUploadMutation, onAvatarUpdated, refreshUser, safeTimeout]
+    [avatarUploadMutation, onAvatarUpdated, refreshUser, safeTimeout]
   );
+
+  const handleCancelCrop = useCallback(() => {
+    setIsCropModalOpen(false);
+    setPendingImageSrc(null);
+    if (createdObjectUrlRef.current) {
+      URL.revokeObjectURL(createdObjectUrlRef.current);
+      createdObjectUrlRef.current = null;
+    }
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  }, []);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      void handleFileProcess(file);
+      handleFileProcess(file);
     }
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
@@ -137,7 +166,7 @@ export function useAvatarUpload({ avatarUrl, onAvatarUpdated }: UseAvatarUploadO
 
     const file = e.dataTransfer.files?.[0];
     if (file) {
-      void handleFileProcess(file);
+      handleFileProcess(file);
     }
   };
 
@@ -173,6 +202,8 @@ export function useAvatarUpload({ avatarUrl, onAvatarUpdated }: UseAvatarUploadO
 
   return {
     currentUrl,
+    pendingImageSrc,
+    isCropModalOpen,
     isDragging,
     isUploading,
     isDeleting,
@@ -186,5 +217,7 @@ export function useAvatarUpload({ avatarUrl, onAvatarUpdated }: UseAvatarUploadO
     handleDrop,
     handleDelete,
     triggerPicker,
+    handleConfirmCrop,
+    handleCancelCrop,
   };
 }

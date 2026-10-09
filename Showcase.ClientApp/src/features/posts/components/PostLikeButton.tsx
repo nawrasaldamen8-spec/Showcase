@@ -1,5 +1,6 @@
 import { Heart } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { apiClient, queryKeys } from "@shared/api/index.ts";
@@ -44,6 +45,8 @@ export const PostLikeButton: React.FC<PostLikeButtonProps> = ({
 }) => {
   const queryClient = useQueryClient();
   const { isAuthenticated } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
   const [isLiked, setIsLiked] = useState<boolean>(initialLiked);
   const [count, setCount] = useState<number>(initialCount);
   const [isPopping, setIsPopping] = useState<boolean>(false);
@@ -124,7 +127,8 @@ export const PostLikeButton: React.FC<PostLikeButtonProps> = ({
     e.stopPropagation();
 
     if (!isAuthenticated) {
-      toast.warning("Please sign in to like this project.");
+      toast.info("Please sign in to like this project.");
+      navigate("/login", { state: { from: `${location.pathname}${location.search}` } });
       return;
     }
 

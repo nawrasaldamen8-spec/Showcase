@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { ExternalLink, ShieldCheck, XCircle } from "lucide-react";
 import { Button } from "@shared/components/Button.tsx";
+import { UserAvatar } from "@shared/components/media/index.ts";
 import { Modal } from "@shared/components/Modal.tsx";
 import { Textarea } from "@shared/components/Textarea.tsx";
 import type { VerificationRequestItem } from "@shared/types/index.ts";
@@ -53,17 +54,12 @@ export const VerificationReviewModal: React.FC<VerificationReviewModalProps> = (
         {/* Creator Info Card */}
         <div className="p-4 rounded-2xl bg-ivory-medium border border-stone flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            {request.avatarUrl ? (
-              <img
-                src={request.avatarUrl}
-                alt={displayName}
-                className="w-12 h-12 rounded-full object-cover border border-stone"
-              />
-            ) : (
-              <div className="w-12 h-12 rounded-full bg-slate-dark text-ivory-light flex items-center justify-center font-gothic text-base font-bold">
-                {(displayName || "?")[0]}
-              </div>
-            )}
+            <UserAvatar
+              src={request.avatarUrl}
+              alt={displayName}
+              size="md"
+              className="w-12 h-12 border border-stone"
+            />
             <div>
               <h4 className="font-gothic text-sm font-bold uppercase tracking-wider text-slate-dark">
                 {displayName}

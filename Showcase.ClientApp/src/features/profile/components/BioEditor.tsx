@@ -184,7 +184,7 @@ export const BioEditor: React.FC<BioEditorProps> = (props) => {
               isLoading={isSaving}
               disabled={!hasChanges && !saveSuccess}
               leftIcon={<Save className="h-4 w-4" />}
-              className={`w-full sm:w-auto justify-center ${hasChanges ? "shadow-sm text-ivory-light font-bold" : ""}`}
+              className={`w-full sm:w-auto justify-center ${hasChanges ? "text-ivory-light font-bold" : ""}`}
             >
               {saveSuccess ? "Profile Saved" : "Save Profile"}
             </Button>

@@ -9,7 +9,7 @@ public class Profile : BaseEntity
         [FeaturedStatus.None] = [FeaturedStatus.Pending, FeaturedStatus.Featured],
         [FeaturedStatus.Pending] = [FeaturedStatus.Featured, FeaturedStatus.Rejected, FeaturedStatus.None],
         [FeaturedStatus.Featured] = [FeaturedStatus.None],
-        [FeaturedStatus.Rejected] = [FeaturedStatus.Pending, FeaturedStatus.None]
+        [FeaturedStatus.Rejected] = [FeaturedStatus.Pending, FeaturedStatus.Featured, FeaturedStatus.None]
     };
 
     private readonly List<SocialLink> _socialLinks = new();
@@ -142,9 +142,6 @@ public class Profile : BaseEntity
 
     public Result RejectVerification()
     {
-        if (VerificationStatus is not VerificationStatus.Pending)
-            return ProfileErrors.VerificationNotPending(VerificationStatus);
-
         IsVerified = false;
         VerificationStatus = VerificationStatus.Rejected;
         Touch();
@@ -165,6 +162,11 @@ public class Profile : BaseEntity
         return Result.Success();
     }
 
+    public void AttachCareerVisibility(CareerVisibility visibility)
+    {
+        CareerVisibility = visibility ?? throw new ArgumentNullException(nameof(visibility));
+    }
+
     public void UpdateVisibility(
         bool experience,
         bool academics,
@@ -173,12 +175,14 @@ public class Profile : BaseEntity
         bool languages,
         bool achievements)
     {
+        CareerVisibility ??= new CareerVisibility(Id);
         CareerVisibility.Update(experience, academics, skills, credentials, languages, achievements);
         Touch();
     }
 
     public Result ToggleCareerSection(string section, bool isVisible)
     {
+        CareerVisibility ??= new CareerVisibility(Id);
         var result = CareerVisibility.ToggleSection(section, isVisible);
         if (result.IsSuccess)
         {

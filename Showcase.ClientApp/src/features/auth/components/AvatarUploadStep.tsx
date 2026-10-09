@@ -1,12 +1,14 @@
 import React, { useRef } from "react";
 import { Camera, Sparkles } from "lucide-react";
 import { Button } from "@shared/components/Button.tsx";
+import { UserAvatar } from "@shared/components/media/index.ts";
 
 export interface AvatarUploadStepProps {
   name: string;
   username: string;
   avatarUrl: string;
   onAvatarChange: (url: string) => void;
+  onFileSelect?: (file: File) => void;
   onComplete: () => void;
   onSkip: () => void;
   onBack: () => void;
@@ -18,6 +20,7 @@ export const AvatarUploadStep: React.FC<AvatarUploadStepProps> = ({
   username,
   avatarUrl,
   onAvatarChange,
+  onFileSelect,
   onComplete,
   onSkip,
   onBack,
@@ -25,11 +28,11 @@ export const AvatarUploadStep: React.FC<AvatarUploadStepProps> = ({
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const initialLetter = (name?.[0] || username?.[0] || "P").toUpperCase();
-
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
+    onFileSelect?.(file);
 
     const reader = new FileReader();
     reader.onload = (event) => {
@@ -47,24 +50,19 @@ export const AvatarUploadStep: React.FC<AvatarUploadStepProps> = ({
           Profile Avatar (Optional)
         </h3>
         <p className="font-serif text-xs text-cloud-dark">
-          Upload a portrait photo or use your default initial monogram.
+          Upload a portrait photo or continue with the default silhouette.
         </p>
       </div>
 
       {/* Main Avatar Preview */}
       <div className="flex flex-col items-center justify-center gap-3">
         <div className="relative group">
-          {avatarUrl ? (
-            <img
-              src={avatarUrl}
-              alt="Avatar preview"
-              className="w-24 h-24 sm:w-28 sm:h-28 rounded-full object-cover border-2 border-slate-dark shadow-none"
-            />
-          ) : (
-            <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-slate-dark text-ivory-light flex items-center justify-center font-gothic text-3xl font-extrabold uppercase border-2 border-stone">
-              {initialLetter}
-            </div>
-          )}
+          <UserAvatar
+            src={avatarUrl}
+            alt="Avatar preview"
+            size="2xl"
+            className="border-2 border-stone shadow-none"
+          />
 
           <button
             type="button"
@@ -99,32 +97,34 @@ export const AvatarUploadStep: React.FC<AvatarUploadStepProps> = ({
             size="lg"
             onClick={onBack}
             disabled={isLoading}
-            className="font-gothic uppercase tracking-wider text-xs"
+            className="flex-1 font-gothic uppercase tracking-wider text-xs"
           >
             Back
           </Button>
+
           <Button
             type="button"
             variant="clay"
             size="lg"
-            fullWidth
-            isLoading={isLoading}
             onClick={onComplete}
-            leftIcon={<Sparkles className="w-4 h-4" />}
-            className="font-gothic uppercase tracking-wider text-xs justify-center"
+            isLoading={isLoading}
+            leftIcon={<Sparkles className="h-4 w-4" />}
+            className="flex-1 font-gothic uppercase tracking-wider text-xs shadow-none"
           >
-            Complete Registration
+            {avatarUrl ? "Complete Profile" : "Create Profile"}
           </Button>
         </div>
 
-        <button
-          type="button"
-          onClick={onSkip}
-          disabled={isLoading}
-          className="w-full py-2 font-serif text-xs text-cloud-dark hover:text-slate-dark transition-colors cursor-pointer"
-        >
-          Skip for now
-        </button>
+        {!avatarUrl && (
+          <button
+            type="button"
+            onClick={onSkip}
+            disabled={isLoading}
+            className="font-serif text-xs text-cloud-dark hover:text-slate-dark underline underline-offset-4 cursor-pointer transition-colors"
+          >
+            Skip for now, use default avatar
+          </button>
+        )}
       </div>
     </div>
   );

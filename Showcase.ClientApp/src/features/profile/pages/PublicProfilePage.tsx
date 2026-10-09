@@ -141,9 +141,9 @@ export const PublicProfilePage: React.FC = () => {
           No profile exists for &ldquo;@{username}&rdquo; on {APP_NAME}.
         </p>
         <div className="mt-8">
-          <Link to="/studio">
+          <Link to={currentUser ? "/studio" : "/"}>
             <Button variant="slate" size="md" leftIcon={<ArrowLeft className="h-4 w-4" />}>
-              Back to Studio
+              {currentUser ? "Back to Studio" : "Back to Home"}
             </Button>
           </Link>
         </div>
@@ -159,9 +159,9 @@ export const PublicProfilePage: React.FC = () => {
             Unable to load profile. Please try again.
           </p>
           <div className="mt-6 flex justify-center gap-4">
-            <Link to="/studio">
+            <Link to={currentUser ? "/studio" : "/"}>
               <Button variant="outline" size="sm">
-                Back to Studio
+                {currentUser ? "Back to Studio" : "Back to Home"}
               </Button>
             </Link>
             <Button
@@ -236,7 +236,7 @@ export const PublicProfilePage: React.FC = () => {
               }}
               aria-selected={isActive}
               role="tab"
-              className={`font-gothic text-[13px] font-semibold uppercase tracking-[0.10em] pb-3 whitespace-nowrap transition-colors relative cursor-pointer border-b-2 flex items-center gap-2 ${
+              className={`font-gothic text-[13px] font-semibold uppercase tracking-[0.10em] pb-3 whitespace-nowrap transition-colors relative cursor-pointer border-b -mb-[1px] flex items-center gap-2 ${
                 isActive
                   ? "text-slate-dark border-slate-dark"
                   : "text-cloud-dark border-transparent hover:text-slate-dark hover:border-stone"

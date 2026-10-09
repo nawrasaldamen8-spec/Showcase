@@ -44,23 +44,27 @@ public class VerificationRequest : BaseEntity
 
     public Result Approve(string? adminNotes = null)
     {
-        if (Status != VerificationStatus.Pending)
-            return VerificationRequestErrors.NotPending;
-
         Status = VerificationStatus.Verified;
-        AdminNotes = string.IsNullOrWhiteSpace(adminNotes) ? null : adminNotes.Trim();
+        AdminNotes = string.IsNullOrWhiteSpace(adminNotes) ? AdminNotes : adminNotes.Trim();
         ReviewedAtUtc = DateTime.UtcNow;
         return Result.Success();
     }
 
     public Result Reject(string? adminNotes = null)
     {
-        if (Status != VerificationStatus.Pending)
-            return VerificationRequestErrors.NotPending;
-
         Status = VerificationStatus.Rejected;
-        AdminNotes = string.IsNullOrWhiteSpace(adminNotes) ? null : adminNotes.Trim();
+        AdminNotes = string.IsNullOrWhiteSpace(adminNotes) ? AdminNotes : adminNotes.Trim();
         ReviewedAtUtc = DateTime.UtcNow;
         return Result.Success();
+    }
+
+    public void SetStatus(VerificationStatus status, string? adminNotes = null)
+    {
+        Status = status;
+        if (!string.IsNullOrWhiteSpace(adminNotes))
+        {
+            AdminNotes = adminNotes.Trim();
+        }
+        ReviewedAtUtc = DateTime.UtcNow;
     }
 }

@@ -79,7 +79,9 @@ public class GetUsersQueryHandler(
                 x.PostsCount,
                 x.PostsCount * ApproximateBytesPerPost,
                 x.Roles.ToList(),
-                x.Profile.CreatedAt))
+                x.Profile.CreatedAt,
+                x.Profile.FeaturedStatus == FeaturedStatus.Featured,
+                x.Profile.FeaturedStatus.ToString().ToLowerInvariant()))
             .ToList();
 
         return list;

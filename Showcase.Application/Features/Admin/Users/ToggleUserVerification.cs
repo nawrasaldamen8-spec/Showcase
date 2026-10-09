@@ -37,6 +37,23 @@ public class ToggleUserVerificationCommandHandler(
         }
 
         profile.MarkVerified(request.IsVerified);
+
+        // Sync or create the corresponding VerificationRequest record
+        var verificationReq = await _context.VerificationRequests
+            .OrderByDescending(v => v.CreatedAtUtc)
+            .FirstOrDefaultAsync(v => v.UserId == request.UserId, ct);
+
+        if (verificationReq is not null)
+        {
+            verificationReq.SetStatus(request.IsVerified ? VerificationStatus.Verified : VerificationStatus.None, request.Note);
+        }
+        else if (request.IsVerified)
+        {
+            var newReq = new VerificationRequest(request.UserId, "Directly verified by administrator.");
+            newReq.SetStatus(VerificationStatus.Verified, request.Note);
+            _context.VerificationRequests.Add(newReq);
+        }
+
         await _context.SaveChangesAsync(ct);
 
         INotification notificationEvent = request.IsVerified

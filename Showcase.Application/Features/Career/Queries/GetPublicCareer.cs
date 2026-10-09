@@ -57,6 +57,10 @@ public class GetPublicCareerQueryHandler(
         }
 
         var vis = profile.CareerVisibility;
+        if (vis is null)
+        {
+            vis = await _context.CareerVisibilities.FirstOrDefaultAsync(v => v.ProfileId == profile.Id, ct);
+        }
         var visibilityDto = vis is not null
             ? new CareerVisibilityDto(vis.Experience, vis.Academics, vis.Skills, vis.Credentials, vis.Languages, vis.Achievements)
             : new CareerVisibilityDto(true, true, true, true, true, true);

@@ -5,7 +5,7 @@ const VARIANT_TRANSFORMS: Record<ImageVariant, string> = {
   feed: "f_auto,q_auto,w_1000,c_limit",
   detail: "f_auto,q_auto,w_1600,c_limit",
   large: "f_auto,q_auto,w_2400,c_limit",
-  avatar: "f_auto,q_auto,w_512,h_512,c_fill,g_face",
+  avatar: "f_auto,q_auto,w_512,h_512,c_limit",
   blur: "f_auto,q_auto:eco,w_40,e_blur:1000",
   raw: "f_auto,q_auto",
 };

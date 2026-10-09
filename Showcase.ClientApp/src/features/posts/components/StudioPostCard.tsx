@@ -148,7 +148,7 @@ export const StudioPostCard: React.FC<StudioPostCardProps> = ({
           </button>
 
           {isMenuOpen && (
-            <div className="absolute right-0 top-full mt-1.5 w-48 bg-ivory-light border border-stone rounded-xl shadow-lg p-1.5 z-30 flex flex-col gap-0.5 animate-in fade-in zoom-in-95">
+            <div className="absolute right-0 top-full mt-1.5 w-48 bg-ivory-light border border-stone rounded-xl p-1.5 z-30 flex flex-col gap-0.5 animate-in fade-in zoom-in-95">
               <Link
                 to={`/posts/${post.id}`}
                 state={{ from: "/studio", fromLabel: "Studio" }}

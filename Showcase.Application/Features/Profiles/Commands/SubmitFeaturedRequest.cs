@@ -25,6 +25,9 @@ public class SubmitFeaturedRequestCommandHandler(
         if (profile is null)
             return ProfileErrors.NotFoundForUser(userId);
 
+        if (profile.FeaturedStatus == FeaturedStatus.Pending)
+            return FeaturedRequestErrors.AlreadyPending;
+
         var transitionResult = profile.SetFeaturedStatus(FeaturedStatus.Pending);
         if (transitionResult.IsFailure)
             return transitionResult;

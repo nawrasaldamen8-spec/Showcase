@@ -6,9 +6,11 @@ import {
   Search,
   Shield,
   ShieldCheck,
+  Sparkles,
   UserCheck,
 } from "lucide-react";
 import { Input } from "@shared/components/Input.tsx";
+import { UserAvatar } from "@shared/components/media/index.ts";
 import { VerifiedBadge } from "@shared/components/VerifiedBadge.tsx";
 import { formatBytes } from "@shared/utils/format.ts";
 import type { AdminUserListItem, UserRole } from "@shared/types/index.ts";
@@ -19,6 +21,7 @@ import { BanUserModal } from "../components/BanUserModal.tsx";
 import {
   useAdminUsersQuery,
   useBanUserMutation,
+  useToggleUserFeaturedMutation,
   useToggleUserVerificationMutation,
   useUnbanUserMutation,
   useUpdateUserRoleMutation,
@@ -43,6 +46,15 @@ export const AdminUsersPage: React.FC = () => {
   const unbanMutation = useUnbanUserMutation();
   const updateRoleMutation = useUpdateUserRoleMutation();
   const toggleVerificationMutation = useToggleUserVerificationMutation();
+  const toggleFeaturedMutation = useToggleUserFeaturedMutation();
+
+  const handleToggleFeatured = async (user: AdminUserListItem) => {
+    const isCurrentlyFeatured = user.isFeatured ?? user.featuredStatus === "featured";
+    await toggleFeaturedMutation.mutateAsync({
+      userId: user.id,
+      isFeatured: !isCurrentlyFeatured,
+    });
+  };
 
   const handleConfirmBan = async (userId: string, reason: string) => {
     await banMutation.mutateAsync({ userId, reason });
@@ -84,17 +96,12 @@ export const AdminUsersPage: React.FC = () => {
       header: "Creator / Account",
       render: (user) => (
         <div className="flex items-center gap-3">
-          {user.avatarUrl ? (
-            <img
-              src={user.avatarUrl}
-              alt={user.username}
-              className="w-9 h-9 rounded-full object-cover border border-stone"
-            />
-          ) : (
-            <div className="w-9 h-9 rounded-full bg-slate-dark text-ivory-light flex items-center justify-center font-gothic text-xs font-bold uppercase">
-              {user.name?.[0] || user.username[0]}
-            </div>
-          )}
+          <UserAvatar
+            src={user.avatarUrl}
+            alt={user.name || user.username}
+            size="sm"
+            className="w-9 h-9 border border-stone"
+          />
           <div>
             <div className="flex items-center gap-1.5">
               <span className="font-gothic font-bold uppercase tracking-wider text-slate-dark">
@@ -189,6 +196,20 @@ export const AdminUsersPage: React.FC = () => {
             title={user.isVerified ? "Revoke Verification Badge" : "Grant Verification Badge"}
           >
             <ShieldCheck className="w-4 h-4" />
+          </button>
+
+          <button
+            type="button"
+            onClick={() => handleToggleFeatured(user)}
+            disabled={toggleFeaturedMutation.isPending}
+            className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
+              (user.isFeatured ?? user.featuredStatus === "featured")
+                ? "text-clay hover:bg-clay/10"
+                : "text-cloud-dark hover:text-clay hover:bg-[#e8e5dc]"
+            }`}
+            title={(user.isFeatured ?? user.featuredStatus === "featured") ? "Unpin from Featured Spotlight" : "Pin to Featured Spotlight"}
+          >
+            <Sparkles className="w-4 h-4" />
           </button>
 
           <button

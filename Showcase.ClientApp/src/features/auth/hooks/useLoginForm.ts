@@ -41,12 +41,15 @@ export function useLoginForm() {
     setIsLoading(true);
     try {
       await login({ emailOrUsername: identifier, password });
-      toast.success("Welcome back to Pority Studio.");
+      toast.success("Welcome back to Pority.");
       
-      const fromState = location.state as { from?: { pathname: string; search?: string } } | null;
-      const targetPath = fromState?.from?.pathname
-        ? `${fromState.from.pathname}${fromState.from.search || ""}`
-        : "/studio";
+      const fromState = location.state as { from?: { pathname: string; search?: string } | string } | null;
+      let targetPath = "/feed";
+      if (typeof fromState?.from === "string") {
+        targetPath = fromState.from;
+      } else if (fromState?.from?.pathname) {
+        targetPath = `${fromState.from.pathname}${fromState.from.search || ""}`;
+      }
 
       navigate(targetPath, { replace: true });
     } catch (err: unknown) {
@@ -59,10 +62,13 @@ export function useLoginForm() {
 
   const handleGoogleLogin = () => {
     setIsGoogleLoading(true);
-    const fromState = location.state as { from?: { pathname: string; search?: string } } | null;
-    const targetPath = fromState?.from?.pathname
-      ? `${fromState.from.pathname}${fromState.from.search || ""}`
-      : "/studio";
+    const fromState = location.state as { from?: { pathname: string; search?: string } | string } | null;
+    let targetPath = "/feed";
+    if (typeof fromState?.from === "string") {
+      targetPath = fromState.from;
+    } else if (fromState?.from?.pathname) {
+      targetPath = `${fromState.from.pathname}${fromState.from.search || ""}`;
+    }
 
     window.location.href = `/api/auth/google?returnUrl=${encodeURIComponent(targetPath)}`;
   };

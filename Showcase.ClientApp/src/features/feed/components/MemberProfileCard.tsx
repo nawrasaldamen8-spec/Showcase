@@ -1,8 +1,8 @@
-import { ArrowRight, User as UserIcon } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import React from "react";
 import { Link } from "react-router-dom";
 import { Badge } from "@shared/components/Badge.tsx";
-import { ProgressiveImage } from "@shared/components/ProgressiveImage.tsx";
+import { UserAvatar } from "@shared/components/media/index.ts";
 import { VerifiedBadge } from "@shared/components/VerifiedBadge.tsx";
 import type { Profile, ProfileDetailsResponse, PublicProfileResponse } from "@shared/types/index.ts";
 
@@ -22,18 +22,12 @@ export const MemberProfileCard: React.FC<MemberProfileCardProps> = ({
       <div>
         {/* Header: Avatar, Name, Handle & Specialty */}
         <div className="flex items-start gap-3.5 mb-4">
-          {profile.avatarUrl ? (
-            <ProgressiveImage
-              src={profile.avatarUrl}
-              alt={profile.name}
-              containerClassName="w-12 h-12 rounded-full border border-stone/80 group-hover:border-clay transition-colors shrink-0"
-              className="w-full h-full object-cover"
-            />
-          ) : (
-            <div className="w-12 h-12 rounded-full bg-ivory-medium border border-stone/80 flex items-center justify-center text-cloud-dark shrink-0">
-              <UserIcon className="w-5 h-5" />
-            </div>
-          )}
+          <UserAvatar
+            src={profile.avatarUrl}
+            alt={profile.name}
+            size="md"
+            className="w-12 h-12 border border-stone/80 group-hover:border-clay transition-colors shrink-0"
+          />
 
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-1.5 min-w-0">

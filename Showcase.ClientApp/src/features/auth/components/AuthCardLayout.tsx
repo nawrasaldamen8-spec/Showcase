@@ -21,7 +21,7 @@ export const AuthCardLayout: React.FC<AuthCardLayoutProps> = ({
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 min-h-[85vh] selection:bg-clay selection:text-ivory-light">
       {/* Brand Navigation Header */}
       <div className="mb-6 flex items-center justify-between">
-        <Link to="/studio" className="inline-block text-decoration-none group" aria-label="Pority Home">
+        <Link to="/feed" className="inline-block text-decoration-none group" aria-label="Pority Home">
           <BrandLogo
             variant="full"
             theme="light"

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import { Eye, EyeOff, Lock, LogIn, Sparkles, User } from "lucide-react";
+import { Eye, EyeOff, Lock, LogIn, User } from "lucide-react";
 import { BrandLogo } from "@shared/components/BrandLogo.tsx";
 import { Button } from "@shared/components/Button.tsx";
 import { Input } from "@shared/components/Input.tsx";
@@ -22,10 +22,10 @@ export const LoginPage: React.FC = () => {
   } = useLoginForm();
 
   return (
-    <div className="min-h-[90vh] flex flex-col justify-center py-4 sm:py-12 px-4 sm:px-6 lg:px-8 selection:bg-clay selection:text-ivory-light">
-      <div className="max-w-6xl w-full mx-auto grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-16 items-center">
+    <div className="min-h-[90vh] flex flex-col justify-center py-4 sm:py-12 px-4 sm:px-6 lg:px-8 selection:bg-clay selection:text-ivory-light bg-[url(/branding/pority-logo.svg)] bg-cover bg-center lg:mt-[43px]">
+      <div className="max-w-6xl w-full mx-auto grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-16 items-center lg:ml-[93.005px]">
         {/* Left Column: Warm Gallery Editorial Showcase (Desktop prominent, Mobile concise) */}
-        <div className="lg:col-span-7 space-y-3 sm:space-y-6">
+        <div className="lg:col-span-7 space-y-3 sm:space-y-6 lg:ml-[-49px]">
           <div className="inline-block">
             <Link to="/" className="inline-block text-decoration-none group" aria-label="Pority Home">
               <BrandLogo
@@ -39,48 +39,19 @@ export const LoginPage: React.FC = () => {
           </div>
 
           <div className="space-y-2 sm:space-y-4">
-            <div className="hidden sm:inline-flex items-center gap-2 px-3 py-1 rounded-full border border-stone bg-ivory-light">
-              <Sparkles className="w-3.5 h-3.5 text-clay" />
-              <span className="font-gothic text-[11px] font-bold uppercase tracking-[0.16em] text-slate-dark">
-                The Architect&apos;s Exhibition Studio
-              </span>
-            </div>
 
-            <h1 className="font-gothic font-extrabold text-2xl sm:text-5xl lg:text-6xl uppercase tracking-[-0.03em] text-slate-dark leading-[1.08] sm:leading-[1.05]">
+            <h1 className="font-gothic font-extrabold text-2xl sm:text-5xl lg:text-[50px]/none uppercase tracking-[-0.03em] text-[#e6e3da] leading-[1.08] sm:leading-[1.05] max-md:ml-0 max-md:text-right max-md:mt-4 w-[603px] -ml-px lg:w-103 lg:ml-[-3px] max-md:w-[355px] max-md:h-3.5">
               Curate Your Built Narrative.
             </h1>
 
-            <p className="font-serif text-xs sm:text-lg text-slate-dark/75 leading-relaxed max-w-xl">
-              An unhurried digital gallery for architectural practices, spatial researchers, and creators.
-            </p>
           </div>
 
           {/* Desktop-only Editorial Features */}
-          <div className="hidden lg:grid grid-cols-3 gap-4 pt-4 border-t border-stone/50 max-w-xl">
-            <div className="space-y-1">
-              <span className="font-gothic text-[11px] font-bold uppercase tracking-wider text-cloud-dark block">
-                01 &bull; Works
-              </span>
-              <p className="font-serif text-xs text-slate-dark/80">Edge-to-edge project monographs.</p>
-            </div>
-            <div className="space-y-1">
-              <span className="font-gothic text-[11px] font-bold uppercase tracking-wider text-cloud-dark block">
-                02 &bull; Career
-              </span>
-              <p className="font-serif text-xs text-slate-dark/80">Granular milestones &amp; credentials.</p>
-            </div>
-            <div className="space-y-1">
-              <span className="font-gothic text-[11px] font-bold uppercase tracking-wider text-cloud-dark block">
-                03 &bull; Verified
-              </span>
-              <p className="font-serif text-xs text-slate-dark/80">Peer-reviewed creator community.</p>
-            </div>
-          </div>
         </div>
 
         {/* Right Column: Focused Card (Mobile & Desktop ergonomic) */}
         <div className="lg:col-span-5 w-full max-w-md mx-auto">
-          <div className="bg-ivory-light rounded-2xl sm:rounded-card border border-stone/60 p-5 sm:p-8 space-y-4 sm:space-y-6 shadow-none">
+          <div className="bg-ivory-light rounded-2xl sm:rounded-card border border-stone/60 p-5 sm:p-8 space-y-4 sm:space-y-6 shadow-none lg:-ml-px">
             <header className="border-b border-stone/50 pb-3 sm:pb-5 space-y-1">
               <span className="font-gothic text-[11px] font-bold uppercase tracking-[0.16em] text-clay block">
                 Studio Access

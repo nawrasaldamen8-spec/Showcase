@@ -127,7 +127,13 @@ export const ProfileCareerTab: React.FC<ProfileCareerTabProps> = ({
             </button>
           </div>
 
-          {selectedSection === "experience" && careerData && (
+          {selectedSection && !careerData?.visibility?.[selectedSection] ? (
+            <div className="p-8 text-center bg-ivory-light rounded-card border border-stone/60 text-cloud-dark font-serif max-w-4xl">
+              This career section is private.
+            </div>
+          ) : null}
+
+          {selectedSection === "experience" && careerData && Boolean(careerData.visibility.experience) && (
             <section aria-label="Experience" className="space-y-6 max-w-4xl">
               <div className="mb-6">
                 <h2 className="font-gothic text-2xl font-bold uppercase tracking-tight text-slate-dark">
@@ -142,7 +148,7 @@ export const ProfileCareerTab: React.FC<ProfileCareerTabProps> = ({
             </section>
           )}
 
-          {selectedSection === "academics" && careerData && (
+          {selectedSection === "academics" && careerData && Boolean(careerData.visibility.academics) && (
             <section aria-label="Academics" className="space-y-6 max-w-4xl">
               <div className="mb-6">
                 <h2 className="font-gothic text-2xl font-bold uppercase tracking-tight text-slate-dark">
@@ -157,7 +163,7 @@ export const ProfileCareerTab: React.FC<ProfileCareerTabProps> = ({
             </section>
           )}
 
-          {selectedSection === "skills" && careerData && (
+          {selectedSection === "skills" && careerData && Boolean(careerData.visibility.skills) && (
             <section aria-label="Skills" className="max-w-5xl">
               <div className="mb-6">
                 <h2 className="font-gothic text-2xl font-bold uppercase tracking-tight text-slate-dark">
@@ -172,7 +178,7 @@ export const ProfileCareerTab: React.FC<ProfileCareerTabProps> = ({
             </section>
           )}
 
-          {selectedSection === "credentials" && careerData && (
+          {selectedSection === "credentials" && careerData && Boolean(careerData.visibility.credentials) && (
             <section aria-label="Credentials" className="max-w-5xl">
               <div className="mb-6">
                 <h2 className="font-gothic text-2xl font-bold uppercase tracking-tight text-slate-dark">
@@ -187,7 +193,7 @@ export const ProfileCareerTab: React.FC<ProfileCareerTabProps> = ({
             </section>
           )}
 
-          {selectedSection === "languages" && careerData && (
+          {selectedSection === "languages" && careerData && Boolean(careerData.visibility.languages) && (
             <section aria-label="Languages" className="max-w-3xl">
               <div className="mb-6">
                 <h2 className="font-gothic text-2xl font-bold uppercase tracking-tight text-slate-dark">
@@ -202,7 +208,7 @@ export const ProfileCareerTab: React.FC<ProfileCareerTabProps> = ({
             </section>
           )}
 
-          {selectedSection === "achievements" && careerData && (
+          {selectedSection === "achievements" && careerData && Boolean(careerData.visibility.achievements) && (
             <section aria-label="Achievements" className="space-y-6 max-w-4xl">
               <div className="mb-6">
                 <h2 className="font-gothic text-2xl font-bold uppercase tracking-tight text-slate-dark">

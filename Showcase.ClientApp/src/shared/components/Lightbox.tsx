@@ -360,7 +360,7 @@ const LightboxDialog: React.FC<LightboxProps> = ({
       <div className="absolute top-4 inset-x-4 sm:top-6 sm:inset-x-6 z-20 flex items-center justify-between pointer-events-none gap-2">
         {/* Left: Image Counter (if multiple) */}
         {total > 1 ? (
-          <div className="bg-ivory-light/15 backdrop-blur-md text-ivory-light border border-white/10 px-3.5 py-1.5 rounded-full font-gothic text-xs font-semibold uppercase tracking-wider shadow-sm pointer-events-auto">
+          <div className="bg-ivory-light/15 backdrop-blur-md text-ivory-light border border-white/10 px-3.5 py-1.5 rounded-full font-gothic text-xs font-semibold uppercase tracking-wider pointer-events-auto">
             <span>Image {currentIndex + 1} of {total}</span>
           </div>
         ) : (
@@ -368,7 +368,7 @@ const LightboxDialog: React.FC<LightboxProps> = ({
         )}
 
         {/* Center: Zoom Controls Toolbar Pill */}
-        <div className="flex items-center gap-1 bg-ivory-light/15 backdrop-blur-md text-ivory-light border border-white/10 px-2 py-1 rounded-full font-gothic text-xs font-semibold shadow-sm pointer-events-auto">
+        <div className="flex items-center gap-1 bg-ivory-light/15 backdrop-blur-md text-ivory-light border border-white/10 px-2 py-1 rounded-full font-gothic text-xs font-semibold pointer-events-auto">
           <button
             type="button"
             onClick={(e) => {
@@ -479,7 +479,7 @@ const LightboxDialog: React.FC<LightboxProps> = ({
             cursor: scale > 1 ? (isDragging ? "grabbing" : "grab") : "zoom-in",
             willChange: "transform",
           }}
-          className="max-h-[85vh] max-w-[92vw] object-contain rounded-xl select-none shadow-2xl animate-in fade-in"
+          className="max-h-[85vh] max-w-[92vw] object-contain rounded-xl select-none animate-in fade-in"
         />
       </div>
 
