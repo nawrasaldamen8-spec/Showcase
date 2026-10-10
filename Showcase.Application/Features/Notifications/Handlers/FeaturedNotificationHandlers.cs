@@ -12,11 +12,15 @@ public class FeaturedApprovedNotificationHandler(
 
     public async Task Handle(FeaturedApprovedNotificationEvent notification, CancellationToken ct)
     {
+        var message = !string.IsNullOrWhiteSpace(notification.Note)
+            ? notification.Note.Trim()
+            : "Your profile has been featured!";
+
         var item = new Notification(
             notification.TargetUserId,
             NotificationType.FeaturedApproved,
             "Featured Status Approved",
-            notification.Note ?? "Your profile has been featured!");
+            message);
 
         await _context.SaveAndPublishNotificationAsync(_realtimeNotifier, item, ct);
     }
@@ -31,11 +35,15 @@ public class FeaturedRejectedNotificationHandler(
 
     public async Task Handle(FeaturedRejectedNotificationEvent notification, CancellationToken ct)
     {
+        var message = !string.IsNullOrWhiteSpace(notification.Note)
+            ? notification.Note.Trim()
+            : "Your featured request was reviewed.";
+
         var item = new Notification(
             notification.TargetUserId,
             NotificationType.FeaturedRejected,
             "Featured Status Update",
-            notification.Note ?? "Your featured request was reviewed.");
+            message);
 
         await _context.SaveAndPublishNotificationAsync(_realtimeNotifier, item, ct);
     }

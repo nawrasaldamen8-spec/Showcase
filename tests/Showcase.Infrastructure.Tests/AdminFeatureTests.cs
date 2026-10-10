@@ -88,4 +88,40 @@ public class AdminFeatureTests
         Assert.Equal(VerificationStatus.Verified, req.Status);
         Assert.True(profile.IsVerified);
     }
+
+    [Fact]
+    public async Task VerificationNotificationHandlers_Should_Fallback_To_Default_Message_When_Note_Is_Empty()
+    {
+        var dbContext = CreateInMemoryDbContext();
+        var realtimeNotifier = new Mock<Showcase.Application.Common.Interfaces.IRealtimeNotifier>();
+
+        var approvedHandler = new Showcase.Application.Features.Notifications.Handlers.VerificationApprovedNotificationHandler(dbContext, realtimeNotifier.Object);
+        await approvedHandler.Handle(new Showcase.Application.Features.Notifications.Events.VerificationApprovedNotificationEvent("u1", ""), CancellationToken.None);
+
+        var rejectedHandler = new Showcase.Application.Features.Notifications.Handlers.VerificationRejectedNotificationHandler(dbContext, realtimeNotifier.Object);
+        await rejectedHandler.Handle(new Showcase.Application.Features.Notifications.Events.VerificationRejectedNotificationEvent("u1", "   "), CancellationToken.None);
+
+        var notifications = await dbContext.Notifications.ToListAsync();
+        Assert.Equal(2, notifications.Count);
+        Assert.Equal("Your verification request has been approved!", notifications[0].Message);
+        Assert.Equal("Your verification request could not be approved at this time.", notifications[1].Message);
+    }
+
+    [Fact]
+    public async Task FeaturedNotificationHandlers_Should_Fallback_To_Default_Message_When_Note_Is_Empty()
+    {
+        var dbContext = CreateInMemoryDbContext();
+        var realtimeNotifier = new Mock<Showcase.Application.Common.Interfaces.IRealtimeNotifier>();
+
+        var approvedHandler = new Showcase.Application.Features.Notifications.Handlers.FeaturedApprovedNotificationHandler(dbContext, realtimeNotifier.Object);
+        await approvedHandler.Handle(new Showcase.Application.Features.Notifications.Events.FeaturedApprovedNotificationEvent("u1", ""), CancellationToken.None);
+
+        var rejectedHandler = new Showcase.Application.Features.Notifications.Handlers.FeaturedRejectedNotificationHandler(dbContext, realtimeNotifier.Object);
+        await rejectedHandler.Handle(new Showcase.Application.Features.Notifications.Events.FeaturedRejectedNotificationEvent("u1", null), CancellationToken.None);
+
+        var notifications = await dbContext.Notifications.ToListAsync();
+        Assert.Equal(2, notifications.Count);
+        Assert.Equal("Your profile has been featured!", notifications[0].Message);
+        Assert.Equal("Your featured request was reviewed.", notifications[1].Message);
+    }
 }

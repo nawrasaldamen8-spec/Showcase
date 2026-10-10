@@ -45,7 +45,7 @@ public class ApproveVerificationRequestCommandHandler(
             "VerificationRequest",
             request.RequestId.ToString(),
             profile?.Name ?? verificationReq.UserId,
-            request.Note ?? "Verification request approved",
+            !string.IsNullOrWhiteSpace(request.Note) ? request.Note.Trim() : "Verification badge granted",
             ct: ct);
 
         return Result.Success();

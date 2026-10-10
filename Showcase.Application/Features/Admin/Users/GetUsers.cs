@@ -38,11 +38,18 @@ public class GetUsersQueryHandler(
             ? usersResult.Value
             : new Dictionary<string, UserIdentityDetails>();
 
-        // 2. Batch Post Counts (Eliminates N+1 query)
+        // 2. Batch Post & Image Counts (Eliminates N+1 query)
         var profileIds = profiles.Select(p => p.Id).ToList();
         var postCounts = await _context.Posts
             .Where(p => profileIds.Contains(p.ProfileId) && p.Status == PostStatus.Published)
             .GroupBy(p => p.ProfileId)
+            .Select(g => new { ProfileId = g.Key, Count = g.Count() })
+            .ToDictionaryAsync(x => x.ProfileId, x => x.Count, ct);
+
+        var imageCounts = await _context.PostImages
+            .Join(_context.Posts, img => img.PostId, post => post.Id, (img, post) => new { img, post.ProfileId })
+            .Where(x => profileIds.Contains(x.ProfileId))
+            .GroupBy(x => x.ProfileId)
             .Select(g => new { ProfileId = g.Key, Count = g.Count() })
             .ToDictionaryAsync(x => x.ProfileId, x => x.Count, ct);
 
@@ -55,6 +62,9 @@ public class GetUsersQueryHandler(
                 usersMap.TryGetValue(profile.UserId, out var user);
                 var roles = user?.Roles?.ToList() ?? new List<string>();
                 var postsCount = postCounts.GetValueOrDefault(profile.Id, 0);
+                var totalImages = imageCounts.GetValueOrDefault(profile.Id, 0);
+                var avatarBytes = profile.AvatarKey is not null ? 350_000L : 0L;
+                var storageUsedBytes = (totalImages * ApproximateBytesPerPost) + avatarBytes;
                 var avatarUrl = profile.AvatarKey is not null ? _storageService.GetPublicUrl(profile.AvatarKey.Value) : null;
 
                 return new
@@ -63,6 +73,7 @@ public class GetUsersQueryHandler(
                     User = user,
                     Roles = roles,
                     PostsCount = postsCount,
+                    StorageUsedBytes = storageUsedBytes,
                     AvatarUrl = avatarUrl
                 };
             })
@@ -77,7 +88,7 @@ public class GetUsersQueryHandler(
                 x.Profile.IsBanned ? "suspended" : "active",
                 x.Profile.BanReason,
                 x.PostsCount,
-                x.PostsCount * ApproximateBytesPerPost,
+                x.StorageUsedBytes,
                 x.Roles.ToList(),
                 x.Profile.CreatedAt,
                 x.Profile.FeaturedStatus == FeaturedStatus.Featured,

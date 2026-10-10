@@ -67,7 +67,7 @@ public class ToggleUserVerificationCommandHandler(
             "User",
             request.UserId,
             profile.Name,
-            request.Note ?? (request.IsVerified ? "Verified badge granted" : "Verified badge revoked"),
+            !string.IsNullOrWhiteSpace(request.Note) ? request.Note.Trim() : (request.IsVerified ? "Verified badge granted" : "Verified badge revoked"),
             ct: ct);
 
         return Result.Success();

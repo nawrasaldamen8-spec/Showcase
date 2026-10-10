@@ -45,7 +45,7 @@ public class RejectVerificationRequestCommandHandler(
             "VerificationRequest",
             request.RequestId.ToString(),
             profile?.Name ?? verificationReq.UserId,
-            request.Note ?? "Verification request rejected",
+            !string.IsNullOrWhiteSpace(request.Note) ? request.Note.Trim() : "Verification request rejected",
             ct: ct);
 
         return Result.Success();

@@ -65,7 +65,7 @@ public class ToggleUserFeaturedCommandHandler(
         {
             await _publisher.Publish(new FeaturedApprovedNotificationEvent(
                 request.UserId,
-                request.Note ?? "Your profile has been spotlighted in the Curated Discover Feed!"), ct);
+                !string.IsNullOrWhiteSpace(request.Note) ? request.Note.Trim() : "Your profile has been spotlighted in the Curated Discover Feed!"), ct);
         }
 
         await _auditLogger.LogAsync(
@@ -73,7 +73,7 @@ public class ToggleUserFeaturedCommandHandler(
             "User",
             request.UserId,
             profile.Name,
-            request.Note ?? (request.IsFeatured ? "Profile featured in discovery feed" : "Profile unfeatured from discovery feed"),
+            !string.IsNullOrWhiteSpace(request.Note) ? request.Note.Trim() : (request.IsFeatured ? "Profile featured in discovery feed" : "Profile unfeatured from discovery feed"),
             ct: ct);
 
         return Result.Success();

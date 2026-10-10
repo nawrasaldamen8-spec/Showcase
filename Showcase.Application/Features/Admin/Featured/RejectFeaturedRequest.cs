@@ -45,7 +45,7 @@ public class RejectFeaturedRequestCommandHandler(
             "FeaturedRequest",
             request.Id.ToString(),
             profile?.Name ?? featuredReq.UserId,
-            request.Note ?? "Creator featured recommendation rejected",
+            !string.IsNullOrWhiteSpace(request.Note) ? request.Note.Trim() : "Featured spotlight recommendation rejected",
             ct: ct);
 
         return Result.Success();

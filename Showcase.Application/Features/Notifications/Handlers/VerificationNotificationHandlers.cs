@@ -20,11 +20,15 @@ public class VerificationApprovedNotificationHandler(
             pendingReq.Approve(notification.Note);
         }
 
+        var message = !string.IsNullOrWhiteSpace(notification.Note)
+            ? notification.Note.Trim()
+            : "Your verification request has been approved!";
+
         var item = new Notification(
             notification.TargetUserId,
             NotificationType.VerificationApproved,
             "Verification Approved",
-            notification.Note ?? "Your verification request has been approved!");
+            message);
 
         await _context.SaveAndPublishNotificationAsync(_realtimeNotifier, item, ct);
     }
@@ -44,14 +48,18 @@ public class VerificationRejectedNotificationHandler(
 
         if (pendingReq is not null)
         {
-            pendingReq.Reject(notification.Note ?? "Verification removed by administrator.");
+            pendingReq.Reject(!string.IsNullOrWhiteSpace(notification.Note) ? notification.Note.Trim() : "Verification removed by administrator.");
         }
+
+        var message = !string.IsNullOrWhiteSpace(notification.Note)
+            ? notification.Note.Trim()
+            : "Your verification request could not be approved at this time.";
 
         var item = new Notification(
             notification.TargetUserId,
             NotificationType.VerificationRejected,
             "Verification Update",
-            notification.Note ?? "Your verification request could not be approved at this time.");
+            message);
 
         await _context.SaveAndPublishNotificationAsync(_realtimeNotifier, item, ct);
     }

@@ -45,7 +45,7 @@ public class ApproveFeaturedRequestCommandHandler(
             "FeaturedRequest",
             request.Id.ToString(),
             profile?.Name ?? featuredReq.UserId,
-            request.Note ?? "Creator featured recommendation approved",
+            !string.IsNullOrWhiteSpace(request.Note) ? request.Note.Trim() : "Featured spotlight recommendation approved",
             ct: ct);
 
         return Result.Success();
