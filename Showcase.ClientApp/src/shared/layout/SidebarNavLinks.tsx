@@ -37,7 +37,7 @@ export const SidebarNavLinks: React.FC<SidebarNavLinksProps> = ({
     { label: "Career", to: "/career", icon: Briefcase },
     { label: "Notifications", to: "/notifications", isNotification: true },
     ...(user ? [{ label: "Profile", to: `/u/${user.username}`, icon: UserIcon }] : []),
-    ...(user?.roles?.includes("Admin") ? [{ label: "Admin Console", to: "/admin", icon: Shield, isAdmin: true }] : []),
+    ...(user?.roles?.some((r) => r.trim().toLowerCase() === "admin") ? [{ label: "Admin Console", to: "/admin", icon: Shield, isAdmin: true }] : []),
   ];
 
   return (

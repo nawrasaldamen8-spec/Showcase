@@ -118,7 +118,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   }, []);
 
   const isAuthenticated = Boolean(currentUser);
-  const isAdmin = Boolean(currentUser?.roles?.includes('Admin'));
+  const isAdmin = Boolean(
+    currentUser?.roles?.some((role) => role.trim().toLowerCase() === 'admin')
+  );
 
   const value: AuthContextValue = useMemo(
     () => ({

@@ -33,6 +33,17 @@ app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();
 
+// Security: Enforce strict no-cache headers on all administrative API endpoints
+app.Use(async (context, next) =>
+{
+    if (context.Request.Path.StartsWithSegments("/api/admin"))
+    {
+        context.Response.Headers.CacheControl = "no-store, no-cache, must-revalidate";
+        context.Response.Headers.Pragma = "no-cache";
+    }
+    await next();
+});
+
 app.MapHub<NotificationHub>("/hubs/notifications");
 
 app.MapEndpoints();
