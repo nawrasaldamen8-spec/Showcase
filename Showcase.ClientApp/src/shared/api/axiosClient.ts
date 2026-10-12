@@ -137,6 +137,7 @@ axiosInstance.interceptors.response.use(
       !originalRequest.url?.includes("/api/auth/logout")
     ) {
       if (authSyncService.isRefreshing()) {
+        originalRequest._retry = true;
         return new Promise((resolve, reject) => {
           authSyncService.enqueue(
             () => resolve(axiosInstance(originalRequest)),

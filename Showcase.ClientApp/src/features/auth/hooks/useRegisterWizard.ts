@@ -65,6 +65,15 @@ export function useRegisterWizard() {
           setAvatarUrl(payload.picture);
         }
       }
+
+      // Sanitize URL by removing the token query parameter from browser history and address bar
+      try {
+        const cleanUrl = new URL(window.location.href);
+        cleanUrl.searchParams.delete("token");
+        window.history.replaceState({}, document.title, cleanUrl.pathname + cleanUrl.search + cleanUrl.hash);
+      } catch {
+        // Ignore in non-browser or testing environment
+      }
     }
   }, [isOAuthMode, oauthToken]);
 

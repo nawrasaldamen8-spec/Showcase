@@ -21,12 +21,7 @@ export const AdminRouteGuard: React.FC<AdminRouteGuardProps> = ({ children }) =>
   }
 
   if (!isAdmin) {
-    return (
-      <NotFoundView
-        title="Page Not Found"
-        message="The page you are looking for does not exist or may have been moved."
-      />
-    );
+    return <NotFoundView />;
   }
 
   return <>{children}</>;

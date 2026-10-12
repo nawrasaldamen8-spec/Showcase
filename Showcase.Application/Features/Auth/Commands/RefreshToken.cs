@@ -29,8 +29,11 @@ public class RefreshTokenCommandValidator : AbstractValidator<RefreshTokenComman
 {
     public RefreshTokenCommandValidator()
     {
-        RuleFor(x => x.RefreshToken)
-            .NotEmpty().WithMessage("Refresh token is required.");
+        When(x => x.RefreshToken is not null, () =>
+        {
+            RuleFor(x => x.RefreshToken)
+                .NotEmpty().WithMessage("Refresh token cannot be empty if specified.");
+        });
     }
 }
 

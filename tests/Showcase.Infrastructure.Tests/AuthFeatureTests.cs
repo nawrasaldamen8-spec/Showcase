@@ -374,7 +374,7 @@ public class AuthFeatureTests
     }
 
     [Fact]
-    public async Task LogoutCommandHandler_Should_Return_Unauthorized_When_User_Not_Authenticated()
+    public async Task LogoutCommandHandler_Should_Succeed_Idempotently_When_User_Not_Authenticated()
     {
         // Arrange
         var mockCurrentUser = new Mock<ICurrentUserService>();
@@ -388,8 +388,7 @@ public class AuthFeatureTests
         var result = await handler.Handle(new LogoutCommand(), CancellationToken.None);
 
         // Assert
-        Assert.True(result.IsFailure);
-        Assert.Equal("Auth.Unauthorized", result.Error.Code);
+        Assert.True(result.IsSuccess);
         mockIdentity.Verify(i => i.RevokeRefreshTokenAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 

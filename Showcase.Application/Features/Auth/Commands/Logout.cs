@@ -17,15 +17,26 @@ public class LogoutCommandHandler(
 
     public async Task<Result> Handle(LogoutCommand request, CancellationToken ct)
     {
+        var refreshToken = _authCookieService?.GetRefreshToken();
         _authCookieService?.ClearAuthCookies();
 
         var userId = _currentUserService.UserId;
-        if (string.IsNullOrWhiteSpace(userId))
+
+        if (string.IsNullOrWhiteSpace(userId) && !string.IsNullOrWhiteSpace(refreshToken))
         {
-            return Error.Unauthorized("Auth.Unauthorized", "User is not authenticated.");
+            var userResult = await _identityService.ValidateRefreshTokenDirectAsync(refreshToken, ct);
+            if (userResult.IsSuccess)
+            {
+                userId = userResult.Value.Id;
+            }
         }
 
-        return await _identityService.RevokeRefreshTokenAsync(userId, ct);
+        if (!string.IsNullOrWhiteSpace(userId))
+        {
+            await _identityService.RevokeRefreshTokenAsync(userId, ct);
+        }
+
+        return Result.Success();
     }
 }
 

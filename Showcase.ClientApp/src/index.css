@@ -112,3 +112,49 @@ body {
   -ms-overflow-style: none !important;
   scrollbar-width: none !important;
 }
+
+/* Warm Gallery — Sonner Toast Theme Overrides */
+[data-sonner-toaster] {
+  --normal-bg: var(--color-ivory-light);
+  --normal-border: var(--color-stone);
+  --normal-text: var(--color-slate-dark);
+  font-family: var(--font-serif);
+}
+
+[data-sonner-toast] {
+  box-shadow: none !important;
+}
+
+[data-sonner-toast] [data-close-button] {
+  border: 1px solid var(--color-stone) !important;
+  background-color: var(--color-ivory-light) !important;
+  color: var(--color-cloud-dark) !important;
+  box-shadow: none !important;
+  border-radius: 999px !important;
+}
+
+[data-sonner-toast] [data-close-button]:hover {
+  background-color: var(--color-ivory-medium) !important;
+  color: var(--color-slate-dark) !important;
+}
+
+/* Ensure mobile toasts dock cleanly from top-center with swipe support */
+@media (max-width: 640px) {
+  [data-sonner-toaster] {
+    top: max(env(safe-area-inset-top, 0px) + 12px, 16px) !important;
+    bottom: auto !important;
+    left: 50% !important;
+    right: auto !important;
+    transform: translateX(-50%) !important;
+    width: min(calc(100vw - 32px), 420px) !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+  }
+
+  [data-sonner-toaster] [data-sonner-toast] {
+    top: 0 !important;
+    bottom: auto !important;
+    width: 100% !important;
+  }
+}

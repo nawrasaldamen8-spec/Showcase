@@ -2,7 +2,7 @@ import React from "react";
 import { BrowserRouter } from "react-router-dom";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-import { Toaster } from "sonner";
+import { PorityToaster } from "@shared/components/index.ts";
 import { AuthProvider } from "@shared/context/index.ts";
 import { AppErrorBoundary } from "./AppErrorBoundary.tsx";
 import { queryClient } from "./queryClient.ts";
@@ -18,7 +18,7 @@ export const AppProviders: React.FC<AppProvidersProps> = ({ children }) => {
         <BrowserRouter>
           <AuthProvider>
             {children}
-            <Toaster position="top-right" richColors closeButton />
+            <PorityToaster />
           </AuthProvider>
         </BrowserRouter>
         {import.meta.env.DEV && <ReactQueryDevtools initialIsOpen={false} />}
