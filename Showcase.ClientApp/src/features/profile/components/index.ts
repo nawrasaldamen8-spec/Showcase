@@ -1,4 +1,5 @@
 export * from "./AddSocialLinkForm.tsx";
+export * from "./AvatarActionModal.tsx";
 export * from "./AvatarUploader.tsx";
 export * from "./BioEditor.tsx";
 export * from "./PlatformIcon.tsx";

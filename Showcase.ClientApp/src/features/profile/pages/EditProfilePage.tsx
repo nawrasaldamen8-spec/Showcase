@@ -5,7 +5,6 @@ import { extractApiErrorMessage } from "@shared/api/index.ts";
 import { Button } from "@shared/components/Button.tsx";
 import { Skeleton } from "@shared/components/Skeleton.tsx";
 import { useAuth } from "@shared/context/index.ts";
-import { AvatarUploader } from "../components/AvatarUploader.tsx";
 import { BioEditor } from "../components/BioEditor.tsx";
 import { useMyProfileQuery } from "../hooks/useProfileQueries.ts";
 
@@ -90,12 +89,6 @@ export const EditProfilePage: React.FC = () => {
         </div>
       ) : profile ? (
         <div className="space-y-8">
-          <AvatarUploader
-            avatarUrl={profile.avatarUrl}
-            name={profile.name}
-            username={profile.username}
-          />
-
           <BioEditor
             initialName={profile.name}
             initialSpecialty={profile.specialty}

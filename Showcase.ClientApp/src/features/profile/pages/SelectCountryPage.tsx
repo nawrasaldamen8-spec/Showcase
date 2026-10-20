@@ -1,6 +1,7 @@
-import { ArrowLeft, Check, Globe, Search, X, XCircle } from "lucide-react";
-import React, { useMemo, useState } from "react";
+import { ArrowLeft, Check, Globe, Save, Search, Undo2, X, XCircle } from "lucide-react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { Button } from "@shared/components/Button.tsx";
 import { useCountriesQuery } from "@shared/hooks/index.ts";
 import { useAuth } from "@shared/context/index.ts";
 import { useMyProfileQuery, useUpdateProfileMutation } from "../../profile/hooks/useProfileQueries.ts";
@@ -14,10 +15,21 @@ export const SelectCountryPage: React.FC = () => {
   const updateProfileMutation = useUpdateProfileMutation();
 
   const [searchQuery, setSearchQuery] = useState<string>("");
+  const [selectedCountry, setSelectedCountry] = useState<string | null>(null);
+  const [isInitialized, setIsInitialized] = useState<boolean>(false);
 
-  const currentCountry = profile?.country || null;
+  const initialCountry = profile?.country || null;
   const isLoading = isLoadingCountries || isLoadingProfile;
   const isSaving = updateProfileMutation.isPending;
+
+  useEffect(() => {
+    if (profile && !isInitialized) {
+      setSelectedCountry(profile.country || null);
+      setIsInitialized(true);
+    }
+  }, [profile, isInitialized]);
+
+  const hasChanges = selectedCountry !== initialCountry;
 
   const filteredCountries = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
@@ -30,14 +42,22 @@ export const SelectCountryPage: React.FC = () => {
     );
   }, [countries, searchQuery]);
 
-  const handleSelectCountry = async (countryName: string | null) => {
+  const handleSelectCountry = (countryName: string | null) => {
+    setSelectedCountry(countryName);
+  };
+
+  const handleReset = () => {
+    setSelectedCountry(initialCountry);
+  };
+
+  const handleSave = async () => {
     if (isSaving || !profile) return;
 
     try {
       await updateProfileMutation.mutateAsync({
         name: profile.name || "",
         specialty: profile.specialty || null,
-        country: countryName,
+        country: selectedCountry,
         bio: profile.bio || "",
       });
 
@@ -49,9 +69,9 @@ export const SelectCountryPage: React.FC = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 min-h-[80vh]">
-      {/* Navigation Breadcrumb */}
-      <nav className="mb-6" aria-label="Breadcrumb navigation">
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 min-h-[80vh] pb-28">
+      {/* Navigation Breadcrumb & Top Action */}
+      <div className="flex items-center justify-between mb-6">
         <Link
           to="/profile/edit"
           className="inline-flex items-center gap-2 font-gothic text-xs font-semibold uppercase tracking-[0.14em] text-cloud-dark hover:text-slate-dark transition-colors group text-decoration-none"
@@ -59,7 +79,21 @@ export const SelectCountryPage: React.FC = () => {
           <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
           <span>Back to Edit Profile</span>
         </Link>
-      </nav>
+
+        {hasChanges && (
+          <Button
+            type="button"
+            variant="clay"
+            size="sm"
+            onClick={handleSave}
+            isLoading={isSaving}
+            leftIcon={<Save className="h-3.5 w-3.5" />}
+            className="font-gothic uppercase tracking-wider text-xs hidden sm:inline-flex"
+          >
+            Save Changes
+          </Button>
+        )}
+      </div>
 
       {/* Screen Header */}
       <header className="border-b border-stone pb-6 mb-8 space-y-2">
@@ -78,7 +112,7 @@ export const SelectCountryPage: React.FC = () => {
         </h1>
 
         <p className="font-serif text-sm sm:text-base text-slate-dark/75 leading-relaxed">
-          Choose your standard country or region from the registry of {countries.length || 249} countries, or leave it unselected.
+          Choose your standard country or region from the registry of {countries.length || 249} countries, then click Save.
         </p>
       </header>
 
@@ -107,27 +141,26 @@ export const SelectCountryPage: React.FC = () => {
           )}
         </div>
 
-        {/* Current Country Banner */}
-        {currentCountry && (
+        {/* Selected Country Banner */}
+        {selectedCountry && (
           <div className="p-3.5 rounded-xl bg-clay/10 border border-clay/30 flex items-center justify-between">
             <div className="flex items-center gap-2.5 min-w-0">
               <Globe className="w-4 h-4 text-clay shrink-0" />
               <div className="min-w-0">
                 <span className="font-gothic text-[11px] font-bold uppercase tracking-wider text-clay block">
-                  Current Country
+                  Selected Country
                 </span>
                 <span className="font-serif text-sm font-semibold text-slate-dark truncate block">
-                  {currentCountry}
+                  {selectedCountry}
                 </span>
               </div>
             </div>
             <button
               type="button"
               onClick={() => handleSelectCountry(null)}
-              disabled={isSaving || isLoading}
               className="font-gothic text-xs font-bold uppercase tracking-wider text-clay hover:underline cursor-pointer ml-3 shrink-0"
             >
-              Remove
+              Clear Selection
             </button>
           </div>
         )}
@@ -137,25 +170,24 @@ export const SelectCountryPage: React.FC = () => {
           <button
             type="button"
             onClick={() => handleSelectCountry(null)}
-            disabled={isSaving || isLoading}
             className={`w-full text-left p-4 rounded-xl border transition-all cursor-pointer flex items-center justify-between ${
-              currentCountry === null && !searchQuery
+              selectedCountry === null && !searchQuery
                 ? "bg-slate-dark text-ivory-light border-slate-dark"
                 : "bg-ivory-medium/40 hover:bg-ivory-medium border-stone text-slate-dark"
             }`}
           >
             <div className="flex items-center gap-3 min-w-0">
-              <XCircle className={`w-5 h-5 shrink-0 ${currentCountry === null && !searchQuery ? "text-clay" : "text-cloud-dark"}`} />
+              <XCircle className={`w-5 h-5 shrink-0 ${selectedCountry === null && !searchQuery ? "text-clay" : "text-cloud-dark"}`} />
               <div>
                 <p className="font-gothic text-sm font-bold uppercase tracking-wider">
                   No Country / Unspecified
                 </p>
-                <p className={`font-serif text-xs ${currentCountry === null && !searchQuery ? "text-ivory-light/75" : "text-cloud-dark"}`}>
+                <p className={`font-serif text-xs ${selectedCountry === null && !searchQuery ? "text-ivory-light/75" : "text-cloud-dark"}`}>
                   Do not display a country location on your profile.
                 </p>
               </div>
             </div>
-            {currentCountry === null && !searchQuery && <Check className="w-5 h-5 text-clay shrink-0" />}
+            {selectedCountry === null && !searchQuery && <Check className="w-5 h-5 text-clay shrink-0" />}
           </button>
         </div>
 
@@ -166,23 +198,22 @@ export const SelectCountryPage: React.FC = () => {
               All Countries ({filteredCountries.length})
             </span>
             <span className="font-serif text-xs lowercase">
-              scroll to browse
+              click to select
             </span>
           </div>
 
           <div className="max-h-[380px] overflow-y-auto space-y-2 pr-1 border border-stone/60 rounded-xl p-3 bg-ivory-medium/30">
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
               {filteredCountries.map((c) => {
-                const isSelected = currentCountry?.toLowerCase() === c.name.toLowerCase();
+                const isSelected = selectedCountry?.toLowerCase() === c.name.toLowerCase();
                 return (
                   <button
                     key={c.id}
                     type="button"
                     onClick={() => handleSelectCountry(c.name)}
-                    disabled={isSaving || isLoading}
                     className={`text-left p-3 rounded-xl border transition-all cursor-pointer flex items-center justify-between gap-2 ${
                       isSelected
-                        ? "bg-slate-dark text-ivory-light border-slate-dark font-medium"
+                        ? "bg-slate-dark text-ivory-light border-slate-dark font-medium ring-2 ring-clay/40"
                         : "bg-ivory-light hover:bg-ivory-medium border-stone/60 text-slate-dark hover:border-slate-dark"
                     }`}
                   >
@@ -212,6 +243,47 @@ export const SelectCountryPage: React.FC = () => {
                 No countries match &ldquo;{searchQuery}&rdquo;.
               </div>
             )}
+          </div>
+        </div>
+
+        {/* Sticky / Permanent Bottom Save Action Bar */}
+        <div className="pt-4 border-t border-stone/50 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+          <div className="text-xs font-serif text-cloud-dark">
+            {hasChanges ? (
+              <span className="text-slate-dark font-semibold">
+                Pending selection: <span className="text-clay">{selectedCountry || "No Country"}</span>
+              </span>
+            ) : (
+              <span>Select an option above, then click Save.</span>
+            )}
+          </div>
+
+          <div className="flex items-center gap-2.5 justify-end">
+            {hasChanges && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={handleReset}
+                disabled={isSaving}
+                leftIcon={<Undo2 className="h-3.5 w-3.5" />}
+              >
+                Reset
+              </Button>
+            )}
+
+            <Button
+              type="button"
+              variant={hasChanges ? "clay" : "outline"}
+              size="md"
+              onClick={handleSave}
+              isLoading={isSaving}
+              disabled={!hasChanges || isLoading}
+              leftIcon={<Save className="h-4 w-4" />}
+              className="font-gothic uppercase tracking-wider text-xs justify-center"
+            >
+              Save Selection
+            </Button>
           </div>
         </div>
       </div>

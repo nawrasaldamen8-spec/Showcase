@@ -1,4 +1,4 @@
-import { Briefcase, LayoutGrid, Search, Shield, User as UserIcon } from "lucide-react";
+import { Briefcase, LayoutGrid, Search, Settings, Shield } from "lucide-react";
 import React from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { NotificationBellBadge } from "../components/NotificationBellBadge.tsx";
@@ -36,7 +36,7 @@ export const SidebarNavLinks: React.FC<SidebarNavLinksProps> = ({
     { label: "Feed", to: "/feed", icon: Search },
     { label: "Career", to: "/career", icon: Briefcase },
     { label: "Notifications", to: "/notifications", isNotification: true },
-    ...(user ? [{ label: "Profile", to: `/u/${user.username}`, icon: UserIcon }] : []),
+    ...(user ? [{ label: "Account Settings", to: "/settings", icon: Settings }] : []),
     ...(user?.roles?.some((r) => r.trim().toLowerCase() === "admin") ? [{ label: "Admin Console", to: "/admin", icon: Shield, isAdmin: true }] : []),
   ];
 

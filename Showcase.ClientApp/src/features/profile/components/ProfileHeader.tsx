@@ -1,4 +1,4 @@
-import { Edit3, Flag, MoreVertical, Share2 } from "lucide-react";
+import { Camera, Edit3, Flag, MoreVertical, Share2 } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -8,6 +8,7 @@ import { VerifiedBadge } from "@shared/components/VerifiedBadge.tsx";
 import { useAuth } from "@shared/context/index.ts";
 import type { PublicProfileResponse } from "@shared/types/index.ts";
 import { ReportProfileModal } from "./ReportProfileModal.tsx";
+import { AvatarActionModal } from "./AvatarActionModal.tsx";
 
 export interface ProfileHeaderProps {
   profile: PublicProfileResponse;
@@ -22,6 +23,7 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({ profile, isOwnProf
   const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+  const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
   // Close menu on outside click
@@ -45,14 +47,36 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({ profile, isOwnProf
       <div className="flex items-start justify-between gap-3 sm:gap-4">
         {/* Creator Identity */}
         <div className="flex items-center gap-3.5 sm:gap-6 min-w-0 flex-1 pr-2 sm:pr-4">
-          <UserAvatar
-            src={profile.avatarUrl}
-            alt={fullName}
-            size="xl"
-            loading="eager"
-            fetchPriority="high"
-            className="border-2 border-stone/70"
-          />
+          {isOwnProfile ? (
+            <button
+              type="button"
+              onClick={() => setIsAvatarModalOpen(true)}
+              className="relative group shrink-0 rounded-full cursor-pointer focus-visible:outline-2 focus-visible:outline-clay"
+              title="Change profile photo"
+              aria-label="Change profile photo"
+            >
+              <UserAvatar
+                src={profile.avatarUrl}
+                alt={fullName}
+                size="xl"
+                loading="eager"
+                fetchPriority="high"
+                className="border-2 border-stone/70 group-hover:opacity-85 transition-opacity"
+              />
+              <div className="absolute inset-0 rounded-full bg-slate-dark/50 text-ivory-light flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-[1px]">
+                <Camera className="w-6 h-6" />
+              </div>
+            </button>
+          ) : (
+            <UserAvatar
+              src={profile.avatarUrl}
+              alt={fullName}
+              size="xl"
+              loading="eager"
+              fetchPriority="high"
+              className="border-2 border-stone/70"
+            />
+          )}
 
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2 min-w-0">
@@ -166,6 +190,17 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({ profile, isOwnProf
           onClose={() => setIsReportModalOpen(false)}
           username={profile.username}
           fullName={fullName}
+        />
+      )}
+
+      {/* Avatar Action Modal */}
+      {isOwnProfile && (
+        <AvatarActionModal
+          isOpen={isAvatarModalOpen}
+          onClose={() => setIsAvatarModalOpen(false)}
+          avatarUrl={profile.avatarUrl}
+          name={profile.name}
+          username={profile.username}
         />
       )}
     </header>

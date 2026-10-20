@@ -70,12 +70,6 @@ export const RegisterWizardPage: React.FC = () => {
   return (
     <AuthCardLayout
       title={isOAuthMode ? "Complete Google Setup" : "Create Creator Account"}
-      subtitle={
-        isOAuthMode
-          ? "Confirm your portfolio details to complete onboarding."
-          : "Join the curated platform for architectural portfolios and career milestones."
-      }
-      badge={isOAuthMode ? "Google Onboarding" : "Onboarding Wizard"}
       footerContent={
         !isOAuthMode ? (
           <p>

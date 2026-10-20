@@ -11,6 +11,10 @@ import {
 import { usePostEditorImages } from "./usePostEditorImages.ts";
 import { usePostEditorSteps, type WizardStepNumber } from "./usePostEditorSteps.ts";
 import { usePostEditorTags } from "./usePostEditorTags.ts";
+import {
+  loadDraftMetaFromStorage,
+  saveDraftMetaToStorage,
+} from "../utils/postDraftStorage.ts";
 
 export type { WizardStepNumber };
 
@@ -58,6 +62,33 @@ export function usePostEditor(id?: string) {
     postStatus,
     setIsDirty,
   });
+
+  // Restore local draft metadata for new posts
+  useEffect(() => {
+    if (!id) {
+      const meta = loadDraftMetaFromStorage();
+      if (meta) {
+        if (meta.title) setTitle(meta.title);
+        if (meta.description) setDescription(meta.description);
+        if (meta.externalUrl) setExternalUrl(meta.externalUrl);
+        if (meta.tags && meta.tags.length > 0) setTags(meta.tags);
+      }
+    }
+  }, [id, setTags]);
+
+  // Auto-save draft metadata to localStorage
+  useEffect(() => {
+    if (!id) {
+      if (title || description || externalUrl || tags.length > 0) {
+        saveDraftMetaToStorage({
+          title,
+          description,
+          externalUrl,
+          tags,
+        });
+      }
+    }
+  }, [id, title, description, externalUrl, tags]);
 
   const getNormalizedUrl = () => normalizeUrlHelper(externalUrl);
   const validationState = { imagesCount: images.length, title, externalUrl, description };

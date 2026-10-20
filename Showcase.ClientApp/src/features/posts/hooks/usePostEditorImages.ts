@@ -4,6 +4,11 @@ import { apiClient } from "@shared/api/apiClient.ts";
 import { PostStatus } from "@shared/types/index.ts";
 import type { UploadedImageData } from "../components/ImageDropzone.tsx";
 import type { ImageGridItem } from "../components/ImageReorderGrid.tsx";
+import {
+  clearDraftImagesFromLocal,
+  loadDraftImagesFromLocal,
+  saveDraftImagesToLocal,
+} from "../utils/postDraftStorage.ts";
 
 export interface UsePostEditorImagesOptions {
   id?: string;
@@ -30,6 +35,51 @@ export function usePostEditorImages({
       urls.clear();
     };
   }, []);
+
+  // Restore local draft images if creating a new post
+  useEffect(() => {
+    if (!id) {
+      let isSubscribed = true;
+      void (async () => {
+        const stored = await loadDraftImagesFromLocal();
+        if (isSubscribed && stored && stored.length > 0) {
+          const restored: ImageGridItem[] = stored.map((item, idx) => {
+            const url = URL.createObjectURL(item.file);
+            stagedBlobUrlsRef.current.add(url);
+            return {
+              id: item.id,
+              url,
+              storageKey: `posts/staged/${item.id}`,
+              displayOrder: item.displayOrder ?? idx,
+              file: item.file,
+            };
+          });
+          setImages(restored);
+        }
+      })();
+      return () => {
+        isSubscribed = false;
+      };
+    }
+  }, [id]);
+
+  // Persist local staged images whenever they change for new posts
+  useEffect(() => {
+    if (!id) {
+      if (images.length > 0) {
+        const records = images
+          .filter((img) => img.file)
+          .map((img) => ({
+            id: img.id,
+            file: img.file as File,
+            displayOrder: img.displayOrder,
+          }));
+        void saveDraftImagesToLocal(records);
+      } else {
+        void clearDraftImagesFromLocal();
+      }
+    }
+  }, [id, images]);
 
   const handleImagesUploaded = (newImages: UploadedImageData[]) => {
     setImageInvariantError(null);

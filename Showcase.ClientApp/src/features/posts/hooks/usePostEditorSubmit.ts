@@ -6,6 +6,7 @@ import { PostStatus } from "@shared/types/index.ts";
 import type { ImageGridItem } from "../components/ImageReorderGrid.tsx";
 import { persistPostData } from "./postEditorOperations.ts";
 import type { WizardStepNumber } from "./usePostEditorSteps.ts";
+import { clearEntireDraft } from "../utils/postDraftStorage.ts";
 
 export interface UsePostEditorSubmitOptions {
   id?: string;
@@ -81,6 +82,10 @@ export function usePostEditorSubmit(options: UsePostEditorSubmitOptions) {
         images: options.images,
       });
 
+      if (!options.id) {
+        await clearEntireDraft();
+      }
+
       if (options.id && options.postStatus === PostStatus.Published) {
         await apiClient.unpublishPost(options.id);
         options.setPostStatus(PostStatus.Unpublished);
@@ -123,6 +128,10 @@ export function usePostEditorSubmit(options: UsePostEditorSubmitOptions) {
         tags: options.tags,
         images: options.images,
       });
+
+      if (!options.id) {
+        await clearEntireDraft();
+      }
 
       await apiClient.publishPost(targetPostId);
       options.setPostStatus(PostStatus.Published);

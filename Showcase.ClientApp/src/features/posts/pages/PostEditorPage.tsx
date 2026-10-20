@@ -17,6 +17,7 @@ import {
   WizardStepTags,
 } from "../components/index.ts";
 import { usePostEditor } from "../hooks/usePostEditor.ts";
+import { clearEntireDraft } from "../utils/postDraftStorage.ts";
 
 export const PostEditorPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -173,6 +174,9 @@ export const PostEditorPage: React.FC = () => {
               variant="clay"
               size="sm"
               onClick={() => {
+                if (!id) {
+                  void clearEntireDraft();
+                }
                 editor.setShowDiscardModal(false);
                 editor.setIsDirty(false);
                 navigate(editor.returnUrl);
