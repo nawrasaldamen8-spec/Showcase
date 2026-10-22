@@ -70,8 +70,8 @@ export function validateStep(
   }
 
   if (step === 3) {
-    if (!state.description.trim()) {
-      errors.setDescriptionError("Description is required.");
+    if (state.description.trim().length > 4000) {
+      errors.setDescriptionError("Description cannot exceed 4000 characters.");
       return false;
     }
     errors.setDescriptionError(null);

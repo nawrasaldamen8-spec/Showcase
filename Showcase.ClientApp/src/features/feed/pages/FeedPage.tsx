@@ -47,12 +47,6 @@ export const FeedPage: React.FC = () => {
       <div className="mb-8">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 pb-6 border-b border-stone/60">
           <div>
-            <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-ivory-light border border-stone/60 text-cloud-dark mb-2">
-              <Sparkles className="w-3 h-3 text-clay" />
-              <span className="font-gothic text-[10px] font-bold uppercase tracking-[0.16em]">
-                Community
-              </span>
-            </div>
             <h1 className="font-gothic text-xl sm:text-2xl font-bold uppercase tracking-tight text-slate-dark">
               Community Directory
             </h1>

@@ -30,15 +30,6 @@ export const EditProfilePage: React.FC = () => {
 
       {/* Page Header */}
       <header className="border-b border-stone pb-6 mb-8 space-y-2">
-        <div className="flex items-center gap-2">
-          <span className="font-gothic text-xs font-bold uppercase tracking-[0.16em] text-clay">
-            Account Settings
-          </span>
-          <span className="text-stone">&bull;</span>
-          <span className="font-gothic text-xs font-semibold uppercase tracking-[0.10em] text-cloud-dark">
-            Profile
-          </span>
-        </div>
 
         <h1 className="font-gothic font-extrabold text-3xl sm:text-4xl uppercase tracking-tight text-slate-dark">
           Edit Profile

@@ -10,6 +10,7 @@ export const CareerAcademicsPage: React.FC = () => {
       sectionKey="academics"
       sectionTitle="Academics"
       description="Degrees, diplomas, and academic background."
+      maxCount={5}
       actionLabel="Add Education"
       newRoute="/career/academics/new"
       editRoute={(id) => `/career/academics/${id}/edit`}

@@ -85,7 +85,7 @@ export function useAvatarUpload({ avatarUrl, onAvatarUpdated }: UseAvatarUploadO
   }, []);
 
   const handleConfirmCrop = useCallback(
-    async (croppedBlob: Blob) => {
+    async (croppedBlob: Blob): Promise<boolean> => {
       setErrorMessage(null);
       setSuccessMessage(null);
       setUploadProgress(20);
@@ -96,6 +96,7 @@ export function useAvatarUpload({ avatarUrl, onAvatarUpdated }: UseAvatarUploadO
         const result = await avatarUploadMutation.mutateAsync(file);
         await refreshUser();
 
+        setCurrentUrl(result.publicUrl);
         setUploadProgress(100);
         setSuccessMessage("Avatar updated successfully.");
         setIsCropModalOpen(false);
@@ -112,10 +113,12 @@ export function useAvatarUpload({ avatarUrl, onAvatarUpdated }: UseAvatarUploadO
           setUploadProgress(0);
         }, 600);
         safeTimeout(() => setSuccessMessage(null), 4000);
+        return true;
       } catch (err: unknown) {
         const msg = extractApiErrorMessage(err, "Failed to upload avatar. Please try again.");
         setErrorMessage(msg);
         setUploadProgress(0);
+        return false;
       }
     },
     [avatarUploadMutation, onAvatarUpdated, refreshUser, safeTimeout]

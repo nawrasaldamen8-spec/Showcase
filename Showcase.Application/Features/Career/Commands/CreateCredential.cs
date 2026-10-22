@@ -46,6 +46,10 @@ public class CreateCredentialCommandHandler(
 
         var profile = profileResult.Value;
 
+        var count = await _context.Credentials.CountAsync(c => c.ProfileId == profile.Id, ct);
+        if (count >= 15)
+            return Result.Failure<CareerCredentialDto>(Error.Validation("Career.MaxCredentialsReached", "Maximum limit of 15 credentials reached."));
+
         var expiry = request.DoesNotExpire ? null : request.ExpiryDate;
         var dateRangeResult = DateRange.Create(request.IssueDate, expiry);
         if (dateRangeResult.IsFailure)
@@ -82,4 +86,3 @@ public class CreateCredentialCommandHandler(
         return credential.ToDto();
     }
 }
-

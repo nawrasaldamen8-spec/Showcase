@@ -41,6 +41,7 @@ export const PasswordStep: React.FC<PasswordStepProps> = ({
           required
           autoFocus
           autoComplete="new-password"
+          className="min-h-[46px]"
         />
         <PasswordStrengthMeter password={password} />
       </div>
@@ -62,6 +63,7 @@ export const PasswordStep: React.FC<PasswordStepProps> = ({
           onChange={(e) => setConfirmPassword(e.target.value)}
           required
           autoComplete="new-password"
+          className="min-h-[46px]"
         />
       </div>
 
@@ -69,7 +71,7 @@ export const PasswordStep: React.FC<PasswordStepProps> = ({
         <Button
           type="button"
           variant="outline"
-          size="lg"
+          size="md"
           onClick={onBack}
           leftIcon={<ArrowLeft className="w-4 h-4" />}
           className="font-gothic uppercase tracking-wider text-xs"
@@ -79,10 +81,10 @@ export const PasswordStep: React.FC<PasswordStepProps> = ({
         <Button
           type="submit"
           variant="clay"
-          size="lg"
+          size="md"
           rightIcon={<ArrowRight className="w-4 h-4" />}
-          disabled={!password || !confirmPassword || password.length < 8 || password !== confirmPassword}
-          className="font-gothic uppercase tracking-wider text-xs justify-center flex-1"
+          disabled={!password || password !== confirmPassword}
+          className="font-gothic uppercase tracking-wider text-xs"
         >
           Continue
         </Button>

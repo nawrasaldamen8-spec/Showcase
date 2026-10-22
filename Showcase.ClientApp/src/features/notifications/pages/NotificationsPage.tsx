@@ -1,4 +1,4 @@
-import { Bell, CheckCheck } from "lucide-react";
+import { Bell } from "lucide-react";
 import React, { useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { apiClient, queryKeys } from "@shared/api/index.ts";
@@ -9,7 +9,6 @@ import { NotificationRowSkeleton } from "../components/NotificationRowSkeleton.t
 import {
   useDeleteNotificationMutation,
   useInfiniteNotificationsQuery,
-  useMarkAllNotificationsReadMutation,
 } from "../hooks/useNotificationQueries.ts";
 
 export const NotificationsPage: React.FC = () => {
@@ -23,10 +22,8 @@ export const NotificationsPage: React.FC = () => {
   } = useInfiniteNotificationsQuery(20);
 
   const deleteMutation = useDeleteNotificationMutation();
-  const markAllReadMutation = useMarkAllNotificationsReadMutation();
 
   const notifications = data?.pages.flatMap((page) => page.items) || [];
-  const unreadCount = notifications.filter((n) => !n.isRead).length;
 
   const sentinelRef = useInfiniteScroll({
     hasNextPage,
@@ -63,10 +60,6 @@ export const NotificationsPage: React.FC = () => {
     queryClient.setQueryData(queryKeys.notifications.unreadCount(), { count: 0 });
   }, [notifications, queryClient]);
 
-  const handleMarkAllAsRead = () => {
-    markAllReadMutation.mutate();
-  };
-
   return (
     <div className="min-h-[85vh] bg-ivory-medium py-6 sm:py-10 px-4 sm:px-6 lg:px-8 pb-24">
       <div className="max-w-2xl mx-auto space-y-6">
@@ -83,17 +76,7 @@ export const NotificationsPage: React.FC = () => {
             )}
           </div>
 
-          {notifications.length > 0 && (
-            <button
-              onClick={handleMarkAllAsRead}
-              disabled={markAllReadMutation.isPending || unreadCount === 0}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-stone/60 bg-ivory-light hover:bg-white text-slate-dark font-gothic text-[11px] font-bold uppercase tracking-wider transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer shadow-2xs hover:border-clay"
-              title="Mark all notifications as read"
-            >
-              <CheckCheck className="w-3.5 h-3.5 text-clay" />
-              <span>Mark All Read</span>
-            </button>
-          )}
+
         </header>
 
         {/* Unified Activity Feed Rows */}

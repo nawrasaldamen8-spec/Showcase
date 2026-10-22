@@ -33,6 +33,10 @@ public class CreateSkillCommandHandler(
 
         var profile = profileResult.Value;
 
+        var count = await _context.Skills.CountAsync(s => s.ProfileId == profile.Id, ct);
+        if (count >= 10)
+            return Result.Failure<CareerSkillDto>(Error.Validation("Career.MaxSkillsReached", "Maximum limit of 10 skills reached."));
+
         var skill = profile.AddSkill(request.Name, request.Category);
         _context.Skills.Add(skill);
         await _context.SaveChangesAsync(ct);
@@ -40,4 +44,3 @@ public class CreateSkillCommandHandler(
         return skill.ToDto();
     }
 }
-

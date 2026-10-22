@@ -1,4 +1,4 @@
-import { ArrowRight, ChevronDown, ChevronUp, ExternalLink, Flag } from "lucide-react";
+import { ArrowRight, ChevronDown, ChevronUp, ExternalLink, Flag, Share2 } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -11,6 +11,7 @@ import type { PostDetailsResponse } from "@shared/types/index.ts";
 import { formatRelativeTime } from "@shared/utils/index.ts";
 import { PostLikeButton } from "./PostLikeButton.tsx";
 import { ReportPostModal } from "./ReportPostModal.tsx";
+import { SharePostModal } from "./SharePostModal.tsx";
 
 export interface PostCuratorialMetaProps {
   post: PostDetailsResponse;
@@ -33,6 +34,7 @@ export const PostCuratorialMeta: React.FC<PostCuratorialMetaProps> = ({
   const navigate = useNavigate();
   const location = useLocation();
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const [canExpand, setCanExpand] = useState(false);
   const descRef = useRef<HTMLParagraphElement>(null);
@@ -101,22 +103,34 @@ export const PostCuratorialMeta: React.FC<PostCuratorialMetaProps> = ({
           variant="pill"
         />
 
-        <button
-          type="button"
-          onClick={() => {
-            if (!currentUser) {
-              toast.info("Please sign in to report content.");
-              navigate("/login", { state: { from: `${location.pathname}${location.search}` } });
-              return;
-            }
-            setIsReportModalOpen(true);
-          }}
-          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-gothic text-cloud-dark hover:text-clay hover:bg-stone/30 transition-colors border border-transparent hover:border-stone/60 cursor-pointer"
-          title="Report this project"
-        >
-          <Flag className="w-3 h-3" />
-          <span className="hidden sm:inline">Report</span>
-        </button>
+        <div className="flex items-center gap-1.5 sm:gap-2">
+          <button
+            type="button"
+            onClick={() => setIsShareModalOpen(true)}
+            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-gothic text-cloud-dark hover:text-slate-dark hover:bg-stone/30 transition-colors border border-transparent hover:border-stone/60 cursor-pointer"
+            title="Share this project"
+          >
+            <Share2 className="w-3 h-3" />
+            <span className="hidden sm:inline">Share</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              if (!currentUser) {
+                toast.info("Please sign in to report content.");
+                navigate("/login", { state: { from: `${location.pathname}${location.search}` } });
+                return;
+              }
+              setIsReportModalOpen(true);
+            }}
+            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-gothic text-cloud-dark hover:text-clay hover:bg-stone/30 transition-colors border border-transparent hover:border-stone/60 cursor-pointer"
+            title="Report this project"
+          >
+            <Flag className="w-3 h-3" />
+            <span className="hidden sm:inline">Report</span>
+          </button>
+        </div>
       </div>
 
       {/* Publication Relative Date */}
@@ -227,6 +241,20 @@ export const PostCuratorialMeta: React.FC<PostCuratorialMetaProps> = ({
         postId={post.id}
         postTitle={post.title}
         creatorUsername={creatorUsername}
+      />
+
+      <SharePostModal
+        isOpen={isShareModalOpen}
+        onClose={() => setIsShareModalOpen(false)}
+        post={post}
+        creatorName={creatorName}
+        creatorUsername={creatorUsername}
+        creatorAvatar={creatorAvatar}
+        isOwnPost={Boolean(
+          currentUser?.username &&
+          creatorUsername &&
+          currentUser.username.toLowerCase() === creatorUsername.toLowerCase()
+        )}
       />
     </div>
   );

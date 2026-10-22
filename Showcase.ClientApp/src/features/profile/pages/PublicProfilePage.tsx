@@ -2,7 +2,6 @@ import { ArrowLeft, SearchX } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { toast } from "sonner";
 import { apiClient, queryKeys, tokenStorage } from "@shared/api/index.ts";
 import { Button } from "@shared/components/Button.tsx";
 import { useAuth } from "@shared/context/index.ts";
@@ -16,6 +15,7 @@ import {
   ProfileCareerTab,
   ProfileHeader,
   ProfileSkeleton,
+  ShareProfileModal,
 } from "../components/index.ts";
 
 const APP_NAME = "Pority";
@@ -51,6 +51,7 @@ export const PublicProfilePage: React.FC = () => {
   };
 
   const [selectedCareerSection, setSelectedCareerSection] = useState<CareerSectionId | null>(null);
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
 
   const {
     data: profile,
@@ -94,28 +95,12 @@ export const PublicProfilePage: React.FC = () => {
     }
   };
 
-  const handleShare = async () => {
-    const url = window.location.href;
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: profile
-            ? `${profile.name} (@${profile.username}) - ${APP_NAME}`
-            : `${APP_NAME} Profile`,
-          url,
-        });
-        return;
-      } catch {
-        // Fallback to clipboard
-      }
-    }
-    if (navigator.clipboard) {
-      await navigator.clipboard.writeText(url);
-      toast.success("Profile link copied to clipboard.");
-    } else {
-      toast.error("Unable to copy profile link.");
-    }
+  const worksCount = postsData?.pages[0]?.totalCount ?? posts.length;
+
+  const handleShare = () => {
+    setIsShareModalOpen(true);
   };
+
 
   if (isProfileLoading) {
     return <ProfileSkeleton />;
@@ -278,6 +263,15 @@ export const PublicProfilePage: React.FC = () => {
           isOwnProfile={isOwnProfile}
           creatorName={profile.name}
           username={profile.username}
+        />
+      )}
+      {profile && (
+        <ShareProfileModal
+          isOpen={isShareModalOpen}
+          onClose={() => setIsShareModalOpen(false)}
+          profile={profile}
+          worksCount={worksCount}
+          isOwnProfile={isOwnProfile}
         />
       )}
     </div>

@@ -10,6 +10,7 @@ export const CareerLanguagesPage: React.FC = () => {
       sectionKey="languages"
       sectionTitle="Languages"
       description="Languages and proficiency levels."
+      maxCount={6}
       actionLabel="Add Language"
       newRoute="/career/languages/new"
       editRoute={(id) => `/career/languages/${id}/edit`}

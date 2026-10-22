@@ -50,12 +50,23 @@ export const AvatarActionModal: React.FC<AvatarActionModalProps> = ({
   });
 
   const handleUploadSuccessCrop = async (croppedBlob: Blob) => {
-    await handleConfirmCrop(croppedBlob);
-    onClose();
+    const success = await handleConfirmCrop(croppedBlob);
+    if (success) {
+      onClose();
+    }
   };
 
   return (
     <>
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept={ACCEPTED_MIME_TYPES.join(",")}
+        onChange={handleInputChange}
+        className="hidden"
+        aria-hidden="true"
+      />
+
       <Modal
         isOpen={isOpen && !isCropModalOpen}
         onClose={onClose}
@@ -99,15 +110,6 @@ export const AvatarActionModal: React.FC<AvatarActionModalProps> = ({
               <span>{successMessage}</span>
             </div>
           )}
-
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept={ACCEPTED_MIME_TYPES.join(",")}
-            onChange={handleInputChange}
-            className="hidden"
-            aria-hidden="true"
-          />
 
           {/* Action Buttons */}
           <div className="flex flex-col gap-2.5 pt-2 border-t border-stone/50">

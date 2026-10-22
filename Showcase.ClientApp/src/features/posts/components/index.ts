@@ -17,5 +17,7 @@ export * from "./WizardStepper.tsx";
 export * from "./WizardStepReview.tsx";
 export * from "./PostCard.tsx";
 export * from "./PostCardSkeleton.tsx";
+export * from "./PostShareCard.tsx";
+export * from "./SharePostModal.tsx";
 
 

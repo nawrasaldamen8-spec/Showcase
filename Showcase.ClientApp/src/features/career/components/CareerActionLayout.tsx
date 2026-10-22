@@ -15,10 +15,10 @@ export interface CareerActionLayoutProps {
 export const CareerActionLayout: React.FC<CareerActionLayoutProps> = ({
   title,
   subtitle,
-  badge = "Career Trajectory",
+  badge: _badge = "Career Trajectory",
   backTo,
   backLabel,
-  icon: Icon,
+  icon: _Icon,
   children,
 }) => {
   return (
@@ -36,12 +36,6 @@ export const CareerActionLayout: React.FC<CareerActionLayoutProps> = ({
 
       {/* Screen Header */}
       <header className="border-b border-stone pb-6 mb-8 space-y-2">
-        <div className="flex items-center gap-2">
-          {Icon && <Icon className="h-4 w-4 text-clay" />}
-          <span className="font-gothic text-xs font-bold uppercase tracking-[0.16em] text-clay">
-            {badge}
-          </span>
-        </div>
 
         <h1 className="font-gothic font-extrabold text-3xl sm:text-4xl uppercase tracking-tight text-slate-dark">
           {title}

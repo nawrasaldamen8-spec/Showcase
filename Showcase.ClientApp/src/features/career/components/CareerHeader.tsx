@@ -16,11 +16,13 @@ export interface CareerHeaderProps {
   isVisibleInProfile?: boolean;
   onToggleVisibility?: (visible: boolean) => void;
   isTogglingVisibility?: boolean;
+  itemCount?: number;
+  maxCount?: number;
 }
 
 export const CareerHeader: React.FC<CareerHeaderProps> = ({
   sectionTitle,
-  badge = "Career",
+  badge: _badge = "Career",
   description,
   actionLabel,
   onAction,
@@ -30,7 +32,11 @@ export const CareerHeader: React.FC<CareerHeaderProps> = ({
   isVisibleInProfile = true,
   onToggleVisibility,
   isTogglingVisibility = false,
+  itemCount,
+  maxCount,
 }) => {
+  const isLimitReached = maxCount !== undefined && (itemCount ?? 0) >= maxCount;
+
   return (
     <div className="mb-8 pb-6 border-b border-stone/60">
       {/* Editorial Breadcrumb */}
@@ -46,12 +52,16 @@ export const CareerHeader: React.FC<CareerHeaderProps> = ({
 
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-5">
         <div className="max-w-2xl">
-          <span className="font-gothic text-xs font-bold uppercase tracking-[0.16em] text-clay block mb-1">
-            {badge}
-          </span>
-          <h1 className="font-gothic text-2xl sm:text-3xl lg:text-4xl font-extrabold uppercase tracking-tight text-slate-dark">
-            {sectionTitle}
-          </h1>
+          <div className="flex items-center gap-3">
+            <h1 className="font-gothic text-2xl sm:text-3xl lg:text-4xl font-extrabold uppercase tracking-tight text-slate-dark">
+              {sectionTitle}
+            </h1>
+            {maxCount !== undefined && (
+              <span className="font-gothic text-xs font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-slate-dark/5 text-cloud-dark border border-stone/50">
+                {itemCount ?? 0} / {maxCount}
+              </span>
+            )}
+          </div>
           <p className="font-serif text-[15px] sm:text-[16px] text-slate-dark/70 mt-1.5 leading-relaxed">
             {description}
           </p>
@@ -85,6 +95,8 @@ export const CareerHeader: React.FC<CareerHeaderProps> = ({
               size="md"
               leftIcon={<Plus className="w-4 h-4" />}
               onClick={onAction}
+              disabled={isLimitReached}
+              title={isLimitReached ? `Maximum limit reached (${maxCount})` : undefined}
               className="shadow-none uppercase tracking-wider text-xs font-bold w-full sm:w-auto"
             >
               {actionLabel}

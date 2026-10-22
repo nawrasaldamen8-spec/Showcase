@@ -54,6 +54,7 @@ const VerificationRequestPage = lazy(() => import("@features/security/pages/Veri
 const AccountBannedPage = lazy(() => import("@features/security/pages/AccountBannedPage.tsx").then((m) => ({ default: m.AccountBannedPage })));
 
 // Auth Pages
+const AuthLayout = lazy(() => import("@features/auth/components/AuthLayout.tsx").then((m) => ({ default: m.AuthLayout })));
 const CompleteOAuthPage = lazy(() => import("@features/auth/pages/CompleteOAuthPage.tsx").then((m) => ({ default: m.CompleteOAuthPage })));
 const LoginPage = lazy(() => import("@features/auth/pages/LoginPage.tsx").then((m) => ({ default: m.LoginPage })));
 const RegisterWizardPage = lazy(() => import("@features/auth/pages/RegisterWizardPage.tsx").then((m) => ({ default: m.RegisterWizardPage })));
@@ -77,8 +78,10 @@ export const AppRoutes: React.FC = () => {
     <Suspense fallback={<RouteLoadingSkeleton />}>
       <Routes>
         {/* 1. Public Auth & Standalone Pages */}
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterWizardPage />} />
+        <Route element={<AuthLayout />}>
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterWizardPage />} />
+        </Route>
         <Route path="/auth/complete-oauth" element={<CompleteOAuthPage />} />
         <Route path="/banned" element={<AccountBannedPage />} />
 

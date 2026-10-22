@@ -52,9 +52,6 @@ export const PostEditorPage: React.FC = () => {
         />
 
         <div className="py-6 sm:py-8 space-y-1.5">
-          <span className="font-gothic text-xs font-bold uppercase tracking-[0.16em] text-clay">
-            Project Studio &bull; Step {editor.currentStep} of {WIZARD_STEPS.length}
-          </span>
           <h1 className="font-gothic text-2xl sm:text-3xl lg:text-4xl font-extrabold uppercase tracking-tight text-slate-dark">
             {WIZARD_STEPS[editor.currentStep - 1]?.title}
           </h1>

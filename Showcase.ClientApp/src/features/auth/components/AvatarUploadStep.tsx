@@ -1,5 +1,5 @@
 import React, { useRef } from "react";
-import { Camera, Sparkles } from "lucide-react";
+import { ArrowLeft, ArrowRight, Camera, Sparkles } from "lucide-react";
 import { Button } from "@shared/components/Button.tsx";
 import { UserAvatar } from "@shared/components/media/index.ts";
 
@@ -10,7 +10,7 @@ export interface AvatarUploadStepProps {
   onAvatarChange: (url: string) => void;
   onFileSelect?: (file: File) => void;
   onComplete: () => void;
-  onSkip: () => void;
+  onSkip?: () => void;
   onBack: () => void;
   isLoading: boolean;
 }
@@ -22,7 +22,6 @@ export const AvatarUploadStep: React.FC<AvatarUploadStepProps> = ({
   onAvatarChange,
   onFileSelect,
   onComplete,
-  onSkip,
   onBack,
   isLoading,
 }) => {
@@ -44,18 +43,9 @@ export const AvatarUploadStep: React.FC<AvatarUploadStepProps> = ({
   };
 
   return (
-    <div className="space-y-6 text-center">
-      <div className="space-y-1">
-        <h3 className="font-gothic text-base font-bold uppercase tracking-tight text-slate-dark">
-          Profile Avatar (Optional)
-        </h3>
-        <p className="font-serif text-xs text-cloud-dark">
-          Upload a portrait photo or continue with the default silhouette.
-        </p>
-      </div>
-
-      {/* Main Avatar Preview */}
-      <div className="flex flex-col items-center justify-center gap-3">
+    <div className="space-y-4 text-center">
+      {/* Avatar Preview */}
+      <div className="flex flex-col items-center justify-center gap-2 pt-1">
         <div className="relative group">
           <UserAvatar
             src={avatarUrl}
@@ -83,48 +73,42 @@ export const AvatarUploadStep: React.FC<AvatarUploadStepProps> = ({
           onChange={handleFileChange}
         />
 
-        <div className="font-serif text-xs text-slate-dark/70">
+        <div className="font-serif text-xs text-slate-dark/70 mt-1">
           {name || `@${username}`}
         </div>
       </div>
 
-      {/* Action Buttons */}
-      <div className="pt-2 space-y-3">
-        <div className="flex gap-3">
-          <Button
-            type="button"
-            variant="outline"
-            size="lg"
-            onClick={onBack}
-            disabled={isLoading}
-            className="flex-1 font-gothic uppercase tracking-wider text-xs"
-          >
-            Back
-          </Button>
+      {/* Navigation & Action Buttons */}
+      <div className="pt-2 flex items-center justify-between gap-3">
+        <Button
+          type="button"
+          variant="outline"
+          size="md"
+          onClick={onBack}
+          disabled={isLoading}
+          leftIcon={<ArrowLeft className="w-4 h-4" />}
+          className="font-gothic uppercase tracking-wider text-xs"
+        >
+          Back
+        </Button>
 
-          <Button
-            type="button"
-            variant="clay"
-            size="lg"
-            onClick={onComplete}
-            isLoading={isLoading}
-            leftIcon={<Sparkles className="h-4 w-4" />}
-            className="flex-1 font-gothic uppercase tracking-wider text-xs shadow-none"
-          >
-            {avatarUrl ? "Complete Profile" : "Create Profile"}
-          </Button>
-        </div>
-
-        {!avatarUrl && (
-          <button
-            type="button"
-            onClick={onSkip}
-            disabled={isLoading}
-            className="font-serif text-xs text-cloud-dark hover:text-slate-dark underline underline-offset-4 cursor-pointer transition-colors"
-          >
-            Skip for now, use default avatar
-          </button>
-        )}
+        <Button
+          type="button"
+          variant="clay"
+          size="md"
+          onClick={onComplete}
+          isLoading={isLoading}
+          rightIcon={
+            avatarUrl ? (
+              <Sparkles className="h-4 w-4" />
+            ) : (
+              <ArrowRight className="h-4 w-4" />
+            )
+          }
+          className="font-gothic uppercase tracking-wider text-xs shadow-none"
+        >
+          {avatarUrl ? "Complete Profile" : "Skip"}
+        </Button>
       </div>
     </div>
   );

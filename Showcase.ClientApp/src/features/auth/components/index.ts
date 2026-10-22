@@ -1,4 +1,6 @@
 export * from "./AuthCardLayout.tsx";
+export * from "./AuthLayout.tsx";
+export * from "./AuthStepTransition.tsx";
 export * from "./AvatarUploadStep.tsx";
 export * from "./BioStep.tsx";
 export * from "./CredentialsStep.tsx";
@@ -7,7 +9,8 @@ export * from "./GoogleAuthButton.tsx";
 export * from "./PasswordStep.tsx";
 export * from "./PasswordStrengthMeter.tsx";
 export * from "./PersonalInfoStep.tsx";
+export * from "./RegisterMethodStep.tsx";
+export * from "./SpecialtyPickerModal.tsx";
 export * from "./SpecialtyStep.tsx";
 export * from "./StepIndicator.tsx";
 export * from "./UsernameStep.tsx";
-

@@ -54,6 +54,8 @@ export const CareerSkillsPage: React.FC = () => {
         isVisibleInProfile={visibility.skills}
         onToggleVisibility={(val) => toggleSection("skills", val)}
         isTogglingVisibility={isToggling}
+        itemCount={skills.length}
+        maxCount={10}
       />
 
       {/* Category Filter Pills */}

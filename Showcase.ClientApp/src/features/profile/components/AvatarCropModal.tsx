@@ -7,7 +7,7 @@ export interface AvatarCropModalProps {
   isOpen: boolean;
   imageSrc: string | null;
   onClose: () => void;
-  onConfirm: (croppedBlob: Blob) => Promise<void>;
+  onConfirm: (croppedBlob: Blob) => Promise<unknown>;
   isUploading?: boolean;
 }
 
@@ -22,6 +22,7 @@ export const AvatarCropModal: React.FC<AvatarCropModalProps> = ({
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const [isSaving, setIsSaving] = useState(false);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const imageRef = useRef<HTMLImageElement>(null);
@@ -35,7 +36,7 @@ export const AvatarCropModal: React.FC<AvatarCropModalProps> = ({
   }, [isOpen, imageSrc]);
 
   const handleMouseDown = (e: React.MouseEvent) => {
-    if (isUploading) return;
+    if (isUploading || isSaving) return;
     setIsDragging(true);
     setDragStart({ x: e.clientX - position.x, y: e.clientY - position.y });
   };
@@ -53,7 +54,7 @@ export const AvatarCropModal: React.FC<AvatarCropModalProps> = ({
   }, []);
 
   const handleTouchStart = (e: React.TouchEvent) => {
-    if (isUploading || !e.touches[0]) return;
+    if (isUploading || isSaving || !e.touches[0]) return;
     setIsDragging(true);
     setDragStart({
       x: e.touches[0].clientX - position.x,
@@ -142,10 +143,15 @@ export const AvatarCropModal: React.FC<AvatarCropModalProps> = ({
     ctx.drawImage(img, drawX, drawY, drawWidth, drawHeight);
     ctx.restore();
 
+    setIsSaving(true);
     canvas.toBlob(
       async (blob) => {
-        if (blob) {
-          await onConfirm(blob);
+        try {
+          if (blob) {
+            await onConfirm(blob);
+          }
+        } finally {
+          setIsSaving(false);
         }
       },
       "image/jpeg",
@@ -156,7 +162,7 @@ export const AvatarCropModal: React.FC<AvatarCropModalProps> = ({
   return (
     <Modal
       isOpen={isOpen}
-      onClose={isUploading ? () => {} : onClose}
+      onClose={isUploading || isSaving ? () => {} : onClose}
       title="Adjust Profile Photo"
       size="lg"
       footer={
@@ -166,7 +172,7 @@ export const AvatarCropModal: React.FC<AvatarCropModalProps> = ({
             variant="outline"
             size="md"
             onClick={onClose}
-            disabled={isUploading}
+            disabled={isUploading || isSaving}
           >
             Cancel
           </Button>
@@ -175,7 +181,7 @@ export const AvatarCropModal: React.FC<AvatarCropModalProps> = ({
             variant="clay"
             size="md"
             onClick={handleSaveCroppedImage}
-            isLoading={isUploading}
+            isLoading={isUploading || isSaving}
             leftIcon={<Check className="h-4 w-4" />}
           >
             Save Photo

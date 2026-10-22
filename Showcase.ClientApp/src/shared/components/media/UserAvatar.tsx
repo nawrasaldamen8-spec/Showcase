@@ -59,6 +59,10 @@ export const UserAvatar: React.FC<UserAvatarProps> = ({
   fetchPriority = "auto",
 }) => {
   const [hasError, setHasError] = useState(false);
+
+  React.useEffect(() => {
+    setHasError(false);
+  }, [src]);
   const config = sizeClasses[size];
   const hasImage = Boolean(src && !hasError && src.trim() !== "");
 

@@ -10,6 +10,7 @@ export const CareerAchievementsPage: React.FC = () => {
       sectionKey="achievements"
       sectionTitle="Achievements"
       description="Honors, awards, publications, and key career milestones."
+      maxCount={10}
       actionLabel="Add Achievement"
       newRoute="/career/achievements/new"
       editRoute={(id) => `/career/achievements/${id}/edit`}

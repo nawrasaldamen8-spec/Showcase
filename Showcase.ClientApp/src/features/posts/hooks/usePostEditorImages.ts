@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { apiClient } from "@shared/api/apiClient.ts";
+import { queryKeys } from "@shared/api/queryKeys.ts";
 import { PostStatus } from "@shared/types/index.ts";
 import type { UploadedImageData } from "../components/ImageDropzone.tsx";
 import type { ImageGridItem } from "../components/ImageReorderGrid.tsx";
@@ -21,6 +23,7 @@ export function usePostEditorImages({
   postStatus,
   setIsDirty,
 }: UsePostEditorImagesOptions) {
+  const queryClient = useQueryClient();
   const [images, setImages] = useState<ImageGridItem[]>([]);
   const [imageInvariantError, setImageInvariantError] = useState<string | null>(null);
   const stagedBlobUrlsRef = useRef<Set<string>>(new Set());
@@ -110,6 +113,7 @@ export function usePostEditorImages({
         await apiClient.reorderPostImages(id, {
           items: reordered.map((img) => ({ id: img.id, displayOrder: img.displayOrder })),
         });
+        await queryClient.invalidateQueries({ queryKey: queryKeys.posts.all });
       } catch (err) {
         console.error("Failed to synchronize image reorder:", err);
       }
@@ -129,6 +133,7 @@ export function usePostEditorImages({
     if (id) {
       try {
         await apiClient.removePostImage(id, imageId);
+        await queryClient.invalidateQueries({ queryKey: queryKeys.posts.all });
       } catch (err) {
         console.error("Failed to remove image from storage:", err);
         toast.error("Failed to remove image from backend.");
@@ -150,24 +155,24 @@ export function usePostEditorImages({
   const handleSetCoverImage = async (imageId: string) => {
     setImageInvariantError(null);
     setIsDirty(true);
-    let reorderedList: ImageGridItem[] = [];
 
-    setImages((prev) => {
-      const target = prev.find((img) => img.id === imageId);
-      if (!target) return prev;
-      const others = prev.filter((img) => img.id !== imageId);
-      reorderedList = [target, ...others].map((img, idx) => ({ ...img, displayOrder: idx }));
-      return reorderedList;
-    });
+    const target = images.find((img) => img.id === imageId);
+    if (!target) return;
+    const others = images.filter((img) => img.id !== imageId);
+    const reorderedList = [target, ...others].map((img, idx) => ({ ...img, displayOrder: idx }));
+
+    setImages(reorderedList);
 
     if (id && reorderedList.length > 0) {
       try {
         await apiClient.reorderPostImages(id, {
           items: reorderedList.map((img) => ({ id: img.id, displayOrder: img.displayOrder })),
         });
+        await queryClient.invalidateQueries({ queryKey: queryKeys.posts.all });
         toast.success("Cover image updated successfully.");
       } catch (err) {
         console.error("Failed to synchronize cover image update:", err);
+        toast.error("Failed to update cover image.");
       }
     }
   };

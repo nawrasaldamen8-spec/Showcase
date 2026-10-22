@@ -36,6 +36,10 @@ public class CreateLanguageCommandHandler(
 
         var profile = profileResult.Value;
 
+        var count = await _context.Languages.CountAsync(l => l.ProfileId == profile.Id, ct);
+        if (count >= 6)
+            return Result.Failure<CareerLanguageDto>(Error.Validation("Career.MaxLanguagesReached", "Maximum limit of 6 languages reached."));
+
         if (!Enum.TryParse<LanguageProficiency>(request.Proficiency, true, out var proficiency))
         {
             proficiency = LanguageProficiency.Intermediate;
@@ -48,4 +52,3 @@ public class CreateLanguageCommandHandler(
         return language.ToDto();
     }
 }
-

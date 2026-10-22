@@ -10,6 +10,7 @@ export const CareerExperiencePage: React.FC = () => {
       sectionKey="experience"
       sectionTitle="Experience"
       description="Your work history and professional roles."
+      maxCount={5}
       actionLabel="Add Experience"
       newRoute="/career/experience/new"
       editRoute={(id) => `/career/experience/${id}/edit`}

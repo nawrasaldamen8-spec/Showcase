@@ -1,7 +1,9 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { apiClient, extractApiErrorMessage, extractApiFieldErrors } from "@shared/api/index.ts";
+import { queryKeys } from "@shared/api/queryKeys.ts";
 import { PostStatus } from "@shared/types/index.ts";
 import type { ImageGridItem } from "../components/ImageReorderGrid.tsx";
 import { persistPostData } from "./postEditorOperations.ts";
@@ -29,6 +31,7 @@ export interface UsePostEditorSubmitOptions {
 
 export function usePostEditorSubmit(options: UsePostEditorSubmitOptions) {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [isSaving, setIsSaving] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
   const [generalError, setGeneralError] = useState<string | null>(null);
@@ -92,6 +95,7 @@ export function usePostEditorSubmit(options: UsePostEditorSubmitOptions) {
       }
 
       options.setIsDirty(false);
+      await queryClient.invalidateQueries({ queryKey: queryKeys.posts.all });
       toast.success("Draft saved successfully.");
       if (navTimerRef.current) {
         clearTimeout(navTimerRef.current);
@@ -136,6 +140,7 @@ export function usePostEditorSubmit(options: UsePostEditorSubmitOptions) {
       await apiClient.publishPost(targetPostId);
       options.setPostStatus(PostStatus.Published);
       options.setIsDirty(false);
+      await queryClient.invalidateQueries({ queryKey: queryKeys.posts.all });
       toast.success("Project published successfully!");
       if (navTimerRef.current) {
         clearTimeout(navTimerRef.current);

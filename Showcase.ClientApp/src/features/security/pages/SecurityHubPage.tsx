@@ -26,15 +26,6 @@ export const SecurityHubPage: React.FC = () => {
       <div className="max-w-2xl mx-auto space-y-8">
         {/* Page Header */}
         <div className="border-b border-stone pb-6 space-y-2">
-          <div className="flex items-center gap-2">
-            <span className="font-gothic text-xs font-bold uppercase tracking-[0.16em] text-clay">
-              Account Settings
-            </span>
-            <span className="text-stone">&bull;</span>
-            <span className="font-gothic text-xs font-semibold uppercase tracking-[0.10em] text-cloud-dark">
-              Security &amp; Identity
-            </span>
-          </div>
 
           <h1 className="font-gothic font-extrabold text-3xl sm:text-4xl uppercase tracking-tight text-slate-dark">
             Account Settings

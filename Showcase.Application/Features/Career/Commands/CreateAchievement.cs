@@ -38,6 +38,10 @@ public class CreateAchievementCommandHandler(
 
         var profile = profileResult.Value;
 
+        var count = await _context.Achievements.CountAsync(a => a.ProfileId == profile.Id, ct);
+        if (count >= 10)
+            return Result.Failure<CareerAchievementDto>(Error.Validation("Career.MaxAchievementsReached", "Maximum limit of 10 achievements reached."));
+
         Url? url = null;
         if (!string.IsNullOrWhiteSpace(request.Url))
         {
@@ -70,4 +74,3 @@ public class CreateAchievementCommandHandler(
         return achievement.ToDto();
     }
 }
-

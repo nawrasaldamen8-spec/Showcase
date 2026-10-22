@@ -24,6 +24,7 @@ export interface CareerListPageConfig<T extends { id: string }> {
   getItemName: (item: T) => string;
   renderCard: (item: T, onEdit: (item: T) => void, onDelete: (item: T) => void) => React.ReactNode;
   gridClassName?: string;
+  maxCount?: number;
 }
 
 export function CareerListPage<T extends { id: string }>({
@@ -42,6 +43,7 @@ export function CareerListPage<T extends { id: string }>({
   getItemName,
   renderCard,
   gridClassName = "space-y-6",
+  maxCount,
 }: CareerListPageConfig<T>): React.ReactElement {
   const navigate = useNavigate();
   const { visibility, isToggling, toggleSection } = useCareerVisibility();
@@ -116,6 +118,8 @@ export function CareerListPage<T extends { id: string }>({
         isVisibleInProfile={visibility[sectionKey]}
         onToggleVisibility={(val) => toggleSection(sectionKey, val)}
         isTogglingVisibility={isToggling}
+        itemCount={items.length}
+        maxCount={maxCount}
       />
 
       {loading ? (

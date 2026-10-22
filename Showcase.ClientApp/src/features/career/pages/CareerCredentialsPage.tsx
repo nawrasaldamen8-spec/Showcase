@@ -10,6 +10,7 @@ export const CareerCredentialsPage: React.FC = () => {
       sectionKey="credentials"
       sectionTitle="Certifications & Licenses"
       description="Certificates, licenses, and professional accreditations."
+      maxCount={15}
       actionLabel="Add Certification"
       newRoute="/career/credentials/new"
       editRoute={(id) => `/career/credentials/${id}/edit`}

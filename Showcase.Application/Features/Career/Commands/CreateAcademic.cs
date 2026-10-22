@@ -52,6 +52,10 @@ public class CreateAcademicCommandHandler(
 
         var profile = profileResult.Value;
 
+        var count = await _context.Academics.CountAsync(a => a.ProfileId == profile.Id, ct);
+        if (count >= 5)
+            return Result.Failure<CareerAcademicDto>(Error.Validation("Career.MaxAcademicsReached", "Maximum limit of 5 academics reached."));
+
         var endDate = request.CurrentlyStudying ? null : request.EndDate;
         var dateRangeResult = DateRange.Create(request.StartDate, endDate);
         if (dateRangeResult.IsFailure)
@@ -73,4 +77,3 @@ public class CreateAcademicCommandHandler(
         return academic.ToDto();
     }
 }
-

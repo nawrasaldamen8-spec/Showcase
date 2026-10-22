@@ -62,6 +62,15 @@ export async function persistPostData({
       externalUrl,
       tags,
     });
+    if (images.length > 0) {
+      try {
+        await apiClient.reorderPostImages(targetPostId, {
+          items: images.map((img) => ({ id: img.id, displayOrder: img.displayOrder })),
+        });
+      } catch (reorderErr) {
+        console.error("Failed to sync final image order on post update:", reorderErr);
+      }
+    }
   }
   return targetPostId;
 }

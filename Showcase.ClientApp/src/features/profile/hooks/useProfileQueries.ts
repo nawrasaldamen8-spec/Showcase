@@ -92,11 +92,15 @@ export function useAvatarUploadMutation() {
         fileSizeBytes: file.size,
       });
 
-      const publicUrl = await apiClient.uploadImageFile(uploadUrl, file);
-      await apiClient.updateAvatar(storageKey, publicUrl);
-      return { storageKey, publicUrl };
+      await apiClient.uploadImageFile(uploadUrl, file);
+      await apiClient.updateAvatar(storageKey);
+      const computedPublicUrl = uploadUrl.includes("cloudinary.com")
+        ? uploadUrl
+        : `/uploads/${storageKey.replace(/^\/+/, "")}`;
+      return { storageKey, publicUrl: computedPublicUrl };
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.auth.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.profiles.me() });
       queryClient.invalidateQueries({ queryKey: queryKeys.profiles.all });
       toast.success("Profile photo updated!");
@@ -113,6 +117,7 @@ export function useRemoveAvatarMutation() {
   return useMutation({
     mutationFn: () => apiClient.removeAvatar(),
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.auth.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.profiles.me() });
       queryClient.invalidateQueries({ queryKey: queryKeys.profiles.all });
       toast.success("Profile photo removed.");

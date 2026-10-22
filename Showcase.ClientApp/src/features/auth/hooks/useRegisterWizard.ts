@@ -143,7 +143,7 @@ export function useRegisterWizard() {
 
     const cleanEmail = email.trim();
     if (cleanEmail && !/.+@.+\..+/.test(cleanEmail)) {
-      setError("Please enter a valid email address or click Skip.");
+      setError("Please enter a valid email address or clear it to skip.");
       return;
     }
 

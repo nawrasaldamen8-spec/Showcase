@@ -1,15 +1,14 @@
 import React from "react";
-import { ArrowRight, AtSign, CheckCircle2, Loader2, XCircle } from "lucide-react";
+import { ArrowLeft, ArrowRight, AtSign, CheckCircle2, Loader2, XCircle } from "lucide-react";
 import { Button } from "@shared/components/Button.tsx";
 import { Input } from "@shared/components/Input.tsx";
-import { GoogleAuthButton } from "./GoogleAuthButton.tsx";
 
 export interface UsernameStepProps {
   username: string;
   setUsername: (value: string) => void;
   usernameStatus: "idle" | "checking" | "available" | "taken";
   onSubmit: (e: React.FormEvent) => void;
-  showGoogleOption?: boolean;
+  onBack?: () => void;
 }
 
 export const UsernameStep: React.FC<UsernameStepProps> = ({
@@ -17,7 +16,7 @@ export const UsernameStep: React.FC<UsernameStepProps> = ({
   setUsername,
   usernameStatus,
   onSubmit,
-  showGoogleOption = true,
+  onBack,
 }) => {
   return (
     <form onSubmit={onSubmit} className="space-y-4" noValidate>
@@ -56,47 +55,39 @@ export const UsernameStep: React.FC<UsernameStepProps> = ({
           autoFocus
           autoComplete="username"
           enterKeyHint="next"
+          className="min-h-[46px]"
         />
         <p className="font-serif text-[11px] text-cloud-dark">
-          Your permanent portfolio link: pority.design/u/{username || "handle"}
+          Permanent portfolio link: pority.design/u/{username || "handle"}
         </p>
       </div>
 
-      <div className="pt-2">
+      <div className="pt-2 flex items-center justify-between gap-3">
+        {onBack ? (
+          <Button
+            type="button"
+            variant="outline"
+            size="md"
+            onClick={onBack}
+            leftIcon={<ArrowLeft className="w-4 h-4" />}
+            className="font-gothic uppercase tracking-wider text-xs justify-center"
+          >
+            Back
+          </Button>
+        ) : (
+          <div />
+        )}
         <Button
           type="submit"
           variant="clay"
-          size="lg"
-          fullWidth
+          size="md"
           rightIcon={<ArrowRight className="w-4 h-4" />}
           disabled={!username.trim() || usernameStatus === "taken" || usernameStatus === "checking"}
-          className="font-gothic uppercase tracking-wider text-xs justify-center"
+          className="font-gothic uppercase tracking-wider text-xs justify-center ml-auto"
         >
           Continue
         </Button>
       </div>
-
-      {showGoogleOption && (
-        <>
-          <div className="relative py-2">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t border-stone/60" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-ivory-light px-2 text-cloud-dark font-gothic tracking-wider text-[10px]">
-                Or sign up with Google
-              </span>
-            </div>
-          </div>
-
-          <GoogleAuthButton
-            onClick={() => {
-              window.location.href = "/api/auth/google";
-            }}
-            text="Continue with Google"
-          />
-        </>
-      )}
     </form>
   );
 };

@@ -50,9 +50,9 @@ export const PostMasonryGrid: React.FC<PostMasonryGridProps> = ({
 
   return (
     <>
-      <div className="columns-2 sm:columns-3 lg:columns-4 gap-3.5 sm:gap-4 lg:gap-5 [column-fill:_balance]">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3.5 sm:gap-4 lg:gap-5">
         {posts.map((post) => (
-          <div key={post.id} className="break-inside-avoid mb-3.5 sm:mb-4 lg:mb-5">
+          <div key={post.id} className="w-full">
             <PostCard
               post={
                 {
@@ -65,7 +65,7 @@ export const PostMasonryGrid: React.FC<PostMasonryGridProps> = ({
                   },
                 } as ExplorePostResponse
               }
-              aspectRatio="auto"
+              aspectRatio="4/3"
             />
           </div>
         ))}

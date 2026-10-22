@@ -22,9 +22,9 @@ export const WIZARD_STEPS: readonly WizardStepMeta[] = [
   },
   {
     step: 3,
-    label: "Narrative",
-    title: "Curatorial Statement",
-    description: "Articulate the conceptual framework, architectural methodology, and spatial context of the project.",
+    label: "Description",
+    title: "Project Description",
+    description: "Add an optional description to provide context about your project.",
   },
   {
     step: 4,

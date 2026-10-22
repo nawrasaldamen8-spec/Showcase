@@ -12,7 +12,7 @@ import type {
   UploadUrlRequest,
   UploadUrlResponse,
 } from "../types/index.ts";
-import { httpFetch } from "./apiClient.base.ts";
+import { API_BASE_URL, httpFetch } from "./apiClient.base.ts";
 
 export const apiPostsClient = {
   async getExplorePosts(
@@ -138,7 +138,12 @@ export const apiPostsClient = {
       return result?.secure_url || uploadUrl;
     }
 
-    const response = await fetch(uploadUrl, {
+    const targetUrl =
+      uploadUrl.startsWith("/") && API_BASE_URL
+        ? `${API_BASE_URL.replace(/\/$/, "")}${uploadUrl}`
+        : uploadUrl;
+
+    const response = await fetch(targetUrl, {
       method: "PUT",
       body: file,
       headers: {

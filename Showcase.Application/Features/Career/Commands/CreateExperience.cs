@@ -48,6 +48,10 @@ public class CreateExperienceCommandHandler(
 
         var profile = profileResult.Value;
 
+        var count = await _context.Experiences.CountAsync(e => e.ProfileId == profile.Id, ct);
+        if (count >= 5)
+            return Result.Failure<CareerExperienceDto>(Error.Validation("Career.MaxExperiencesReached", "Maximum limit of 5 experiences reached."));
+
         var endDate = request.CurrentlyWorking ? null : request.EndDate;
         var dateRangeResult = DateRange.Create(request.StartDate, endDate);
         if (dateRangeResult.IsFailure)
@@ -69,4 +73,3 @@ public class CreateExperienceCommandHandler(
         return experience.ToDto();
     }
 }
-
