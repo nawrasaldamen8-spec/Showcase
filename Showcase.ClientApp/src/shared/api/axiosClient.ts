@@ -128,14 +128,17 @@ axiosInstance.interceptors.response.use(
       return Promise.reject(error);
     }
 
-    // Skip refresh token flow if the 401 was already on the refresh/login/logout endpoints or retry already happened
-    if (
-      error.response?.status === 401 &&
-      !originalRequest._retry &&
-      !originalRequest.url?.includes("/api/auth/refresh") &&
-      !originalRequest.url?.includes("/api/auth/login") &&
-      !originalRequest.url?.includes("/api/auth/logout")
-    ) {
+    // Skip refresh token flow if the 401 was already on auth endpoints or retry already happened
+    const requestUrl = originalRequest.url || "";
+    const isExcludedFromRefresh =
+      requestUrl.includes("/api/auth/refresh") ||
+      requestUrl.includes("/api/auth/login") ||
+      requestUrl.includes("/api/auth/logout") ||
+      requestUrl.includes("/api/auth/register") ||
+      requestUrl.includes("/api/auth/check-username") ||
+      requestUrl.includes("/api/auth/google");
+
+    if (error.response?.status === 401 && !originalRequest._retry && !isExcludedFromRefresh) {
       if (authSyncService.isRefreshing()) {
         originalRequest._retry = true;
         return new Promise((resolve, reject) => {

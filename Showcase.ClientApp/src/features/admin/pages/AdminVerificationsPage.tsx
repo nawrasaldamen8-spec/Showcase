@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { CheckCircle2, Clock, ExternalLink, FileCheck, ShieldCheck, ShieldOff } from "lucide-react";
 import { Button } from "@shared/components/Button.tsx";
-import { UserAvatar } from "@shared/components/media/index.ts";
+import { UserAvatar } from "@shared/components/UserAvatar.tsx";
 import { VerifiedBadge } from "@shared/components/VerifiedBadge.tsx";
 import type { VerificationRequestItem } from "@shared/types/index.ts";
 import { AdminLayout } from "../components/AdminLayout.tsx";

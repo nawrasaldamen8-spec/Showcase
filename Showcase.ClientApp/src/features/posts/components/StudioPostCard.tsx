@@ -22,20 +22,20 @@ function formatDate(isoString?: string | null): string {
 }
 
 export interface StudioPostCardProps {
-  post: PostSummaryResponse;
-  isActionRunning: boolean;
-  onTogglePublish: (post: PostSummaryResponse) => void;
-  onDeleteClick: (post: PostSummaryResponse) => void;
+  post?: PostSummaryResponse | null;
+  isActionRunning?: boolean;
+  onTogglePublish?: (post: PostSummaryResponse) => void;
+  onDeleteClick?: (post: PostSummaryResponse) => void;
+  loading?: boolean;
 }
 
 export const StudioPostCard: React.FC<StudioPostCardProps> = ({
   post,
-  isActionRunning,
+  isActionRunning = false,
   onTogglePublish,
   onDeleteClick,
+  loading = false,
 }) => {
-  const isPublished = isPostPublished(post.status);
-  const hasImages = (post.imageCount || 0) > 0;
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -62,8 +62,45 @@ export const StudioPostCard: React.FC<StudioPostCardProps> = ({
     };
   }, [isMenuOpen]);
 
+  // 1:1 Tailored Skeleton Loader State
+  if (loading || !post) {
+    return (
+      <div
+        aria-hidden="true"
+        className="bg-ivory-light border border-stone rounded-card p-4 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 sm:gap-6 shadow-none animate-pulse"
+      >
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-5 w-full sm:w-auto flex-1 min-w-0">
+          {/* 16:9 Thumbnail Skeleton */}
+          <div className="w-full sm:w-36 sm:h-24 h-44 bg-[#e6e3da] rounded-xl shrink-0" />
+
+          {/* Details Skeleton */}
+          <div className="flex-1 min-w-0 space-y-2 w-full">
+            <div className="flex items-center gap-2">
+              <div className="h-4 w-16 bg-[#e6e3da] rounded-full" />
+              <div className="h-3 w-28 bg-[#e6e3da] rounded" />
+            </div>
+            <div className="h-5 w-44 bg-[#e6e3da] rounded" />
+            <div className="space-y-1">
+              <div className="h-3.5 w-3/4 bg-[#e6e3da] rounded" />
+              <div className="h-3.5 w-1/2 bg-[#e6e3da] rounded sm:hidden" />
+            </div>
+          </div>
+        </div>
+
+        {/* Action Buttons Skeleton */}
+        <div className="flex items-center justify-end gap-2 w-full sm:w-auto shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-stone/40">
+          <div className="w-20 h-9 rounded-xl bg-[#e6e3da]" />
+          <div className="w-9 h-9 rounded-xl bg-[#e6e3da]" />
+        </div>
+      </div>
+    );
+  }
+
+  const isPublished = isPostPublished(post.status);
+  const hasImages = (post.imageCount || 0) > 0;
+
   return (
-    <div className="bg-ivory-light border border-stone rounded-card p-4 sm:p-6 transition-all duration-200 hover:border-slate-dark/70 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 sm:gap-6 shadow-none">
+    <div className="bg-ivory-light border border-stone rounded-card p-4 sm:p-6 transition-colors duration-200 ease-out hover:border-slate-dark/70 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 sm:gap-6 shadow-none">
       <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-5 w-full sm:w-auto flex-1 min-w-0">
         <Link
           to={`/posts/${post.id}`}
@@ -78,7 +115,7 @@ export const StudioPostCard: React.FC<StudioPostCardProps> = ({
               alt={post.title}
               variant="thumb"
               containerClassName="w-full h-full"
-              className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+              className="w-full h-full object-cover transition-transform duration-400 ease-out transform-gpu will-change-transform group-hover:scale-105"
             />
           ) : (
             <div className="w-full h-full flex flex-col items-center justify-center text-cloud-dark gap-1 p-2">
@@ -163,7 +200,7 @@ export const StudioPostCard: React.FC<StudioPostCardProps> = ({
                 type="button"
                 onClick={() => {
                   setIsMenuOpen(false);
-                  onTogglePublish(post);
+                  onTogglePublish?.(post);
                 }}
                 disabled={isActionRunning || (!isPublished && !hasImages)}
                 title={
@@ -187,7 +224,7 @@ export const StudioPostCard: React.FC<StudioPostCardProps> = ({
                 type="button"
                 onClick={() => {
                   setIsMenuOpen(false);
-                  onDeleteClick(post);
+                  onDeleteClick?.(post);
                 }}
                 className="flex items-center gap-2.5 w-full px-3 py-2 rounded-lg font-gothic text-xs font-semibold uppercase tracking-wider text-clay hover:bg-clay/10 transition-colors text-left cursor-pointer"
               >

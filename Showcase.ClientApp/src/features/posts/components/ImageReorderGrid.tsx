@@ -184,7 +184,7 @@ export const ImageReorderGrid: React.FC<ImageReorderGridProps> = ({
                 <img
                   src={image.url}
                   alt={isCover ? 'Cover Image' : `Image ${idx + 1}`}
-                  className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+                  className="w-full h-full object-cover transition-transform duration-300 ease-out transform-gpu group-hover:scale-[1.02]"
                   onError={(e) => {
                     (e.currentTarget as HTMLImageElement).src =
                       'https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=800&q=80';

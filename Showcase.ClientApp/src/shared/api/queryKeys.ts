@@ -14,8 +14,6 @@ export const queryKeys = {
   posts: {
     all: ["posts"] as const,
     lists: () => [...queryKeys.posts.all, "list"] as const,
-    explore: (filters?: Record<string, unknown>) => [...queryKeys.posts.lists(), "explore", filters || {}] as const,
-    infiniteExplore: (filters?: Record<string, unknown>) => [...queryKeys.posts.lists(), "infinite-explore", filters || {}] as const,
     mine: (filters?: Record<string, unknown>) => [...queryKeys.posts.lists(), "mine", filters || {}] as const,
     byUser: (username: string, params?: Record<string, unknown>) => [...queryKeys.posts.lists(), "user", username, params || {}] as const,
     infiniteByUser: (username: string, params?: Record<string, unknown>) => [...queryKeys.posts.lists(), "infinite-user", username, params || {}] as const,
@@ -45,7 +43,6 @@ export const queryKeys = {
     all: ["lookups"] as const,
     countries: () => [...queryKeys.lookups.all, "countries"] as const,
     languages: () => [...queryKeys.lookups.all, "languages"] as const,
-    popularTags: (limit = 20) => [...queryKeys.lookups.all, "popular-tags", limit] as const,
     specialties: () => [...queryKeys.lookups.all, "specialties"] as const,
   },
   admin: {
@@ -55,7 +52,6 @@ export const queryKeys = {
     verifications: () => [...queryKeys.admin.all, "verifications"] as const,
     featured: () => [...queryKeys.admin.all, "featured"] as const,
     reports: (params?: Record<string, unknown>) => [...queryKeys.admin.all, "reports", params || {}] as const,
-    broadcasts: () => [...queryKeys.admin.all, "broadcasts"] as const,
     storage: () => [...queryKeys.admin.all, "storage"] as const,
     auditLogs: (params?: Record<string, unknown>) => [...queryKeys.admin.all, "audit-logs", params || {}] as const,
   },

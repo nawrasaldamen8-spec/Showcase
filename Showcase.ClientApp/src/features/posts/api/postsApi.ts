@@ -1,6 +1,5 @@
 import type {
   CreatePostRequest,
-  ExplorePostResponse,
   PaginatedList,
   PostCreatedResponse,
   PostDetailsResponse,
@@ -16,24 +15,6 @@ import { httpFetch } from "@shared/api/apiClient.base.ts";
 import { mediaUploadService } from "@shared/services/mediaUploadService.ts";
 
 export const apiPostsClient = {
-  async getExplorePosts(
-    search?: string,
-    pageNumber = 1,
-    pageSize = 12,
-    category?: string,
-  ): Promise<PaginatedList<ExplorePostResponse>> {
-    const params = new URLSearchParams({
-      pageNumber: pageNumber.toString(),
-      pageSize: pageSize.toString(),
-    });
-    if (search) params.set("search", search);
-    if (category && category !== "All") params.set("category", category);
-
-    return httpFetch<PaginatedList<ExplorePostResponse>>(`/api/posts/explore?${params.toString()}`, {
-      requiresAuth: false,
-    });
-  },
-
   async getPostById(id: string): Promise<PostDetailsResponse> {
     return httpFetch<PostDetailsResponse>(`/api/posts/${id}`);
   },
@@ -51,14 +32,6 @@ export const apiPostsClient = {
       `/api/profiles/${encodeURIComponent(username)}/posts?${params.toString()}`,
       { requiresAuth: false },
     );
-  },
-
-  async getCreatorPosts(
-    username: string,
-    pageNumber = 1,
-    pageSize = 12,
-  ): Promise<PaginatedList<PostSummaryResponse>> {
-    return this.getProfilePosts(username, pageNumber, pageSize);
   },
 
   async getMyPosts(

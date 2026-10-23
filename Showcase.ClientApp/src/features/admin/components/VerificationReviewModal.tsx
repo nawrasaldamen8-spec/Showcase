@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { ExternalLink, ShieldCheck, XCircle } from "lucide-react";
 import { Button } from "@shared/components/Button.tsx";
-import { UserAvatar } from "@shared/components/media/index.ts";
+import { UserAvatar } from "@shared/components/UserAvatar.tsx";
 import { Modal } from "@shared/components/Modal.tsx";
 import { Textarea } from "@shared/components/Textarea.tsx";
 import type { VerificationRequestItem } from "@shared/types/index.ts";

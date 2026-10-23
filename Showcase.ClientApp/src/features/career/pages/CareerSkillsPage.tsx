@@ -1,6 +1,9 @@
 import { Sparkles } from "lucide-react";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { apiClient, extractApiErrorMessage, queryKeys } from "@shared/api/index.ts";
 import type { CareerSkill } from "@shared/types/index.ts";
 import {
   CareerEmptyState,
@@ -8,40 +11,46 @@ import {
   DeleteConfirmModal,
   SkillCard,
 } from "../components/index.ts";
-import {
-  useCareerSkillsQuery,
-  useCareerVisibility,
-  useDeleteSkillMutation,
-} from "../hooks/index.ts";
+import { useCareerVisibility } from "../hooks/index.ts";
 
 export const CareerSkillsPage: React.FC = () => {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [activeCategory, setActiveCategory] = useState<string>("All");
   const [deleteTarget, setDeleteTarget] = useState<CareerSkill | null>(null);
+  const [isDeleting, setIsDeleting] = useState<boolean>(false);
 
-  const { data: skills = [], isLoading: loading } = useCareerSkillsQuery();
-  const deleteMutation = useDeleteSkillMutation();
+  const { data: skills = [], isLoading: loading } = useQuery<CareerSkill[]>({
+    queryKey: queryKeys.career.skills(),
+    queryFn: () => apiClient.getSkills(),
+  });
+
   const { visibility, isToggling, toggleSection } = useCareerVisibility();
 
   const handleDeleteConfirm = async () => {
     if (!deleteTarget) return;
+    setIsDeleting(true);
     try {
-      await deleteMutation.mutateAsync(deleteTarget.id);
+      await apiClient.deleteSkill(deleteTarget.id);
+      queryClient.invalidateQueries({ queryKey: queryKeys.career.skills() });
+      toast.success("Skill removed.");
       setDeleteTarget(null);
-    } catch {
-      // Error handled by mutation onError
+    } catch (err: unknown) {
+      toast.error(extractApiErrorMessage(err, "Failed to delete skill."));
+    } finally {
+      setIsDeleting(false);
     }
   };
 
   const categories = [
     "All",
-    ...Array.from(new Set(skills.map((s) => s.category || "General").filter(Boolean))),
+    ...Array.from(new Set(skills.map((s: CareerSkill) => s.category || "General").filter(Boolean))),
   ];
 
   const filteredSkills =
     activeCategory === "All"
       ? skills
-      : skills.filter((s) => (s.category || "General") === activeCategory);
+      : skills.filter((s: CareerSkill) => (s.category || "General") === activeCategory);
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
@@ -97,7 +106,7 @@ export const CareerSkillsPage: React.FC = () => {
         />
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-          {filteredSkills.map((skill) => (
+          {filteredSkills.map((skill: CareerSkill) => (
             <SkillCard
               key={skill.id}
               item={skill}
@@ -114,7 +123,7 @@ export const CareerSkillsPage: React.FC = () => {
         onConfirm={handleDeleteConfirm}
         title="Delete Skill"
         itemName={deleteTarget?.name || "this skill"}
-        isDeleting={deleteMutation.isPending}
+        isDeleting={isDeleting}
       />
     </div>
   );

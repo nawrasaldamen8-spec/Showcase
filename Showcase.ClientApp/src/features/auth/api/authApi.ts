@@ -4,6 +4,7 @@ import type {
   ChangePasswordRequest,
   ChangeUsernameRequest,
   CurrentUserResponse,
+  DeleteAccountRequest,
   LoginRequest,
   RegisterGoogleRequest,
   RegisterRequest,
@@ -44,10 +45,10 @@ export const apiAuthClient = {
     });
   },
 
-  async refreshToken(accessToken?: string, refreshToken?: string): Promise<AuthResponse> {
+  async refreshToken(): Promise<AuthResponse> {
     return await httpFetch<AuthResponse>("/api/auth/refresh", {
       method: "POST",
-      body: JSON.stringify({ accessToken, refreshToken }),
+      body: JSON.stringify({}),
       requiresAuth: false,
     });
   },
@@ -86,6 +87,13 @@ export const apiAuthClient = {
     return httpFetch<void>("/api/auth/change-username", {
       method: "PUT",
       body: JSON.stringify(data),
+    });
+  },
+
+  async deleteAccount(password: string): Promise<void> {
+    return httpFetch<void>("/api/auth/account", {
+      method: "DELETE",
+      body: JSON.stringify({ password } satisfies DeleteAccountRequest),
     });
   },
 };

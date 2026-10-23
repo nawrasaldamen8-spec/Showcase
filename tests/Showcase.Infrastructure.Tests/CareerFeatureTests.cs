@@ -278,21 +278,10 @@ public class CareerFeatureTests
         Assert.True(toggleResult.IsSuccess);
         Assert.False(toggleResult.Value.Experience);
 
-        // 3. Update full visibility object
-        var updateHandler = new UpdateCareerVisibilityCommandHandler(currentUserService.Object, dbContext);
-        var updateResult = await updateHandler.Handle(new UpdateCareerVisibilityCommand(
-            Experience: false,
-            Academics: true,
-            Skills: false,
-            Credentials: true,
-            Languages: true,
-            Achievements: false
-        ), CancellationToken.None);
-
-        Assert.True(updateResult.IsSuccess);
-        Assert.False(updateResult.Value.Experience);
-        Assert.True(updateResult.Value.Academics);
-        Assert.False(updateResult.Value.Skills);
+        // 3. Toggle Academics section
+        var toggleAcademicsResult = await toggleHandler.Handle(new ToggleSectionVisibilityCommand("academics", false), CancellationToken.None);
+        Assert.True(toggleAcademicsResult.IsSuccess);
+        Assert.False(toggleAcademicsResult.Value.Academics);
     }
 
     [Fact]

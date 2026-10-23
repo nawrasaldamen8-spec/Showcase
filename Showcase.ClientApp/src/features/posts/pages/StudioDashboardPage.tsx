@@ -3,7 +3,6 @@ import React, { useMemo, useState } from "react";
 import { extractApiErrorMessage } from "@shared/api/index.ts";
 import { EmptyState } from "@shared/components/EmptyState.tsx";
 import { ErrorBanner } from "@shared/components/ErrorBanner.tsx";
-import { Skeleton } from "@shared/components/Skeleton.tsx";
 import type { PostSummaryResponse } from "@shared/types/index.ts";
 import {
   StudioDeleteModal,
@@ -131,22 +130,8 @@ export const StudioDashboardPage: React.FC = () => {
 
         {isLoading && (
           <div className="mt-6 space-y-4">
-            {[1, 2, 3].map((n) => (
-              <div
-                key={n}
-                className="bg-ivory-light border border-stone rounded-card p-6 flex flex-col md:flex-row items-center gap-6 shadow-none"
-              >
-                <Skeleton className="w-full md:w-44 h-32 rounded-xl shrink-0" />
-                <div className="flex-1 w-full space-y-3">
-                  <Skeleton className="h-6 w-1/3" />
-                  <Skeleton className="h-4 w-2/3" />
-                  <Skeleton className="h-4 w-24" />
-                </div>
-                <div className="flex items-center gap-2">
-                  <Skeleton className="h-9 w-20 rounded-full" />
-                  <Skeleton className="h-9 w-20 rounded-full" />
-                </div>
-              </div>
+            {Array.from({ length: 4 }).map((_, n) => (
+              <StudioPostCard key={n} loading />
             ))}
           </div>
         )}

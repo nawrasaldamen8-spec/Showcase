@@ -7,6 +7,7 @@ import { useCareerVisibility } from "../hooks/useCareerVisibility.ts";
 import { CareerEmptyState } from "./CareerEmptyState.tsx";
 import { CareerHeader } from "./CareerHeader.tsx";
 import { DeleteConfirmModal } from "./DeleteConfirmModal.tsx";
+import { CareerCardShell } from "./CareerCardShell.tsx";
 
 export interface CareerListPageConfig<T extends { id: string }> {
   sectionKey: keyof CareerVisibilitySettings;
@@ -123,8 +124,26 @@ export function CareerListPage<T extends { id: string }>({
       />
 
       {loading ? (
-        <div className="py-20 text-center text-cloud-dark font-serif">
-          Loading {entityLabel.toLowerCase()}s...
+        <div className={gridClassName} aria-hidden="true">
+          {Array.from({ length: 3 }).map((_, idx) => (
+            <CareerCardShell key={idx} className="animate-pulse space-y-4 shadow-none">
+              <div className="flex items-start justify-between gap-4">
+                <div className="space-y-2 flex-1">
+                  <div className="h-5 w-48 bg-[#e6e3da] rounded" />
+                  <div className="h-4 w-36 bg-[#e6e3da] rounded" />
+                  <div className="h-3.5 w-24 bg-[#e6e3da] rounded" />
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  <div className="w-8 h-8 rounded-lg bg-[#e6e3da]" />
+                  <div className="w-8 h-8 rounded-lg bg-[#e6e3da]" />
+                </div>
+              </div>
+              <div className="space-y-1.5 pt-2 border-t border-stone/40">
+                <div className="h-3.5 w-full bg-[#e6e3da] rounded" />
+                <div className="h-3.5 w-3/4 bg-[#e6e3da] rounded" />
+              </div>
+            </CareerCardShell>
+          ))}
         </div>
       ) : items.length === 0 ? (
         <CareerEmptyState

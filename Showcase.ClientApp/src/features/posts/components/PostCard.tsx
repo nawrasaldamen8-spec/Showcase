@@ -80,9 +80,10 @@ export const PostCard: React.FC<PostCardProps> = ({ post, spanType = "square", c
         <ProgressiveImage
           src={post.thumbnailUrl}
           alt={post.title}
-          variant="thumb"
-          containerClassName={`w-full ${imgHeightClass}`}
-          className="transition-transform duration-500 ease-out group-hover:scale-105"
+          variant={isAutoAspect ? "feed" : "thumb"}
+          layout={isAutoAspect ? "natural" : "fill"}
+          className={`w-full ${imgHeightClass}`}
+          imageClassName="h-auto max-w-full w-full object-cover object-top transition-transform duration-500 ease-out transform-gpu will-change-transform group-hover:scale-105"
         />
       ) : (
         <div className="w-full aspect-[4/3] flex flex-col items-center justify-center text-cloud-dark gap-2">
@@ -102,25 +103,27 @@ export const PostCard: React.FC<PostCardProps> = ({ post, spanType = "square", c
       )}
 
       {/* Hover / Focus Overlay */}
-      <div className="absolute inset-0 bg-slate-dark/55 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100 transition-opacity duration-200 flex flex-col justify-end p-3 sm:p-4 text-ivory-light">
-        <h3 className="font-gothic text-xs sm:text-sm font-bold uppercase tracking-tight line-clamp-2 text-ivory-light leading-snug">
-          {post.title}
-        </h3>
-        <div className="flex items-center gap-1.5 mt-1 sm:mt-1.5 text-[11px] sm:text-xs text-ivory-light/80 font-serif">
-          <span className="truncate">@{creatorUsername}</span>
-          {post.creator?.isVerified && <VerifiedBadge size="xs" className="shrink-0" />}
-          {(post.publishedAt || post.createdAt) && (
-            <>
-              <span className="text-ivory-light/50">•</span>
-              <span>{formatRelativeTime(post.publishedAt || post.createdAt, { suffix: true })}</span>
-            </>
-          )}
-          {post.imageCount > 1 && (
-            <>
-              <span className="text-ivory-light/50">•</span>
-              <span>{post.imageCount} images</span>
-            </>
-          )}
+      <div className="absolute inset-0 bg-slate-dark/55 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100 transition-all duration-300 ease-out flex flex-col justify-end p-3 sm:p-4 text-ivory-light pointer-events-none">
+        <div className="transform-gpu translate-y-1.5 group-hover:translate-y-0 group-focus-visible:translate-y-0 transition-transform duration-300 ease-out">
+          <h3 className="font-gothic text-xs sm:text-sm font-bold uppercase tracking-tight line-clamp-2 text-ivory-light leading-snug">
+            {post.title}
+          </h3>
+          <div className="flex items-center gap-1.5 mt-1 sm:mt-1.5 text-[11px] sm:text-xs text-ivory-light/80 font-serif">
+            <span className="truncate">@{creatorUsername}</span>
+            {post.creator?.isVerified && <VerifiedBadge size="xs" className="shrink-0" />}
+            {(post.publishedAt || post.createdAt) && (
+              <>
+                <span className="text-ivory-light/50">•</span>
+                <span>{formatRelativeTime(post.publishedAt || post.createdAt, { suffix: true })}</span>
+              </>
+            )}
+            {post.imageCount > 1 && (
+              <>
+                <span className="text-ivory-light/50">•</span>
+                <span>{post.imageCount} images</span>
+              </>
+            )}
+          </div>
         </div>
       </div>
     </article>

@@ -52,9 +52,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   useEffect(() => {
     const handleAuthExpired = () => {
       tokenStorage.clear();
-      setCurrentUser(null);
+      setCurrentUser((prevUser) => {
+        if (prevUser !== null) {
+          toast.info("Session expired. Please sign in again to continue.");
+        }
+        return null;
+      });
       setIsLoading(false);
-      toast.info("Session expired. Please sign in again to continue.");
     };
 
     window.addEventListener('showcase:auth-expired', handleAuthExpired);

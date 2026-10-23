@@ -1,3 +1,4 @@
+import { ProgressiveImage } from "@shared/components/index.ts";
 import { ExternalLink, Globe } from "lucide-react";
 import React from "react";
 import { Badge } from "@shared/components/Badge.tsx";
@@ -36,10 +37,13 @@ export const WizardStepReview: React.FC<WizardStepReviewProps> = ({
           <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-start">
             {/* Primary Hero Plate */}
             <div className="md:col-span-8 rounded-[20px] overflow-hidden bg-[#e6e3da] border border-stone/60 relative">
-              <img
+              <ProgressiveImage
                 src={images[0].url}
                 alt="Primary cover image preview"
-                className="w-full h-72 sm:h-80 object-cover"
+                variant="feed"
+                priority
+                className="w-full h-72 sm:h-80"
+                imageClassName="w-full h-full object-cover"
               />
               <div className="absolute top-3 left-3 bg-slate-dark/80 backdrop-blur-xs text-ivory-light px-3 py-1 rounded-full font-gothic text-[10px] font-bold uppercase tracking-wider">
                 Primary Cover
@@ -54,10 +58,12 @@ export const WizardStepReview: React.FC<WizardStepReviewProps> = ({
                     key={img.id || idx}
                     className="rounded-xl overflow-hidden bg-[#e6e3da] border border-stone/60 relative h-24 sm:h-28"
                   >
-                    <img
+                    <ProgressiveImage
                       src={img.url}
                       alt={`Image ${idx + 2}`}
-                      className="w-full h-full object-cover"
+                      variant="thumb"
+                      className="w-full h-full"
+                      imageClassName="w-full h-full object-cover"
                     />
                     <span className="absolute bottom-1.5 right-1.5 bg-slate-dark/70 text-ivory-light px-1.5 py-0.5 rounded text-[9px] font-gothic uppercase">
                       Image {idx + 2}

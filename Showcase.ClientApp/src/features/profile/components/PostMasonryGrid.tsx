@@ -50,9 +50,10 @@ export const PostMasonryGrid: React.FC<PostMasonryGridProps> = ({
 
   return (
     <>
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3.5 sm:gap-4 lg:gap-5">
+      {/* Masonry layout using Tailwind columns */}
+      <div className="columns-2 md:columns-3 lg:columns-4 gap-4 space-y-4">
         {posts.map((post) => (
-          <div key={post.id} className="w-full">
+          <div key={post.id} className="break-inside-avoid">
             <PostCard
               post={
                 {
@@ -65,7 +66,8 @@ export const PostMasonryGrid: React.FC<PostMasonryGridProps> = ({
                   },
                 } as ExplorePostResponse
               }
-              aspectRatio="4/3"
+              aspectRatio="auto"
+              className="rounded-lg sm:rounded-xl overflow-hidden break-inside-avoid border border-stone/50 hover:border-slate-dark/40 shadow-xs hover:shadow-md transition-[border-color,box-shadow] duration-300 ease-out"
             />
           </div>
         ))}

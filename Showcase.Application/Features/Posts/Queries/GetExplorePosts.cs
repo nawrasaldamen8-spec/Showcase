@@ -2,14 +2,11 @@ using Showcase.Application.Features.Posts.Common;
 
 namespace Showcase.Application.Features.Posts.Queries;
 
-
-
 public record GetExplorePostsQuery(
     string? Search = null,
+    string? Category = null,
     int PageNumber = 1,
     int PageSize = 12) : IRequest<Result<PaginatedList<PostSummaryResponse>>>, IPaginationRequest;
-
-
 
 public class GetExplorePostsQueryHandler(
     IApplicationDbContext context,
@@ -26,13 +23,21 @@ public class GetExplorePostsQueryHandler(
     {
         var visibleProfileIds = _context.GetExploreFeaturedCreatorIds();
 
-        var pagedPosts = await _context.Posts
+        var query = _context.Posts
             .Include(p => p.Images)
             .Include(p => p.PostTags)
                 .ThenInclude(pt => pt.Tag)
             .AsPublished()
             .Where(p => visibleProfileIds.Contains(p.ProfileId))
-            .Search(request.Search)
+            .Search(request.Search);
+
+        if (!string.IsNullOrWhiteSpace(request.Category) && !request.Category.Equals("All", StringComparison.OrdinalIgnoreCase))
+        {
+            var normalizedCategory = Tag.NormalizeTag(request.Category);
+            query = query.Where(p => p.PostTags.Any(pt => pt.Tag.NormalizedName == normalizedCategory || pt.Tag.Name.ToLower() == request.Category.Trim().ToLower()));
+        }
+
+        var pagedPosts = await query
             .OrderByDescending(p => p.PublishedAt)
             .ThenByDescending(p => p.Id)
             .ToPaginatedListAsync(request, ct);
@@ -56,8 +61,6 @@ public class GetExplorePostsQueryHandler(
     }
 }
 
-
-
 public class GetExplorePostsQueryValidator : AbstractValidator<GetExplorePostsQuery>
 {
     public GetExplorePostsQueryValidator()
@@ -71,6 +74,9 @@ public class GetExplorePostsQueryValidator : AbstractValidator<GetExplorePostsQu
         RuleFor(x => x.Search)
             .MaximumLength(100).WithMessage("Search query cannot exceed 100 characters.")
             .When(x => !string.IsNullOrWhiteSpace(x.Search));
+
+        RuleFor(x => x.Category)
+            .MaximumLength(50).WithMessage("Category query cannot exceed 50 characters.")
+            .When(x => !string.IsNullOrWhiteSpace(x.Category));
     }
 }
-

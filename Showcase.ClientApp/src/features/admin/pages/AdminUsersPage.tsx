@@ -10,7 +10,7 @@ import {
   UserCheck,
 } from "lucide-react";
 import { Input } from "@shared/components/Input.tsx";
-import { UserAvatar } from "@shared/components/media/index.ts";
+import { UserAvatar } from "@shared/components/UserAvatar.tsx";
 import { VerifiedBadge } from "@shared/components/VerifiedBadge.tsx";
 import { formatBytes } from "@shared/utils/format.ts";
 import type { AdminUserListItem, UserRole } from "@shared/types/index.ts";

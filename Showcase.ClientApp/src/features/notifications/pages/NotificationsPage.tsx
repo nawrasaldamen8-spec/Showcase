@@ -3,7 +3,7 @@ import React, { useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { apiClient, queryKeys } from "@shared/api/index.ts";
 import { useInfiniteScroll } from "@shared/hooks/index.ts";
-import type { NotificationDto } from "@shared/api/apiClient.notifications.ts";
+import type { NotificationDto } from "../api/index.ts";
 import { NotificationRow } from "../components/NotificationRow.tsx";
 import { NotificationRowSkeleton } from "../components/NotificationRowSkeleton.tsx";
 import {

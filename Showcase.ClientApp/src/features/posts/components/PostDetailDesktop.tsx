@@ -14,103 +14,35 @@ export interface PostDetailDesktopProps {
 
 interface PlateLayoutConfig {
   gridSpan: string;
-  aspectRatioClass: string;
 }
 
 function getPlateLayoutConfig(secIndex: number, secondaryCount: number): PlateLayoutConfig {
   if (secondaryCount === 1) {
-    return {
-      gridSpan: "col-span-12",
-      aspectRatioClass: "aspect-[16/10] max-h-[650px]",
-    };
+    return { gridSpan: "col-span-12" };
   }
 
   if (secondaryCount === 2) {
-    if (secIndex === 0) {
-      return {
-        gridSpan: "col-span-12 md:col-span-5",
-        aspectRatioClass: "aspect-[3/4] max-h-[550px]",
-      };
-    }
-    return {
-      gridSpan: "col-span-12 md:col-span-7",
-      aspectRatioClass: "aspect-[4/3] max-h-[550px]",
-    };
+    return { gridSpan: "col-span-12 md:col-span-6" };
   }
 
   if (secondaryCount === 3) {
-    if (secIndex === 0) {
-      return {
-        gridSpan: "col-span-12 md:col-span-7",
-        aspectRatioClass: "aspect-[4/3] max-h-[500px]",
-      };
+    if (secIndex === 2) {
+      return { gridSpan: "col-span-12" };
     }
-    if (secIndex === 1) {
-      return {
-        gridSpan: "col-span-12 md:col-span-5",
-        aspectRatioClass: "aspect-[3/4] max-h-[500px]",
-      };
-    }
-    return {
-      gridSpan: "col-span-12",
-      aspectRatioClass: "aspect-[16/9] lg:aspect-[21/9] max-h-[550px]",
-    };
+    return { gridSpan: "col-span-12 md:col-span-6" };
   }
 
   if (secondaryCount === 4) {
-    if (secIndex === 0) {
-      return {
-        gridSpan: "col-span-12 md:col-span-5",
-        aspectRatioClass: "aspect-[3/4] max-h-[500px]",
-      };
-    }
-    if (secIndex === 1) {
-      return {
-        gridSpan: "col-span-12 md:col-span-7",
-        aspectRatioClass: "aspect-[4/3] max-h-[500px]",
-      };
-    }
-    return {
-      gridSpan: "col-span-12 md:col-span-6",
-      aspectRatioClass: "aspect-[4/3] max-h-[480px]",
-    };
+    return { gridSpan: "col-span-12 md:col-span-6" };
   }
 
-  // 5+ items: alternating editorial mosaic rhythm
-  const patternIndex = secIndex % 5;
+  // 5+ items: clean 2-column rhythm, last odd item spans full width
   const isLastSingle = secIndex === secondaryCount - 1 && secIndex % 2 === 0;
-
-  if (isLastSingle && patternIndex !== 2) {
-    return {
-      gridSpan: "col-span-12",
-      aspectRatioClass: "aspect-[16/9] lg:aspect-[21/9] max-h-[550px]",
-    };
+  if (isLastSingle) {
+    return { gridSpan: "col-span-12" };
   }
 
-  switch (patternIndex) {
-    case 0:
-      return {
-        gridSpan: "col-span-12 md:col-span-5",
-        aspectRatioClass: "aspect-[3/4] max-h-[520px]",
-      };
-    case 1:
-      return {
-        gridSpan: "col-span-12 md:col-span-7",
-        aspectRatioClass: "aspect-[4/3] max-h-[520px]",
-      };
-    case 2:
-      return {
-        gridSpan: "col-span-12",
-        aspectRatioClass: "aspect-[16/9] lg:aspect-[21/9] max-h-[550px]",
-      };
-    case 3:
-    case 4:
-    default:
-      return {
-        gridSpan: "col-span-12 md:col-span-6",
-        aspectRatioClass: "aspect-square sm:aspect-[4/3] max-h-[480px]",
-      };
-  }
+  return { gridSpan: "col-span-12 md:col-span-6" };
 }
 
 export const PostDetailDesktop: React.FC<PostDetailDesktopProps> = ({
@@ -139,7 +71,7 @@ export const PostDetailDesktop: React.FC<PostDetailDesktopProps> = ({
         <div className="col-span-12 lg:col-span-7">
           {primaryImage ? (
             <figure
-              className="group relative rounded-card overflow-hidden bg-[#e6e3da] border border-stone/60 cursor-pointer shadow-none transition-all duration-300 hover:border-slate-dark/40"
+              className="group relative rounded-card overflow-hidden bg-[#e6e3da] border border-stone/60 cursor-pointer shadow-none transition-colors duration-300 ease-out hover:border-slate-dark/40"
               onClick={() => onInspectImage(0)}
             >
               <ProgressiveImage
@@ -147,10 +79,11 @@ export const PostDetailDesktop: React.FC<PostDetailDesktopProps> = ({
                 alt={post.title}
                 variant="detail"
                 priority
-                containerClassName="w-full max-h-[75vh]"
-                className="w-full h-auto max-h-[75vh] object-cover transition-transform duration-700 ease-out group-hover:scale-[1.01]"
+                layout="natural"
+                containerClassName="w-full max-h-[75vh] flex items-center justify-center overflow-hidden"
+                className="w-full h-auto max-h-[75vh] object-contain transition-transform duration-500 ease-out transform-gpu group-hover:scale-[1.025]"
               />
-              <div className="absolute top-4 right-4 bg-slate-dark/75 backdrop-blur-xs text-ivory-light px-3 py-1.5 rounded-full font-gothic text-[11px] font-semibold uppercase tracking-wider flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+              <div className="absolute top-4 right-4 bg-slate-dark/75 backdrop-blur-xs text-ivory-light px-3 py-1.5 rounded-full font-gothic text-[11px] font-semibold uppercase tracking-wider flex items-center gap-1.5 opacity-0 group-hover:opacity-100 translate-y-1 group-hover:translate-y-0 transition-all duration-300 ease-out pointer-events-none">
                 <Maximize2 className="h-3.5 w-3.5" />
                 <span>Inspect</span>
               </div>
@@ -179,23 +112,24 @@ export const PostDetailDesktop: React.FC<PostDetailDesktopProps> = ({
         <section aria-label="Additional project images" className="pt-10 sm:pt-14 border-t border-stone/50 space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-12 gap-6 lg:gap-8 items-stretch">
             {secondaryImages.map((image, idx) => {
-              const layout = secondaryLayouts[idx] ?? { gridSpan: "col-span-12", aspectRatioClass: "aspect-[16/9]" };
+              const layout = secondaryLayouts[idx] ?? { gridSpan: "col-span-12 md:col-span-6" };
               const overallIndex = idx + 1;
               return (
                 <figure
                   key={image.id || idx}
-                  className={`group relative rounded-card overflow-hidden bg-[#e6e3da] border border-stone/50 cursor-pointer shadow-none transition-all duration-300 hover:border-slate-dark/40 ${layout.gridSpan}`}
+                  className={`group relative rounded-card overflow-hidden bg-[#e6e3da] border border-stone/50 cursor-pointer shadow-none transition-colors duration-300 ease-out hover:border-slate-dark/40 ${layout.gridSpan}`}
                   onClick={() => onInspectImage(overallIndex)}
                 >
-                  <div className={`relative ${layout.aspectRatioClass} w-full overflow-hidden`}>
+                  <div className="w-full min-h-[280px] sm:min-h-[360px] max-h-[640px] flex items-center justify-center overflow-hidden">
                     <ProgressiveImage
                       src={image.url}
                       alt={`${post.title} - Image ${overallIndex + 1}`}
                       variant="detail"
-                      containerClassName="w-full h-full"
-                      className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.01]"
+                      layout="natural"
+                      containerClassName="w-full h-full flex items-center justify-center"
+                      className="w-full h-auto max-h-[640px] object-contain transition-transform duration-500 ease-out transform-gpu group-hover:scale-[1.025]"
                     />
-                    <div className="absolute top-4 right-4 bg-slate-dark/75 backdrop-blur-xs text-ivory-light px-3 py-1.5 rounded-full font-gothic text-[11px] font-semibold uppercase tracking-wider flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="absolute top-4 right-4 bg-slate-dark/75 backdrop-blur-xs text-ivory-light px-3 py-1.5 rounded-full font-gothic text-[11px] font-semibold uppercase tracking-wider flex items-center gap-1.5 opacity-0 group-hover:opacity-100 translate-y-1 group-hover:translate-y-0 transition-all duration-300 ease-out pointer-events-none">
                       <Maximize2 className="h-3.5 w-3.5" />
                       <span>Inspect</span>
                     </div>

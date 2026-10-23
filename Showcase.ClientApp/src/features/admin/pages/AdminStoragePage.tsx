@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { apiClient, queryKeys } from "@shared/api/index.ts";
 import { formatBytes } from "@shared/utils/format.ts";
 import { Button } from "@shared/components/Button.tsx";
-import { UserAvatar } from "@shared/components/media/index.ts";
+import { UserAvatar } from "@shared/components/UserAvatar.tsx";
 import { AdminKpiCard } from "../components/AdminKpiCard.tsx";
 import { AdminLayout } from "../components/AdminLayout.tsx";
 import { StorageBarChart } from "../components/StorageBarChart.tsx";

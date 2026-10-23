@@ -1,11 +1,11 @@
+import { ProgressiveImage } from "@shared/components/index.ts";
 import { ArrowRight } from "lucide-react";
 import React, { useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { UserAvatar } from "@shared/components/media/index.ts";
+import { UserAvatar } from "@shared/components/UserAvatar.tsx";
 import { VerifiedBadge } from "@shared/components/VerifiedBadge.tsx";
 import { useAdaptiveImageDimensions, useResponsiveViewport } from "@shared/hooks/index.ts";
 import type { PostDetailsResponse } from "@shared/types/index.ts";
-import { getOptimizedImageUrl } from "@shared/utils/mediaUrl.ts";
 import { PostCuratorialMeta } from "./PostCuratorialMeta.tsx";
 
 export interface PostDetailMobileProps {
@@ -92,7 +92,7 @@ export const PostDetailMobile: React.FC<PostDetailMobileProps> = ({
       >
         {/* Counter Badge: Top Right Corner */}
         {images.length > 1 && (
-          <div className="absolute top-3 right-3 z-10 bg-slate-dark/70 backdrop-blur-xs text-ivory-light font-gothic text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full border border-white/15 select-none">
+          <div className="absolute top-3 right-3 z-30 pointer-events-none bg-slate-dark/70 backdrop-blur-xs text-ivory-light font-gothic text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full border border-white/15 select-none">
             {activeSlideIndex + 1} / {images.length}
           </div>
         )}
@@ -108,17 +108,35 @@ export const PostDetailMobile: React.FC<PostDetailMobileProps> = ({
             <div
               key={image.id || index}
               onClick={() => onInspectImage(index)}
-              className="w-full h-full snap-start snap-always shrink-0 relative flex items-center justify-center cursor-pointer select-none"
+              className="w-full h-full snap-start snap-always shrink-0 relative flex items-center justify-center cursor-pointer select-none overflow-hidden"
             >
+              {/* Ambient Blurred Backdrop */}
               <img
-                src={getOptimizedImageUrl(image.url, "detail")}
-                alt={`${post.title} - Image ${index + 1}`}
-                onLoad={(e) =>
-                  handleImageLoad(index, e.currentTarget.naturalWidth, e.currentTarget.naturalHeight)
-                }
-                className="max-w-full max-h-full w-auto h-auto object-contain select-none pointer-events-none"
+                src={image.url}
+                alt=""
+                aria-hidden="true"
+                className="absolute inset-0 w-full h-full object-cover filter blur-2xl opacity-40 scale-110 select-none pointer-events-none"
                 draggable={false}
               />
+
+              {/* Sharp Main Image */}
+              <div className="relative z-10 w-full h-full flex items-center justify-center p-0.5">
+                <ProgressiveImage
+                  src={image.url}
+                  alt={`${post.title} - Image ${index + 1}`}
+                  variant="detail"
+                  priority={index === 0}
+                  loading={index === 0 ? "eager" : "lazy"}
+                  onLoad={(e) => {
+                    if (e?.currentTarget) {
+                      handleImageLoad(index, e.currentTarget.naturalWidth, e.currentTarget.naturalHeight);
+                    }
+                  }}
+                  className="w-full h-full flex items-center justify-center bg-transparent"
+                  imageClassName="max-w-full max-h-full w-auto h-auto object-contain select-none pointer-events-none m-auto drop-shadow-sm"
+                  imageProps={{ draggable: false }}
+                />
+              </div>
             </div>
           ))}
         </div>

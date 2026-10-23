@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { Modal } from "@shared/components/feedback/Modal.tsx";
+import { Modal } from "@shared/components/Modal.tsx";
 import { Button } from "@shared/components/Button.tsx";
 import { ZoomIn, ZoomOut, RotateCcw, Check } from "lucide-react";
 

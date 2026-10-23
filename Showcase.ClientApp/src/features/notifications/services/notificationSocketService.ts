@@ -103,8 +103,8 @@ class NotificationSocketService {
     };
   }
 
-  public getState(): HubConnectionState {
-    return this.connection?.state ?? HubConnectionState.Disconnected;
+  public getConnectionState(): HubConnectionState | null {
+    return this.connection?.state ?? null;
   }
 }
 

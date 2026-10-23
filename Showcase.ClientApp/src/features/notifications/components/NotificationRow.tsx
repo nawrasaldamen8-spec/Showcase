@@ -1,8 +1,8 @@
 import { AlertTriangle, Bell, Heart, ShieldCheck, Sparkles, Trash2 } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import type { NotificationDto } from "@shared/api/apiClient.notifications.ts";
-import { UserAvatar } from "@shared/components/media/index.ts";
+import type { NotificationDto } from "../api/index.ts";
+import { UserAvatar, ProgressiveImage } from "@shared/components/index.ts";
 import { formatRelativeTime } from "@shared/utils/index.ts";
 
 export interface NotificationRowProps {
@@ -349,10 +349,12 @@ export const NotificationRow: React.FC<NotificationRowProps> = ({
               onClick={(e) => e.stopPropagation()}
             >
               {notification.postCoverUrl ? (
-                <img
+                <ProgressiveImage
                   src={notification.postCoverUrl}
                   alt={notification.postTitle || "Post thumbnail"}
-                  className="w-11 h-11 sm:w-12 sm:h-12 object-cover group-hover/thumb:scale-105 transition-transform"
+                  variant="thumb"
+                  className="w-11 h-11 sm:w-12 sm:h-12"
+                  imageClassName="w-full h-full object-cover group-hover/thumb:scale-105 transition-transform"
                 />
               ) : (
                 <div className="w-11 h-11 sm:w-12 sm:h-12 bg-ivory-medium flex items-center justify-center text-cloud-dark">

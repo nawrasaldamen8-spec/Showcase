@@ -108,7 +108,6 @@ export interface AuditLogItem {
     | "post_hidden"
     | "featured_pinned"
     | "featured_unpinned"
-    | "broadcast_sent"
     | "role_modified";
   targetId: string;
   targetLabel: string;

@@ -152,13 +152,6 @@ export const apiCareerClient = {
     return httpFetch<CareerVisibilitySettings>("/api/career/visibility");
   },
 
-  async updateCareerVisibility(settings: Partial<CareerVisibilitySettings>): Promise<CareerVisibilitySettings> {
-    return httpFetch<CareerVisibilitySettings>("/api/career/visibility", {
-      method: "PUT",
-      body: JSON.stringify(settings),
-    });
-  },
-
   async toggleSectionVisibility(
     section: keyof CareerVisibilitySettings,
     isVisible: boolean

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { CheckCircle2, ExternalLink, Pin, PinOff, Sparkles, XCircle } from "lucide-react";
 import { Button } from "@shared/components/Button.tsx";
-import { UserAvatar } from "@shared/components/media/index.ts";
+import { UserAvatar } from "@shared/components/UserAvatar.tsx";
 import { AdminLayout } from "../components/AdminLayout.tsx";
 import {
   useAdminFeaturedQuery,

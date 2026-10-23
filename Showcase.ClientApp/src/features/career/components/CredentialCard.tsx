@@ -1,6 +1,7 @@
 import { Calendar, Hash } from "lucide-react";
 import React from "react";
 import type { CareerCredential } from "@shared/types/index.ts";
+import { ProgressiveImage } from "@shared/components/index.ts";
 import { CareerCardActions } from "./CareerCardActions.tsx";
 import { CareerCardShell } from "./CareerCardShell.tsx";
 
@@ -15,14 +16,13 @@ export const CredentialCard: React.FC<CredentialCardProps> = ({ item: cred, onEd
     <CareerCardShell className="flex flex-col justify-between">
       <div>
         {cred.mediaUrl && (
-          <div className="mb-4 h-36 rounded-xl overflow-hidden bg-ivory-medium border border-stone/50">
-            <img
+          <div className="mb-4 h-36 rounded-xl overflow-hidden border border-stone/50">
+            <ProgressiveImage
               src={cred.mediaUrl}
               alt={cred.name}
-              className="w-full h-full object-cover"
-              onError={(e) => {
-                (e.target as HTMLElement).style.display = "none";
-              }}
+              variant="thumb"
+              className="w-full h-full"
+              imageClassName="w-full h-full object-cover"
             />
           </div>
         )}

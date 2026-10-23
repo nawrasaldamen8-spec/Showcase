@@ -1,7 +1,7 @@
 import React, { useRef } from "react";
 import { ArrowLeft, ArrowRight, Camera, Sparkles } from "lucide-react";
 import { Button } from "@shared/components/Button.tsx";
-import { UserAvatar } from "@shared/components/media/index.ts";
+import { UserAvatar } from "@shared/components/UserAvatar.tsx";
 
 export interface AvatarUploadStepProps {
   name: string;

@@ -12,11 +12,6 @@ export interface LanguageRefDto {
   name: string;
 }
 
-export interface TagDto {
-  name: string;
-  usageCount: number;
-}
-
 export interface SpecialtyItemDto {
   id: number;
   code: string;
@@ -36,10 +31,6 @@ export const apiLookupsClient = {
 
   async getLookupLanguages(): Promise<LanguageRefDto[]> {
     return httpFetch<LanguageRefDto[]>("/api/lookups/languages", { requiresAuth: false });
-  },
-
-  async getPopularTags(limit = 20): Promise<TagDto[]> {
-    return httpFetch<TagDto[]>(`/api/lookups/tags?limit=${limit}`, { requiresAuth: false });
   },
 
   async getSpecialties(): Promise<SpecialtyCategoryDto[]> {

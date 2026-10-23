@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import {
+  apiAuthClient,
   extractApiErrorMessage,
   extractApiFieldErrors,
   extractApiProblemDetails,
@@ -47,6 +48,7 @@ export const DeleteAccountPage: React.FC = () => {
     setIsDeleting(true);
 
     try {
+      await apiAuthClient.deleteAccount(password);
       await logout();
       toast.info("Your account and data have been permanently deleted.");
       navigate("/login", { replace: true });

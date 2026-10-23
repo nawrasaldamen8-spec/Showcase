@@ -1,6 +1,7 @@
 import { Calendar, ExternalLink } from "lucide-react";
 import React from "react";
 import type { CareerAchievement } from "@shared/types/index.ts";
+import { ProgressiveImage } from "@shared/components/index.ts";
 import { CareerCardActions } from "./CareerCardActions.tsx";
 import { CareerCardShell } from "./CareerCardShell.tsx";
 
@@ -15,14 +16,13 @@ export const AchievementCard: React.FC<AchievementCardProps> = ({ item: ach, onE
     <CareerCardShell>
       <div className="flex flex-col md:flex-row gap-4 sm:gap-6">
         {ach.mediaUrl && (
-          <div className="w-full md:w-56 h-40 rounded-xl overflow-hidden bg-ivory-medium border border-stone/50 shrink-0">
-            <img
+          <div className="w-full md:w-56 h-40 rounded-xl overflow-hidden border border-stone/50 shrink-0">
+            <ProgressiveImage
               src={ach.mediaUrl}
               alt={ach.title}
-              className="w-full h-full object-cover"
-              onError={(e) => {
-                (e.target as HTMLElement).style.display = "none";
-              }}
+              variant="thumb"
+              className="w-full h-full"
+              imageClassName="w-full h-full object-cover"
             />
           </div>
         )}

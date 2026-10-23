@@ -2,7 +2,7 @@ import { LogOut } from "lucide-react";
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { AvatarActionModal } from "@features/profile/components/AvatarActionModal.tsx";
-import { UserAvatar } from "../components/media/UserAvatar.tsx";
+import { UserAvatar } from "../components/UserAvatar.tsx";
 import { VerifiedBadge } from "../components/VerifiedBadge.tsx";
 import type { SidebarUser } from "./SidebarNavLinks.tsx";
 

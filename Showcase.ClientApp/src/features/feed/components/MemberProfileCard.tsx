@@ -2,23 +2,60 @@ import { ArrowRight } from "lucide-react";
 import React from "react";
 import { Link } from "react-router-dom";
 import { Badge } from "@shared/components/Badge.tsx";
-import { UserAvatar } from "@shared/components/media/index.ts";
+import { UserAvatar } from "@shared/components/UserAvatar.tsx";
 import { VerifiedBadge } from "@shared/components/VerifiedBadge.tsx";
 import type { Profile, ProfileDetailsResponse, PublicProfileResponse } from "@shared/types/index.ts";
 
 export interface MemberProfileCardProps {
-  profile: Profile | ProfileDetailsResponse | PublicProfileResponse;
+  profile?: Profile | ProfileDetailsResponse | PublicProfileResponse | null;
   from?: string;
   fromLabel?: string;
+  loading?: boolean;
 }
 
 export const MemberProfileCard: React.FC<MemberProfileCardProps> = ({
   profile,
   from = "/feed",
   fromLabel = "Feed Directory",
+  loading = false,
 }) => {
+  if (loading || !profile) {
+    return (
+      <div
+        aria-hidden="true"
+        className="bg-ivory-light border border-stone rounded-2xl p-5 sm:p-6 flex flex-col justify-between shadow-none animate-pulse"
+      >
+        <div>
+          {/* Header Skeleton */}
+          <div className="flex items-start gap-3.5 mb-4">
+            <div className="w-12 h-12 rounded-full bg-[#e6e3da] shrink-0" />
+            <div className="min-w-0 flex-1 space-y-2">
+              <div className="flex items-center gap-2">
+                <div className="h-4 w-32 bg-[#e6e3da] rounded" />
+                <div className="w-3.5 h-3.5 rounded-full bg-[#ded9cd]" />
+              </div>
+              <div className="h-3 w-20 bg-[#e6e3da] rounded" />
+              <div className="h-4 w-24 bg-[#e6e3da] rounded-full" />
+            </div>
+          </div>
+
+          {/* Bio Snippet Skeleton */}
+          <div className="space-y-1.5 mb-5 py-0.5">
+            <div className="h-3.5 w-full bg-[#e6e3da] rounded" />
+            <div className="h-3.5 w-4/5 bg-[#e6e3da] rounded" />
+          </div>
+        </div>
+
+        {/* Full Width Button Skeleton */}
+        <div className="pt-3 border-t border-stone/50">
+          <div className="w-full h-10 rounded-xl bg-[#e6e3da]" />
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="group bg-ivory-light border border-stone rounded-2xl p-5 sm:p-6 flex flex-col justify-between hover:border-clay transition-all duration-200 shadow-none">
+    <div className="group bg-ivory-light border border-stone rounded-2xl p-5 sm:p-6 flex flex-col justify-between transition-colors duration-200 ease-out hover:border-clay shadow-none">
       <div>
         {/* Header: Avatar, Name, Handle & Specialty */}
         <div className="flex items-start gap-3.5 mb-4">

@@ -2,7 +2,7 @@ import { AlertCircle, Camera, Check, Trash2, Upload } from "lucide-react";
 import React from "react";
 import { Button } from "@shared/components/Button.tsx";
 import { Modal } from "@shared/components/Modal.tsx";
-import { UserAvatar } from "@shared/components/media/UserAvatar.tsx";
+import { UserAvatar } from "@shared/components/UserAvatar.tsx";
 import { useAvatarUpload } from "../hooks/useAvatarUpload.ts";
 import { AvatarCropModal } from "./AvatarCropModal.tsx";
 

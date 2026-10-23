@@ -7,7 +7,6 @@ import type {
   AuditLogItem,
   ContentReportItem,
   FeaturedRecommendationItem,
-  StorageTelemetryDto,
   UserRole,
   VerificationRequestItem,
 } from "@shared/types/index.ts";
@@ -53,14 +52,6 @@ export function useAdminFeaturedQuery() {
     queryKey: queryKeys.admin.featured(),
     queryFn: () => apiClient.getFeaturedRecommendations(),
     staleTime: 1000 * 60, // 1 minute
-  });
-}
-
-export function useAdminStorageQuery() {
-  return useQuery<StorageTelemetryDto>({
-    queryKey: queryKeys.admin.storage(),
-    queryFn: () => apiClient.getStorageTelemetry(),
-    staleTime: 1000 * 60 * 3, // 3 minutes
   });
 }
 

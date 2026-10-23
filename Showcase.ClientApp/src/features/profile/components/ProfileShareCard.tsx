@@ -1,7 +1,7 @@
 import React from "react";
 import { Badge } from "@shared/components/Badge.tsx";
 import { PoritySymbol } from "@shared/components/BrandLogo.tsx";
-import { UserAvatar } from "@shared/components/media/index.ts";
+import { UserAvatar } from "@shared/components/UserAvatar.tsx";
 import { VerifiedBadge } from "@shared/components/VerifiedBadge.tsx";
 import type { PublicProfileResponse } from "@shared/types/index.ts";
 

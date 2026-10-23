@@ -3,15 +3,12 @@ import { toast } from "sonner";
 import { apiClient, extractApiErrorMessage, queryKeys } from "@shared/api/index.ts";
 import type {
   AddSocialLinkRequest,
-  FeaturedRequestDto,
   PaginatedList,
   ProfileDetailsResponse,
   PublicProfileResponse,
   ReorderSocialLinksRequest,
-  UpdatePhoneRequest,
   UpdateProfileRequest,
   UpdateSocialLinkRequest,
-  VerificationRequestDto,
 } from "@shared/types/index.ts";
 
 export function useMyProfileQuery(options?: { enabled?: boolean }) {
@@ -63,21 +60,6 @@ export function useUpdateProfileMutation() {
     },
     onError: (err) => {
       toast.error(extractApiErrorMessage(err, "Failed to update profile."));
-    },
-  });
-}
-
-export function useUpdatePhoneMutation() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (data: UpdatePhoneRequest) => apiClient.updatePhone(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.profiles.me() });
-      toast.success("Phone number updated successfully!");
-    },
-    onError: (err) => {
-      toast.error(extractApiErrorMessage(err, "Failed to update phone number."));
     },
   });
 }
@@ -188,26 +170,4 @@ export function useReorderSocialLinksMutation() {
   });
 }
 
-export function useSubmitVerificationRequestMutation() {
-  return useMutation({
-    mutationFn: (data: VerificationRequestDto) => apiClient.submitVerificationRequest(data),
-    onSuccess: () => {
-      toast.success("Verification request submitted successfully!");
-    },
-    onError: (err) => {
-      toast.error(extractApiErrorMessage(err, "Failed to submit verification request."));
-    },
-  });
-}
 
-export function useSubmitFeaturedRequestMutation() {
-  return useMutation({
-    mutationFn: (data: FeaturedRequestDto) => apiClient.submitFeaturedRequest(data),
-    onSuccess: () => {
-      toast.success("Featured creator request submitted successfully!");
-    },
-    onError: (err) => {
-      toast.error(extractApiErrorMessage(err, "Failed to submit featured request."));
-    },
-  });
-}

@@ -1,6 +1,6 @@
 import React from "react";
 import { PoritySymbol } from "@shared/components/BrandLogo.tsx";
-import { UserAvatar } from "@shared/components/media/index.ts";
+import { UserAvatar } from "@shared/components/UserAvatar.tsx";
 import { VerifiedBadge } from "@shared/components/VerifiedBadge.tsx";
 import type { PostDetailsResponse } from "@shared/types/index.ts";
 import { getOptimizedImageUrl } from "@shared/utils/mediaUrl.ts";

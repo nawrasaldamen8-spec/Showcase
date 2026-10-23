@@ -12,12 +12,13 @@ public class GetExplorePosts : IEndpoint
     {
         app.MapGet("api/posts/explore", async (
             string? search,
+            string? category,
             int? pageNumber,
             int? pageSize,
             ISender sender,
             CancellationToken ct) =>
         {
-            var query = new GetExplorePostsQuery(search, pageNumber ?? 1, pageSize ?? 12);
+            var query = new GetExplorePostsQuery(search, category, pageNumber ?? 1, pageSize ?? 12);
             var result = await sender.Send(query, ct);
             return result.ToResponse();
         })
@@ -28,4 +29,3 @@ public class GetExplorePosts : IEndpoint
         .AllowAnonymous();
     }
 }
-

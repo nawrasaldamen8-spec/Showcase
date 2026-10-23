@@ -100,11 +100,4 @@ public interface IIdentityService
         string? pictureUrl = null,
         CancellationToken ct = default);
 
-    Task<Result<(UserIdentityDetails User, bool IsNewUser)>> GetOrCreateExternalUserAsync(
-        string provider,
-        string providerKey,
-        string email,
-        string name,
-        string? pictureUrl = null,
-        CancellationToken ct = default);
 }

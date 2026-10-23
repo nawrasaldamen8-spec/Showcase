@@ -24,12 +24,6 @@ export const apiNotificationsClient = {
     );
   },
 
-  async markNotificationAsRead(id: string): Promise<void> {
-    return httpFetch<void>(`/api/notifications/${id}/read`, {
-      method: "PUT",
-    });
-  },
-
   async markAllNotificationsAsRead(): Promise<void> {
     return httpFetch<void>("/api/notifications/read-all", {
       method: "PUT",
