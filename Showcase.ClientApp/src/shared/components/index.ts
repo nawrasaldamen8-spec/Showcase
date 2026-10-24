@@ -1,4 +1,5 @@
 export * from "./Badge.tsx";
+export * from "./Beams.tsx";
 export * from "./BrandLogo.tsx";
 export * from "./Button.tsx";
 export * from "./EmptyState.tsx";

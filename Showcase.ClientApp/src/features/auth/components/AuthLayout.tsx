@@ -1,11 +1,41 @@
 import React from "react";
 import { Link, Outlet } from "react-router-dom";
-import { BrandLogo } from "@shared/components/BrandLogo.tsx";
+import { Beams, BrandLogo } from "@shared/components/index.ts";
 
 export const AuthLayout: React.FC = () => {
   return (
-    <div className="relative min-h-dvh flex items-center justify-center px-4 sm:px-6 lg:px-8 py-6 sm:py-10 selection:bg-clay selection:text-ivory-light overflow-x-hidden">
-      {/* Persistent Full-screen Architectural Logo Background (Fit width & Pure Black) */}
+    <div className="relative min-h-dvh bg-[#141413] flex items-center justify-center px-4 sm:px-6 lg:px-8 py-6 sm:py-10 selection:bg-clay selection:text-ivory-light overflow-x-hidden">
+      {/* 1. Interactive WebGL Beams Background */}
+      <div
+        className="pointer-events-none fixed inset-0 overflow-hidden select-none"
+        aria-hidden="true"
+      >
+        <Beams
+          color="#d97757"
+          backgroundColor="#141413"
+          beamWidth={114}
+          rotation={49}
+          speed={2.65}
+          glow={0.15}
+          waveLength={97}
+          depth={0.25}
+          sharpness={0.65}
+          twist={0}
+          fillLight={0.1}
+          brightness={1}
+          grain={0.4}
+          variation={0}
+          mouseInteraction
+          mouseStrength={0.5}
+          fade={0}
+          opacity={1}
+          intro
+          lightMode={false}
+          className="w-full h-full"
+        />
+      </div>
+
+      {/* 2. Persistent Full-screen Architectural Logo Background (Fit width & Pure Black) */}
       <div
         className="pointer-events-none fixed inset-0 flex items-center justify-center overflow-hidden select-none"
         aria-hidden="true"

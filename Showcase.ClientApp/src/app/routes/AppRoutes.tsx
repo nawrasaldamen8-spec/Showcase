@@ -85,82 +85,77 @@ export const AppRoutes: React.FC = () => {
         <Route path="/auth/complete-oauth" element={<CompleteOAuthPage />} />
         <Route path="/banned" element={<AccountBannedPage />} />
 
-        {/* 2. Public Content Routes with AppLayout (Open to Guests & Users) */}
+        {/* 2. Application Shell Routes (AppLayout keeps Sidebar & Nav permanently mounted) */}
         <Route element={<AppLayout />}>
+          {/* Public Content Routes (Open to Guests & Users) */}
           <Route path="/u/:username" element={<PublicProfilePage />} />
           <Route path="/posts/:id" element={<PostDetailsPage />} />
           <Route path="/terms" element={<TermsOfServicePage />} />
           <Route path="/privacy" element={<PrivacyPolicyPage />} />
-        </Route>
 
-        {/* 3. Protected User Routes with AppLayout */}
-        <Route
-          element={
-            <ProtectedRoute>
-              <AppLayout />
-            </ProtectedRoute>
-          }
-        >
-          <Route path="/" element={<Navigate to="/feed" replace />} />
-          <Route path="/studio" element={<StudioDashboardPage />} />
-          <Route path="/posts/mine" element={<StudioDashboardPage />} />
-          <Route path="/feed" element={<FeedPage />} />
-          <Route path="/feed/search" element={<SearchResultsPage />} />
-          <Route path="/search" element={<SearchResultsPage />} />
-          <Route path="/explore" element={<Navigate to="/feed" replace />} />
+          {/* Protected User Routes */}
+          <Route element={<ProtectedRoute />}>
+            <Route path="/" element={<Navigate to="/feed" replace />} />
+            <Route path="/studio" element={<StudioDashboardPage />} />
+            <Route path="/posts/mine" element={<StudioDashboardPage />} />
+            <Route path="/feed" element={<FeedPage />} />
+            <Route path="/feed/search" element={<SearchResultsPage />} />
+            <Route path="/search" element={<SearchResultsPage />} />
+            <Route path="/explore" element={<Navigate to="/feed" replace />} />
 
-          {/* Post Management */}
-          <Route path="/posts/new" element={<PostEditorPage />} />
-          <Route path="/posts/:id/edit" element={<PostEditorPage />} />
+            {/* Post Management */}
+            <Route path="/posts/new" element={<PostEditorPage />} />
+            <Route path="/posts/:id/edit" element={<PostEditorPage />} />
 
-          {/* Profiles Management */}
-          <Route path="/profile/edit" element={<EditProfilePage />} />
-          <Route path="/profile/edit/specialty" element={<SelectSpecialtyPage />} />
-          <Route path="/profile/edit/country" element={<SelectCountryPage />} />
-          <Route path="/profile/social-links" element={<EditSocialLinksPage />} />
+            {/* Profiles Management */}
+            <Route path="/profile/edit" element={<EditProfilePage />} />
+            <Route path="/profile/edit/specialty" element={<SelectSpecialtyPage />} />
+            <Route path="/profile/edit/country" element={<SelectCountryPage />} />
+            <Route path="/profile/social-links" element={<EditSocialLinksPage />} />
 
-          {/* Notifications */}
-          <Route path="/notifications" element={<NotificationsPage />} />
+            {/* Notifications */}
+            <Route path="/notifications" element={<NotificationsPage />} />
 
-          {/* Settings Nested Routes */}
-          <Route path="/settings">
-            <Route index element={<SecurityHubPage />} />
-            <Route path="profile" element={<Navigate to="/profile/edit" replace />} />
-            <Route path="featured" element={<Navigate to="/settings/security/featured" replace />} />
-            <Route path="verification" element={<Navigate to="/settings/security/verification" replace />} />
-            <Route path="security" element={<SecurityHubPage />} />
-            <Route path="security/username" element={<ChangeUsernamePage />} />
-            <Route path="security/email" element={<UpdateEmailPage />} />
-            <Route path="security/phone" element={<ManagePhonePage />} />
-            <Route path="security/change-password" element={<ChangePasswordPage />} />
-            <Route path="security/verification" element={<VerificationRequestPage />} />
-            <Route path="security/featured" element={<FeaturedRequestPage />} />
-            <Route path="security/delete-account" element={<DeleteAccountPage />} />
-            <Route path="security/two-factor" element={<Navigate to="/settings/security" replace />} />
-            <Route path="security/sessions" element={<Navigate to="/settings/security" replace />} />
-          </Route>
+            {/* Settings Nested Routes */}
+            <Route path="/settings">
+              <Route index element={<SecurityHubPage />} />
+              <Route path="profile" element={<Navigate to="/profile/edit" replace />} />
+              <Route path="featured" element={<Navigate to="/settings/security/featured" replace />} />
+              <Route path="verification" element={<Navigate to="/settings/security/verification" replace />} />
+              <Route path="security" element={<SecurityHubPage />} />
+              <Route path="security/username" element={<ChangeUsernamePage />} />
+              <Route path="security/email" element={<UpdateEmailPage />} />
+              <Route path="security/phone" element={<ManagePhonePage />} />
+              <Route path="security/change-password" element={<ChangePasswordPage />} />
+              <Route path="security/verification" element={<VerificationRequestPage />} />
+              <Route path="security/featured" element={<FeaturedRequestPage />} />
+              <Route path="security/delete-account" element={<DeleteAccountPage />} />
+              <Route path="security/two-factor" element={<Navigate to="/settings/security" replace />} />
+              <Route path="security/sessions" element={<Navigate to="/settings/security" replace />} />
+            </Route>
 
-          {/* Career Nested Routes */}
-          <Route path="/career">
-            <Route index element={<CareerHubPage />} />
-            <Route path="experience" element={<CareerExperiencePage />} />
-            <Route path="experience/new" element={<ExperienceFormPage />} />
-            <Route path="experience/:id/edit" element={<ExperienceFormPage />} />
-            <Route path="academics" element={<CareerAcademicsPage />} />
-            <Route path="academics/new" element={<AcademicFormPage />} />
-            <Route path="academics/:id/edit" element={<AcademicFormPage />} />
-            <Route path="skills" element={<CareerSkillsPage />} />
-            <Route path="skills/new" element={<SkillFormPage />} />
-            <Route path="skills/:id/edit" element={<SkillFormPage />} />
-            <Route path="credentials" element={<CareerCredentialsPage />} />
-            <Route path="credentials/new" element={<CredentialFormPage />} />
-            <Route path="credentials/:id/edit" element={<CredentialFormPage />} />
-            <Route path="languages" element={<CareerLanguagesPage />} />
-            <Route path="languages/new" element={<LanguageFormPage />} />
-            <Route path="languages/:id/edit" element={<LanguageFormPage />} />
-            <Route path="achievements" element={<CareerAchievementsPage />} />
-            <Route path="achievements/new" element={<AchievementFormPage />} />
-            <Route path="achievements/:id/edit" element={<AchievementFormPage />} />
+            {/* Career Nested Routes */}
+            <Route path="/career">
+              <Route index element={<CareerHubPage />} />
+              <Route path="experience" element={<CareerExperiencePage />} />
+              <Route path="experience/new" element={<ExperienceFormPage />} />
+              <Route path="experience/:id/edit" element={<ExperienceFormPage />} />
+              <Route path="academics" element={<CareerAcademicsPage />} />
+              <Route path="academics/new" element={<AcademicFormPage />} />
+              <Route path="academics/:id/edit" element={<AcademicFormPage />} />
+              <Route path="skills" element={<CareerSkillsPage />} />
+              <Route path="skills/new" element={<SkillFormPage />} />
+              <Route path="skills/:id/edit" element={<SkillFormPage />} />
+              <Route path="credentials" element={<CareerCredentialsPage />} />
+              <Route path="credentials/new" element={<CredentialFormPage />} />
+              <Route path="credentials/:id/edit" element={<CredentialFormPage />} />
+              <Route path="languages" element={<CareerLanguagesPage />} />
+              <Route path="languages/new" element={<LanguageFormPage />} />
+              <Route path="languages/:id/edit" element={<LanguageFormPage />} />
+              <Route path="achievements" element={<CareerAchievementsPage />} />
+              <Route path="achievements/new" element={<AchievementFormPage />} />
+              <Route path="achievements/:id/edit" element={<AchievementFormPage />} />
+            </Route>
           </Route>
         </Route>
 

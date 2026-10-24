@@ -42,7 +42,14 @@ public class CreateLanguageCommandHandler(
 
         if (!Enum.TryParse<LanguageProficiency>(request.Proficiency, true, out var proficiency))
         {
-            proficiency = LanguageProficiency.Intermediate;
+            proficiency = request.Proficiency?.ToLowerInvariant().Trim() switch
+            {
+                "bilingual" => LanguageProficiency.Native,
+                "full professional" or "professional working" or "advanced" => LanguageProficiency.Professional,
+                "limited working" => LanguageProficiency.Intermediate,
+                "elementary" or "beginner" => LanguageProficiency.Basic,
+                _ => LanguageProficiency.Intermediate
+            };
         }
 
         var language = profile.AddLanguage(request.Language, proficiency);

@@ -1,7 +1,8 @@
-import React from "react";
+import React, { Suspense } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useNotificationRealtime } from "@features/notifications/hooks/useNotificationRealtime.ts";
 import { useUnreadNotificationsCountQuery } from "@features/notifications/hooks/useNotificationQueries.ts";
+import { RouteLoadingSkeleton } from "@shared/components/RouteLoadingSkeleton.tsx";
 import { useAuth } from "@shared/context/index.ts";
 import { Footer, MobileBottomNav, MobileTopBar, Sidebar } from "@shared/layout/index.ts";
 import { ScrollToTop } from "./ScrollToTop.tsx";
@@ -78,7 +79,9 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
     return (
       <div className="min-h-screen bg-ivory-medium text-slate-dark antialiased selection:bg-clay selection:text-ivory-light">
         <ScrollToTop />
-        <main className="min-h-screen">{content}</main>
+        <main className="min-h-screen">
+          <Suspense fallback={<RouteLoadingSkeleton />}>{content}</Suspense>
+        </main>
       </div>
     );
   }
@@ -93,7 +96,9 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
       />
       <div className="flex-1 flex flex-col min-w-0 md:pl-60 lg:pl-64 transition-all">
         <MobileTopBar unreadNotificationsCount={unreadCount} />
-        <main className={`flex-1 ${shouldHideBottomNav ? "" : "pb-16 md:pb-0"}`}>{content}</main>
+        <main className={`flex-1 ${shouldHideBottomNav ? "" : "pb-16 md:pb-0"}`}>
+          <Suspense fallback={<RouteLoadingSkeleton />}>{content}</Suspense>
+        </main>
         {!isWorkspaceRoute && <Footer />}
       </div>
       {!shouldHideBottomNav && <MobileBottomNav user={layoutUser} />}

@@ -46,7 +46,14 @@ public class UpdateLanguageCommandHandler(
 
         if (!Enum.TryParse<LanguageProficiency>(request.Proficiency, true, out var proficiency))
         {
-            proficiency = LanguageProficiency.Intermediate;
+            proficiency = request.Proficiency?.ToLowerInvariant().Trim() switch
+            {
+                "bilingual" => LanguageProficiency.Native,
+                "full professional" or "professional working" or "advanced" => LanguageProficiency.Professional,
+                "limited working" => LanguageProficiency.Intermediate,
+                "elementary" or "beginner" => LanguageProficiency.Basic,
+                _ => LanguageProficiency.Intermediate
+            };
         }
 
         language.Update(request.Language, proficiency);
@@ -55,4 +62,3 @@ public class UpdateLanguageCommandHandler(
         return language.ToDto();
     }
 }
-

@@ -3,7 +3,11 @@ import { Check, Globe, Search, X } from "lucide-react";
 import { useLookupLanguagesQuery } from "@shared/hooks/index.ts";
 import { Button } from "@shared/components/Button.tsx";
 import type { CareerLanguage, LanguageProficiency } from "@shared/types/index.ts";
-import { PREDEFINED_LANGUAGES, PROFICIENCY_LEVELS } from "../constants.ts";
+import {
+  PREDEFINED_LANGUAGES,
+  PROFICIENCY_LEVELS,
+  getLanguageProficiencyPercentage,
+} from "../constants.ts";
 
 export interface LanguageFormProps {
   initialItem: CareerLanguage | null;
@@ -83,9 +87,14 @@ export const LanguageForm: React.FC<LanguageFormProps> = ({
               {language}
             </span>
           </div>
-          <span className="font-gothic text-[11px] font-bold uppercase tracking-wider text-clay bg-clay/10 px-2.5 py-0.5 rounded-full shrink-0">
-            {proficiency}
-          </span>
+          <div className="flex items-center gap-2 shrink-0">
+            <span className="font-gothic text-[11px] font-bold uppercase tracking-wider text-clay bg-clay/10 px-2.5 py-0.5 rounded-full">
+              {proficiency}
+            </span>
+            <span className="font-mono text-[11px] text-cloud-dark font-medium">
+              {getLanguageProficiencyPercentage(proficiency)}%
+            </span>
+          </div>
         </div>
 
         {/* Search Input */}
@@ -102,7 +111,7 @@ export const LanguageForm: React.FC<LanguageFormProps> = ({
             <button
               type="button"
               onClick={() => setSearchQuery("")}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-cloud-dark hover:text-slate-dark p-1"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-cloud-dark hover:text-slate-dark p-1 cursor-pointer"
               aria-label="Clear language search"
             >
               <X className="w-3.5 h-3.5" />
@@ -110,7 +119,7 @@ export const LanguageForm: React.FC<LanguageFormProps> = ({
           )}
         </div>
 
-        {/* Bounded Scrollable Language Grid (No Numbered Pagination) */}
+        {/* Bounded Scrollable Language Grid */}
         <div className="border border-stone/60 rounded-xl p-2.5 bg-ivory-medium/20 space-y-2">
           <div className="flex items-center justify-between text-[11px] font-gothic font-bold uppercase tracking-wider text-cloud-dark px-1">
             <span>All Languages ({filteredLanguages.length})</span>
@@ -132,7 +141,7 @@ export const LanguageForm: React.FC<LanguageFormProps> = ({
                   }}
                   className={`text-left px-3 py-2 rounded-lg border transition-all cursor-pointer flex items-center justify-between gap-1.5 ${
                     isSelected
-                      ? "bg-slate-dark text-ivory-light border-slate-dark font-medium"
+                      ? "bg-slate-dark text-ivory-light border-slate-dark font-medium shadow-xs"
                       : "bg-ivory-light hover:bg-ivory-medium border-stone/50 text-slate-dark hover:border-slate-dark"
                   }`}
                 >
@@ -144,8 +153,24 @@ export const LanguageForm: React.FC<LanguageFormProps> = ({
           </div>
 
           {filteredLanguages.length === 0 && (
-            <div className="py-6 text-center text-cloud-dark font-serif text-xs">
-              No languages match &ldquo;{searchQuery}&rdquo;.
+            <div className="py-6 text-center space-y-2.5">
+              <p className="text-cloud-dark font-serif text-xs">
+                No languages match &ldquo;{searchQuery}&rdquo;.
+              </p>
+              {searchQuery.trim() && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setLanguage(searchQuery.trim());
+                    if (errors.language) {
+                      setErrors((prev) => ({ ...prev, language: "" }));
+                    }
+                  }}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-clay text-ivory-light text-xs font-gothic font-bold uppercase tracking-wider cursor-pointer hover:bg-clay-dark transition-colors"
+                >
+                  <span>Use &ldquo;{searchQuery.trim()}&rdquo;</span>
+                </button>
+              )}
             </div>
           )}
         </div>
@@ -155,38 +180,46 @@ export const LanguageForm: React.FC<LanguageFormProps> = ({
         )}
       </div>
 
-      {/* Proficiency Level Grid */}
+      {/* Proficiency Level Grid (Official 5 System Levels) */}
       <div className="space-y-2">
         <label className="block font-gothic text-xs font-bold uppercase tracking-[0.12em] text-slate-dark">
           Proficiency Level <span className="text-red-500 font-bold">*</span>
         </label>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
           {PROFICIENCY_LEVELS.map((level) => {
             const isSelected = proficiency === level;
             return (
               <button
                 key={level}
                 type="button"
-                onClick={() => setProficiency(level as LanguageProficiency)}
-                className={`p-3 rounded-xl border text-left transition-all cursor-pointer flex items-center justify-between gap-2 ${
+                onClick={() => setProficiency(level)}
+                className={`p-3.5 rounded-xl border text-left transition-all cursor-pointer flex items-center justify-between gap-2 ${
                   isSelected
-                    ? "bg-slate-dark text-ivory-light border-slate-dark"
+                    ? "bg-slate-dark text-ivory-light border-slate-dark shadow-sm"
                     : "bg-ivory-medium/50 text-slate-dark border-stone/60 hover:border-slate-dark hover:bg-ivory-medium"
                 }`}
               >
                 <div className="min-w-0 flex-1">
-                  <p className="font-gothic text-xs font-bold uppercase tracking-wider">{level}</p>
-                  <p className={`font-serif text-[11px] truncate mt-0.5 ${isSelected ? "text-ivory-light/75" : "text-cloud-dark"}`}>
+                  <div className="flex items-center gap-2">
+                    <p className="font-gothic text-xs font-bold uppercase tracking-wider">{level}</p>
+                    <span
+                      className={`text-[10px] font-mono px-1.5 py-0.5 rounded ${
+                        isSelected ? "bg-white/15 text-ivory-light" : "bg-stone/40 text-cloud-dark"
+                      }`}
+                    >
+                      {getLanguageProficiencyPercentage(level)}%
+                    </span>
+                  </div>
+                  <p
+                    className={`font-serif text-[11px] truncate mt-1 ${
+                      isSelected ? "text-ivory-light/75" : "text-cloud-dark"
+                    }`}
+                  >
                     {level === "Native" && "First language or bilingual proficiency"}
-                    {level === "Bilingual" && "Complete bilingual proficiency"}
                     {level === "Fluent" && "Fluent in speaking, reading, and writing"}
-                    {level === "Full Professional" && "Full professional working proficiency"}
-                    {level === "Professional Working" && "Professional working proficiency"}
-                    {level === "Advanced" && "Advanced conversational proficiency"}
-                    {level === "Intermediate" && "Good conversational proficiency"}
-                    {level === "Limited Working" && "Limited working proficiency"}
-                    {level === "Elementary" && "Elementary proficiency"}
-                    {level === "Beginner" && "Basic introductory knowledge"}
+                    {level === "Professional" && "Full professional working proficiency"}
+                    {level === "Intermediate" && "Good conversational working proficiency"}
+                    {level === "Basic" && "Basic introductory & elementary knowledge"}
                   </p>
                 </div>
                 {isSelected && <Check className="w-4 h-4 text-clay shrink-0" />}

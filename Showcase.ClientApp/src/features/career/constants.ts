@@ -1,3 +1,5 @@
+import type { LanguageProficiency } from "@shared/types/index.ts";
+
 export const ACADEMIC_DEGREE_OPTIONS = [
   "Bachelor of Arts (BA)",
   "Bachelor of Science (BS)",
@@ -51,17 +53,12 @@ export const PREDEFINED_LANGUAGES = [
   "Other",
 ];
 
-export const PROFICIENCY_LEVELS = [
+export const PROFICIENCY_LEVELS: LanguageProficiency[] = [
   "Native",
-  "Bilingual",
   "Fluent",
-  "Full Professional",
-  "Professional Working",
-  "Advanced",
+  "Professional",
   "Intermediate",
-  "Limited Working",
-  "Elementary",
-  "Beginner",
+  "Basic",
 ];
 
 export const SKILL_CATEGORIES = [
@@ -89,16 +86,18 @@ export function getLanguageProficiencyPercentage(proficiency?: string): number {
     case "fluent":
     case "full professional":
       return 85;
+    case "professional":
     case "professional working":
     case "advanced":
       return 70;
     case "intermediate":
     case "limited working":
       return 50;
+    case "basic":
     case "elementary":
     case "beginner":
       return 30;
     default:
-      return 60;
+      return 50;
   }
 }
